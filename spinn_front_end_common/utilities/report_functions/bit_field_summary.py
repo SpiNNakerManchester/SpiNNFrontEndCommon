@@ -11,88 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from dataclasses import dataclass
+from typing import Union
 
 
-class BitFieldSummary(object):
+@dataclass(frozen=True)
+class BitFieldSummary:
     """
     Summary description of generated bitfields.
     """
 
-    def __init__(
-            self, total_merged, max_per_chip, lowest_per_chip, total_to_merge,
-            max_to_merge_per_chip, low_to_merge_per_chip,
-            average_per_chip_merged, average_per_chip_to_merge):
-        """
-        :param int total_merged:
-        :param int max_per_chip:
-        :param int lowest_per_chip:
-        :param int total_to_merge:
-        :param int max_to_merge_per_chip:
-        :param int low_to_merge_per_chip:
-        :param float average_per_chip_merged:
-        :param float average_per_chip_to_merge:
-        """
-        self._total_merged = total_merged
-        self._max_per_chip = max_per_chip
-        self._lowest_per_chip = lowest_per_chip
-        self._total_to_merge = total_to_merge
-        self._max_to_merge_per_chip = max_to_merge_per_chip
-        self._low_to_merge_per_chip = low_to_merge_per_chip
-        self._average_per_chip_merged = average_per_chip_merged
-        self._average_per_chip_to_merge = average_per_chip_to_merge
-
-    @property
-    def total_merged(self):
-        """
-        :rtype: int
-        """
-        return self._total_merged
-
-    @property
-    def max_per_chip(self):
-        """
-        :rtype: int
-        """
-        return self._max_per_chip
-
-    @property
-    def lowest_per_chip(self):
-        """
-        :rtype: int
-        """
-        return self._lowest_per_chip
-
-    @property
-    def total_to_merge(self):
-        """
-        :rtype: int
-        """
-        return self._total_to_merge
-
-    @property
-    def max_to_merge_per_chip(self):
-        """
-        :rtype: int
-        """
-        return self._max_to_merge_per_chip
-
-    @property
-    def low_to_merge_per_chip(self):
-        """
-        :rtype: int
-        """
-        return self._low_to_merge_per_chip
-
-    @property
-    def average_per_chip_merged(self):
-        """
-        :rtype: float
-        """
-        return self._average_per_chip_merged
-
-    @property
-    def average_per_chip_to_merge(self):
-        """
-        :rtype: float
-        """
-        return self._average_per_chip_to_merge
+    total_merged: Union[int, str]
+    max_per_chip: Union[int, str]
+    lowest_per_chip: Union[int, str]
+    total_to_merge: int
+    max_to_merge_per_chip: Union[int, str]
+    low_to_merge_per_chip: Union[int, str]
+    average_per_chip_merged: Union[float, str]
+    average_per_chip_to_merge: float

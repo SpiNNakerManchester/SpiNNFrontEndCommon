@@ -25,8 +25,8 @@ class RouterSummary(object):
         "_max_link",
         "_unqiue_routes")
 
-    def __init__(self, total_entries, max_per_chip, max_defaultable, max_link,
-                 unqiue_routes):
+    def __init__(self, total_entries: int, max_per_chip: int,
+                 max_defaultable: int, max_link: int, unqiue_routes: int):
         self._total_entries = total_entries
         self._max_per_chip = max_per_chip
         self._max_defaultable = max_defaultable
@@ -34,35 +34,35 @@ class RouterSummary(object):
         self._unqiue_routes = unqiue_routes
 
     @property
-    def total_entries(self):
+    def total_entries(self) -> int:
         """
         :rtype: int
         """
         return self._total_entries
 
     @property
-    def max_per_chip(self):
+    def max_per_chip(self) -> int:
         """
         :rtype: int
         """
         return self._max_per_chip
 
     @property
-    def max_defaultable(self):
+    def max_defaultable(self) -> int:
         """
         :rtype: int
         """
         return self._max_defaultable
 
     @property
-    def max_link(self):
+    def max_link(self) -> int:
         """
         :rtype: int
         """
         return self._max_link
 
     @property
-    def unqiue_routes(self):
+    def unqiue_routes(self) -> int:
         """
         :rtype: int
         """

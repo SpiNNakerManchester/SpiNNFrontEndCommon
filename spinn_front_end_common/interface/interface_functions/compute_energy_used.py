@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import itertools
-from typing import Iterable, Optional, Sequence, cast
+from typing import Final, Iterable, Optional, Sequence, cast
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine, Chip
 from pacman.model.placements import Placement
@@ -25,36 +25,36 @@ from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 
 #: milliseconds per second
-_MS_PER_SECOND = 1000.0
+_MS_PER_SECOND: Final = 1000.0
 
 #: given from Indar's measurements
-MILLIWATTS_PER_FPGA = 0.000584635
+MILLIWATTS_PER_FPGA: Final = 0.000584635
 
 #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
 #: Massively-Parallel Neural Network Simulation)
-JOULES_PER_SPIKE = 0.000000000800
+JOULES_PER_SPIKE: Final = 0.000000000800
 
 #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
 #: Massively-Parallel Neural Network Simulation)
-MILLIWATTS_PER_IDLE_CHIP = 0.000360
+MILLIWATTS_PER_IDLE_CHIP: Final = 0.000360
 
 #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
 #: Massively-Parallel Neural Network Simulation)
-MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD = (0.001 - MILLIWATTS_PER_IDLE_CHIP)
+MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD: Final = (0.001 - MILLIWATTS_PER_IDLE_CHIP)
 
 #: measured from the real power meter and timing between
 #: the photos for a days powered off
-MILLIWATTS_FOR_FRAME_IDLE_COST = 0.117
+MILLIWATTS_FOR_FRAME_IDLE_COST: Final = 0.117
 
 #: measured from the loading of the column and extrapolated
-MILLIWATTS_PER_FRAME_ACTIVE_COST = 0.154163558
+MILLIWATTS_PER_FRAME_ACTIVE_COST: Final = 0.154163558
 
 #: measured from the real power meter and timing between the photos
 #: for a day powered off
-MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST = 0.0045833333
+MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST: Final = 0.0045833333
 
 # TODO needs filling in
-MILLIWATTS_PER_UNBOXED_48_CHIP_FRAME_IDLE_COST = 0.01666667
+MILLIWATTS_PER_UNBOXED_48_CHIP_FRAME_IDLE_COST: Final = 0.01666667
 
 # TODO verify this is correct when doing multiboard comms
 N_MONITORS_ACTIVE_DURING_COMMS = 2

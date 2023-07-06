@@ -16,13 +16,14 @@ import json
 import os
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
-from pacman.model.routing_tables.multicast_routing_tables import to_json
+from pacman.model.routing_tables.multicast_routing_tables import (
+    to_json, MulticastRoutingTables)
 from spinn_front_end_common.data import FecDataView
 
 _ROUTING_TABLES_FILENAME = "routing_tables.json"
 
 
-def write_json_routing_tables(router_tables):
+def write_json_routing_tables(router_tables: MulticastRoutingTables) -> str:
     """
     Runs the code to write the machine in Java readable JSON.
 

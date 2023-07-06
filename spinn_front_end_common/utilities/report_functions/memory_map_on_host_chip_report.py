@@ -15,8 +15,10 @@
 import logging
 import os
 import struct
+from typing import TextIO
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+from spinnman.transceiver import Transceiver
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, MAX_MEM_REGIONS)
@@ -26,7 +28,7 @@ _ONE_WORD = struct.Struct("<I")
 REGION_HEADER_SIZE = 2 * BYTES_PER_WORD
 
 
-def memory_map_on_host_chip_report():
+def memory_map_on_host_chip_report() -> None:
     """
     Report on memory usage. Creates a report that states where in SDRAM
     each region is (read from machine).
@@ -52,7 +54,7 @@ def memory_map_on_host_chip_report():
                 file_name)
 
 
-def _describe_mem_map(f, txrx, x, y, p):
+def _describe_mem_map(f: TextIO, txrx: Transceiver, x: int, y: int, p: int):
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """
@@ -69,7 +71,7 @@ def _describe_mem_map(f, txrx, x, y, p):
         f.write(f"Region {i:d}:\n\t start address: 0x{region_address:x}\n\n")
 
 
-def _get_region_table_addr(txrx, x, y, p):
+def _get_region_table_addr(txrx: Transceiver, x: int, y: int, p: int) -> int:
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """

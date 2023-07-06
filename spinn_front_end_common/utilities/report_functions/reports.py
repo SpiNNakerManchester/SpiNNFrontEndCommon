@@ -15,13 +15,20 @@
 import logging
 import os
 import time
+from typing import Iterable, Optional, TextIO, Tuple
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import Router
-from pacman import exceptions
+from spinn_machine import Chip, MulticastRoutingEntry, Router
+from pacman.exceptions import PacmanRoutingException
+from pacman.model.graphs.application import (
+    ApplicationEdgePartition, ApplicationVertex)
 from pacman.model.graphs.machine import (
     MachineFPGAVertex, MachineSpiNNakerLinkVertex)
+from pacman.model.placements import Placement
+from pacman.model.routing_tables import (
+    AbstractMulticastRoutingTable, MulticastRoutingTables)
+from pacman.model.routing_info import BaseKeyAndMask, RoutingInfo
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     get_app_partitions)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
@@ -50,7 +57,7 @@ _VIRTKEY_FILENAME = "virtual_key_space_information_report.rpt"
 _LOWER_16_BITS = 0xFFFF
 
 
-def tag_allocator_report():
+def tag_allocator_report() -> None:
     """
     Reports the tags that are being used by the tool chain for this
     simulation.
@@ -72,7 +79,7 @@ def tag_allocator_report():
             "Generate tag report: Can't open file {} for writing.", file_name)
 
 
-def placer_reports_with_application_graph():
+def placer_reports_with_application_graph() -> None:
     """
     Reports that can be produced from placement given a application
     graph's existence.
@@ -81,7 +88,7 @@ def placer_reports_with_application_graph():
     placement_report_with_application_graph_by_core()
 
 
-def router_summary_report():
+def router_summary_report() -> Optional[RouterSummary]:
     """
     Generates a text file of routing summaries.
 
@@ -95,7 +102,8 @@ def router_summary_report():
     return _do_router_summary_report(file_name, progress, routing_tables)
 
 
-def router_compressed_summary_report(routing_tables):
+def router_compressed_summary_report(
+        routing_tables: MulticastRoutingTables) -> Optional[RouterSummary]:
     """
     Generates a text file of routing summaries.
 
@@ -110,7 +118,9 @@ def router_compressed_summary_report(routing_tables):
     return _do_router_summary_report(file_name, progress, routing_tables)
 
 
-def _do_router_summary_report(file_name, progress, routing_tables):
+def _do_router_summary_report(
+        file_name: str, progress: ProgressBar,
+        routing_tables: MulticastRoutingTables) -> Optional[RouterSummary]:
     """
     :param str file_name:
     :param ~spinn_utilities.progress_bar.Progress progress:
@@ -170,9 +180,10 @@ def _do_router_summary_report(file_name, progress, routing_tables):
         logger.exception(
             "Generate routing summary report: Can't open file {} for writing.",
             file_name)
+        return None
 
 
-def router_report_from_paths():
+def router_report_from_paths() -> None:
     """
     Generates a text file of routing paths.
     """
@@ -197,7 +208,8 @@ def router_report_from_paths():
             file_name)
 
 
-def _write_one_router_partition_report(f, partition):
+def _write_one_router_partition_report(
+        f: TextIO, partition: ApplicationEdgePartition):
     """
     :param ~io.FileIO f:
     :param AbstractSingleSourcePartition partition:
@@ -213,6 +225,8 @@ def _write_one_router_partition_report(f, partition):
             source_placement = FecDataView.get_placement_of_vertex(m_vertex)
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
+            if r_info is None:
+                continue
             path = _search_route(source_placement, r_info.key_and_mask)
             f.write(
                 f"    Edge '{edge.label}', "
@@ -223,7 +237,7 @@ def _write_one_router_partition_report(f, partition):
             f.write("\n")
 
 
-def partitioner_report():
+def partitioner_report() -> None:
     """
     Generate report on the partitioning of vertices.
     """
@@ -250,7 +264,7 @@ def partitioner_report():
             file_name)
 
 
-def _write_one_vertex_partition(f, vertex):
+def _write_one_vertex_partition(f: TextIO, vertex: ApplicationVertex):
     """
     :param ~io.FileIO f:
     :param ~pacman.model.graphs.application.ApplicationVertex vertex:
@@ -273,7 +287,7 @@ def _write_one_vertex_partition(f, vertex):
     f.write("\n")
 
 
-def placement_report_with_application_graph_by_vertex():
+def placement_report_with_application_graph_by_vertex() -> None:
     """
     Generate report on the placement of vertices onto cores by vertex.
     """
@@ -300,7 +314,8 @@ def placement_report_with_application_graph_by_vertex():
             file_name)
 
 
-def _write_one_vertex_application_placement(f, vertex):
+def _write_one_vertex_application_placement(
+        f: TextIO, vertex: ApplicationVertex):
     """
     :param ~io.FileIO f:
     :param ~pacman.model.graphs.application.ApplicationVertex vertex:
@@ -337,7 +352,7 @@ def _write_one_vertex_application_placement(f, vertex):
     f.write("\n")
 
 
-def placement_report_with_application_graph_by_core():
+def placement_report_with_application_graph_by_core() -> None:
     """
     Generate report on the placement of vertices onto cores by core.
     """
@@ -366,7 +381,7 @@ def placement_report_with_application_graph_by_core():
             file_name)
 
 
-def _write_one_chip_application_placement(f, chip):
+def _write_one_chip_application_placement(f: TextIO, chip: Chip):
     """
     :param ~io.FileIO f:
     :param ~spinn_machine.Chip chip:
@@ -411,7 +426,7 @@ def _write_one_chip_application_placement(f, chip):
                         total_sdram.per_timestep))
 
 
-def sdram_usage_report_per_chip():
+def sdram_usage_report_per_chip() -> None:
     """
     Reports the SDRAM used per chip.
     """
@@ -441,7 +456,8 @@ def sdram_usage_report_per_chip():
 
 
 def _sdram_usage_report_per_chip_with_timesteps(
-        f, timesteps, progress, end_progress, details):
+        f: TextIO, timesteps: Optional[int], progress: ProgressBar,
+        end_progress: bool, details: bool):
     """
     :param ~io.FileIO f:
     :param int timesteps: Either the plan or data timesteps
@@ -453,7 +469,8 @@ def _sdram_usage_report_per_chip_with_timesteps(
     f.write(f"Based on {timesteps} timesteps\n\n")
     used_sdram_by_chip = dict()
     placements = sorted(
-        FecDataView.iterate_placemements(), key=lambda x: x.vertex.label)
+        FecDataView.iterate_placemements(),
+        key=lambda x: x.vertex.label or "")
     for placement in progress.over(placements, False):
         vertex_sdram = placement.vertex.sdram_required
         core_sdram = vertex_sdram.get_total_sdram(timesteps)
@@ -488,7 +505,8 @@ def _sdram_usage_report_per_chip_with_timesteps(
             pass
 
 
-def routing_info_report(extra_allocations):
+def routing_info_report(
+        extra_allocations: Iterable[Tuple[ApplicationVertex, str]] = ()):
     """
     Generates a report which says which keys is being allocated to each
     vertex.
@@ -515,13 +533,14 @@ def routing_info_report(extra_allocations):
                          "Can't open file {} for writing.", file_name)
 
 
-def _write_vertex_virtual_keys(f, pre_vertex, part_id, routing_infos):
+def _write_vertex_virtual_keys(
+        f: TextIO, pre_vertex: ApplicationVertex, part_id: str,
+        routing_infos: RoutingInfo):
     """
     :param ~io.FileIO f:
     :param ~pacman.model.graphs.application.ApplicationVertex pre_vertex:
     :param str part_id:
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-    :param ~spinn_utilities.progress_bar.ProgressBar progress:
     """
     rinfo = routing_infos.get_routing_info_from_pre_vertex(
         pre_vertex, part_id)
@@ -540,7 +559,7 @@ def _write_vertex_virtual_keys(f, pre_vertex, part_id, routing_infos):
                                 r_info.key_and_mask))
 
 
-def router_report_from_router_tables():
+def router_report_from_router_tables() -> None:
     """
     Report the uncompressed routing tables.
     """
@@ -555,7 +574,8 @@ def router_report_from_router_tables():
             generate_routing_table(routing_table, top_level_folder)
 
 
-def router_report_from_compressed_router_tables(routing_tables):
+def router_report_from_compressed_router_tables(
+        routing_tables: MulticastRoutingTables):
     """
     Report the compressed routing tables.
 
@@ -573,7 +593,8 @@ def router_report_from_compressed_router_tables(routing_tables):
             generate_routing_table(routing_table, top_level_folder)
 
 
-def generate_routing_table(routing_table, top_level_folder):
+def generate_routing_table(
+        routing_table: AbstractMulticastRoutingTable, top_level_folder: str):
     """
     :param routing_table: The routing table to describe
     :type routing_table:
@@ -610,7 +631,7 @@ def generate_routing_table(routing_table, top_level_folder):
                          " {} for writing.", file_path)
 
 
-def _compression_ratio(uncompressed, compressed):
+def _compression_ratio(uncompressed: int, compressed: int) -> float:
     """
     Get the compression ratio, as a percentage.
 
@@ -623,7 +644,8 @@ def _compression_ratio(uncompressed, compressed):
     return (uncompressed - compressed) / float(uncompressed) * 100
 
 
-def generate_comparison_router_report(compressed_routing_tables):
+def generate_comparison_router_report(
+        compressed_routing_tables: MulticastRoutingTables):
     """
     Make a report on comparison of the compressed and uncompressed
     routing tables.
@@ -648,6 +670,9 @@ def generate_comparison_router_report(compressed_routing_tables):
                 x, y = table.x, table.y
                 compressed_table = compressed_routing_tables.\
                     get_routing_table_for_chip(x, y)
+                if compressed_table is None:
+                    f.write(f"No compressed table at {x}:{y}; not compared!\n")
+                    continue
                 n_entries_uncompressed = table.number_of_entries
                 total_uncompressed += n_entries_uncompressed
                 n_entries_compressed = compressed_table.number_of_entries
@@ -681,7 +706,8 @@ def generate_comparison_router_report(compressed_routing_tables):
             "Can't open file {} for writing.", file_name)
 
 
-def _search_route(source_placement, key_and_mask):
+def _search_route(
+        source_placement: Placement, key_and_mask: BaseKeyAndMask):
     """
     :param ~pacman.model.placements.Placement source_placement:
     :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:
@@ -715,7 +741,8 @@ def _search_route(source_placement, key_and_mask):
 
 
 # Locates the destinations of a route
-def _recursive_trace_to_destinations(chip, key_and_mask, pre_space):
+def _recursive_trace_to_destinations(
+        chip: Chip, key_and_mask: BaseKeyAndMask, pre_space: str) -> str:
     """
     Recursively search though routing tables till no more entries are
     registered with this key
@@ -734,6 +761,9 @@ def _recursive_trace_to_destinations(chip, key_and_mask, pre_space):
         if not first:
             text += f"\n{pre_space}"
         link = chip.router.get_link(link_id)
+        if link is None:
+            text += f" -> ({link_id}) !!! no link !!!"
+            continue
         text += f"-> {link}"
         text += _recursive_trace_to_destinations(
             FecDataView.get_chip_at(link.destination_x, link.destination_y),
@@ -743,7 +773,9 @@ def _recursive_trace_to_destinations(chip, key_and_mask, pre_space):
     return text
 
 
-def _locate_routing_entry(current_router, key):
+def _locate_routing_entry(
+        current_router: Optional[AbstractMulticastRoutingTable],
+        key: int) -> MulticastRoutingEntry:
     """
     Locate the entry from the router based off the edge
 
@@ -755,7 +787,8 @@ def _locate_routing_entry(current_router, key):
     :raise PacmanRoutingException:
         when there is no entry located on this router.
     """
-    for entry in current_router.multicast_routing_entries:
-        if entry.mask & key == entry.routing_entry_key:
-            return entry
-    raise exceptions.PacmanRoutingException("no entry located")
+    if current_router is not None:
+        for entry in current_router.multicast_routing_entries:
+            if entry.mask & key == entry.routing_entry_key:
+                return entry
+    raise PacmanRoutingException("no entry located")

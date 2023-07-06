@@ -21,7 +21,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
 
-def memory_map_on_host_report():
+def memory_map_on_host_report() -> None:
     """
     Report on memory usage.
     """

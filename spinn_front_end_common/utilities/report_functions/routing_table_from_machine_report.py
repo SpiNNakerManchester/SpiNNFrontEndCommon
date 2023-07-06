@@ -13,13 +13,14 @@
 # limitations under the License.
 import os
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.data import FecDataView
 from .reports import generate_routing_table
 
 _FOLDER_NAME = "routing_tables_from_machine"
 
 
-def routing_table_from_machine_report(routing_tables):
+def routing_table_from_machine_report(routing_tables: MulticastRoutingTables):
     """
     Report the routing table that was actually on the machine.
 
