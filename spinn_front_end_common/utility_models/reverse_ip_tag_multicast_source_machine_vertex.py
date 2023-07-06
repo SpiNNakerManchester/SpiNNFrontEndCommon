@@ -21,7 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from spinnman.model.enums import ExecutableType,SDP_PORTS
+from spinnman.model.enums import ExecutableType, SDP_PORTS
 from pacman.model.resources import ReverseIPtagResource, VariableSDRAM
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
