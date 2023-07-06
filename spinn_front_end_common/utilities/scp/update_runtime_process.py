@@ -18,9 +18,9 @@ from spinnman.messages.sdp import SDPHeader, SDPFlag
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.impl import CheckOKResponse
-from spinnman.processes import AbstractMultiConnectionProcess
-from spinn_front_end_common.utilities.constants import (
+from spinnman.model.enums import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
+from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_utilities.overrides import overrides
 
 

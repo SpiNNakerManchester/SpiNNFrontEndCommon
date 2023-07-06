@@ -18,8 +18,8 @@ from spinnman.messages.scp.abstract_messages import (
     AbstractSCPRequest, AbstractSCPResponse)
 from spinnman.messages.scp.enums import SCPResult
 from spinnman.messages.sdp import SDPFlag, SDPHeader
+from spinnman.model.enums import SDP_PORTS
 from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
-from spinn_front_end_common.utilities.constants import SDP_PORTS
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 from .reinjector_scp_commands import ReinjectorSCPCommands
 

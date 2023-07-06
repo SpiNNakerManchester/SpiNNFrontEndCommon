@@ -17,11 +17,10 @@ import struct
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.processes import RoundRobinConnectionSelector
 from spinnman.messages.sdp import SDPHeader
+from spinnman.model.enums import SDP_RUNNING_MESSAGE_CODES
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
-from spinn_front_end_common.utilities.constants import (
-    SDP_RUNNING_MESSAGE_CODES)
 from fec_integration_tests.mock_machine import MockMachine
 
 
