@@ -15,6 +15,7 @@
 import struct
 import time
 from spinn_utilities.progress_bar import ProgressBar
+from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
@@ -64,12 +65,15 @@ def application_finisher():
         successful_cores_finished = txrx.get_cores_in_state(
             all_core_subsets, CPUState.FINISHED)
 
+        txrx.send_signal(app_id, Signal.SYNC0)
+        txrx.send_signal(app_id, Signal.SYNC1)
+
         for core_subset in all_core_subsets:
             for processor in core_subset.processor_ids:
                 if not successful_cores_finished.is_core(
                         core_subset.x, core_subset.y, processor):
                     txrx.update_provenance_and_exit(
-                        app_id, processor, core_subset)
+                        core_subset.x, core_subset.y, processor)
         time.sleep(0.5)
 
         processors_finished = txrx.get_core_state_count(
