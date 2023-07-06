@@ -173,7 +173,7 @@ class Compression(object):
             y = core_subset.y
             for p in core_subset.processor_ids:
                 # Read the result from specified register
-                result = transceiver.read_user(self.__result_register, x, y, p)
+                result = transceiver.read_user(x, y, p, self.__result_register)
                 # The result is 0 if success, otherwise failure
                 if result != 0:
                     self.__failures.append((x, y))

@@ -322,8 +322,8 @@ class _MachineBitFieldRouterCompressor(object):
 
             for p in core_subset.processor_ids:
                 # Read the result from USER1/USER2 registers
-                result = transceiver.read_user(1, x, y, p)
-                bit_fields_merged = transceiver.read_user(2, x, y, p)
+                result = transceiver.read_user(x, y, p, 1)
+                bit_fields_merged = transceiver.read_user(x, y, p, 2)
 
                 if result != self.SUCCESS:
                     host_chips.add((x, y))
@@ -431,15 +431,15 @@ class _MachineBitFieldRouterCompressor(object):
                 "Mapping",
                 "router_table_compression_with_bit_field_iteration_time")
             transceiver.write_user(
-                1, chip_x, chip_y, processor_id,
+                chip_x, chip_y, processor_id, 1,
                 int(time_per_iteration * SECOND_TO_MICRO_SECOND))
             # user 2 Compress as much as needed flag
             transceiver.write_user(
-                2, chip_x, chip_y, processor_id,
+                chip_x, chip_y, processor_id, 2,
                 int(compress_as_much_as_possible))
             # user 3 the comms_sdram area
             transceiver.write_user(
-                3, chip_x, chip_y, processor_id, comms_sdram)
+                chip_x, chip_y, processor_id, 3, comms_sdram)
 
     def _load_usable_sdram(
             self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
@@ -483,7 +483,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         # update user 3 with location
         transceiver.write_user(
-            3, chip_x, chip_y, processor_id, sdram_address)
+            chip_x, chip_y, processor_id, 3, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
         """
@@ -557,7 +557,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         # update user 2 with location
         transceiver.write_user(
-            2, chip_x, chip_y, processor_id, sdram_address)
+            chip_x, chip_y, processor_id, 2, sdram_address)
 
     def _load_routing_table_data(
             self, table, app_id, transceiver,
@@ -602,7 +602,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         # update user 1 with location
         transceiver.write_user(
-            1, table.x, table.y, processor_id, base_address)
+            table.x, table.y, processor_id, 1, base_address)
 
         # update progress bar
         progress_bar.update()

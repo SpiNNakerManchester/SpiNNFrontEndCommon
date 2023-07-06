@@ -247,6 +247,6 @@ class _LoadDataSpecification(object):
 
         # set user 0 register appropriately to the application data
         txrx = FecDataView.get_transceiver()
-        txrx.write_user(0, x, y, p, start_address)
+        txrx.write_user(x, y, p, 0, start_address)
 
         return start_address

@@ -166,7 +166,7 @@ class ExtraMonitorSupportMachineVertex(
         and updates the extra monitor.
         """
         self._transaction_id = FecDataView.get_transceiver().read_user(
-            1, self._placement.x, self._placement.y, self._placement.p)
+            self._placement.x, self._placement.y, self._placement.p, 1)
 
     @property
     def reinject_point_to_point(self):
