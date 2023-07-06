@@ -26,7 +26,7 @@ from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.ds import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
-    execute_application_data_specs)
+    load_application_data_specs)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import (
@@ -92,7 +92,7 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
         return self._binary_start_type
 
 
-class TestHostExecuteDataSpecification(unittest.TestCase):
+class TestLoadDataSpecification(unittest.TestCase):
 
     def setUp(cls):
         unittest_setup()
@@ -118,9 +118,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.write_value(3)
         spec.end_specification()
 
-        writer.set_dsg_targets(db)
+        writer.set_ds_database(db)
 
-        execute_application_data_specs()
+        load_application_data_specs()
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -189,9 +189,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.reference_memory_region(0, 1)
         spec.end_specification()
 
-        writer.set_dsg_targets(db)
+        writer.set_ds_database(db)
 
-        execute_application_data_specs()
+        load_application_data_specs()
 
         # User 0 for each spec (3) + header and table for each spec (3)
         # + 1 actual region (as rest are references)
@@ -254,7 +254,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.write_value(0)
         spec.end_specification()
 
-        writer.set_dsg_targets(db)
+        writer.set_ds_database(db)
 
         # This safety query should yield nothing
         bad = list(db.get_unlinked_references())
@@ -263,7 +263,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # DataSpecException because one of the regions can't be found
         with self.assertRaises(DataSpecException):
-            execute_application_data_specs()
+            load_application_data_specs()
 
     def test_multispec_with_double_reference(self):
         writer = FecDataWriter.mock()
@@ -301,7 +301,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.reference_memory_region(0, 1)
         spec.end_specification()
 
-        writer.set_dsg_targets(db)
+        writer.set_ds_database(db)
 
         # This safety query should yield nothing
         bad = list(db.get_unlinked_references())
@@ -310,7 +310,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # DataSpecException because the reference is on a different chip
         with self.assertRaises(DataSpecException):
-            execute_application_data_specs()
+            load_application_data_specs()
 
 
 if __name__ == "__main__":
