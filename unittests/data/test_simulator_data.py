@@ -573,15 +573,15 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_executable_targets([])
 
-    def test_dsg_target(self):
+    def test_ds_database(self):
         writer = FecDataWriter.mock()
         with self.assertRaises(DataNotYetAvialable):
-            FecDataView.get_dsg_targets()
+            FecDataView.get_ds_database()
         targets = DsSqlliteDatabase()
-        writer.set_dsg_targets(targets)
-        self.assertEqual(targets, FecDataView.get_dsg_targets())
+        writer.set_ds_database(targets)
+        self.assertEqual(targets, FecDataView.get_ds_database())
         with self.assertRaises(TypeError):
-            writer.set_dsg_targets(dict())
+            writer.set_ds_database(dict())
 
     def test_gatherer_map(self):
         writer = FecDataWriter.mock()
