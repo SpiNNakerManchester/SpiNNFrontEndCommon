@@ -39,10 +39,10 @@ def memory_map_on_host_chip_report() -> None:
         os.makedirs(directory_name)
 
     transceiver = FecDataView.get_transceiver()
-    dsg_targets = FecDataView.get_dsg_targets()
+    ds_database = FecDataView.get_ds_database()
     progress = ProgressBar(
-        dsg_targets.get_n_ds_cores(), "Writing memory map reports")
-    for (x, y, p) in progress.over(dsg_targets.get_ds_cores()):
+        ds_database.get_n_ds_cores(), "Writing memory map reports")
+    for (x, y, p) in progress.over(ds_database.get_ds_cores()):
         file_name = os.path.join(
             directory_name, f"memory_map_from_processor_{x}_{y}_{p}.txt")
         try:
@@ -75,4 +75,4 @@ def _get_region_table_addr(txrx: Transceiver, x: int, y: int, p: int) -> int:
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """
-    return txrx.read_user_0(x, y, p) + REGION_HEADER_SIZE
+    return txrx.read_user(x, y, p, 0) + REGION_HEADER_SIZE

@@ -56,7 +56,7 @@ def regenerate_data_spec(placement: Placement) -> bool:
 
     # build the file writer for the spec
     reloader = DataSpecificationReloader(
-        placement.x, placement.y, placement.p, FecDataView.get_dsg_targets(),
+        placement.x, placement.y, placement.p, FecDataView.get_ds_database(),
         report_writer)
 
     # Execute the regeneration

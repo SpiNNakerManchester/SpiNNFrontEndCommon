@@ -209,8 +209,7 @@ class _MachineBitFieldRouterCompressor(object):
                 [sorter_executable_path], progress_bar,
                 logger=logger)
         except SpiNNManCoresNotInStateException as e:
-            logger.exception(self.__txrx.get_core_status_string(
-                e.failed_core_states()))
+            logger.exception(e.failed_core_states().get_status_string())
             try:
                 self.__txrx.stop_application(compressor_app_id)
             except Exception:  # pylint: disable=broad-except
@@ -343,8 +342,8 @@ class _MachineBitFieldRouterCompressor(object):
             x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
                 # Read the result from USER1/USER2 registers
-                result = transceiver.read_user_1(x, y, p)
-                bit_fields_merged = transceiver.read_user_2(x, y, p)
+                result = transceiver.read_user(x, y, p, 1)
+                bit_fields_merged = transceiver.read_user(x, y, p, 2)
 
                 if result != self.SUCCESS:
                     host_chips.append(FecDataView.get_chip_at(x, y))
@@ -431,14 +430,18 @@ class _MachineBitFieldRouterCompressor(object):
         for processor_id in compressor_cores.get_core_subset_for_chip(
                 chip_x, chip_y).processor_ids:
             # user 1 the time per compression attempt
-            self.__txrx.write_user_1(
-                chip_x, chip_y, processor_id,
-                self._time_per_iteration * SECOND_TO_MICRO_SECOND)
+            time_per_iteration = get_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_iteration_time")
+            self.__txrx.write_user(
+                chip_x, chip_y, processor_id, 1,
+                int(time_per_iteration * SECOND_TO_MICRO_SECOND))
             # user 2 Compress as much as needed flag
-            self.__txrx.write_user_2(
-                chip_x, chip_y, processor_id, self.__compress_max)
+            self.__txrx.write_user(
+                chip_x, chip_y, processor_id, 2, self.__compress_max)
             # user 3 the comms_sdram area
-            self.__txrx.write_user_3(chip_x, chip_y, processor_id, comms_sdram)
+            self.__txrx.write_user(
+                chip_x, chip_y, processor_id, 3, comms_sdram)
 
     def _load_usable_sdram(
             self, sizes_and_address: List[_RamChunk],
@@ -472,7 +475,8 @@ class _MachineBitFieldRouterCompressor(object):
         # tell the compressor where the SDRAM is
         for p in cores.all_core_subsets.get_core_subset_for_chip(
                 chip.x, chip.y).processor_ids:
-            self.__txrx.write_user_3(chip.x, chip.y, p, sdram_address)
+            # update user 3 with location
+            self.__txrx.write_user(chip.x, chip.y, p, 3, sdram_address)
 
     def _generate_chip_matrix_data(
             self, borrowable_spaces: List[_RamChunk]) -> bytes:
@@ -539,11 +543,14 @@ class _MachineBitFieldRouterCompressor(object):
         # write sdram
         self.__txrx.write_memory(chip.x, chip.y, sdram_address, address_data)
 
-        # Tell the sorter where the SDRAM is
+        # get the only processor on the chip
         sorter_cores = cores.get_cores_for_binary(sorter_executable_path)
-        for p in sorter_cores.get_core_subset_for_chip(
-                chip.x, chip.y).processor_ids:
-            self.__txrx.write_user_2(chip.x, chip.y, p, sdram_address)
+        processor_id = list(sorter_cores.get_core_subset_for_chip(
+            chip.x, chip.y).processor_ids)[0]
+
+        # update user 2 with location
+        self.__txrx.write_user(
+            chip.x, chip.y, processor_id, 2, sdram_address)
 
     def _load_routing_table_data(
             self, table: AbstractMulticastRoutingTable,
@@ -581,7 +588,7 @@ class _MachineBitFieldRouterCompressor(object):
         # Tell the compressor where the SDRAM is
         for p in cores.all_core_subsets.get_core_subset_for_chip(
                 table.x, table.y).processor_ids:
-            self.__txrx.write_user_1(table.x, table.y, p, base_address)
+            self.__txrx.write_user(table.x, table.y, p, 1, base_address)
 
     def _build_routing_table_data(
             self, app_id: int,

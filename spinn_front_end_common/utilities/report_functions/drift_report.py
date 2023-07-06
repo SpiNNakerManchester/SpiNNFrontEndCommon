@@ -12,19 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import struct
 import logging
-from typing import TextIO
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import Chip
-from spinnman.messages.spinnaker_boot import SystemVariableDefinition
-from spinnman.transceiver import Transceiver
 from spinn_front_end_common.data import FecDataView
 
 # The fixed point position for drift readings
-DRIFT_FP = 1 << 17
 CLOCK_DRIFT_REPORT = "clock_drift.csv"
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -34,10 +28,13 @@ def drift_report() -> None:
     """
     A report on the clock drift as reported by each chip
     """
-    ethernet_only = get_config_bool("Reports", "drift_report_ethernet_only")
+    ethernet_only = get_config_bool(
+            "Reports", "drift_report_ethernet_only")
     machine = FecDataView.get_machine()
     eth_chips = machine.ethernet_connected_chips
-    n_chips = len(eth_chips) if ethernet_only else machine.n_chips
+    n_chips = machine.n_chips
+    if ethernet_only:
+        n_chips = len(eth_chips)
 
     # create file path
     directory_name = os.path.join(
@@ -56,37 +53,28 @@ def drift_report() -> None:
             writer.write("\n")
 
     # create the progress bar for end users
-    with ProgressBar(n_chips, "Writing clock drift report") as progress:
-        # iterate over ethernet chips and then the chips on that board
-        txrx = FecDataView.get_transceiver()
-        with open(directory_name, "a", encoding="utf-8") as writer:
-            if ethernet_only:
-                for eth_chip in progress.over(eth_chips):
-                    __write_drift(txrx, eth_chip, writer)
-            else:
-                for eth_chip in eth_chips:
-                    last_drift = None
-                    for chip in progress.over(machine.get_chips_by_ethernet(
-                            eth_chip.x, eth_chip.y), finish_at_end=False):
-                        drift = __write_drift(txrx, chip, writer)
-                        if last_drift is None:
-                            last_drift = drift
-                        elif last_drift != drift:
-                            logger.warning(
-                                "On board {}, chip {}, {} is not in sync"
-                                " ({} vs {})",
-                                eth_chip.ip_address, chip.x, chip.y,
-                                drift, last_drift)
-            writer.write("\n")
+    progress = ProgressBar(n_chips, "Writing clock drift report")
 
-
-def __write_drift(txrx: Transceiver, chip: Chip, writer: TextIO):
-    # pylint: disable=protected-access
-    drift = txrx._get_sv_data(
-        chip.x, chip.y, SystemVariableDefinition.clock_drift)
-    # Swap endianness!
-    drift_i = struct.unpack("<i", struct.pack("<I", drift))[0]
-    # Convert from unusual fixed-point format
-    drift_f = drift_i / (1 << 17)
-    writer.write(f'"{drift_f}",')
-    return drift_f
+    # iterate over ethernet chips and then the chips on that board
+    txrx = FecDataView.get_transceiver()
+    with open(directory_name, "a", encoding="utf-8") as writer:
+        if ethernet_only:
+            for eth_chip in progress.over(eth_chips):
+                drift = txrx.get_clock_drift(eth_chip.x, eth_chip.y)
+                writer.write(f'"{drift}",')
+        else:
+            for eth_chip in eth_chips:
+                last_drift = None
+                for chip in progress.over(machine.get_chips_by_ethernet(
+                        eth_chip.x, eth_chip.y), finish_at_end=False):
+                    drift = txrx.get_clock_drift(chip.x, chip.y)
+                    writer.write(f'"{drift}",')
+                    if last_drift is None:
+                        last_drift = drift
+                    elif last_drift != drift:
+                        logger.warning(
+                            "On board {}, chip {}, {} is not in sync"
+                            " ({} vs {})",
+                            eth_chip.ip_address, chip.x, chip.y,
+                            drift, last_drift)
+        writer.write("\n")

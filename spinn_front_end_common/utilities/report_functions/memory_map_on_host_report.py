@@ -30,7 +30,7 @@ def memory_map_on_host_report() -> None:
         with open(file_name, "w", encoding="utf-8") as f:
             f.write("On host data specification executor\n")
             for xyp, start_address, memory_used, memory_written in \
-                    FecDataView.get_dsg_targets().get_info_for_cores():
+                    FecDataView.get_ds_database().get_info_for_cores():
                 f.write(
                     f"{xyp}: ('start_address': {start_address}, "
                     f"hex:{hex(start_address)}), "

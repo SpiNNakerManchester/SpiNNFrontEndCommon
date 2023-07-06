@@ -81,7 +81,7 @@ class _FecDataModel(object):
         "_data_in_multicast_routing_tables",
         "_database_file_path",
         "_database_socket_addresses",
-        "_dsg_targets",
+        "_ds_database",
         "_executable_targets",
         "_executable_types",
         "_first_machine_time_step",
@@ -164,7 +164,7 @@ class _FecDataModel(object):
         self._data_in_multicast_routing_tables: Optional[
             MulticastRoutingTables] = None
         self._database_file_path: Optional[str] = None
-        self._dsg_targets: Optional[DsSqlliteDatabase] = None
+        self._ds_database: Optional[DsSqlliteDatabase] = None
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
         self._fixed_routes: Optional[Dict[Chip, FixedRouteEntry]] = None
@@ -1045,17 +1045,17 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._executable_targets
 
     @classmethod
-    def get_dsg_targets(cls) -> DsSqlliteDatabase:
+    def get_ds_database(cls) -> DsSqlliteDatabase:
         """
-        Data Spec targets database.
+        Data Spec database.
 
-        :rtype: DsSqlliteDatabase
+        :rtype: ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the dsg_targets is currently unavailable
+            If the ds_database is currently unavailable
         """
-        if cls.__fec_data._dsg_targets is None:
-            raise cls._exception("dsg_targets")
-        return cls.__fec_data._dsg_targets
+        if cls.__fec_data._ds_database is None:
+            raise cls._exception("_ds_database")
+        return cls.__fec_data._ds_database
 
     @classmethod
     def has_monitors(cls) -> bool:

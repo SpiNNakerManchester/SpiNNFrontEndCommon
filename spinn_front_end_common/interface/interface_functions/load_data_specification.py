@@ -14,8 +14,7 @@
 
 import logging
 import numpy
-from typing import Any, BinaryIO, Callable, Union
-from typing_extensions import TypeAlias
+from typing import Callable
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -27,25 +26,23 @@ from spinn_front_end_common.utilities.exceptions import DataSpecException
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
-_Writer: TypeAlias = Callable[
-    [int, int, int, Union[BinaryIO, bytes, int, str]], Any]
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def execute_system_data_specs() -> None:
+def load_system_data_specs() -> None:
     """
-    Execute the data specs for all system targets.
+    Load the data specs for all system targets.
     """
-    specifier = _HostExecuteDataSpecification()
+    specifier = _LoadDataSpecification()
     specifier.load_data_specs(True, False)
 
 
-def execute_application_data_specs() -> None:
+def load_application_data_specs() -> None:
     """
-    Execute the data specs for all non-system targets.
+    Load the data specs for all non-system targets.
     """
-    specifier = _HostExecuteDataSpecification()
+    specifier = _LoadDataSpecification()
     uses_advanced_monitors = get_config_bool(
         "Machine", "enable_advanced_monitor_support") or False
     # Allow config to override
@@ -60,27 +57,30 @@ def execute_application_data_specs() -> None:
         raise
 
 
-class _HostExecuteDataSpecification(object):
+class _LoadDataSpecification(object):
     """
-    Executes the host based data specification.
+    Loads the data specification.
     """
 
     __slots__ = ()
 
     first = True
 
-    def __set_router_timeouts(self) -> None:
+    @staticmethod
+    def __set_router_timeouts() -> None:
         for receiver in FecDataView.iterate_gathers():
             receiver.load_system_routing_tables()
             receiver.set_cores_for_data_streaming()
 
-    def __reset_router_timeouts(self) -> None:
+    @staticmethod
+    def __reset_router_timeouts() -> None:
         # reset router timeouts
         for receiver in FecDataView.iterate_gathers():
             receiver.unset_cores_for_data_streaming()
             # reset router tables
             receiver.load_application_routing_tables()
 
+    # pylint: disable=unused-private-member
     def __java_app(self, use_monitors: bool):
         """
         :param bool use_monitors:
@@ -96,7 +96,7 @@ class _HostExecuteDataSpecification(object):
             java_caller.set_placements(FecDataView.iterate_placemements())
         progress.update()
 
-        java_caller.execute_app_data_specification(use_monitors)
+        java_caller.load_app_data_specification(use_monitors)
         progress.end()
 
     def load_data_specs(self, is_system: bool, uses_advanced_monitors: bool):
@@ -104,12 +104,13 @@ class _HostExecuteDataSpecification(object):
         Execute the data specs for all system targets.
         """
         try:
-            if not FecDataView.has_java_caller():
-                self.__python_load(is_system, uses_advanced_monitors)
-            elif is_system:
-                self.__java_sys()
+            if FecDataView.has_java_caller():
+                if is_system:
+                    self.__java_sys()
+                else:
+                    self.__java_app(uses_advanced_monitors)
             else:
-                self.__java_app(uses_advanced_monitors)
+                self.__python_load(is_system, uses_advanced_monitors)
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure()
@@ -123,7 +124,7 @@ class _HostExecuteDataSpecification(object):
         progress = ProgressBar(
             1, "Executing data specifications and loading data for system "
             "vertices using Java")
-        FecDataView.get_java_caller().execute_system_data_specification()
+        FecDataView.get_java_caller().load_system_data_specification()
         progress.end()
 
     def __python_load(self, is_system: bool, uses_advanced_monitors: bool):
@@ -134,13 +135,13 @@ class _HostExecuteDataSpecification(object):
             self.__set_router_timeouts()
 
         # create a progress bar for end users
-        dsg_targets = FecDataView.get_dsg_targets()
+        ds_database = FecDataView.get_ds_database()
 
         # allocate and set user 0 before loading data
 
         transceiver = FecDataView.get_transceiver()
-        writer: _Writer = transceiver.write_memory
-        core_infos = dsg_targets.get_core_infos(is_system)
+        writer = transceiver.write_memory
+        core_infos = ds_database.get_core_infos(is_system)
         if is_system:
             type_str = "system"
         else:
@@ -152,15 +153,15 @@ class _HostExecuteDataSpecification(object):
 
         for x, y, p, _, _ in progress.over(
                 core_infos, finish_at_end=False):
-            self.__python_malloc_core(dsg_targets, x, y, p)
+            self.__python_malloc_core(ds_database, x, y, p)
 
         for x, y, p, eth_x, eth_y in progress.over(core_infos):
             if uses_advanced_monitors:
                 gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
                 writer = gatherer.send_data_into_spinnaker
-            written = self.__python_load_core(dsg_targets, x, y, p, writer)
-            to_write = dsg_targets.get_memory_to_write(x, y, p)
-            if (written != to_write):
+            written = self.__python_load_core(ds_database, x, y, p, writer)
+            to_write = ds_database.get_memory_to_write(x, y, p)
+            if written != to_write:
                 raise DataSpecException(
                     f"For {x=}{y=}{p=} {written=} != {to_write=}")
 
@@ -168,34 +169,34 @@ class _HostExecuteDataSpecification(object):
             self.__reset_router_timeouts()
 
     def __python_malloc_core(
-            self, dsg_targets: DsSqlliteDatabase, x: int, y: int, p: int):
-        region_sizes = dsg_targets.get_region_sizes(x, y, p)
+            self, ds_database: DsSqlliteDatabase, x: int, y: int, p: int):
+        region_sizes = ds_database.get_region_sizes(x, y, p)
         total_size = sum(region_sizes.values())
         malloc_size = total_size + APP_PTR_TABLE_BYTE_SIZE
         start_address = self.__malloc_region_storage(x, y, p, malloc_size)
-        dsg_targets.set_start_address(x, y, p, start_address)
+        ds_database.set_start_address(x, y, p, start_address)
 
         next_pointer = start_address + APP_PTR_TABLE_BYTE_SIZE
         for region_num, size in region_sizes.items():
-            dsg_targets.set_region_pointer(x, y, p, region_num, next_pointer)
+            ds_database.set_region_pointer(x, y, p, region_num, next_pointer)
             next_pointer += size
 
         # safety code
-        total_size = dsg_targets.get_total_regions_size(x, y, p)
+        total_size = ds_database.get_total_regions_size(x, y, p)
         expected_pointer = start_address + APP_PTR_TABLE_BYTE_SIZE + total_size
         if (next_pointer != expected_pointer):
             raise DataSpecException(
                 f"For {x=} {y=} {p=} {next_pointer=} != {expected_pointer=}")
 
     def __python_load_core(
-            self, dsg_targets: DsSqlliteDatabase, x: int, y: int, p: int,
-            writer: _Writer) -> int:
+            self, ds_database: DsSqlliteDatabase, x: int, y: int, p: int,
+            writer: Callable[[int, int, int, bytes], None]) -> int:
         written = 0
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
         try:
             for region_num, pointer, content in \
-                    dsg_targets.get_region_pointers_and_content(x, y, p):
+                    ds_database.get_region_pointers_and_content(x, y, p):
                 pointer_table[region_num]["pointer"] = pointer
 
                 if content is None:
@@ -218,13 +219,13 @@ class _HostExecuteDataSpecification(object):
                     f"{x=} {y=} {p=} {region_num=} has a unsatisfied pointer")
             raise
 
-        base_address = dsg_targets.get_start_address(x, y, p)
+        base_address = ds_database.get_start_address(x, y, p)
         header = numpy.array([APPDATA_MAGIC_NUM, DSE_VERSION], dtype="<u4")
 
         to_write = numpy.concatenate(
             (header, pointer_table.view("uint32"))).tobytes()
         if base_address is None:
-            print("here")
+            logger.warning("here")
         writer(x, y, base_address, to_write)
         written += len(to_write)
         return written
@@ -244,13 +245,15 @@ class _HostExecuteDataSpecification(object):
         :return: address of region header table (not yet filled)
         :rtype: int
         """
+        txrx = FecDataView.get_transceiver()
+
         # allocate memory where the app data is going to be written; this
         # raises an exception in case there is not enough SDRAM to allocate
-        start_address = FecDataView.get_transceiver().malloc_sdram(
+        start_address = txrx.malloc_sdram(
             x, y, size, FecDataView.get_app_id(),
             tag=CORE_DATA_SDRAM_BASE_TAG + p)
 
         # set user 0 register appropriately to the application data
-        FecDataView.get_transceiver().write_user_0(x, y, p, start_address)
+        txrx.write_user(x, y, p, 0, start_address)
 
         return start_address

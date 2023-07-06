@@ -89,7 +89,7 @@ from spinn_front_end_common.interface.interface_functions import (
     chip_provenance_updater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
     reload_dsg_regions, energy_provenance_reporter,
-    execute_application_data_specs, execute_system_data_specs,
+    load_application_data_specs, load_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
     graph_provenance_gatherer,
     host_based_bit_field_router_compressor, hbp_allocator,
@@ -164,8 +164,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         #
         "_raise_keyboard_interrupt",
 
-        # Used in exception handling and control c
-        "_last_except_hook",
+        # original sys.excepthook Used in exception handling and control c
+        "__sys_excepthook",
 
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
@@ -205,7 +205,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._create_version_provenance()
 
-        self._last_except_hook = sys.excepthook
+        self.__sys_excepthook = sys.excepthook
 
         FecTimer.setup(self)
 
@@ -280,7 +280,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         logger.error("Shutdown on exception")
         self._shutdown()
-        return self._last_except_hook(exc_type, value, traceback_obj)
+        return self.__sys_excepthook(exc_type, value, traceback_obj)
 
     def _should_run(self) -> bool:
         """
@@ -435,7 +435,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self.__is_main_thread():
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
-            sys.excepthook = self._last_except_hook
+            sys.excepthook = self.__sys_excepthook
 
         logger.info("Starting execution process")
 
@@ -558,7 +558,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Indicate that the signal handler needs to act
         if self.__is_main_thread():
             self._raise_keyboard_interrupt = False
-            self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
 
     @final
@@ -1393,10 +1392,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times, and logs the GraphDataSpecificationWriter.
 
-        Sets the dsg_targets data
+        Creates and fills the data spec database
         """
         with FecTimer("Graph data specification writer", TimerWork.OTHER):
-            self._data_writer.set_dsg_targets(
+            self._data_writer.set_ds_database(
                 graph_data_specification_writer())
 
     def _do_data_generation(self) -> None:
@@ -1755,15 +1754,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_fixed_routes()
 
-    def _execute_system_data_specification(self) -> None:
+    def _execute_load_system_data_specification(self) -> None:
         """
-        Runs, times and logs the execute_system_data_specs if required.
+        Runs, times and logs the load_system_data_specs if required.
         """
         with FecTimer(
-                "Execute system data specification", TimerWork.OTHER) as timer:
+                "Load system data specification", TimerWork.OTHER) as timer:
             if timer.skip_if_virtual_board():
                 return
-            execute_system_data_specs()
+            load_system_data_specs()
 
     def _execute_load_system_executable_images(self) -> None:
         """
@@ -1775,18 +1774,19 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_sys_images()
 
-    def _execute_application_data_specification(self) -> None:
+    def _execute_load_application_data_specification(self) -> None:
         """
-        Runs, times and logs :py:meth:`execute_application_data_specs`
+        Runs, times and logs :py:meth:`load_application_data_specs`
         if required.
 
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
-        with FecTimer("Host data specification", TimerWork.LOADING) as timer:
+        with FecTimer("Load Application data specification",
+                      TimerWork.LOADING) as timer:
             if timer.skip_if_virtual_board():
                 return
-            return execute_application_data_specs()
+            return load_application_data_specs()
 
     def _execute_tags_from_machine_report(self) -> None:
         """
@@ -1909,10 +1909,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_control_sync(False)
         if self._data_writer.get_requires_mapping():
             self._execute_load_fixed_routes()
-        self._execute_system_data_specification()
+        self._execute_load_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
-        self._execute_application_data_specification()
+        self._execute_load_application_data_specification()
 
         self._do_extra_load_algorithms()
         compressed = self._do_delayed_compression(compressor, compressed)
@@ -2259,7 +2259,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
-        logger.error(transceiver.get_core_status_string(unsuccessful_cores))
+        logger.error(unsuccessful_cores.get_status_string())
 
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [

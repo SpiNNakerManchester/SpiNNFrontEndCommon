@@ -390,26 +390,7 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def execute_data_specification(self) -> None:
-        """
-        Writes all the data specifications, uploading the result to the
-        machine.
-
-        :raises PacmanExternalAlgorithmFailedToCompleteException:
-            On failure of the Java code.
-        """
-        result = self._run_java(
-            'dse', self._machine_json(),
-            DsSqlliteDatabase.default_database_file(),
-            FecDataView.get_run_dir_path())
-        if result != 0:
-            log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
-            raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call exited with value " + str(result) + " see "
-                + str(log_file) + " for logged info")
-
-    def execute_system_data_specification(self) -> None:
+    def load_system_data_specification(self) -> None:
         """
         Writes all the data specifications for system cores,
         uploading the result to the machine.
@@ -428,7 +409,7 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def execute_app_data_specification(self, use_monitors: bool) -> None:
+    def load_app_data_specification(self, use_monitors: bool) -> None:
         """
         Writes all the data specifications for application cores,
         uploading the result to the machine.
