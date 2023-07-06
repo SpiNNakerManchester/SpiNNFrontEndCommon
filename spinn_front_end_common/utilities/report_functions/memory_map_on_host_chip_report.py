@@ -73,5 +73,4 @@ def _get_region_table_addr(txrx, x, y, p):
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """
-    user_0_addr = txrx.get_user_0_register_address_from_core(p)
-    return txrx.read_word(x, y, user_0_addr) + REGION_HEADER_SIZE
+    return txrx.read_user(x, y, p, 0) + REGION_HEADER_SIZE
