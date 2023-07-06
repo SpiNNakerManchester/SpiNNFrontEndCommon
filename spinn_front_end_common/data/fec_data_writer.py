@@ -426,15 +426,16 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("executable_targets must be a ExecutableTargets")
         self.__fec_data._executable_targets = executable_targets
 
-    def set_dsg_targets(self, dsg_targets):
+    def set_ds_database(self, ds_database):
         """
         Sets the Data Spec targets database.
 
-        :param ~spinnman.model.ExecutableTargets dsg_targets:
+        :type ds_database:
+            ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
         """
-        if not isinstance(dsg_targets, DsSqlliteDatabase):
-            raise TypeError("dsg_targets must be a DsSqlliteDatabase")
-        self.__fec_data._dsg_targets = dsg_targets
+        if not isinstance(ds_database, DsSqlliteDatabase):
+            raise TypeError("ds_database must be a DsSqlliteDatabase")
+        self.__fec_data._ds_database = ds_database
 
     def __gatherer_map_error(self):
         return TypeError(
