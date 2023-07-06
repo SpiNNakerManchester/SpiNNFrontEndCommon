@@ -103,38 +103,6 @@ MAX_DATABASE_PATH_LENGTH = 50000
 DSE_DATA_STRUCT_SIZE = 4 * BYTES_PER_WORD
 
 
-class SDP_RUNNING_MESSAGE_CODES(Enum):
-    """
-    Codes for sending control messages to spin1_api.
-    """
-    SDP_STOP_ID_CODE = 6
-    SDP_NEW_RUNTIME_ID_CODE = 7
-    SDP_UPDATE_PROVENCE_REGION_AND_EXIT = 8
-    SDP_CLEAR_IOBUF_CODE = 9
-
-
-class SDP_PORTS(Enum):
-    """
-    SDP port handling output buffering data streaming.
-    """
-
-    #: Command port for the buffered in functionality.
-    INPUT_BUFFERING_SDP_PORT = 1
-    #: Command port for the buffered out functionality.
-    OUTPUT_BUFFERING_SDP_PORT = 2
-    #: Command port for resetting runtime, etc.
-    #: See :py:class:`SDP_RUNNING_MESSAGE_CODES`
-    RUNNING_COMMAND_SDP_PORT = 3
-    #: Extra monitor core reinjection control protocol.
-    #: See :py:class:`ReinjectorSCPCommands`
-    EXTRA_MONITOR_CORE_REINJECTION = 4
-    #: Extra monitor core outbound data transfer protocol
-    EXTRA_MONITOR_CORE_DATA_SPEED_UP = 5
-    #: Extra monitor core inbound data transfer protocol
-    #: See :py:class:`SpeedupInSCPCommands`
-    EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP = 6
-
-
 # output buffering operations
 class BUFFERING_OPERATIONS(Enum):
     """
