@@ -25,7 +25,7 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 class TestBufferedDatabase(unittest.TestCase):
 
     def setUp(self):
-        unittest_setup()
+        unittest_setup(board_type=1)
 
     def test_use_database(self):
         f = BufferDatabase.default_database_file()

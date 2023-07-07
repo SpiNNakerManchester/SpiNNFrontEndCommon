@@ -87,7 +87,7 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
 class TestLoadDataSpecification(unittest.TestCase):
 
     def setUp(cls):
-        unittest_setup()
+        unittest_setup(board_type=1)
         set_config("Machine", "enable_advanced_monitor_support", "False")
 
     def test_call(self):

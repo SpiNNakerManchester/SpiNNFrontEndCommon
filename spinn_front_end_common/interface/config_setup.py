@@ -22,7 +22,7 @@ from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 BASE_CONFIG_FILE = "spinnaker.cfg"
 
 
-def unittest_setup():
+def unittest_setup(*, board_type=None):
     """
     Does all the steps that may be required before a unit test.
 
@@ -33,16 +33,28 @@ def unittest_setup():
 
     .. note::
         This file should only be called from `spinn_front_end_common/tests`
+
+    :param board_type: Value to say how to confuire the system.
+        This includes defining what a VirtualMachine would be
+        Can be 1 for Spin1 boards, 2 for Spin2 boards or
+        None if the test do not depend on knowing the board type.
+    :type board_type: None or int
     """
     clear_cfg_files(True)
-    add_spinnaker_cfg()
     FecDataWriter.mock()
+    add_spinnaker_cfg(board_type)
 
 
-def add_spinnaker_cfg():
+def add_spinnaker_cfg(board_type):
     """
     Add the local configuration and all dependent configuration files.
+
+    :param board_type: Value to say how to confuire the system.
+        This includes defining what a VirtualMachine would be
+        Can be 1 for Spin1 boards, 2 for Spin2 boards or
+        None if the test do not depend on knowing the board type.
+    :type board_type: None or int
     """
-    add_pacman_cfg()  # This add its dependencies too
-    add_spinnman_cfg()  # double adds of dependencies ignored
     add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))
+    add_pacman_cfg(board_type)  # This add its dependencies too
+    add_spinnman_cfg(board_type)  # double adds of dependencies ignored

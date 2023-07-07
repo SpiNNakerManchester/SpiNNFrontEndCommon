@@ -50,7 +50,7 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
 class TestDataSpecification(unittest.TestCase):
 
     def setUp(self):
-        unittest_setup()
+        unittest_setup(board_type=1)
 
     def test_init(self):
         db = DsSqlliteDatabase()

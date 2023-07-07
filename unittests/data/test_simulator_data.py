@@ -45,7 +45,7 @@ from spinn_front_end_common.utility_models import (
 class TestSimulatorData(unittest.TestCase):
 
     def setUp(cls):
-        unittest_setup()
+        unittest_setup(board_type=1)
 
     def test_setup(self):
         # What happens before setup depends on the previous test
