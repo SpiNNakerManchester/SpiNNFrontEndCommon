@@ -227,6 +227,15 @@ CREATE TABLE IF NOT EXISTS boards_provenance(
     ethernet_y INTEGER NOT NULL);
 
 ---------------------------------------------------------------------
+-- A table app vertex provenance
+CREATE TABLE IF NOT EXISTS app_vertex_provenance(
+    app_vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label STRING NOT NULL,
+    the_type STRING NOT NULL,
+    description STRING NOT NULL,
+    the_value FLOAT NOT NULL);
+
+---------------------------------------------------------------------
 -- A table LUT provenance
 CREATE TABLE IF NOT EXISTS lut_provenance(
     connector_id INTEGER PRIMARY KEY AUTOINCREMENT,
