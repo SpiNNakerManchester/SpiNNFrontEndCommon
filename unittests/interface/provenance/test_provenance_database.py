@@ -184,6 +184,13 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_board_provenance(data)
 
+    def test_app_vertex(self):
+        with ProvenanceWriter() as db:
+            db.insert_app_vertex("pop", "type", "description", 0.5)
+        reader = ProvenanceReader()
+        data = reader.run_query("Select * from app_vertex_provenance")
+        expected = [(1, 'pop', 'type', 'description', 0.5)]
+
     def test_lut(self):
         with ProvenanceWriter() as db:
             db.insert_lut("the pre", "A post", "OneToOne", "foo", 0.5)
