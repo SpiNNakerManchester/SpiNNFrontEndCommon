@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,9 +16,9 @@ import logging
 import time
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
+from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 
@@ -28,13 +28,14 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def application_runner(runtime, time_threshold, run_until_complete):
-    """ Ensures all cores are initialised correctly, ran, and completed\
-        successfully.
+    """
+    Ensures all cores are initialised correctly, ran, and completed
+    successfully.
 
-        :param int runtime:
-        :param int time_threshold:
-        :param bool run_until_complete:
-        :raises ConfigurationException:
+    :param int runtime:
+    :param int time_threshold:
+    :param bool run_until_complete:
+    :raises ConfigurationException:
     """
     runner = _ApplicationRunner()
     # pylint: disable=protected-access
@@ -42,8 +43,9 @@ def application_runner(runtime, time_threshold, run_until_complete):
 
 
 class _ApplicationRunner(object):
-    """ Ensures all cores are initialised correctly, ran, and completed\
-        successfully.
+    """
+    Ensures all cores are initialised correctly, ran, and completed
+    successfully.
     """
 
     __slots__ = ["__txrx", "__app_id"]
@@ -134,9 +136,10 @@ class _ApplicationRunner(object):
                 cores, self.__app_id, ex_type.start_state, timeout=timeout)
 
     def _send_sync_signal(self):
-        """ Let apps that use the simulation interface or sync signals \
-            commence running their main processing loops. This is done with \
-            a very fast synchronisation barrier and a signal.
+        """
+        Let apps that use the simulation interface or sync signals commence
+        running their main processing loops. This is done with a very fast
+        synchronisation barrier and a signal.
         """
         executable_types = FecDataView.get_executable_types()
         if (ExecutableType.USES_SIMULATION_INTERFACE in executable_types
@@ -157,8 +160,9 @@ class _ApplicationRunner(object):
                 cores, self.__app_id, ex_type.end_state, timeout=timeout)
 
     def _determine_simulation_sync_signals(self):
-        """ Determines the start states, and creates core subsets of the\
-            states for further checks.
+        """
+        Determines the start states, and creates core subsets of the
+        states for further checks.
 
         :return: the sync signal
         :rtype: ~.Signal

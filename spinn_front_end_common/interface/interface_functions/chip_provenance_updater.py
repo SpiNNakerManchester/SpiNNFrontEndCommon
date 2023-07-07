@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,10 +18,9 @@ from time import sleep
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import (
+    CPUState, SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -37,7 +36,8 @@ def chip_provenance_updater(all_core_subsets):
 
 
 class _ChipProvenanceUpdater(object):
-    """ Forces all cores to generate provenance data, and then exit.
+    """
+    Forces all cores to generate provenance data, and then exit.
     """
 
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
@@ -70,10 +70,10 @@ class _ChipProvenanceUpdater(object):
 
         if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(
-                "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
-                " idle cores {}".format(
-                    error_cores.values(), watchdog_cores.values(),
-                    idle_cores.values()))
+                "Some cores have crashed. "
+                f"RTE cores {error_cores.values()}, "
+                f"watch-dogged cores {watchdog_cores.values()}, "
+                f"idle cores {idle_cores.values()}")
 
         # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating

@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,14 +20,16 @@ from pacman.model.graphs.machine import MachineVertex
 @require_subclass(MachineVertex)
 class AbstractSupportsBitFieldRoutingCompression(
         object, metaclass=AbstractBase):
-    """ Marks a machine vertex that can support having the on-chip bitfield \
-        compressor running on its core.
+    """
+    Marks a machine vertex that can support having the on-chip bitfield
+    compressor running on its core.
     """
     __slots__ = ()
 
     @abstractmethod
     def bit_field_base_address(self, placement):
-        """ Returns the SDRAM address for the bit-field table data.
+        """
+        Returns the SDRAM address for the bit-field table data.
 
         :param ~pacman.model.placements.Placement placement:
         :return: the SDRAM address for the bitfield address
@@ -36,8 +38,9 @@ class AbstractSupportsBitFieldRoutingCompression(
 
     @abstractmethod
     def regeneratable_sdram_blocks_and_sizes(self, placement):
-        """ Returns the SDRAM addresses and sizes for the cores' SDRAM that \
-            are available (borrowed) for generating bitfield tables.
+        """
+        Returns the SDRAM addresses and sizes for the cores' SDRAM that
+        are available (borrowed) for generating bitfield tables.
 
         :param ~pacman.model.placements.Placement placement:
         :return: list of tuples containing (the SDRAM address for the cores

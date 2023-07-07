@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -58,8 +58,9 @@ N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
 def compute_energy_used():
-    """ This algorithm does the actual work of computing energy used by a\
-        simulation (or other application) running on SpiNNaker.
+    """
+    This algorithm does the actual work of computing energy used by a
+    simulation (or other application) running on SpiNNaker.
 
     :rtype: PowerUsed
     """
@@ -192,15 +193,14 @@ def _router_packet_energy(power_used):
 
 
 def _calculate_chips_active_energy(placement, runtime_total_ms, power_used):
-    """ Figure out the chip active cost during simulation
+    """
+    Figure out the chip active cost during simulation.
 
     :param ~.Placement placement: placement
     :param float runtime_total_ms:
     :param PowerUsed power_used:
     :return: energy cost
     """
-    # pylint: disable=too-many-arguments
-
     # locate chip power monitor
     chip_power_monitor = placement.vertex
 
@@ -242,8 +242,6 @@ def _calculate_fpga_energy(
     :param float runtime_total_ms:
     :param PowerUsed power_used:
     """
-    # pylint: disable=too-many-arguments
-
     total_fpgas = 0
     # if not spalloc, then could be any type of board
     if (not get_config_str("Machine", "spalloc_server") and
@@ -278,13 +276,13 @@ def _calculate_fpga_energy(
 
 
 def __board_n_operational_fpgas(ethernet_chip):
-    """ Figures out how many FPGAs were switched on for a particular \
-        SpiNN-5 board.
-
-    :param ~.Chip ethernet_chip: the ethernet chip to look from
-    :return: number of FPGAs on, on this board
     """
+    Figures out how many FPGAs were switched on for a particular SpiNN-5 board.
 
+    :param ~.Chip ethernet_chip: the Ethernet-enabled chip to look from
+    :return: number of FPGAs on, on this board
+    :rtype: int
+    """
     # TODO: should be possible to get this info from Machine
 
     # As the Chips can be None use the machine call and not the View call
@@ -323,7 +321,8 @@ def __board_n_operational_fpgas(ethernet_chip):
 
 
 def __deduce_fpga(chips_1, chips_2, links_1, links_2):
-    """ Figure out if each FPGA was on or not
+    """
+    Figure out if each FPGA was on or not.
 
     :param iterable(~.Chip) chips_1: chips on an edge of the board
     :param iterable(~.Chip) chips_2: chips on an edge of the board
@@ -349,8 +348,6 @@ def _calculate_loading_energy(machine, load_time_ms, n_monitors, n_frames):
     :param int n_frames:
     :rtype: float
     """
-    # pylint: disable=too-many-arguments
-
     # find time in milliseconds
     with GlobalProvenance() as db:
         total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
@@ -385,16 +382,15 @@ def _calculate_loading_energy(machine, load_time_ms, n_monitors, n_frames):
 
 
 def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
-    """ Data extraction cost
+    """
+    Data extraction cost.
 
     :param ~.Machine machine: machine description
     :param int n_monitors:
     :param int n_frames:
-    :return: cost of data extraction in Joules
+    :return: cost of data extraction, in Joules
     :rtype: float
     """
-    # pylint: disable=too-many-arguments
-
     # find time
     # TODO is this what was desired
     total_time_ms = 0
@@ -428,11 +424,12 @@ def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
 
 
 def _calculate_idle_cost(time, machine):
-    """ Calculate energy used by being idle.
+    """
+    Calculate energy used by being idle.
 
     :param float time: time machine was idle, in milliseconds
     :param ~.Machine machine: machine description
-    :return: cost in joules
+    :return: cost, in joules
     :rtype: float
     """
     return (time * machine.total_available_user_cores *
@@ -441,7 +438,8 @@ def _calculate_idle_cost(time, machine):
 
 
 def _calculate_power_down_energy(time, machine, n_frames):
-    """ Calculate power down costs
+    """
+    Calculate power down costs.
 
     :param float time: time powered down, in milliseconds
     :param ~.Machine machine:
@@ -449,8 +447,6 @@ def _calculate_power_down_energy(time, machine, n_frames):
     :return: energy in joules
     :rtype: float
     """
-    # pylint: disable=too-many-arguments
-
     # if spalloc or hbp
     if FecDataView.has_allocation_controller():
         return time * n_frames * MILLIWATTS_FOR_FRAME_IDLE_COST
@@ -463,14 +459,14 @@ def _calculate_power_down_energy(time, machine, n_frames):
 
 
 def _calculate_n_frames(machine):
-    """ Figures out how many frames are being used in this setup.\
-        A key of cabinet,frame will be used to identify unique frame.
+    """
+    Figures out how many frames are being used in this setup.
+    A key of cabinet,frame will be used to identify unique frame.
 
     :param ~.Machine machine: the machine object
     :return: number of frames
     :rtype: int
     """
-
     # if not spalloc, then could be any type of board, but unknown cooling
     if not FecDataView.has_allocation_controller():
         return 0

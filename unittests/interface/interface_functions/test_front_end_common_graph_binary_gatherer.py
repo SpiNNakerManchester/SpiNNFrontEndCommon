@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
 import unittest
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_utilities.overrides import overrides
+from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
@@ -23,7 +24,6 @@ from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     graph_binary_gatherer, locate_executable_start_type)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 

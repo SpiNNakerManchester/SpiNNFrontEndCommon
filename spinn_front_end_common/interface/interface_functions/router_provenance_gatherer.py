@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,13 +29,15 @@ def router_provenance_gatherer():
 
 
 class _RouterProvenanceGatherer(object):
-    """ Gathers diagnostics from the routers.
+    """
+    Gathers diagnostics from the routers.
     """
 
     __slots__ = []
 
     def _add_router_provenance_data(self):
-        """ Writes the provenance data of the router diagnostics
+        """
+        Writes the provenance data of the router diagnostics
         """
         progress = ProgressBar(FecDataView.get_machine().n_chips*2,
                                "Getting Router Provenance")
@@ -108,7 +110,8 @@ class _RouterProvenanceGatherer(object):
         return reinjection_data[x, y] if reinjection_data else None
 
     def __router_diagnostics(self, x, y, diagnostics, status, expected, table):
-        """ Describes the router diagnostics for one router.
+        """
+        Describes the router diagnostics for one router.
 
         :param int x: x coordinate of the router in question
         :param int y: y coordinate of the router in question
@@ -271,8 +274,9 @@ class _RouterProvenanceGatherer(object):
             if status.n_link_dumps > 0:
                 db.insert_report(
                     f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_link_dumps} packets were dumped from an "
-                    f"outgoing link of this chip's router. This often occurs "
+                    f"{status.n_link_dumps} packets were dumped from "
+                    f"outgoing links {status.links_dropped_from} of this "
+                    f"chip's router. This often occurs "
                     f"when external devices are used in the script but not "
                     f"connected to the communication fabric correctly. "
                     f"These packets may have been reinjected multiple times "
@@ -284,8 +288,9 @@ class _RouterProvenanceGatherer(object):
             if status.n_processor_dumps > 0:
                 db.insert_report(
                     f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_processor_dumps} packets were dumped from a "
-                    "core failing to take the packet. This often occurs when "
+                    f"{status.n_processor_dumps} packets were dumped from "
+                    f"cores {status.processors_dropped_from} failing to take "
+                    "the packet. This often occurs when "
                     "the executable has crashed or has not been given a "
                     "multicast packet callback. It can also result from the "
                     "core taking too long to process each packet. These "

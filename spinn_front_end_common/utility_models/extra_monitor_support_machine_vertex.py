@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,13 +18,13 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
+from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM
 from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
@@ -91,10 +91,15 @@ class ExtraMonitorSupportMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification,
         AbstractProvidesProvenanceDataFromMachine):
-    """ Machine vertex for talking to extra monitor cores. \
-        Supports reinjection control and the faster data transfer protocols.
+    """
+    Machine vertex for talking to extra monitor cores.
+    Supports reinjection control and the faster data transfer protocols.
 
     Usually deployed once per chip.
+
+    .. note::
+        This is an unusual machine vertex, in that it has no associated
+        application vertex.
     """
 
     __slots__ = (
@@ -120,9 +125,6 @@ class ExtraMonitorSupportMachineVertex(
             self, reinject_point_to_point=False,
             reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """
-        :param bool reinject_multicast:
-            if we reinject multicast packets; defaults to value of
-            `enable_reinjection` setting in configuration file
         :param bool reinject_point_to_point:
             if we reinject point-to-point packets
         :param bool reinject_nearest_neighbour:
@@ -159,14 +161,12 @@ class ExtraMonitorSupportMachineVertex(
         self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
 
     def update_transaction_id_from_machine(self):
-        """ looks up from the machine what the current transaction id is
-        and updates the extra monitor.
-
-        :param txrx: SpiNNMan instance
-        :rtype: None
         """
-        self._transaction_id = FecDataView.get_transceiver().read_user_1(
-            self._placement.x, self._placement.y, self._placement.p)
+        Looks up from the machine what the current transaction id is
+        and updates the extra monitor.
+        """
+        self._transaction_id = FecDataView.get_transceiver().read_user(
+            self._placement.x, self._placement.y, self._placement.p, 1)
 
     @property
     def reinject_point_to_point(self):
@@ -217,7 +217,8 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def static_get_binary_start_type():
-        """ The type of the binary implementing this vertex.
+        """
+        The type of the binary implementing this vertex.
 
         :rtype: ExecutableType
         """
@@ -229,7 +230,8 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def static_get_binary_file_name():
-        """ The name of the binary implementing this vertex.
+        """
+        The name of the binary implementing this vertex.
 
         :rtype: str
         """
@@ -340,7 +342,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
-            label="provenance collection region", empty=True)
+            label="provenance collection region")
 
     def __get_provenance_region_address(self, txrx, place):
         """
@@ -386,10 +388,11 @@ class ExtraMonitorSupportMachineVertex(
 
     def set_router_wait1_timeout(
             self, timeout, extra_monitor_cores_to_set):
-        """ Supports setting of the router time outs for a set of chips via\
-            their extra monitor cores. This sets the timeout for the time\
-            between when a packet arrives and when it starts to be emergency\
-            routed. (Actual emergency routing is disabled by default.)
+        """
+        Supports setting of the router time outs for a set of chips via their
+        extra monitor cores. This sets the timeout for the time between when a
+        packet arrives and when it starts to be emergency routed. (Actual
+        emergency routing is disabled by default.)
 
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
@@ -413,10 +416,11 @@ class ExtraMonitorSupportMachineVertex(
 
     def set_router_wait2_timeout(
             self, timeout, extra_monitor_cores_to_set):
-        """ Supports setting of the router time outs for a set of chips via\
-            their extra monitor cores. This sets the timeout for the time\
-            between when a packet starts to be emergency routed and when it\
-            is dropped. (Actual emergency routing is disabled by default.)
+        """
+        Supports setting of the router time outs for a set of chips via their
+        extra monitor cores. This sets the timeout for the time between when a
+        packet starts to be emergency routed and when it is dropped. (Actual
+        emergency routing is disabled by default.)
 
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
@@ -439,7 +443,8 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def reset_reinjection_counters(self, extra_monitor_cores_to_set):
-        """ Resets the counters for reinjection
+        """
+        Resets the counters for reinjection.
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
@@ -460,7 +465,8 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def clear_reinjection_queue(self, extra_monitor_cores_to_set):
-        """ Clears the queues for reinjection
+        """
+        Clears the queues for reinjection.
 
         :param extra_monitor_cores_to_set:
             Which extra monitors need to clear their queues.
@@ -479,7 +485,8 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def get_reinjection_status(self):
-        """ Get the reinjection status from this extra monitor vertex
+        """
+        Get the reinjection status from this extra monitor vertex.
 
         :return: the reinjection status for this vertex
         :rtype: ReInjectionStatus
@@ -495,7 +502,8 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def get_reinjection_status_for_vertices(self):
-        """ Get the reinjection status from a set of extra monitor cores
+        """
+        Get the reinjection status from a set of extra monitor cores.
 
         :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
@@ -510,16 +518,16 @@ class ExtraMonitorSupportMachineVertex(
             fixed_route=None):
         """
         :param point_to_point:
-            If point to point should be set, or None if left as before
+            If point to point should be set, or `None` if left as before
         :type point_to_point: bool or None
         :param multicast:
-            If multicast should be set, or None if left as before
+            If multicast should be set, or `None` if left as before
         :type multicast: bool or None
         :param nearest_neighbour:
-            If nearest neighbour should be set, or None if left as before
+            If nearest neighbour should be set, or `None` if left as before
         :type nearest_neighbour: bool or None
         :param fixed_route:
-            If fixed route should be set, or None if left as before.
+            If fixed route should be set, or `None` if left as before.
         :type fixed_route: bool or None
         """
         # pylint: disable=too-many-arguments
@@ -547,8 +555,9 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def load_system_mc_routes(self):
-        """ Get the extra monitor cores to load up the system-based \
-            multicast routes (used by data in).
+        """
+        Get the extra monitor cores to load up the system-based
+        multicast routes (used by the Data In protocol).
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
@@ -564,9 +573,9 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def load_application_mc_routes(self):
-        """ Get the extra monitor cores to load up the application-based\
-            multicast routes (used by data in).
-
+        """
+        Get the extra monitor cores to load up the application-based
+        multicast routes (used by the Data In protocol).
         """
         core_subsets = self._convert_vertices_to_core_subset()
         process = LoadApplicationMCRoutesProcess(
@@ -580,8 +589,8 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def _convert_vertices_to_core_subset():
-        """ Convert vertices into the subset of cores where they've been\
-            placed.
+        """
+        Convert vertices into the subset of cores where they've been placed.
 
         :return: where the vertices have been placed
         :rtype: ~.CoreSubsets

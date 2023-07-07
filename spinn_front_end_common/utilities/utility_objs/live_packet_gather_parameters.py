@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,8 +23,9 @@ TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
 
 class LivePacketGatherParameters(object):
-    """ Parameter holder for LPGs so that they can be instantiated at a\
-        later date.
+    """
+    Parameter holder for :py:class:`LivePacketGather`\\ers so that they can be
+    instantiated at a later date.
     """
 
     __slots__ = [
@@ -89,79 +90,172 @@ class LivePacketGatherParameters(object):
 
     @property
     def port(self):
+        """
+        Where to send data from SpiNNaker:
+        the port of the listening UDP socket.
+
+        :rtype: int
+        """
         return self._port
 
     @property
     def hostname(self):
+        """
+        Where to send data from SpiNNaker: the host name of the listening UDP
+        socket.
+
+        :rtype: bool
+        """
         return self._hostname
 
     @property
     def tag(self):
+        """
+        A fixed tag ID to assign, or `None` if any tag is OK
+
+        :rtype: int or None
+        """
         return self._tag
 
     @property
     def strip_sdp(self):
+        """
+        Whether to remove SDP headers from the messages before sending.
+
+        :rtype: bool
+        """
         return self._strip_sdp
 
     @property
     def use_prefix(self):
+        """
+        Whether to use EIEIO prefix compaction on keys.
+
+        :rtype: bool
+        """
         return self._use_prefix
 
     @property
     def key_prefix(self):
+        """
+        The EIEIO key prefix to remove from messages.
+
+        :rtype: int
+        """
         return self._key_prefix
 
     @property
     def prefix_type(self):
+        """
+        The type of prefix.
+
+        :rtype: ~spinnman.messages.eieio.EIEIOPrefix
+        """
         return self._prefix_type
 
     @property
     def message_type(self):
+        """
+        The type of messages to send.
+
+        :rtype: ~spinnman.messages.eieio.EIEIOType
+        """
         return self._message_type
 
     @property
     def right_shift(self):
+        """
+        Shift to apply to keys.
+
+        :rtype: int
+        """
         return self._right_shift
 
     @property
     def payload_as_time_stamps(self):
+        """
+        Whether the payloads are timestamps.
+
+        :rtype: bool
+        """
         return self._payload_as_time_stamps
 
     @property
     def use_payload_prefix(self):
+        """
+        Whether to use prefix compaction for payloads.
+
+        :rtype: bool
+        """
         return self._use_payload_prefix
 
     @property
     def payload_prefix(self):
+        """
+        The payload prefix to remove if applying compaction.
+
+        :rtype: int
+        """
         return self._payload_prefix
 
     @property
     def payload_right_shift(self):
+        """
+        Shift to apply to payloads.
+
+        :rtype: int
+        """
         return self._payload_right_shift
 
     @property
     def number_of_packets_sent_per_time_step(self):
+        """
+        The maximum number of packets to send in a timestep.
+
+        :rtype: int
+        """
         return self._n_packets_per_time_step
 
     @property
     def label(self):
+        """
+        A label.
+
+        :rtype: str
+        """
         return self._label
 
     @property
     def received_key_mask(self):
+        """
+        A mask to select which keys are dispatched.
+
+        :rtype: int
+        """
         return self._received_key_mask
 
     @property
     def translate_keys(self):
+        """
+        Whether to apply translation to keys.
+
+        :rtype: bool
+        """
         return self._translate_keys
 
     @property
     def translated_key_right_shift(self):
+        """
+        Shift to apply in key translation.
+
+        :rtype: int
+        """
         return self._translated_key_right_shift
 
     def get_iptag_resource(self):
-        """ Get a description of the IPtag that the LPG for these parameters \
-            will require.
+        """
+        Get a description of the :py:class:`~spinn_machine.tags.IPTag`
+        that the LPG for these parameters will require.
 
         :rtype: ~pacman.model.resources.IPtagResource
         """

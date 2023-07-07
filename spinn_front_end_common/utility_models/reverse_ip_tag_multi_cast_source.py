@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,8 +17,8 @@ import numpy
 
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
+from spinnman.model.enums import SDP_PORTS
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -27,8 +27,9 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, LegacyPartitionerAPI):
-    """ A model which will allow events to be injected into a SpiNNaker\
-        machine and converted into multicast packets.
+    """
+    A model which will allow events to be injected into a SpiNNaker
+    machine and converted into multicast packets.
     """
 
     def __init__(
@@ -100,10 +101,11 @@ class ReverseIpTagMultiCastSource(
         :param bool reserve_reverse_ip_tag:
             Extra flag for input without a reserved port
         :param str injection_partition:
-            If not None, will enable injection and specify the partition to
+            If not `None`, will enable injection and specify the partition to
             send injected keys with
         :param splitter: the splitter object needed for this vertex
-        :type splitter: None or AbstractSplitterCommon
+        :type splitter:
+            ~pacman.model.partitioner_splitters.AbstractSplitterCommon or None
         """
         # pylint: disable=too-many-arguments
         super().__init__(label, max_atoms_per_core, splitter=splitter)
@@ -139,9 +141,8 @@ class ReverseIpTagMultiCastSource(
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
             if len(send_buffer_times) != self._n_atoms:
                 raise ConfigurationException(
-                    "The array or arrays of times {} does not have the "
-                    "expected length of {}".format(
-                        send_buffer_times, self._n_atoms))
+                    f"The array or arrays of times {send_buffer_times} does "
+                    f"not have the expected length of {self._n_atoms}")
             return numpy.array(send_buffer_times, dtype="object")
         return numpy.array(send_buffer_times)
 
@@ -158,7 +159,8 @@ class ReverseIpTagMultiCastSource(
 
     @property
     def send_buffer_times(self):
-        """ When messages will be sent.
+        """
+        When messages will be sent.
 
         :rtype: ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(~numpy.int32)) or None
@@ -204,7 +206,7 @@ class ReverseIpTagMultiCastSource(
         return machine_vertex
 
     def _filtered_send_buffer_times(self, vertex_slice):
-        ids = vertex_slice.get_raster_ids(self.atoms_shape)
+        ids = vertex_slice.get_raster_ids()
         send_buffer_times = self._send_buffer_times
         n_buffer_times = 0
         if send_buffer_times is not None:

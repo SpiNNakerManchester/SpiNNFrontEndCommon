@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,9 @@ from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 
 def chip_io_buf_extractor():
-    """ Extract the logging output buffers from the machine, and separates\
-        lines based on their prefix.
+    """
+    Extract the logging output buffers from the machine, and separates
+    lines based on their prefix.
 
     :return: error_entries, warn_entries
     :rtype: tuple(list(str),list(str))

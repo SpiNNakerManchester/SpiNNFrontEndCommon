@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,6 +20,7 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
     - name: "Prepare: Checkout"
@@ -43,15 +44,18 @@ jobs:
       run: |
         echo "Set SPINN_DIRS to $PWD/spinnaker_tools"
         echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
+    - name: "Prepare: Checkout SpiNNaker C Dependencies"
+      uses: ./support/actions/install-spinn-deps
+      with:
+        repositories: spinnaker_tools spinn_common
+        install: false
 
-    - name: "Prepare: Checkout SpiNNaker Dependencies"
-      uses: ./support/actions/checkout-spinn-deps
+    - name: "Prepare: Install SpiNNUtils"
+      uses: ./support/actions/install-spinn-deps
       with:
         # Note: SpiNNUtils needed for spinn_utilities.make_tools
-        repositories: spinnaker_tools spinn_common SpiNNUtils
-    - name: "Prepare: Install SpiNNUtils"
-      run: python setup.py install
-      working-directory: SpiNNUtils
+        repositories: SpiNNUtils
+        install: true
 
     - name: "Check: Lint C lib code using Vera++"
       uses: ./support/actions/vera
@@ -66,7 +70,6 @@ jobs:
       run: |
         make -C $SPINN_DIRS
         make -C spinn_common install
-
     - name: "Check: Build C code"
       run: make
       working-directory: c_common

@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,8 @@ _DURATION = 1
 
 
 class ProfileData(object):
-    """ A container for profile data
+    """
+    A container for profile data.
     """
 
     START_TIME = _START_TIME
@@ -56,7 +57,8 @@ class ProfileData(object):
         self._max_time = None
 
     def add_data(self, data):
-        """ Add profiling data read from the profile section
+        """
+        Add profiling data read from the profile section.
 
         :param bytearray data:
             Data read from the profile section on the machine
@@ -138,15 +140,17 @@ class ProfileData(object):
 
     @property
     def tags(self):
-        """ The tags recorded as labels
+        """
+        The tags recorded as labels.
 
         :rtype: list(str)
         """
         return self._tags.keys()
 
     def get_mean_ms(self, tag):
-        """ Get the mean time in milliseconds spent on operations with the
-            given tag
+        """
+        Get the mean time in milliseconds spent on operations with the
+        given tag.
 
         :param str tag: The tag to get the mean time for
         :rtype: float
@@ -154,7 +158,8 @@ class ProfileData(object):
         return numpy.average(self._tags[tag][_DURATION])
 
     def get_n_calls(self, tag):
-        """ Get the number of times the given tag was recorded
+        """
+        Get the number of times the given tag was recorded.
 
         :param str tag: The tag to get the number of calls of
         :rtype: int
@@ -162,8 +167,8 @@ class ProfileData(object):
         return self._tags[tag][_DURATION].size
 
     def get_mean_n_calls_per_ts(self, tag):
-        """ Get the mean number of times the given tag was recorded per\
-            timestep
+        """
+        Get the mean number of times the given tag was recorded per timestep.
 
         :param str tag: The tag to get the data for
         :rtype: float
@@ -177,8 +182,9 @@ class ProfileData(object):
             self._tags[tag][_START_TIME], bins)[0])
 
     def get_mean_ms_per_ts(self, tag):
-        """ Get the mean time in milliseconds spent on operations with the\
-            given tag per timestep
+        """
+        Get the mean time in milliseconds spent on operations with the
+        given tag per timestep.
 
         :param str tag: The tag to get the data for
         :rtype: float

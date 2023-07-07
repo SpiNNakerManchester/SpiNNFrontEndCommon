@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,7 @@ def graph_binary_gatherer():
     """
     Extracts binaries to be executed.
 
-    :rtype: ExecutableTargets
+    :rtype: ~spinnman.model.ExecutableTargets
     """
     gatherer = _GraphBinaryGatherer()
     # pylint: disable=protected-access
@@ -37,7 +37,8 @@ def graph_binary_gatherer():
 
 
 class _GraphBinaryGatherer(object):
-    """ Extracts binaries to be executed.
+    """
+    Extracts binaries to be executed.
     """
 
     __slots__ = ["_exe_targets"]
@@ -48,9 +49,8 @@ class _GraphBinaryGatherer(object):
     def _run(self):
         """
         :param ~pacman.model.placements.Placements placements:
-        :rtype: ExecutableTargets
+        :rtype: ~spinnman.model.ExecutableTargets
         """
-
         progress = ProgressBar(
             FecDataView.get_n_placements(), "Finding binaries")
         for placement in progress.over(FecDataView.iterate_placemements()):
@@ -60,18 +60,17 @@ class _GraphBinaryGatherer(object):
 
     def __get_binary(self, placement):
         """
-        :param ~.Placement placement:
-        :param ~.AbstractVertex vertex:
+        :param ~pacman.model.placements.Placement placement:
+        :param ~pacman.model.graphs.AbstractVertex vertex:
         """
         # if the vertex cannot be executed, ignore it
         vertex = placement.vertex
         if not isinstance(vertex, AbstractHasAssociatedBinary):
             if not isinstance(vertex, AbstractVirtual):
-                msg = (
+                logger.error(
                     "Vertex {} does not implement either "
                     "AbstractHasAssociatedBinary or AbstractVirtual. So it is "
-                    "unclear if it should or should not have a binary")
-                logger.error(msg.format(vertex), vertex)
+                    "unclear if it should or should not have a binary", vertex)
             return
 
         # Get name of binary from vertex

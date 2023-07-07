@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,10 +17,9 @@ from collections import defaultdict
 from spinn_utilities.overrides import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
+from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType)
 from spinn_front_end_common.interface.interface_functions import (
     load_app_images)
 

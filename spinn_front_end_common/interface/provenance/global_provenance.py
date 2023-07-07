@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,8 @@ _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
 class GlobalProvenance(SQLiteDB):
-    """ Specific implementation of the Database for SQLite 3.
+    """
+    Specific implementation of the Database for SQLite 3.
 
     .. note::
         *Not thread safe on the same database file.*
@@ -46,7 +47,8 @@ class GlobalProvenance(SQLiteDB):
 
     @classmethod
     def get_global_provenace_path(cls):
-        """ Get the path of the current provenance database of the last run
+        """
+        Get the path of the current provenance database of the last run
 
         .. warning::
             Calling this method between start/reset and run may result in a
@@ -70,8 +72,7 @@ class GlobalProvenance(SQLiteDB):
         :type database_file: str or None
         :param bool memory:
             Flag to say unshared in-memory can be used.
-            Otherwise a None file will mean the default should be used
-
+            Otherwise a `None` file will mean the default should be used
         """
         if database_file is None and not memory:
             database_file = self.get_global_provenace_path()
@@ -143,9 +144,9 @@ class GlobalProvenance(SQLiteDB):
         :param str algorithm: Algorithm name
         :param TimerWork work: Type of work being done
         :param ~datetime.timedelta timedelta: Time to be recorded
-        :param skip_reason: The reason the algorthm was skipped or None if
+        :param skip_reason: The reason the algorithm was skipped or `None` if
             it was not skipped
-        :tpye skip_reason: str or None
+        :type skip_reason: str or None
         """
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
@@ -199,7 +200,7 @@ class GlobalProvenance(SQLiteDB):
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection
 
-        The return type depends on the use_sqlite_rows param.
+        The return type depends on the use_sqlite_rows parameter.
         By default this method returns tuples (lookup by index) but the
         advanced tuple type can be used instead, which supports lookup by name
         used in the query (use ``AS name`` in the query to set).
@@ -274,11 +275,11 @@ class GlobalProvenance(SQLiteDB):
 
     def get_run_time_of_BufferExtractor(self):
         """
-        Gets the BufferExtractor provenance item(s) from the last run
+        Gets the buffer extractor provenance item(s) from the last run
 
         :return:
             A possibly multiline string with for each row which matches the
-            like %BufferExtractor description_name: value
+            ``LIKE %BufferExtractor``
         :rtype: str
         """
         return self.get_timer_provenance("%BufferExtractor")
@@ -287,8 +288,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param  TimerCategory category:
-        :return: total off all runtimes with this category
+        :param TimerCategory category:
+        :return: total off all run times with this category
         :rtype: int
         """
         query = """
@@ -337,7 +338,7 @@ class GlobalProvenance(SQLiteDB):
         Get the total runtime for one category of algorithms
 
         :param TimerCategory category:
-        :return: total off all runtimes with this category
+        :return: total off all run times with this category
         :rtype: int
         """
         query = """

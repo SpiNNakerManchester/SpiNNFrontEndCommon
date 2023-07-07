@@ -16,7 +16,6 @@ In addition to a standard Python installation, this package depends on:
     numpy
     SpiNNUtilities
     SpiNNMachine
-    DataSpecification
     PACMAN
     SpiNNMan
     spalloc
@@ -24,7 +23,7 @@ In addition to a standard Python installation, this package depends on:
 These dependencies can be installed using `pip`:
 
     pip install numpy
-    pip install SpiNNUtilities SpiNNMachine DataSpecification PACMAN SpiNNMan spalloc
+    pip install SpiNNUtilities SpiNNMachine PACMAN SpiNNMan spalloc
 
 If you want to use the `spinnaker_router_provenance_mapper` command line tool
 to visualise the traffic on SpiNNaker boards caused by your simulations, you
@@ -57,7 +56,7 @@ deactivated.
 
 Documentation
 =============
-[SpiNNFrontEndCommon Python documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/python/)
+[SpiNNFrontEndCommon python documentation](https://spinnfrontendcommon.readthedocs.io)
 <br>
 [SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
 

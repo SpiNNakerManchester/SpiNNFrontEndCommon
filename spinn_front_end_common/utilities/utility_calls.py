@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Utility calls for interpreting bits of the DSG
+"""
+Utility calls for interpreting bits of the DSG
 """
 
 import io
 import os
-import tempfile
 import threading
 from urllib.parse import urlparse
 from spinn_utilities.config_holder import get_config_bool
@@ -25,10 +25,8 @@ from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.utilities.utility_functions import (
     reprogram_tag, reprogram_tag_to_listener)
 from spinnman.spalloc import SpallocEIEIOListener, SpallocEIEIOConnection
-from data_specification.constants import (
+from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
-from data_specification.data_specification_generator import (
-    DataSpecificationGenerator)
 from spinn_front_end_common.data import FecDataView
 
 # used to stop file conflicts
@@ -36,7 +34,8 @@ _lock_condition = threading.Condition()
 
 
 def _mkdir(directory):
-    """ Make a directory if it doesn't exist.
+    """
+    Make a directory if it doesn't exist.
 
     .. note::
         This code is not intended to be secure against malicious third parties
@@ -55,7 +54,8 @@ def _mkdir(directory):
 
 
 def get_region_base_address_offset(app_data_base_address, region):
-    """ Find the address of the of a given region for the DSG
+    """
+    Find the address of the of a given region for the DSG.
 
     :param int app_data_base_address: base address for the core
     :param int region: the region ID we're looking for
@@ -70,48 +70,18 @@ _RPT_TMPL = "dataSpec_{}_{}_{}.txt"
 _RPT_DIR = "data_spec_text_files"
 
 
-def get_data_spec_and_file_writer_filename(
-        processor_chip_x, processor_chip_y, processor_id,
-        application_run_time_report_folder="TEMP"):
-    """ Encapsulates the creation of the DSG writer and the file paths.
-
-    :param int processor_chip_x: x-coordinate of the chip
-    :param int processor_chip_y: y-coordinate of the chip
-    :param int processor_id: The processor ID
-    :param str application_run_time_report_folder:
-        The folder to contain the resulting specification files; if 'TEMP'
-        then a temporary directory is used.
-    :return: the filename of the data writer and the data specification object
-    :rtype: tuple(str, DataSpecificationGenerator)
+def get_report_writer(processor_chip_x, processor_chip_y, processor_id,
+                      use_run_number=False):
     """
-    # pylint: disable=too-many-arguments
-    if application_run_time_report_folder == "TEMP":
-        application_run_time_report_folder = tempfile.gettempdir()
+    Check if text reports are needed, and if so initialise the report
+    writer to send down to DSG.
 
-    filename = os.path.join(
-        application_run_time_report_folder, _DAT_TMPL.format(
-            processor_chip_x, processor_chip_y, processor_id))
-    data_writer = io.FileIO(filename, "wb")
-
-    # check if text reports are needed and if so initialise the report
-    # writer to send down to DSG
-    report_writer = get_report_writer(
-        processor_chip_x, processor_chip_y, processor_id)
-
-    # build the file writer for the spec
-    spec = DataSpecificationGenerator(data_writer, report_writer)
-
-    return filename, spec
-
-
-def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
-    """ Check if text reports are needed, and if so initialise the report\
-        writer to send down to DSG.
-
-    :param int processor_chip_x: x-coordinate of the chip
-    :param int processor_chip_y: y-coordinate of the chip
+    :param int processor_chip_x: X coordinate of the chip
+    :param int processor_chip_y: Y coordinate of the chip
     :param int processor_id: The processor ID
-    :return: the report_writer_object, or None if not reporting
+    :param bool use_run_number:
+        If set the directory will include the run number
+    :return: the report_writer_object, or `None` if not reporting
     :rtype: ~io.FileIO or None
     """
     # pylint: disable=too-many-arguments
@@ -120,8 +90,11 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
     if not get_config_bool("Reports", "write_text_specs"):
         return None
     # initialise the report writer to send down to DSG
+    dir_name = _RPT_DIR
+    if use_run_number:
+        dir_name += str(FecDataView.get_run_number())
     new_report_directory = os.path.join(
-        FecDataView.get_run_dir_path(), _RPT_DIR)
+        FecDataView.get_run_dir_path(), dir_name)
     _mkdir(new_report_directory)
     name = os.path.join(new_report_directory, _RPT_TMPL.format(
         processor_chip_x, processor_chip_y, processor_id))
@@ -163,12 +136,15 @@ def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
     """
     Make a tag deliver to the given connection.
 
-    :param ~.UDPConnection connection:
-        The connection to deliver to.
+    :param connection: The connection to deliver to.
+    :type connection:
+        ~spinnman.connections.udp_packet_connections.UDPConnection
     :param int x:
-        The X coordinate of the ethernet chip we are sending the message to.
+        The X coordinate of the Ethernet-enabled chip we are sending the
+        message to.
     :param int y:
-        The Y coordinate of the ethernet chip we are sending the message to.
+        The Y coordinate of the Ethernet-enabled chip we are sending the
+        message to.
     :param int tag:
         The ID of the tag to retarget.
     :param str ip_address:
@@ -191,16 +167,16 @@ def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
 
 def open_scp_connection(chip_x, chip_y, chip_ip_address):
     """
-    Create an SCP connection to the given ethernet chip. SpiNNaker will
+    Create an SCP connection to the given Ethernet-enabled chip. SpiNNaker will
     not be configured to map that connection to a tag; that is the
     caller's responsibility.
 
     :param int chip_x:
-        X coordinate of the ethernet chip to connect to.
+        X coordinate of the Ethernet-enabled chip to connect to.
     :param int chip_y:
-        Y coordinate of the ethernet chip to connect to.
+        Y coordinate of the Ethernet-enabled chip to connect to.
     :param str chip_ip_address:
-        IP address of the ethernet chip to connect to.
+        IP address of the Ethernet-enabled chip to connect to.
     :rtype: ~spinnman.connections.udp_packet_connections.SCAMPConnection
     """
     if FecDataView.has_allocation_controller():

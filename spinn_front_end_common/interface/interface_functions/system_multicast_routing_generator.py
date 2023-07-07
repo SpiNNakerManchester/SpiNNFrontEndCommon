@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,12 +32,13 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def system_multicast_routing_generator():
-    """ Generates routing table entries used by the data in processes with the\
-        extra monitor cores.
+    """
+    Generates routing table entries used by the data-in processes with the
+    extra monitor cores.
 
     :return: routing tables, destination-to-key map,
-        board-locn-to-timeout-key map
-    :rtype: tuple(MulticastRoutingTables,
+        board-location-to-timeout-key map
+    :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
         dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
     generator = _SystemMulticastRoutingGenerator()
@@ -46,8 +47,9 @@ def system_multicast_routing_generator():
 
 
 class _SystemMulticastRoutingGenerator(object):
-    """ Generates routing table entries used by the data in processes with the\
-        extra monitor cores.
+    """
+    Generates routing table entries used by the data in processes with the
+    extra monitor cores.
     """
     __slots__ = ["_key_to_destination_map", "_machine",
                  "_routing_tables", "_time_out_keys_by_board"]
@@ -65,8 +67,8 @@ class _SystemMulticastRoutingGenerator(object):
     def _run(self):
         """
         :return: routing tables, destination-to-key map,
-            board-locn-to-timeout-key map
-        :rtype: tuple(MulticastRoutingTables,
+            board-location-to-timeout-key map
+        :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
             dict(tuple(int,int),int), dict(tuple(int,int),int))
         """
         # create progress bar
@@ -85,10 +87,11 @@ class _SystemMulticastRoutingGenerator(object):
                 self._time_out_keys_by_board)
 
     def _generate_routing_tree(self, ethernet_chip):
-        """ Generates a map for each chip to over which link it gets its data.
+        """
+        Generates a map for each chip to over which link it gets its data.
 
         :param ~spinn_machine.Chip ethernet_chip:
-        :return: Map of chip.x, chip.y tp (source.x, source.y, source.link)
+        :return: Map of chip.x, chip.y to (source.x, source.y, source.link)
         :rtype: dict(tuple(int, int), tuple(int, int, int))
         """
         eth_x = ethernet_chip.x
@@ -135,20 +138,20 @@ class _SystemMulticastRoutingGenerator(object):
         found.add((eth_x, eth_y))
         logger.warning("In _logging_retry")
         for x, y in to_reach:
-            logger.warning("Still need to reach {}:{}".format(x, y))
+            logger.warning("Still need to reach {}:{}", x, y)
         while len(to_reach) > 0:
             just_reached = found
             found = set()
             for x, y in just_reached:
-                logger.warning("Trying from {}:{}".format(x, y))
+                logger.warning("Trying from {}:{}", x, y)
                 # Check links starting with the most direct from 0,0
                 for link_id in [1, 0, 2, 5, 3, 4]:
                     # Get protential destination
                     destination = self._machine.xy_over_link(x, y, link_id)
                     # If it is useful
                     if destination in to_reach:
-                        logger.warning("Could reach {} over {}".format(
-                            destination, link_id))
+                        logger.warning(
+                            "Could reach {} over {}", destination, link_id)
                         # check it actually exits
                         if self._machine.is_link_at(x, y, link_id):
                             # Add to tree and record chip reachable
@@ -157,15 +160,16 @@ class _SystemMulticastRoutingGenerator(object):
                             found.add(destination)
                         else:
                             logger.error("Link down")
-            logger.warning("Found {}".format(len(found)))
+            logger.warning("Found {}", len(found))
             if len(found) == 0:
                 raise PacmanRoutingException(
-                    "Unable to do data in routing on {}.".format(
-                        ethernet_chip.ip_address))
+                    "Unable to do data in routing on "
+                    f"{ethernet_chip.ip_address}.")
         return tree
 
     def _add_routing_entry(self, x, y, key, processor_id=None, link_ids=None):
-        """ Adds a routing entry on this chip, creating the table if needed.
+        """
+        Adds a routing entry on this chip, creating the table if needed.
 
         :param int x: chip.x
         :param int y: chip.y
@@ -190,15 +194,16 @@ class _SystemMulticastRoutingGenerator(object):
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(self, ethernet_chip, tree):
-        """ Adds the routing entires based on the tree.
+        """
+        Adds the routing entries based on the tree.
 
-        For every chip with this ethernet:
+        For every chip with this Ethernet-enabled chip on the board:
             - A key is generated (and saved) for this chip.
             - A local route to the monitor core is added.
             - The tree is walked adding a route on each source to get here
 
         :param ~spinn_machine.Chip ethernet_chip:
-            the ethernet chip to make entries for
+            the Ethernet-enabled chip to make entries for
         :param dict(tuple(int,int),tuple(int,int,int)) tree:
             map of chips and links
         """

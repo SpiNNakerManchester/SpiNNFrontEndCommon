@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,12 +15,13 @@
 import struct
 from .dpri_flags import DPRIFlags
 
-_PATTERN = struct.Struct("<IIIIIIIII")
+_PATTERN = struct.Struct("<IIIIIIIIII")
 
 
 def _decode_router_timeout_value(value):
-    """ Get the timeout value of a router in ticks, given an 8-bit floating\
-        point value stored in an int (!)
+    """
+    Get the timeout value of a router in ticks, given an 8-bit floating
+    point value stored in an int (!)
 
     :param int value: The value to convert
     :rtype: int
@@ -33,7 +34,8 @@ def _decode_router_timeout_value(value):
 
 
 class ReInjectionStatus(object):
-    """ Represents a status information report from dropped packet reinjection.
+    """
+    Represents a status information report from dropped packet reinjection.
     """
 
     __slots__ = (
@@ -70,7 +72,10 @@ class ReInjectionStatus(object):
         "_n_processor_dumps",
 
         # the flags that states which types of packets were being recorded
-        "_flags"
+        "_flags",
+
+        # Indicates the links or processors dropped from
+        "_link_proc_bits"
     )
 
     def __init__(self, data, offset):
@@ -81,12 +86,13 @@ class ReInjectionStatus(object):
         (self._wait1_timeout, self._wait2_timeout,
          self._n_dropped_packets, self._n_missed_dropped_packets,
          self._n_dropped_packet_overflows, self._n_reinjected_packets,
-         self._n_link_dumps, self._n_processor_dumps, self._flags) = \
-            _PATTERN.unpack_from(data, offset)
+         self._n_link_dumps, self._n_processor_dumps, self._flags,
+         self._link_proc_bits) = _PATTERN.unpack_from(data, offset)
 
     @property
     def router_wait1_timeout(self):
-        """ The WAIT1 timeout value of the router, in cycles.
+        """
+        The WAIT1 timeout value of the router, in cycles.
 
         :rtype: int
         """
@@ -94,7 +100,8 @@ class ReInjectionStatus(object):
 
     @property
     def router_wait1_timeout_parameters(self):
-        """ The WAIT1 timeout value of the router as mantissa and exponent.
+        """
+        The WAIT1 timeout value of the router as mantissa and exponent.
 
         :rtype: tuple(int,int)
         """
@@ -104,7 +111,8 @@ class ReInjectionStatus(object):
 
     @property
     def router_wait2_timeout(self):
-        """ The WAIT2 timeout value of the router, in cycles.
+        """
+        The WAIT2 timeout value of the router, in cycles.
 
         :rtype: int
         """
@@ -112,7 +120,8 @@ class ReInjectionStatus(object):
 
     @property
     def router_wait2_timeout_parameters(self):
-        """ The WAIT2 timeout value of the router as mantissa and exponent.
+        """
+        The WAIT2 timeout value of the router as mantissa and exponent.
 
         :rtype: tuple(int,int)
         """
@@ -122,8 +131,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_dropped_packets(self):
-        """ The number of packets dropped by the router and received by\
-            the reinjection functionality (may not fit in the queue though)
+        """
+        The number of packets dropped by the router and received by
+        the reinjection functionality (may not fit in the queue though).
 
         :rtype: int
         """
@@ -131,9 +141,10 @@ class ReInjectionStatus(object):
 
     @property
     def n_missed_dropped_packets(self):
-        """ The number of times that when a dropped packet was read it was\
-            found that another one or more packets had also been dropped,\
-            but had been missed
+        """
+        The number of times that when a dropped packet was read it was
+        found that another one or more packets had also been dropped,
+        but had been missed.
 
         :rtype: int
         """
@@ -141,8 +152,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_dropped_packet_overflows(self):
-        """ Of the n_dropped_packets received, how many were lost due to not\
-            having enough space in the queue of packets to reinject
+        """
+        Of the n_dropped_packets received, how many were lost due to not
+        having enough space in the queue of packets to reinject.
 
         :rtype: int
         """
@@ -150,8 +162,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_processor_dumps(self):
-        """ The number of times that when a dropped packet was caused due to\
-            a processor failing to take the packet.
+        """
+        The number of times that when a dropped packet was caused due to
+        a processor failing to take the packet.
 
         :rtype: int
         """
@@ -159,8 +172,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_link_dumps(self):
-        """ The number of times that when a dropped packet was caused due to\
-            a link failing to take the packet.
+        """
+        The number of times that when a dropped packet was caused due to
+        a link failing to take the packet.
 
         :rtype: int
         """
@@ -168,8 +182,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_reinjected_packets(self):
-        """ Of the n_dropped_packets received, how many packets were\
-            successfully re injected
+        """
+        Of the n_dropped_packets received, how many packets were
+        successfully re-injected.
 
         :rtype: int
         """
@@ -180,7 +195,8 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_multicast(self):
-        """ True if re-injection of multicast packets is enabled
+        """
+        True if re-injection of multicast packets is enabled.
 
         :rtype: bool
         """
@@ -188,7 +204,8 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_point_to_point(self):
-        """ True if re-injection of point-to-point packets is enabled
+        """
+        True if re-injection of point-to-point packets is enabled.
 
         :rtype: bool
         """
@@ -196,7 +213,8 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_nearest_neighbour(self):
-        """ True if re-injection of nearest neighbour packets is enabled
+        """
+        True if re-injection of nearest neighbour packets is enabled.
 
         :rtype: bool
         """
@@ -204,8 +222,19 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_fixed_route(self):
-        """ True if re-injection of fixed-route packets is enabled
+        """
+        True if re-injection of fixed-route packets is enabled.
 
         :rtype: bool
         """
         return self._flag_set(DPRIFlags.FIXED_ROUTE)
+
+    @property
+    def links_dropped_from(self):
+        return [
+            link for link in range(6) if self._link_proc_bits & (1 << link)]
+
+    @property
+    def processors_dropped_from(self):
+        return [
+            p for p in range(18) if self._link_proc_bits & (1 << p + 6)]

@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,18 +21,16 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.eieio.command_messages import EventStopRequest
 from spinnman.messages.eieio import EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
-from data_specification.constants import BYTES_PER_WORD
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import (BuffersSentDeque)
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import (AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferDatabase
+    import (BuffersSentDeque, BufferDatabase)
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
@@ -55,7 +53,8 @@ VERIFY = False
 
 
 class _RecordingRegion(ctypes.LittleEndianStructure):
-    """ Recording Region data
+    """
+    Recording Region data
     """
     _fields_ = [
         # Space available for recording
@@ -70,7 +69,8 @@ class _RecordingRegion(ctypes.LittleEndianStructure):
 
 
 class BufferManager(object):
-    """ Manager of send buffers.
+    """
+    Manager of send buffers.
     """
 
     __slots__ = [
@@ -113,12 +113,13 @@ class BufferManager(object):
                 self._sender_vertices.add(vertex)
 
     def _request_data(self, placement_x, placement_y, address, length):
-        """ Uses the extra monitor cores for data extraction.
+        """
+        Uses the extra monitor cores for data extraction.
 
         :param int placement_x:
-            the placement x coord where data is to be extracted from
+            the placement X coordinate where data is to be extracted from
         :param int placement_y:
-            the placement y coord where data is to be extracted from
+            the placement Y coordinate where data is to be extracted from
         :param int address: the memory address to start at
         :param int length: the number of bytes to extract
         :return: data as a byte array
@@ -163,7 +164,8 @@ class BufferManager(object):
                 raise ValueError(f"WRONG (at index {index})")
 
     def load_initial_buffers(self):
-        """ Load the initial buffers for the senders using memory writes.
+        """
+        Load the initial buffers for the senders using memory writes.
         """
         total_data = 0
         for vertex in self._sender_vertices:
@@ -177,13 +179,11 @@ class BufferManager(object):
         progress.end()
 
     def reset(self):
-        """ Resets the buffered regions to start transmitting from the\
-            beginning of its expected regions and clears the buffered out\
-            data files.
         """
-        #
+        Resets the buffered regions to start transmitting from the beginning
+        of its expected regions and clears the buffered out data files.
+        """
         with BufferDatabase() as db:
-
             db.write_session_credentials_to_db()
 
         # rewind buffered in
@@ -192,28 +192,31 @@ class BufferManager(object):
                 vertex.rewind(region)
 
     def resume(self):
-        """ Resets any data structures needed before starting running again.
+        """
+        Resets any data structures needed before starting running again.
         """
 
     def clear_recorded_data(self, x, y, p, recording_region_id):
-        """ Removes the recorded data stored in memory.
+        """
+        Removes the recorded data stored in memory.
 
-        :param int x: placement x coordinate
-        :param int y: placement y coordinate
-        :param int p: placement p coordinate
+        :param int x: placement X coordinate
+        :param int y: placement Y coordinate
+        :param int p: placement processor ID
         :param int recording_region_id: the recording region ID
         """
         with BufferDatabase() as db:
             db.clear_region(x, y, p, recording_region_id)
 
     def _create_message_to_send(self, size, vertex, region):
-        """ Creates a single message to send with the given boundaries.
+        """
+        Creates a single message to send with the given boundaries.
 
         :param int size: The number of bytes available for the whole packet
         :param AbstractSendsBuffersFromHost vertex:
             The vertex to get the keys from
         :param int region: The region of the vertex to get keys from
-        :return: A new message, or None if no keys can be added
+        :return: A new message, or `None` if no keys can be added
         :rtype: None or ~spinnman.messages.eieio.data_messages.EIEIODataMessage
         """
 
@@ -242,7 +245,8 @@ class BufferManager(object):
         return message
 
     def _send_initial_messages(self, vertex, region, progress):
-        """ Send the initial set of messages.
+        """
+        Send the initial set of messages.
 
         :param AbstractSendsBuffersFromHost vertex:
             The vertex to get the keys from
@@ -262,8 +266,7 @@ class BufferManager(object):
         bytes_to_go = vertex.get_region_buffer_size(region)
         if bytes_to_go % 2 != 0:
             raise SpinnFrontEndException(
-                "The buffer region of {} must be divisible by 2".format(
-                    vertex))
+                f"The buffer region of {vertex} must be divisible by 2")
         all_data = b""
         if vertex.is_empty(region):
             sent_message = True
@@ -288,17 +291,17 @@ class BufferManager(object):
 
         if not sent_message:
             raise BufferableRegionTooSmall(
-                "The buffer size {} is too small for any data to be added for"
-                " region {} of vertex {}".format(bytes_to_go, region, vertex))
+                f"The buffer size {bytes_to_go} is too small for any data to "
+                f"be added for region {region} of vertex {vertex}")
 
         # If there are no more messages and there is space, add a stop request
         if (not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             data = EventStopRequest().bytestring
             # logger.debug(
-            #    "Writing stop message of {} bytes to {} on {}, {}, {}".format(
+            #    "Writing stop message of {} bytes to {} on {}, {}, {}"
             #         len(data), hex(region_base_address),
-            #         placement.x, placement.y, placement.p))
+            #         placement.x, placement.y, placement.p)
             all_data += data
             bytes_to_go -= len(data)
             progress.update(len(data))
@@ -372,8 +375,9 @@ class BufferManager(object):
                 self._retreive_by_placement(db, placement)
 
     def get_data_by_placement(self, placement, recording_region_id):
-        """ Get the data container for all the data retrieved\
-            during the simulation from a specific region area of a core.
+        """
+        Get the data container for all the data retrieved
+        during the simulation from a specific region area of a core.
 
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
@@ -385,8 +389,8 @@ class BufferManager(object):
         # Ensure that any transfers in progress are complete first
         if not isinstance(placement.vertex, AbstractReceiveBuffersToHost):
             raise NotImplementedError(
-                "vertex {} does not implement AbstractReceiveBuffersToHost "
-                "so no data read".format(placement.vertex))
+                f"vertex {placement.vertex} does not implement "
+                "AbstractReceiveBuffersToHost so no data read")
 
         # data flush has been completed - return appropriate data
         with BufferDatabase() as db:
@@ -394,9 +398,10 @@ class BufferManager(object):
                 placement.x, placement.y, placement.p, recording_region_id)
 
     def _retreive_by_placement(self, db, placement):
-        """ Retrieve the data for a vertex; must be locked first.
+        """
+        Retrieve the data for a vertex; must be locked first.
 
-        :param db BufferDatabase: dtabase to store into
+        :param BufferDatabase db: database to store into
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
         :param int recording_region_id: desired recording data region
@@ -416,11 +421,12 @@ class BufferManager(object):
                 placement.x, placement.y, placement.p, region, missing, data)
 
     def _get_region_information(self, addr, x, y):
-        """ Get the recording information from all regions of a core
+        """
+        Get the recording information from all regions of a core.
 
         :param addr: The recording region base address
-        :param x: The x-coordinate of the chip containing the data
-        :param y: The y-coordinate of the chip containing the data
+        :param x: The X coordinate of the chip containing the data
+        :param y: The Y coordinate of the chip containing the data
         """
         transceiver = FecDataView.get_transceiver()
         n_regions = transceiver.read_word(x, y, addr)
@@ -435,7 +441,8 @@ class BufferManager(object):
 
     @property
     def sender_vertices(self):
-        """ The vertices which are buffered.
+        """
+        The vertices which are buffered.
 
         :rtype: iterable(AbstractSendsBuffersFromHost)
         """

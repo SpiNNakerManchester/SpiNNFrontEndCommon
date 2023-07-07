@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
 import os
 import unittest
 from spinn_utilities.config_holder import run_config_checks
+import spinn_front_end_common
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
@@ -26,8 +27,8 @@ class TestCfgChecker(unittest.TestCase):
     def test_cfg_checker(self):
         unittests = os.path.dirname(__file__)
         parent = os.path.dirname(unittests)
-        fec = os.path.join(parent, "spinn_front_end_common")
+        fec_dir = spinn_front_end_common.__path__[0]
         local = os.path.join(parent, "fec_local_tests")
         fec_it = os.path.join(parent, "fec_integration_tests")
         run_config_checks(directories=[
-            fec, local, fec_it, unittests])
+            fec_dir, local, fec_it, unittests])

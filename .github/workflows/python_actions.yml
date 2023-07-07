@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,16 @@
 
 name: Python Actions
 on: [push]
+env:
+  BASE_PKG: spinn_front_end_common
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.8, 3.9, "3.10", "3.11"]
 
     steps:
     - name: Checkout
@@ -39,44 +43,75 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install pip, etc
       uses: ./support/actions/python-tools
+
     - name: Install Spinnaker Dependencies
-      uses: ./support/actions/checkout-spinn-deps
+      uses: ./support/actions/install-spinn-deps
       with:
-        repositories: >
-          SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
+        repositories:
+          SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
         install: true
+
     - name: Setup
-      uses: ./support/actions/run-setup
+      uses: ./support/actions/run-install
 
     - name: Test with pytest
       uses: ./support/actions/pytest
       with:
         tests: unittests fec_integration_tests
         coverage: ${{ matrix.python-version == 3.8 }}
-        cover-packages: spinn_front_end_common
+        cover-packages: ${{ env.BASE_PKG }}
         coveralls-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Lint with flake8
       run: flake8 spinn_front_end_common unittests fec_integration_tests
     - name: Lint with pylint
       uses: ./support/actions/pylint
-      with: 
-        package: spinn_front_end_common
-        exitcheck: 39
+      with:
+        package: ${{ env.BASE_PKG }}
+        language: en_GB
+
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Checkout SupportScripts
+      uses: actions/checkout@v3
+      with:
+        repository: SpiNNakerManchester/SupportScripts
+        path: support
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install pip, etc
+      uses: ./support/actions/python-tools
+    - name: Install Spinnaker Dependencies
+      uses: ./support/actions/install-spinn-deps
+      with:
+        repositories:
+          SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
+        install: true
+    - name: Setup
+      uses: ./support/actions/run-install
 
     - name: Run rat copyright enforcement
-      if: matrix.python-version == 3.8
       uses: ./support/actions/check-copyrights
       with:
         config_file: rat_asl20.xml
-
-      #- name: Validate all XML
-    #  if: matrix.python-version == 3.8
-    #  uses: ./support/actions/validate-xml
-    #  with:
-    #    base-path: spinn_front_end_common
+    - name: Validate all XML
+      if: false
+      uses: ./support/actions/validate-xml
+      with:
+        base-path: ${{ env.BASE_PKG }}
     - name: Build documentation with sphinx
-      if: matrix.python-version == 3.8
       uses: ./support/actions/sphinx
       with:
         directory: doc/source
+    - name: Validate CITATION.cff
+      uses: dieghernan/cff-validator@main

@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,8 @@ _FOLDER_NAME = "routing_tables_from_machine"
 
 
 def routing_table_from_machine_report(routing_tables):
-    """ Report the routing table that was actually on the machine.
+    """
+    Report the routing table that was actually on the machine.
 
         folder_name = os.path.join(FecDataView().run_dir_path, _FOLDER_NAME)
         os.mkdir(folder_name)

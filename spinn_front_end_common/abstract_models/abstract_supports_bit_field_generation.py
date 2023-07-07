@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,14 +19,16 @@ from pacman.model.graphs.machine import MachineVertex
 
 @require_subclass(MachineVertex)
 class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
-    """ Marks a vertex that can provide information about bitfields it wants \
-        generated on-chip.
+    """
+    Marks a vertex that can provide information about bitfields it wants
+    generated on-chip.
     """
     __slots__ = ()
 
     @abstractmethod
     def bit_field_base_address(self, placement):
-        """ Returns the SDRAM address for the bit field table data.
+        """
+        Returns the SDRAM address for the bit field table data.
 
         :param ~pacman.model.placements.Placement placement:
         :return: the SDRAM address for the bitfield address
@@ -35,7 +37,8 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
 
     @abstractmethod
     def bit_field_builder_region(self, placement):
-        """ returns the SDRAM address for the bit field builder data
+        """
+        Returns the SDRAM address for the bit field builder data.
 
         :param ~pacman.model.placements.Placement placement:
         :return: the SDRAM address for the bitfield builder data

@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,9 +26,9 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def database_interface(runtime):
     """
-    :param ~pacman.model.tags.Tags tags:
-    :return: Database interface, where the database is located
-    :rtype: tuple(DatabaseInterface, str)
+    :param int runtime:
+    :return: where the database is located
+    :rtype: str
     """
     # pylint: disable=too-many-arguments
     needs_db = DatabaseWriter.auto_detect_database()
@@ -54,7 +54,6 @@ def _write_to_db(writer, runtime):
     :param DatabaseWriter writer:
     :param int runtime:
     """
-
     with writer as w, ProgressBar(
             6, "Creating graph description database") as p:
         w.add_system_params(runtime)
@@ -72,16 +71,17 @@ def _write_to_db(writer, runtime):
 
         if get_config_bool(
                 "Database", "create_routing_info_to_neuron_id_mapping"):
-            machine_vertices = [
+            machine_vertices = {
                 (vertex, vertex.injection_partition_id)
                 for vertex in FecDataView.iterate_machine_vertices()
                 if isinstance(vertex, AbstractSupportsDatabaseInjection)
-                and vertex.is_in_injection_mode]
-            machine_vertices.extend(lpg_source_machine_vertices)
+                and vertex.is_in_injection_mode}
+            machine_vertices.update(lpg_source_machine_vertices)
             live_vertices = FecDataView.iterate_live_output_vertices()
-            machine_vertices.extend(
+            machine_vertices.update(
                 (m_vertex, part_id)
                 for vertex, part_id in live_vertices
-                for m_vertex in vertex.machine_vertices)
+                for m_vertex in vertex.splitter.get_out_going_vertices(
+                    part_id))
             w.create_atom_to_event_id_mapping(machine_vertices)
         p.update()

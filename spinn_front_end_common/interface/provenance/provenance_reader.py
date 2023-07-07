@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,7 +40,8 @@ class ProvenanceReader(BaseDatabase):
 
     @classmethod
     def get_last_run_database_path(cls):
-        """ Get the path of the current provenance database of the last run
+        """
+        Get the path of the current provenance database of the last run.
 
        .. warning::
             Calling this method between start/reset and run may result in a
@@ -70,9 +71,9 @@ class ProvenanceReader(BaseDatabase):
     def run_query(self, query, params=()):
         """
         Opens a connection to the database, runs a query, extracts the results
-        and closes the connection
+        and closes the connection.
 
-        The return type depends on the use_sqlite_rows param.
+        The return type depends on the use_sqlite_rows parameter.
         By default this method returns tuples (lookup by index) but the
         advanced tuple type can be used instead, which supports lookup by name
         used in the query (use ``AS name`` in the query to set).
@@ -123,14 +124,14 @@ class ProvenanceReader(BaseDatabase):
 
     def get_provenance_for_router(self, x, y):
         """
-        Gets the provenance item(s) from the last run relating to a chip
+        Gets the provenance item(s) from the last run relating to a chip.
 
         :param int x:
             The X coordinate of the chip
         :param int y:
             The Y coordinate of the chip
         :return:
-            A possibly multiline string with for each row which matches the
+            A possibly multi-line string with for each row which matches the
             like a line ``description_name: value``
         :rtype: str
         """
@@ -149,7 +150,7 @@ class ProvenanceReader(BaseDatabase):
 
     def get_cores_with_provenance(self):
         """
-        Gets the cores with provenance
+        Gets the cores with provenance.
 
         :return: A list tuples (x, y, p)
         :rtype: list(tuple(int, int, int))
@@ -163,11 +164,11 @@ class ProvenanceReader(BaseDatabase):
 
     def get_router_by_chip(self, description):
         """
-        Gets the router values for a specific item
+        Gets the router values for a specific item.
 
         :param str description:
         :return: list of tuples x, y, value)
-        :rtype: lits((int, int float))
+        :rtype: list(tuple(int, int, float))
         """
         query = """
             SELECT x, y, the_value
@@ -182,11 +183,11 @@ class ProvenanceReader(BaseDatabase):
 
     def get_monitor_by_chip(self, description):
         """
-        Gets the monitor values for a specific item
+        Gets the monitor values for a specific item.
 
         :param str description:
         :return: list of tuples x, y, value)
-        :rtype: lits((int, int float))
+        :rtype: list(tuple(int, int, float))
         """
         query = """
             SELECT x, y, the_value
@@ -201,9 +202,9 @@ class ProvenanceReader(BaseDatabase):
 
     def messages(self):
         """
-        List all the provenance messages
+        List all the provenance messages.
 
-        :return: all messages logged or not
+        :return: all messages logged or not; order is whatever the DB chooses
         :rtype: list(str)
         """
         query = """
@@ -214,9 +215,10 @@ class ProvenanceReader(BaseDatabase):
 
     @staticmethod
     def demo():
-        """ A demonstration of how to use this class.
+        """
+        A demonstration of how to use this class.
 
-        See also unittests/interface/provenance/test_provenance_database.py
+        See also `unittests/interface/provenance/test_provenance_database.py`
         """
         # This uses the example file in the same directory as this script
         with ProvenanceReader(os.path.join(

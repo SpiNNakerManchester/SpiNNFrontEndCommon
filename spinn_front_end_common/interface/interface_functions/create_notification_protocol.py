@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,9 +16,8 @@ from spinn_front_end_common.utilities.notification_protocol import (
 
 
 def create_notification_protocol():
-    """ Builds the notification protocol for GUI and external device \
-        interaction.
-
+    """
+    Builds the notification protocol for GUI and external device interaction.
     """
     notification_protocol = NotificationProtocol()
     notification_protocol.send_read_notification()

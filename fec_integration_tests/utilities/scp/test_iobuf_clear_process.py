@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,11 +17,10 @@ import struct
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.processes import RoundRobinConnectionSelector
 from spinnman.messages.sdp import SDPHeader
+from spinnman.model.enums import SDP_RUNNING_MESSAGE_CODES
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
-from spinn_front_end_common.utilities.constants import (
-    SDP_RUNNING_MESSAGE_CODES)
 from fec_integration_tests.mock_machine import MockMachine
 
 

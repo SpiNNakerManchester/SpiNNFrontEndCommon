@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,12 +14,13 @@
 
 import os
 from pacman.utilities.utility_calls import md5
+from spinnman.model.enums import SDP_PORTS
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import SDP_PORTS
 
 
 def get_simulation_header_array(binary_file_name):
-    """ Get data to be written to the simulation header
+    """
+    Get data to be written to the simulation header.
 
     :param str binary_file_name: The name of the binary of the application
     :return: An array of values to be written as the simulation header
@@ -40,7 +41,8 @@ def get_simulation_header_array(binary_file_name):
 
 
 def get_simulation_header_array_no_timestep(binary_file_name):
-    """ Get data to be written to the simulation header
+    """
+    Get data to be written to the simulation header.
 
     :param str binary_file_name: The name of the binary of the application
     :return: An array of values to be written as the simulation header

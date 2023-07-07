@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 
 def chip_runtime_updater(n_sync_steps):
-    """ Updates the runtime of an application running on a SpiNNaker machine.
+    """
+    Updates the runtime of an application running on a SpiNNaker machine.
 
-        :param n_sync_steps:
-        :type n_sync_steps: int or None
+    :param n_sync_steps:
+    :type n_sync_steps: int or None
     """
     core_subsets = FecDataView.get_executable_types()[
         ExecutableType.USES_SIMULATION_INTERFACE]

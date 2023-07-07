@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@
 
 #include <stdbool.h>
 #include <spin1_api.h>
+#include <spin1_api_params.h>
 #include <debug.h>
 #include <malloc_extras.h>
 #include "../common/routing_table.h"
@@ -67,6 +68,16 @@
 //!
 //! This is common across all the functions in this file.
 table_t *table;
+
+//! DMA read flags
+static const uint32_t DMA_READ_FLAGS =
+        DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19;
+
+//! Value of the masked DMA status register when transfer is complete
+#define DMA_COMPLETE 0x400
+
+//! Mask to apply to the DMA status register to check for completion
+#define DMA_CHECK_MASK 0x401
 
 //! \brief The header of the routing table information in the input data block.
 //!
@@ -169,6 +180,37 @@ void cleanup_and_exit(header_t *header) {
 
     log_info("completed router compressor");
     malloc_extras_terminate(EXITED_CLEANLY);
+}
+
+//! \brief Gets a pointer to several entries
+//! \param[in] start_entry: The first entry to get
+//! \param[in] n_entries: The number of entries to get
+//! \param[out] output: Where to put the entries read - must have enough space!
+//! \return: Whether the entries are available now, or should be waited for
+bool routing_table_get_entries(uint32_t start_entry, uint32_t n_entries,
+        entry_t *output) {
+    uint32_t length = n_entries * sizeof(entry_t);
+    uint32_t desc = DMA_READ_FLAGS | length;
+    dma[DMA_ADRS] = (uint32_t) &table->entries[start_entry];
+    dma[DMA_ADRT] = (uint32_t) output;
+    dma[DMA_DESC] = desc;
+    return false;
+}
+
+
+//! \brief Is there a DMA currently running?
+//! \return True if there is something transferring now.
+static inline bool dma_done(void) {
+    return (dma[DMA_STAT] & DMA_CHECK_MASK) == DMA_COMPLETE;
+}
+
+//! \brief Waits for the last transfer from routing_table_get_entries to complete
+//! \details Returns immediately if the last transfer is already done
+void routing_table_wait_for_last_transfer(void) {
+    while (!dma_done()) {
+        continue;
+    }
+    dma[DMA_CTRL] = 0x8;
 }
 
 #endif //__RT_SINGLE_H__

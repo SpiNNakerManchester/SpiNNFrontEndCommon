@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,11 +16,12 @@ from configparser import NoOptionError
 import logging
 import os
 import shutil
+import traceback
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
     get_config_str, get_config_str_list, set_config)
+from spinn_machine import Machine
 from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -43,8 +44,9 @@ _REPORT_DISABLE_OPTS = frozenset([
 
 
 class ConfigHandler(object):
-    """ Superclass of AbstractSpinnakerBase that handles function only \
-        dependent of the config and the order its methods are called.
+    """
+    Superclass of AbstractSpinnakerBase that handles function only
+    dependent of the configuration and the order its methods are called.
     """
 
     __slots__ = [
@@ -77,7 +79,9 @@ class ConfigHandler(object):
             Machine.set_max_cores_per_chip(max_machine_core)
 
     def _debug_configs(self):
-        """ Adjust and checks config based on mode and reports_enabled
+        """
+        Adjusts and checks the configuration based on mode and
+        `reports_enabled`.
 
         :raises ConfigurationException:
         """
@@ -122,13 +126,12 @@ class ConfigHandler(object):
             "See https://spinnakermanchester.github.io/common_pages/"
             "Algorithms.html.")
 
-    def _adjust_config(self, runtime,):
-        """ Adjust and checks config based on runtime
+    def _adjust_config(self, runtime):
+        """
+        Adjust and checks the configuration based on runtime
 
         :param runtime:
         :type runtime: int or bool
-        :param frozenset(str) debug_enable_opts:
-        :param frozenset(str) report_disable_opts:
         :raises ConfigurationException:
         """
         if runtime is None:
@@ -199,6 +202,9 @@ class ConfigHandler(object):
         _, timestamp = os.path.split(timestamp_dir_path)
         with open(time_of_run_file_name, "w", encoding="utf-8") as f:
             f.writelines(timestamp)
+            f.write("\n")
+            f.write("Traceback of setup call:\n")
+            traceback.print_stack(file=f)
 
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(
@@ -207,15 +213,15 @@ class ConfigHandler(object):
             f.writelines("file_name")
 
     def write_finished_file(self):
-        """ Write a finished file that allows file removal to only remove
-            folders that are finished.
-            :rtype: None
+        """
+        Write a finished file that allows file removal to only remove
+        folders that are finished.
         """
         self.__write_named_file(FINISHED_FILENAME)
 
     def write_errored_file(self):
-        """ Writes a errored file that allows file removal to only remove \
-            folders that are errored if requested to do so
-        :rtype:
+        """
+        Writes an ``errored`` file that allows file removal to only remove
+        folders that have errors if requested to do so
         """
         self.__write_named_file(ERRORED_FILENAME)

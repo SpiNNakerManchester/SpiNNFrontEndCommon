@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,11 +50,12 @@ REPORTS_DIRNAME = "reports"
 
 class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     """
-    See UtilsDataWriter
+    See :py:class:`~spinn_utilities.data.utils_data_writer.UtilsDataWriter`.
 
-    This class is designed to only be used directly by AbstractSpinnakerBase
-    and within the None PyNN repositories unittests as all methods are
-    available to subclasses
+    This class is designed to only be used directly by
+    :py:class:`AbstractSpinnakerBase`
+    and within the Non-PyNN repositories unit tests as all methods are
+    available to subclasses.
     """
     __fec_data = _FecDataModel()
     __slots__ = []
@@ -135,9 +136,9 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_allocation_controller(self, allocation_controller):
         """
-        Sets the allocation controller variable
+        Sets the allocation controller variable.
 
-        :param AbstractMachineAllocationController buffer_manager:
+        :param AbstractMachineAllocationController allocation_controller:
         """
         if allocation_controller and not isinstance(
                 allocation_controller, AbstractMachineAllocationController):
@@ -147,7 +148,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_buffer_manager(self, buffer_manager):
         """
-        Sets the Buffer manager variable
+        Sets the Buffer manager variable.
 
         :param BufferManager buffer_manager:
         """
@@ -157,17 +158,16 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def increment_current_run_timesteps(self, increment):
         """
-        Increment the current_run_timesteps and sets first_machine_time_step
+        Increment the current_run_timesteps and sets first_machine_time_step.
 
-        A None increment signals run_forever
+        A `None` increment signals run_forever
 
         :param increment: The timesteps for this do_run loop
-        :rtype increment: int or None
+        :type increment: int or None
         """
         if increment is None:
             if self.__fec_data._current_run_timesteps != 0:
-                raise NotImplementedError(
-                    "Run forever after another run")
+                raise NotImplementedError("Run forever after another run")
             self.__fec_data._current_run_timesteps = None
         else:
             if not isinstance(increment, int):
@@ -176,8 +176,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 raise ConfigurationException(
                     f"increment {increment} must not be negative")
             if self.__fec_data._current_run_timesteps is None:
-                raise NotImplementedError(
-                    "Run after run forever")
+                raise NotImplementedError("Run after run forever")
             self.__fec_data._first_machine_time_step = \
                 self.__fec_data._current_run_timesteps
             self.__fec_data._current_run_timesteps += increment
@@ -198,20 +197,22 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def set_up_timings(
             self, simulation_time_step_us, time_scale_factor,
             default_time_scale_factor=None):
-        """ Set up timings for the simulation
+        """
+        Set up timings for the simulation.
 
         :param simulation_time_step_us:
             An explicitly specified time step for the simulation in .
-            If None, the value is read from the config
+            If `None`, the value is read from the configuration
         :type simulation_time_step_us: int or None
         :param time_scale_factor:
             An explicitly specified time scale factor for the simulation.
-            If None, the value is read from the config
+            If `None`, the value is read from the configuration
         :type time_scale_factor: float or None
         :param default_time_scale_factor:
             A back up time scale factor for the simulation.
-            Only used if time_scale_factor param and cfg are both None
-            If None, the value is based on simulation_time_step
+            Only used if time_scale_factor parameter and configuration are
+            both `None`.
+            If `None`, the value is based on `simulation_time_step`
         :type default_time_scale_factor: float or None
         """
         try:
@@ -232,10 +233,9 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def _set_simulation_time_step(self, simulation_time_step_us):
         """
-
         :param simulation_time_step_us:
-            An explicitly specified time step for the simulation.  If None,
-            the value is read from the config
+            An explicitly specified time step for the simulation.  If `None`,
+            the value is read from the configuration
         :type simulation_time_step: int or None
         """
         if simulation_time_step_us is None:
@@ -248,7 +248,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if simulation_time_step_us <= 0:
             raise ConfigurationException(
                 f'invalid simulation_time_step {simulation_time_step_us}'
-                f': must greater than zero')
+                ': must greater than zero')
 
         self.__fec_data._simulation_time_step_us = simulation_time_step_us
         self.__fec_data._simulation_time_step_ms = (
@@ -262,11 +262,12 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def _set_time_scale_factor(
             self, time_scale_factor, default_time_scale_factor):
-        """ Set up time_scale_factor
+        """
+        Set up time_scale_factor.
 
         If time_scale_factor is provide that is used
 
-        Then if cfg is not None that is used
+        Then if configuration is not `None` that is used
 
         Then if default is provided that is used
 
@@ -274,13 +275,12 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
         :param time_scale_factor:
             An explicitly specified time scale factor for the simulation.
-            If None, the value is read from the config
+            If `None`, the value is read from the configuration
         :type time_scale_factor: float or None
         """
         if time_scale_factor is None:
             # Note while this reads from the cfg the cfg default is None
-            time_scale_factor = get_config_int(
-                "Machine", "time_scale_factor")
+            time_scale_factor = get_config_int("Machine", "time_scale_factor")
 
         if time_scale_factor is None:
             if default_time_scale_factor is not None:
@@ -301,7 +301,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if time_scale_factor <= 0:
             raise ConfigurationException(
                 f'invalid time_scale_factor {time_scale_factor}'
-                f': must greater than zero')
+                ': must greater than zero')
 
         self.__fec_data._time_scale_factor = time_scale_factor
 
@@ -311,7 +311,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         rounded = round(raw)
         if abs(rounded - raw) > 0.0001:
             raise ConfigurationException(
-                f"The multiplication of simulation time step in microseconds: "
+                "The multiplication of simulation time step in microseconds: "
                 f"{self.get_simulation_time_step_us()} and times scale factor"
                 f": {self.get_time_scale_factor()} produced a non integer "
                 f"hardware time step of {raw}")
@@ -326,13 +326,16 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_system_multicast_routing_data(self, data):
         """
-        Sets the system_multicast_routing_data
+        Sets the system_multicast_routing_data.
 
-        These are data_in_multicast_routing_tables,
-                 data_in_multicast_key_to_chip_map,
-                 system_multicast_router_timeout_keys
+        These are: `data_in_multicast_routing_tables`,
+        `data_in_multicast_key_to_chip_map`,
+        `system_multicast_router_timeout_keys`
 
-        :param tuple(dict, MulticastRoutingTables, dict) data: new value
+        :param data: new value
+        :type data:
+            tuple(~pacman.model.routing_tables.MulticastRoutingTables,
+            dict, dict)
         """
         (data_in_multicast_routing_tables,
          data_in_multicast_key_to_chip_map,
@@ -353,13 +356,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_n_required(self, n_boards_required, n_chips_required):
         """
-        Sets (if not None) the number of boards/chips requested by the user
+        Sets (if not `None`) the number of boards/chips requested by the user.
 
-        :param n_boards_required: None or the number of boards requested by
-            the user
+        :param n_boards_required:
+            `None` or the number of boards requested by the user
         :type n_boards_required: int or None
-        :param n_chips_required: None or the number of chips requested by
-            the user
+        :param n_chips_required:
+            `None` or the number of chips requested by the user
         :type n_chips_required: int or None
         """
         if n_boards_required is None:
@@ -369,18 +372,18 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 raise TypeError("n_chips_required must be an int (or None)")
             if n_chips_required <= 0:
                 raise ConfigurationException(
-                    f"n_chips_required must be positive and not "
+                    "n_chips_required must be positive and not "
                     f"{n_chips_required}")
         else:
             if n_chips_required is not None:
                 raise ConfigurationException(
-                    f"Illegal call with both both param provided as "
+                    "Illegal call with both both param provided as "
                     f"{n_boards_required}, {n_chips_required}")
             if not isinstance(n_boards_required, int):
                 raise TypeError("n_boards_required must be an int (or None)")
             if n_boards_required <= 0:
                 raise ConfigurationException(
-                    f"n_boards_required must be positive and not "
+                    "n_boards_required must be positive and not "
                     f"{n_boards_required}")
         if self.__fec_data._n_boards_required is not None or \
                 self.__fec_data._n_chips_required is not None:
@@ -391,31 +394,29 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_n_chips_in_graph(self, n_chips_in_graph):
         """
-        Sets the number of chips needed by the graph
+        Sets the number of chips needed by the graph.
 
-        :param n_chips_in_graph:
-        :return:
+        :param int n_chips_in_graph:
         """
         if not isinstance(n_chips_in_graph, int):
             raise TypeError("n_chips_in_graph must be an int (or None)")
         if n_chips_in_graph <= 0:
             raise ConfigurationException(
-                f"n_chips_in_graph must be positive and not "
+                "n_chips_in_graph must be positive and not "
                 f"{n_chips_in_graph}")
         self.__fec_data._n_chips_in_graph = n_chips_in_graph
 
-    def set_ipaddress(self, ipaddress):
+    def set_ipaddress(self, ip_address):
         """
-
-        :param str ipaddress:
+        :param str ip_address:
         """
-        if not isinstance(ipaddress, str):
+        if not isinstance(ip_address, str):
             raise TypeError("ipaddress must be a str")
-        self.__fec_data._ipaddress = ipaddress
+        self.__fec_data._ipaddress = ip_address
 
     def set_fixed_routes(self, fixed_routes):
         """
-
+        :param fixed_routes:
         :type fixed_routes:
             dict(tuple(int,int), ~spinn_machine.FixedRouteEntry)
         """
@@ -425,25 +426,23 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_java_caller(self, java_caller):
         """
-
-        :param  JavaCaller java_caller:
+        :param JavaCaller java_caller:
         """
         if not isinstance(java_caller, JavaCaller):
-            raise TypeError("java_calle must be a JavaCaller")
+            raise TypeError("java_caller must be a JavaCaller")
         self.__fec_data._java_caller = java_caller
 
     def reset_sync_signal(self):
         """
-        Retruns the snyc signal to the default value
-
+        Returns the sync signal to the default value.
         """
         self.__fec_data._next_sync_signal = Signal.SYNC0
 
     def set_executable_types(self, executable_types):
         """
-
-        :type executable_types:  dict(
-            ~spinn_front_end_common.utilities.utility_objs.ExecutableType,
+        :param executable_types:
+        :type executable_types: dict(
+            ~spinnman.model.enum.ExecutableType,
             ~spinn_machine.CoreSubsets or None)
         """
         if not isinstance(executable_types, dict):
@@ -460,8 +459,9 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_database_file_path(self, database_file_path):
         """
-        Sets the database_file_path variable. Possibly to None
+        Sets the database_file_path variable. Possibly to `None`.
 
+        :param database_file_path:
         :type database_file_path: str or None
         """
         if not isinstance(database_file_path, (str, type(None))):
@@ -472,21 +472,22 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         Sets the executable_targets
 
-        :type executable_targets: ExecutableTargets
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         """
         if not isinstance(executable_targets, ExecutableTargets):
             raise TypeError("executable_targets must be a ExecutableTargets")
         self.__fec_data._executable_targets = executable_targets
 
-    def set_dsg_targets(self, dsg_targets):
+    def set_ds_database(self, ds_database):
         """
-        Sets the data Spec targets database
+        Sets the Data Spec targets database.
 
-        :type dsg_targets: ExecutableTargets
+        :type ds_database:
+            ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
         """
-        if not isinstance(dsg_targets, DsSqlliteDatabase):
-            raise TypeError("dsg_targets must be a DsSqlliteDatabase")
-        self.__fec_data._dsg_targets = dsg_targets
+        if not isinstance(ds_database, DsSqlliteDatabase):
+            raise TypeError("ds_database must be a DsSqlliteDatabase")
+        self.__fec_data._ds_database = ds_database
 
     def __gatherer_map_error(self):
         return TypeError(
@@ -495,8 +496,9 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_gatherer_map(self, gatherer_map):
         """
-        Sets the map of x,y to Gatherer Vertices
+        Sets the map of (x,y) to Gatherer Vertices.
 
+        :param gatherer_map:
         :type gatherer_map:
             dict((int, int), DataSpeedUpPacketGatherMachineVertex)
         """
@@ -523,8 +525,9 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_monitor_map(self, monitor_map):
         """
-        Sets the map of x,y to Monitor Vertices
+        Sets the map of (x,y) to Monitor Vertices.
 
+        :param monitor_map:
         :type monitor_map:
             dict((int, int), ExtraMonitorSupportMachineVertex)
         """
@@ -539,15 +542,17 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 if not isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     raise self.__monitor_map_error()
                 break  # assume if first is ok all are
+        except TypeError:
+            raise
         except Exception as ex:  # pylint: disable=broad-except
             raise self.__monitor_map_error() from ex
         self.__fec_data._monitor_map = monitor_map
 
     def set_notification_protocol(self, notification_protocol):
         """
-        Sets the notification_protocol
+        Sets the notification_protocol.
 
-        :type notification_protocol: NotificationProtocol
+        :param NotificationProtocol notification_protocol:
         """
         self.__fec_data._clear_notification_protocol()
         if not isinstance(notification_protocol, NotificationProtocol):
@@ -557,7 +562,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def clear_notification_protocol(self):
         """
-        Closes an existing notification_protocol and sets the value to None
+        Closes an existing notification_protocol and sets the value to `None`.
 
         If no notification_protocol exist this method silently returns.
 
@@ -588,11 +593,10 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def clear_run_steps(self):
         """
-        Clears the run step
+        Clears the run step.
 
-        get_run_step will go back to returning None
+        get_run_step will go back to returning `None`
 
         next_run_step will restart at 1
-
         """
         self.__fec_data._run_step = None

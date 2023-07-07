@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,10 +28,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class DatabaseConnection(UDPConnection):
-    """ A connection from the toolchain which will be notified when the \
-        database has been written, and can then respond when the database \
-        has been read, and further wait for notification that the simulation \
-        has started.
+    """
+    A connection from the toolchain which will be notified when the
+    database has been written, and can then respond when the database
+    has been read, and further wait for notification that the simulation
+    has started.
 
     .. note::
         The machine description database reader can only be used while the
@@ -80,7 +81,8 @@ class DatabaseConnection(UDPConnection):
         thread.start()
 
     def add_database_callback(self, database_callback_function):
-        """ Add a database callback to be called when the database is ready.
+        """
+        Add a database callback to be called when the database is ready.
 
         :param callable(DatabaseReader,None) database_callback_function:
             A function to be called when the database message has been
@@ -114,7 +116,7 @@ class DatabaseConnection(UDPConnection):
         # Wait to be told by the toolchain where the DB is located
         try:
             data, toolchain_address = self.receive_with_address(timeout)
-        except SpinnmanTimeoutException:
+        except (SpinnmanIOException, SpinnmanTimeoutException):
             return
         self.__read_db(toolchain_address, data)
 
