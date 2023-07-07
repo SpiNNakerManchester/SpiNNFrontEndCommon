@@ -190,6 +190,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         reader = ProvenanceReader()
         data = reader.run_query("Select * from app_vertex_provenance")
         expected = [(1, 'pop', 'type', 'description', 0.5)]
+        self.assertListEqual(expected, data)
 
     def test_lut(self):
         with ProvenanceWriter() as db:
