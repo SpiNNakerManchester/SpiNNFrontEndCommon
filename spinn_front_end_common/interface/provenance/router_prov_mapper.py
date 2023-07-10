@@ -19,6 +19,7 @@ import sqlite3
 from types import ModuleType
 from typing import (
     Any, ContextManager, FrozenSet, Iterable, List, Optional, Tuple, cast)
+from typing_extensions import Literal
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 # import matplotlib.pyplot as plot
@@ -50,7 +51,7 @@ ROUTER_PLOTTABLES = (
 SINGLE_PLOTNAME = "Plot.png"
 
 
-class Plotter(ContextManager['Plotter']):
+class Plotter(ContextManager[SQLiteDB]):
     __slots__ = ("cmap", "_db", "__have_insertion_order", "__verbose")
 
     __pyplot: Optional[ModuleType] = None
@@ -62,10 +63,10 @@ class Plotter(ContextManager['Plotter']):
         self.__verbose = verbose
         self.cmap = "plasma"
 
-    def __enter__(self) -> 'Plotter':
+    def __enter__(self) -> SQLiteDB:
         return self._db.__enter__()
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *args) -> Literal[False]:
         return self._db.__exit__(*args)
 
     def __do_chip_query(self, description: str) -> Iterable[sqlite3.Row]:

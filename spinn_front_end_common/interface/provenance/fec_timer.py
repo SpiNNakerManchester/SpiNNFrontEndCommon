@@ -87,12 +87,18 @@ class FecTimer(object):
         if self._print_timings:
             logger.info(message)
 
+    def _insert_timing(
+            self, time_taken: timedelta, skip_reason: Optional[str]):
+        if self._category_id is not None:
+            with GlobalProvenance() as db:
+                db.insert_timing(
+                    self._category_id, self._algorithm, self._work,
+                    time_taken, skip_reason)
+
     def skip(self, reason: str):
         message = f"{self._algorithm} skipped as {reason}"
         time_taken = self._stop_timer()
-        with GlobalProvenance() as db:
-            db.insert_timing(self._category_id, self._algorithm, self._work,
-                             time_taken, reason)
+        self._insert_timing(time_taken, reason)
         self._report(message)
 
     def skip_if_has_not_run(self) -> bool:
@@ -141,9 +147,7 @@ class FecTimer(object):
     def error(self, reason: str):
         time_taken = self._stop_timer()
         message = f"{self._algorithm} failed after {time_taken} as {reason}"
-        with GlobalProvenance() as db:
-            db.insert_timing(self._category_id, self._algorithm,
-                             self._work, time_taken, reason)
+        self._insert_timing(time_taken, reason)
         self._report(message)
 
     def _stop_timer(self) -> timedelta:
@@ -186,9 +190,7 @@ class FecTimer(object):
                            f"after {time_taken}")
                 skip = f"Exception {ex}"
 
-        with GlobalProvenance() as db:
-            db.insert_timing(self._category_id, self._algorithm, self._work,
-                             time_taken, skip)
+        self._insert_timing(time_taken, skip)
         self._report(message)
         return False
 

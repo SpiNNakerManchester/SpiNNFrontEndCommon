@@ -14,7 +14,7 @@
 from contextlib import ExitStack
 import logging
 import math
-from typing import Dict, Tuple, Optional
+from typing import ContextManager, Dict, Tuple, Optional, cast
 from spinn_utilities.config_holder import get_config_str_list, get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -296,7 +296,7 @@ def _allocate_job_new(
         spalloc_machine = get_config_str("Machine", "spalloc_machine")
         use_proxy = get_config_bool("Machine", "spalloc_use_proxy") or False
         client = SpallocClient(spalloc_server, bearer_token=bearer_token)
-        stack.enter_context(client)
+        stack.enter_context(cast(ContextManager[SpallocClient], client))
         job = client.create_job(n_boards, spalloc_machine)
         stack.enter_context(job)
         task = job.launch_keepalive_task()

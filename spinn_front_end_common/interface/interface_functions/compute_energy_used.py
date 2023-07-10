@@ -186,8 +186,7 @@ def _router_packet_energy(power_used: PowerUsed):
     energy_cost = 0.0
     with ProvenanceReader() as db:
         for name, cost in _COST_PER_TYPE.items():
-            data = db.get_router_by_chip(name)
-            for (x, y, value) in data:
+            for (x, y, value) in db.get_router_by_chip(name):
                 this_cost = value * cost
                 energy_cost += this_cost
                 if this_cost:

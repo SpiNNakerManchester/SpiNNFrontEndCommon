@@ -101,9 +101,9 @@ def _merged_component(
                 f"merged into it. Which is {merged / to_merge:.2%}\n")
             total_bit_fields_merged += int(merged)
             if merged > top_bit_field:
-                top_bit_field = merged
+                top_bit_field = int(merged)
             if merged < min_bit_field:
-                min_bit_field = merged
+                min_bit_field = int(merged)
             average_per_chip_merged += merged
             n_chips += 1
 

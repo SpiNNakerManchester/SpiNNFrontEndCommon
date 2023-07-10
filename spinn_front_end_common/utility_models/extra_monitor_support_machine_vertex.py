@@ -165,6 +165,7 @@ class ExtraMonitorSupportMachineVertex(
         Looks up from the machine what the current transaction id is
         and updates the extra monitor.
         """
+        assert self._placement is not None, "vertex not placed!"
         self._transaction_id = FecDataView.get_transceiver().read_user(
             self._placement.x, self._placement.y, self._placement.p,
             UserRegister.USER_1)

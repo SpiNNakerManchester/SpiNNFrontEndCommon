@@ -128,7 +128,8 @@ class ProvenanceWriter(BaseDatabase):
                 """, [x, y, description, the_value, expected])
 
     def insert_core(
-            self, x: int, y: int, p: int, description: str, the_value: int):
+            self, x: int, y: int, p: int, description: str,
+            the_value: Union[int, float]):
         """
         Inserts data for a specific core into the `core_provenance` table.
 

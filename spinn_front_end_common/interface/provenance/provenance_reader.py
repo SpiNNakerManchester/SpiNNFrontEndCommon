@@ -166,8 +166,7 @@ class ProvenanceReader(BaseDatabase):
             """
         return cast(List[XYP], self.run_query(query))
 
-    def get_router_by_chip(
-            self, description: str) -> Optional[List[_RouterItem]]:
+    def get_router_by_chip(self, description: str) -> List[_RouterItem]:
         """
         Gets the router values for a specific item.
 
@@ -184,10 +183,9 @@ class ProvenanceReader(BaseDatabase):
         try:
             return cast(List[_RouterItem], data)
         except IndexError:
-            return None
+            return []
 
-    def get_monitor_by_chip(
-            self, description: str) -> Optional[List[_MonitorItem]]:
+    def get_monitor_by_chip(self, description: str) -> List[_MonitorItem]:
         """
         Gets the monitor values for a specific item.
 
@@ -204,7 +202,7 @@ class ProvenanceReader(BaseDatabase):
         try:
             return cast(List[_MonitorItem], data)
         except IndexError:
-            return None
+            return []
 
     def messages(self) -> List[str]:
         """
