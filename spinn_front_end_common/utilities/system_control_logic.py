@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
 from spinnman.exceptions import (
     SpinnmanException, SpiNNManCoresNotInStateException)
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import ExecutableType
+from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
@@ -59,7 +60,7 @@ def run_system_application(
     """
     transceiver = FecDataView.get_transceiver()
     # load the executable
-    transceiver.execute_application(executable_cores, app_id)
+    _load_application(executable_cores, app_id)
 
     if needs_sync_barrier:
 
@@ -91,8 +92,7 @@ def run_system_application(
         succeeded = True
     except SpiNNManCoresNotInStateException as ex:
         error = ex
-        core_state_string = transceiver.get_core_status_string(
-            ex.failed_core_states())
+        core_state_string = ex.failed_core_states().get_status_string()
     except SpinnmanException as ex:
         # Delay the exception until iobuf is ready
         error = ex
@@ -134,3 +134,42 @@ def _report_iobuf_messages(cores, logger, filename_template):
             logger.warn(entry)
         for entry in error_entries:
             logger.error(entry)
+
+
+def _load_application(executable_targets, app_id):
+    """
+    Execute a set of binaries that make up a complete application on
+    specified cores, wait for them to be ready and then start all of the
+    binaries.
+
+    .. note::
+        This will get the binaries into c_main but will not signal the
+        barrier.
+
+    :param ExecutableTargets executable_targets:
+        The binaries to be executed and the cores to execute them on
+    :param int app_id: The app_id to give this application
+    """
+    # Execute each of the binaries and get them in to a "wait" state
+    transceiver = FecDataView.get_transceiver()
+    for binary in executable_targets.binaries:
+        core_subsets = executable_targets.get_cores_for_binary(binary)
+        transceiver.execute_flood(
+            core_subsets, binary, app_id, wait=True, is_filename=True)
+
+    # Sleep to allow cores to get going
+    time.sleep(0.5)
+
+    # Check that the binaries have reached a wait state
+    count = transceiver.get_core_state_count(app_id, CPUState.READY)
+    if count < executable_targets.total_processors:
+        cores_ready = transceiver.get_cores_not_in_state(
+            executable_targets.all_core_subsets, [CPUState.READY])
+        if len(cores_ready) > 0:
+            raise SpinnmanException(
+                f"Only {count} of {executable_targets.total_processors} "
+                "cores reached ready state: "
+                f"{cores_ready.get_status_string()}")
+
+    # Send a signal telling the application to start
+    transceiver.send_signal(app_id, Signal.START)
