@@ -270,18 +270,15 @@ class DatabaseWriter(SQLiteDB):
                     """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
                 )
 
-    def _is_machine_lpg(self, vertex):
-        return (isinstance(vertex, LivePacketGatherMachineVertex) and
-                not isinstance(vertex.app_vertex, LivePacketGather))
-
-    def _is_machine(self, edge):
-        return (isinstance(edge.pre_vertex, AbstractOneAppOneMachineVertex) and
-                isinstance(edge.post_vertex, AbstractOneAppOneMachineVertex))
-
     def _get_machine_lpg_mappings(self, part):
         for edge in part.edges:
-            if (self._is_machine(edge) and
-                    self._is_machine_lpg(edge.post_vertex.machine_vertex)):
+            if (isinstance(edge.pre_vertex,
+                           AbstractOneAppOneMachineVertex) and
+                    isinstance(edge.post_vertex,
+                               AbstractOneAppOneMachineVertex) and
+                    isinstance(edge.post_vertex.machine_vertex,
+                               LivePacketGatherMachineVertex) and
+                    not isinstance(edge.post_vertex, LivePacketGather)):
                 yield (edge.pre_vertex.machine_vertex, part.identifier,
                        edge.post_vertex.machine_vertex)
 
