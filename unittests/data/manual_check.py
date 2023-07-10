@@ -25,7 +25,7 @@ from spinn_utilities.config_holder import clear_cfg_files
 
 # reset the configs without mocking the global data
 clear_cfg_files(True)
-add_spinnaker_cfg()
+add_spinnaker_cfg(board_type=None)
 
 view = FecDataView()
 try:
