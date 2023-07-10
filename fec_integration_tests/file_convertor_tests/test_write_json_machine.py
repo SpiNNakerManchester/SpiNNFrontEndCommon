@@ -38,7 +38,7 @@ class TestWriteJson(unittest.TestCase):
     mainPort = 22244
 
     def setUp(self):
-        unittest_setup()
+        unittest_setup(board_type=1)
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
