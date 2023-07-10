@@ -13,12 +13,12 @@
 # limitations under the License.
 
 import argparse
-from contextlib import AbstractContextManager
 import os
 import numpy
 import sqlite3
 from types import ModuleType
-from typing import Any, FrozenSet, Iterable, List, Optional, Tuple, cast
+from typing import (
+    Any, ContextManager, FrozenSet, Iterable, List, Optional, Tuple, cast)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 # import matplotlib.pyplot as plot
@@ -50,7 +50,7 @@ ROUTER_PLOTTABLES = (
 SINGLE_PLOTNAME = "Plot.png"
 
 
-class Plotter(AbstractContextManager['Plotter']):
+class Plotter(ContextManager['Plotter']):
     __slots__ = ("cmap", "_db", "__have_insertion_order", "__verbose")
 
     __pyplot: Optional[ModuleType] = None
