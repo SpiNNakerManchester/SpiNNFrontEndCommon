@@ -15,8 +15,7 @@
 import functools
 import logging
 import struct
-from typing import Dict, List, Sequence, Tuple
-from typing_extensions import NewType
+from typing import Dict, List, NewType, Sequence, Tuple
 from collections import defaultdict
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
