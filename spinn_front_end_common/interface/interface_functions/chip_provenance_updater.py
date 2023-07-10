@@ -31,14 +31,17 @@ _LIMIT = 10
 
 
 def chip_provenance_updater(all_core_subsets: CoreSubsets):
-    _ChipProvenanceUpdater(all_core_subsets).update_all_provenance()
+    updater = _ChipProvenanceUpdater(all_core_subsets)
+    # pylint: disable=protected-access
+    updater._run()
 
 
 class _ChipProvenanceUpdater(object):
     """
     Forces all cores to generate provenance data, and then exit.
     """
-    __slots__ = ("__all_cores", "__app_id", "__txrx")
+
+    __slots__ = ["__all_cores", "__app_id", "__txrx"]
 
     def __init__(self, all_core_subsets: CoreSubsets):
         """
@@ -48,7 +51,7 @@ class _ChipProvenanceUpdater(object):
         self.__app_id = FecDataView.get_app_id()
         self.__txrx = FecDataView.get_transceiver()
 
-    def update_all_provenance(self) -> None:
+    def _run(self) -> None:
         # check that the right number of processors are in sync
         processors_completed = self.__txrx.get_core_state_count(
             self.__app_id, CPUState.FINISHED)
@@ -58,12 +61,15 @@ class _ChipProvenanceUpdater(object):
         with ProgressBar(
                 left_to_do_cores,
                 "Forcing error cores to generate provenance data") as progress:
-            error_cores = self.__txrx.get_cores_in_state(
-                self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
-            watchdog_cores = self.__txrx.get_cores_in_state(
-                self.__all_cores, CPUState.WATCHDOG)
-            idle_cores = self.__txrx.get_cores_in_state(
-                self.__all_cores, CPUState.IDLE)
+            cpu_infos = self.__txrx.get_cpu_infos(
+                self.__all_cores, [
+                    CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
+                    CPUState.IDLE],
+                include=True)
+            error_cores = cpu_infos.infos_for_state(
+                CPUState.RUN_TIME_EXCEPTION)
+            watchdog_cores = cpu_infos.infos_for_state(CPUState.WATCHDOG)
+            idle_cores = cpu_infos.infos_for_state(CPUState.IDLE)
 
             if error_cores or watchdog_cores or idle_cores:
                 raise ConfigurationException(
@@ -85,12 +91,13 @@ class _ChipProvenanceUpdater(object):
         :param int processors_completed:
         :param ~.ProgressBar progress:
         """
+        # pylint: disable=too-many-arguments
         left_to_do_cores = total_processors - processors_completed
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:
             attempts += 1
-            unsuccessful_cores = self.__txrx.get_cores_not_in_state(
-                self.__all_cores, CPUState.FINISHED)
+            unsuccessful_cores = self.__txrx.get_cpu_infos(
+                self.__all_cores, CPUState.FINISHED, False)
 
             for (x, y, p) in unsuccessful_cores.keys():
                 self._send_chip_update_provenance_and_exit(x, y, p)
@@ -109,13 +116,7 @@ class _ChipProvenanceUpdater(object):
                          "Abandoned after too many retries. "
                          "Board may be left in an unstable state!")
 
-    def _send_chip_update_provenance_and_exit(
-            self, x: int, y: int, p: int):
-        """
-        :param int x:
-        :param int y:
-        :param int p:
-        """
+    def _send_chip_update_provenance_and_exit(self, x: int, y: int, p: int):
         cmd = SDP_RUNNING_MESSAGE_CODES.SDP_UPDATE_PROVENCE_REGION_AND_EXIT
         port = SDP_PORTS.RUNNING_COMMAND_SDP_PORT
 
