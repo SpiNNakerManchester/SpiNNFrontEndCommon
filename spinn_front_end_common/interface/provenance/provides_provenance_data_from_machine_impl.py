@@ -77,6 +77,7 @@ class ProvidesProvenanceDataFromMachineImpl(
 
         :rtype: int
         """
+        raise NotImplementedError
 
     @property
     @abstractmethod
@@ -86,6 +87,7 @@ class ProvidesProvenanceDataFromMachineImpl(
 
         :rtype: int
         """
+        raise NotImplementedError
 
     def reserve_provenance_data_region(self, spec) -> None:
         """

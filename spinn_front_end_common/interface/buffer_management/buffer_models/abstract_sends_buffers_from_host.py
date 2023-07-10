@@ -34,6 +34,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
 
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
     def get_regions(self) -> Iterable[int]:
@@ -43,6 +44,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: Iterable of region IDs
         :rtype: iterable(int)
         """
+        raise NotImplementedError
 
     @abstractmethod
     def get_region_buffer_size(self, region: int) -> int:
@@ -54,6 +56,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: The size of the buffer space in bytes
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
     def is_next_timestamp(self, region: int) -> bool:
@@ -64,6 +67,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: Whether there is more data
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
     def get_next_timestamp(self, region: int) -> int:
@@ -75,6 +79,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: The timestamp of the next available keys
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
     def is_next_key(self, region: int, timestamp: int) -> bool:
@@ -88,6 +93,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: Whether there are more keys to send for the parameters
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
     def get_next_key(self, region: int) -> int:
@@ -98,6 +104,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: The next key, or `None` if there are no more keys
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
     def is_empty(self, region: int) -> bool:
@@ -109,6 +116,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: Whether there are no keys to send for the region
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
     def rewind(self, region: int):
@@ -117,3 +125,4 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
 
         :param int region: The region to rewind
         """
+        raise NotImplementedError

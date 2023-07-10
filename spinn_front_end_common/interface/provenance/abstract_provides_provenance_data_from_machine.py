@@ -36,3 +36,4 @@ class AbstractProvidesProvenanceDataFromMachine(
         :param ~pacman.model.placements.Placement placement:
             the placement of the object
         """
+        raise NotImplementedError

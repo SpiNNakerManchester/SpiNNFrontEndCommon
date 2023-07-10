@@ -80,7 +80,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
     @abstractmethod
     def reserve_memory_region(
             self, region: int, size: int, label: Optional[str] = None,
-            reference: Optional[int] = None):
+            reference: Optional[int] = None) -> None:
         """
         Insert command to reserve a memory region.
 
@@ -95,10 +95,11 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
             If the ``region`` requested was out of the allowed range, or the
             ``size`` was too big to fit in SDRAM
         """
+        raise NotImplementedError
 
     @abstractmethod
     def reference_memory_region(
-            self, region: int, ref: int, label: Optional[str] = None):
+            self, region: int, ref: int, label: Optional[str] = None) -> None:
         """
         Insert command to reference another memory region.
 
@@ -111,6 +112,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
             If the ``region`` requested was out of the allowed range, or the
             ``size`` was too big to fit in SDRAM
         """
+        raise NotImplementedError
 
     def switch_write_focus(self, region: int):
         """
@@ -235,6 +237,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         """
         Write data to the database.
         """
+        raise NotImplementedError
 
     def _commence_block(self) -> None:
         self._content = bytearray()

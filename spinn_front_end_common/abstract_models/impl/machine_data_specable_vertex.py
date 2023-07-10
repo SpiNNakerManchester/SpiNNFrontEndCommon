@@ -56,3 +56,4 @@ class MachineDataSpecableVertex(
         :type reverse_iptags:
             iterable(~spinn_machine.tags.ReverseIPTag) or None
         """
+        raise NotImplementedError

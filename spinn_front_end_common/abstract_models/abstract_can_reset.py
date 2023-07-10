@@ -31,3 +31,4 @@ class AbstractCanReset(object, metaclass=AbstractBase):
         """
         Reset the object to first time step.
         """
+        raise NotImplementedError

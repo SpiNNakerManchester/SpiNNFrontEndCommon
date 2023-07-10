@@ -41,6 +41,7 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
         :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
+        raise NotImplementedError
 
     @property
     @abstractmethod
@@ -51,6 +52,7 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
         :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
+        raise NotImplementedError
 
     @property
     @abstractmethod
@@ -60,3 +62,4 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
 
         :rtype: list(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
+        raise NotImplementedError

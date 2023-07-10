@@ -43,6 +43,7 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
         :param ~pacman.model.placements.Placement placement:
             Where are we regenerating for?
         """
+        raise NotImplementedError
 
     @abstractmethod
     def reload_required(self) -> bool:
@@ -60,3 +61,4 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
 
         :param new_value: the new value
         """
+        raise NotImplementedError

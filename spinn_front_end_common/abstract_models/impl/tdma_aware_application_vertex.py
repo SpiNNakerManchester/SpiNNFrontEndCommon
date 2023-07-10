@@ -130,13 +130,14 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         self.__timings_set = True
 
     @abstractmethod
-    def get_n_cores(self) -> int:  # type: ignore[empty-body]
+    def get_n_cores(self) -> int:
         """
         Get the number of cores this application vertex is using in the TDMA.
 
         :return: the number of cores to use in the TDMA
         :rtype: int
         """
+        raise NotImplementedError
 
     def get_tdma_provenance_item(
             self, x: int, y: int, p: int, desc_label: str,

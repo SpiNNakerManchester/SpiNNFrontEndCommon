@@ -40,3 +40,4 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
         :param ~pacman.model.placements.Placement placement:
             The placement the vertex is located at
         """
+        raise NotImplementedError

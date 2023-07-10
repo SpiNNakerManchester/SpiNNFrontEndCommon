@@ -35,6 +35,7 @@ class AbstractVertexWithEdgeToDependentVertices(
 
         :rtype: iterable(~pacman.model.graphs.application.ApplicationVertex)
         """
+        raise NotImplementedError
 
     @abstractmethod
     def edge_partition_identifiers_for_dependent_vertex(
@@ -46,3 +47,4 @@ class AbstractVertexWithEdgeToDependentVertices(
         :param ~pacman.model.graphs.application.ApplicationVertex vertex:
         :rtype: iterable(str)
         """
+        raise NotImplementedError

@@ -37,3 +37,4 @@ class AbstractHasProfileData(object, metaclass=AbstractBase):
         :param ~pacman.model.placements.Placement placement:
         :rtype: ~spinn_front_end_common.interface.profiling.ProfileData
         """
+        raise NotImplementedError

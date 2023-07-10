@@ -37,6 +37,7 @@ class AbstractSupportsBitFieldRoutingCompression(
         :return: the SDRAM address for the bitfield address
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
     def regeneratable_sdram_blocks_and_sizes(
@@ -52,3 +53,4 @@ class AbstractSupportsBitFieldRoutingCompression(
             there)
         :rtype: list(tuple(int,int))
         """
+        raise NotImplementedError

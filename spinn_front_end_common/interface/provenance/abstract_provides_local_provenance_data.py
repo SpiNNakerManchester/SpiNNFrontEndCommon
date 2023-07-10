@@ -29,3 +29,4 @@ class AbstractProvidesLocalProvenanceData(object, metaclass=AbstractBase):
         """
         Get provenance data items and store them in the provenance DB.
         """
+        raise NotImplementedError

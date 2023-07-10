@@ -59,7 +59,7 @@ class MachineAllocationController(
         self._exited = True
 
     @abstractmethod
-    def _wait(self) -> bool:  # type: ignore[empty-body]
+    def _wait(self) -> bool:
         """
         Wait for some bounded amount of time for a change in the status
         of the machine allocation.
@@ -67,6 +67,7 @@ class MachineAllocationController(
         :return: Whether the machine is still (believed to be) allocated.
         :rtype: bool
         """
+        raise NotImplementedError
 
     def _teardown(self) -> None:
         """

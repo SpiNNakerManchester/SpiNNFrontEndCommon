@@ -35,6 +35,7 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
 
         :rtype: bool
         """
+        raise NotImplementedError
 
     @property
     @abstractmethod
@@ -44,3 +45,4 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
 
         :rtype: str
         """
+        raise NotImplementedError

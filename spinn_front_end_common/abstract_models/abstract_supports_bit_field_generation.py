@@ -36,6 +36,7 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
         :return: the SDRAM address for the bitfield address
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
     def bit_field_builder_region(self, placement: Placement) -> int:
@@ -46,3 +47,4 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
         :return: the SDRAM address for the bitfield builder data
         :rtype: int
         """
+        raise NotImplementedError

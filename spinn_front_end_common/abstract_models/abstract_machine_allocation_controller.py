@@ -36,12 +36,14 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
             The total run time that is now required starting from when the
             machine was first allocated
         """
+        raise NotImplementedError
 
     @abstractmethod
     def close(self) -> None:
         """
         Indicate that the use of the machine is complete.
         """
+        raise NotImplementedError
 
     @abstractmethod
     def where_is_machine(self, chip_x: int, chip_y: int) -> Tuple[
@@ -55,6 +57,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
         :return: (cabinet, frame, board)
         :rtype: tuple(int,int,int)
         """
+        raise NotImplementedError
 
     @abstractmethod
     def create_transceiver(self) -> Optional[Transceiver]:
@@ -68,6 +71,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
             machine allocation.
         :rtype: ~spinnman.transceiver.Transceiver
         """
+        raise NotImplementedError
 
     @abstractmethod
     def open_sdp_connection(
@@ -90,6 +94,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
             allocated chip.
         :rtype: ~spinnman.connections.udp_packet_connections.SDPConnection
         """
+        raise NotImplementedError
 
     @abstractmethod
     def open_eieio_connection(
@@ -108,6 +113,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
             allocated chip.
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
+        raise NotImplementedError
 
     @abstractmethod
     def open_eieio_listener(self) -> Optional[EIEIOConnection]:
@@ -117,6 +123,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
 
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
+        raise NotImplementedError
 
     @property
     def proxying(self) -> bool:

@@ -34,6 +34,7 @@ class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
 
         :rtype: str
         """
+        raise NotImplementedError
 
     @abstractmethod
     def get_binary_start_type(self) -> ExecutableType:
@@ -42,3 +43,4 @@ class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
 
         :rtype: ~spinnman.model.enum.ExecutableType
         """
+        raise NotImplementedError

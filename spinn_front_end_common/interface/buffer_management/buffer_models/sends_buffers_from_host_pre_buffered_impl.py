@@ -40,6 +40,7 @@ class SendsBuffersFromHostPreBufferedImpl(
         :rtype: dict(int,
             ~spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion)
         """
+        raise NotImplementedError
 
     @overrides(AbstractSendsBuffersFromHost.buffering_input)
     def buffering_input(self) -> bool:

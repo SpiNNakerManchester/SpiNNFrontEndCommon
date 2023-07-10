@@ -36,6 +36,7 @@ class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
         :return: The region numbers that have active recording
         :rtype: iterable(int)
         """
+        raise NotImplementedError
 
     @abstractmethod
     def get_recording_region_base_address(self, placement: Placement) -> int:
@@ -47,3 +48,4 @@ class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
         :return: the base address of the recording region
         :rtype: int
         """
+        raise NotImplementedError

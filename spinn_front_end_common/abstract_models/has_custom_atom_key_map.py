@@ -44,3 +44,4 @@ class HasCustomAtomKeyMap(object, metaclass=AbstractBase):
         :return: A list of (atom_id, key)
         :rtype: list(tuple(int,int))
         """
+        raise NotImplementedError
