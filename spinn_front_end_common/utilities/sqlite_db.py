@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from contextlib import AbstractContextManager as ACMBase
 import enum
 import hashlib
 import logging
@@ -20,7 +19,7 @@ import os
 import pathlib
 import sqlite3
 import struct
-from typing import Optional, Type, Union
+from typing import ContextManager, Optional, Type, Union
 from typing_extensions import Literal
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.logger_utils import warn_once
@@ -248,7 +247,7 @@ class SQLiteDB(AbstractContextManager):
         return self.__db
 
     def transaction(self, isolation_level=Isolation.DEFERRED
-                    ) -> ACMBase[sqlite3.Cursor]:
+                    ) -> ContextManager[sqlite3.Cursor]:
         """
         Get a context manager that manages a transaction on the database.
         The value of the context manager is a :py:class:`~sqlite3.Cursor`.
@@ -276,7 +275,7 @@ class SQLiteDB(AbstractContextManager):
         return _DbWrapper(self.__db, isolation_level)
 
 
-class _DbWrapper(ACMBase[sqlite3.Cursor]):
+class _DbWrapper(ContextManager[sqlite3.Cursor]):
     """
     Transaction handling wrapper.
 
