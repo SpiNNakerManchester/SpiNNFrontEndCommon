@@ -44,7 +44,7 @@ from spinn_front_end_common.utility_models import (
 
 class TestSimulatorData(unittest.TestCase):
 
-    def setUp(cls):
+    def setUp(self):
         unittest_setup()
 
     def test_setup(self):
