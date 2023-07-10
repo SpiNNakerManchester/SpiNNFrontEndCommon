@@ -271,6 +271,10 @@ class DatabaseWriter(SQLiteDB):
                 )
 
     def _get_machine_lpg_mappings(self, part):
+        """ Get places where an LPG Machine vertex has been added to a graph
+            "directly" (via GFE); and so it's application vertex *isn't* a
+            LivePacketGather
+        """
         for edge in part.edges:
             if (isinstance(edge.pre_vertex,
                            AbstractOneAppOneMachineVertex) and
