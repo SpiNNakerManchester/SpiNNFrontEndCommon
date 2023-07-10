@@ -14,10 +14,12 @@
 
 import logging
 import numpy
-from typing import Callable
+from typing import Any, Callable
+from typing_extensions import TypeAlias
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from spinnman.model.enums import UserRegister
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     APPDATA_MAGIC_NUM, APP_PTR_TABLE_BYTE_SIZE, BYTES_PER_WORD,
@@ -28,6 +30,7 @@ from spinn_front_end_common.utilities.emergency_recovery import (
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
+_Writer: TypeAlias = Callable[[int, int, int, bytes], Any]
 
 
 def load_system_data_specs() -> None:
@@ -140,7 +143,7 @@ class _LoadDataSpecification(object):
         # allocate and set user 0 before loading data
 
         transceiver = FecDataView.get_transceiver()
-        writer = transceiver.write_memory
+        writer: _Writer = transceiver.write_memory
         core_infos = ds_database.get_core_infos(is_system)
         if is_system:
             type_str = "system"
@@ -190,7 +193,7 @@ class _LoadDataSpecification(object):
 
     def __python_load_core(
             self, ds_database: DsSqlliteDatabase, x: int, y: int, p: int,
-            writer: Callable[[int, int, int, bytes], None]) -> int:
+            writer: _Writer) -> int:
         written = 0
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
@@ -254,6 +257,6 @@ class _LoadDataSpecification(object):
             tag=CORE_DATA_SDRAM_BASE_TAG + p)
 
         # set user 0 register appropriately to the application data
-        txrx.write_user(x, y, p, 0, start_address)
+        txrx.write_user(x, y, p, UserRegister.USER_0, start_address)
 
         return start_address

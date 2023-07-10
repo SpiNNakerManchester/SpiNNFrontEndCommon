@@ -26,7 +26,8 @@ from spinn_utilities.log import FormatAdapter
 from spinn_machine import Chip
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
-from spinnman.model.enums import CPUState, ExecutableType, SDP_PORTS
+from spinnman.model.enums import (
+    CPUState, ExecutableType, SDP_PORTS, UserRegister)
 from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, UDPConnection)
 from pacman.model.graphs.machine import MachineVertex
@@ -350,7 +351,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         and updates the data speed up gatherer.
         """
         self._transaction_id = FecDataView.get_transceiver().read_user(
-            self._placement.x, self._placement.y, self._placement.p, 1)
+            self._placement.x, self._placement.y, self._placement.p,
+            UserRegister.USER_1)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self) -> ExecutableType:

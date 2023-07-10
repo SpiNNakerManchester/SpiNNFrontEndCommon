@@ -21,7 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.config_holder import get_config_bool
 from spinn_machine import Chip, CoreSubsets, MulticastRoutingEntry, Router
-from spinnman.model.enums import ExecutableType
+from spinnman.model.enums import ExecutableType, UserRegister
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import AbstractSDRAM, ConstantSDRAM
 from pacman.model.placements import Placement
@@ -166,7 +166,8 @@ class ExtraMonitorSupportMachineVertex(
         and updates the extra monitor.
         """
         self._transaction_id = FecDataView.get_transceiver().read_user(
-            self._placement.x, self._placement.y, self._placement.p, 1)
+            self._placement.x, self._placement.y, self._placement.p,
+            UserRegister.USER_1)
 
     @property
     def reinject_point_to_point(self) -> bool:

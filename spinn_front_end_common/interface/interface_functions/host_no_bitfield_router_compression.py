@@ -21,7 +21,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
 from spinn_machine import CoreSubsets, Router
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import CPUState, ExecutableType
+from spinnman.model.enums import CPUState, ExecutableType, UserRegister
 from pacman.model.routing_tables import AbstractMulticastRoutingTable
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
@@ -47,7 +47,8 @@ def pair_compression() -> None:
      """
     compression = Compression(
         FecDataView.get_executable_path("simple_pair_compressor.aplx"),
-        "Running pair routing table compression on chip", result_register=1)
+        "Running pair routing table compression on chip",
+        result_register=UserRegister.USER_1)
     compression.compress()
 
 
@@ -64,7 +65,7 @@ def ordered_covering_compression() -> None:
     compression = Compression(
         FecDataView.get_executable_path("simple_unordered_compressor.aplx"),
         "Running unordered routing table compression on chip",
-        result_register=1)
+        result_register=UserRegister.USER_1)
     compression.compress()
 
 
@@ -84,7 +85,8 @@ class Compression(object):
         "__failures")
 
     def __init__(
-            self, binary_path: str, progress_text: str, result_register: int):
+            self, binary_path: str, progress_text: str,
+            result_register: UserRegister):
         """
         :param str binary_path: What binary to run
         :param ~spinn_machine.Machine machine: The machine model

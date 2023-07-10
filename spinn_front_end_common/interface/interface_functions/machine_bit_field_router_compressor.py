@@ -26,7 +26,7 @@ from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
     SpinnmanUnexpectedResponseCodeException, SpiNNManCoresNotInStateException)
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import CPUState, ExecutableType
+from spinnman.model.enums import CPUState, ExecutableType, UserRegister
 from pacman.model.placements import Placement
 from pacman.model.routing_tables import (
     MulticastRoutingTables, AbstractMulticastRoutingTable)
@@ -342,8 +342,10 @@ class _MachineBitFieldRouterCompressor(object):
             x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
                 # Read the result from USER1/USER2 registers
-                result = transceiver.read_user(x, y, p, 1)
-                bit_fields_merged = transceiver.read_user(x, y, p, 2)
+                result = transceiver.read_user(
+                    x, y, p, UserRegister.USER_1)
+                bit_fields_merged = transceiver.read_user(
+                    x, y, p, UserRegister.USER_2)
 
                 if result != self.SUCCESS:
                     host_chips.append(FecDataView.get_chip_at(x, y))
@@ -432,16 +434,19 @@ class _MachineBitFieldRouterCompressor(object):
             # user 1 the time per compression attempt
             time_per_iteration = get_config_int(
                 "Mapping",
-                "router_table_compression_with_bit_field_iteration_time")
+                "router_table_compression_with_bit_field_iteration_time") \
+                or 1000
             self.__txrx.write_user(
-                chip_x, chip_y, processor_id, 1,
+                chip_x, chip_y, processor_id, UserRegister.USER_1,
                 int(time_per_iteration * SECOND_TO_MICRO_SECOND))
             # user 2 Compress as much as needed flag
             self.__txrx.write_user(
-                chip_x, chip_y, processor_id, 2, self.__compress_max)
+                chip_x, chip_y, processor_id, UserRegister.USER_2,
+                self.__compress_max)
             # user 3 the comms_sdram area
             self.__txrx.write_user(
-                chip_x, chip_y, processor_id, 3, comms_sdram)
+                chip_x, chip_y, processor_id, UserRegister.USER_3,
+                comms_sdram)
 
     def _load_usable_sdram(
             self, sizes_and_address: List[_RamChunk],
@@ -476,7 +481,8 @@ class _MachineBitFieldRouterCompressor(object):
         for p in cores.all_core_subsets.get_core_subset_for_chip(
                 chip.x, chip.y).processor_ids:
             # update user 3 with location
-            self.__txrx.write_user(chip.x, chip.y, p, 3, sdram_address)
+            self.__txrx.write_user(
+                chip.x, chip.y, p, UserRegister.USER_3, sdram_address)
 
     def _generate_chip_matrix_data(
             self, borrowable_spaces: List[_RamChunk]) -> bytes:
@@ -550,7 +556,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         # update user 2 with location
         self.__txrx.write_user(
-            chip.x, chip.y, processor_id, 2, sdram_address)
+            chip.x, chip.y, processor_id, UserRegister.USER_2, sdram_address)
 
     def _load_routing_table_data(
             self, table: AbstractMulticastRoutingTable,
@@ -588,7 +594,8 @@ class _MachineBitFieldRouterCompressor(object):
         # Tell the compressor where the SDRAM is
         for p in cores.all_core_subsets.get_core_subset_for_chip(
                 table.x, table.y).processor_ids:
-            self.__txrx.write_user(table.x, table.y, p, 1, base_address)
+            self.__txrx.write_user(
+                table.x, table.y, p, UserRegister.USER_1, base_address)
 
     def _build_routing_table_data(
             self, app_id: int,

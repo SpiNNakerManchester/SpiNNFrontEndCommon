@@ -105,12 +105,16 @@ class _MockTransceiver(Transceiver):
         self._regions_rewritten = list()
         self._user_0_addresses = user_0_addresses
 
+    @property
+    def regions_rewritten(self):
+        return list(self._regions_rewritten)
+
     @overrides(Transceiver.get_cpu_information_from_core)
     def get_cpu_information_from_core(self, x, y, p):
         return _MockCPUInfo(self._user_0_addresses[(x, y, p)])
 
     @overrides(Transceiver.read_memory)
-    def read_memory(self, x, y, base_address, length, cpu=0):
+    def read_memory(self, x, y, base_address, length, *, cpu=0):
         ptr_table_end = get_region_base_address_offset(
             base_address, MAX_MEM_REGIONS)
         addresses = [((i * 512) + ptr_table_end, 0, 0)
@@ -158,7 +162,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         reload_dsg_regions()
 
-        regions_rewritten = transceiver._regions_rewritten
+        regions_rewritten = transceiver.regions_rewritten
 
         # Check that the number of times the data has been regenerated is
         # correct

@@ -18,6 +18,7 @@ import struct
 from typing import TextIO
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+from spinnman.model.enums import UserRegister
 from spinnman.transceiver import Transceiver
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
@@ -75,4 +76,4 @@ def _get_region_table_addr(txrx: Transceiver, x: int, y: int, p: int) -> int:
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """
-    return txrx.read_user(x, y, p, 0) + REGION_HEADER_SIZE
+    return txrx.read_user(x, y, p, UserRegister.USER_0) + REGION_HEADER_SIZE
