@@ -21,8 +21,7 @@ from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.impl import CheckOKResponse
 from spinnman.processes import AbstractMultiConnectionProcess
 from spinnman.processes import ConnectionSelector
-from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
+from spinnman.model.enums import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
 
 
 class _ClearIOBUFRequest(AbstractSCPRequest[CheckOKResponse]):

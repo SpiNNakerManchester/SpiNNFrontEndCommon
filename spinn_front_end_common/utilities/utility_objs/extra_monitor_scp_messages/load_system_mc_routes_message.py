@@ -17,7 +17,7 @@ from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
-from spinn_front_end_common.utilities.constants import SDP_PORTS
+from spinnman.model.enums import SDP_PORTS
 from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 

@@ -19,10 +19,9 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import (
+    CPUState, SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))

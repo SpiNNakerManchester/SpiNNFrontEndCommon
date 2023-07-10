@@ -19,13 +19,13 @@ from dataclasses import dataclass
 from spinn_utilities.overrides import overrides
 from spinn_machine.tags import IPTag
 from spinnman.messages.eieio import EIEIOPrefix
+from spinnman.model.enums import SDP_PORTS
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.resources import AbstractSDRAM
-from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex, _is_array_list)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
