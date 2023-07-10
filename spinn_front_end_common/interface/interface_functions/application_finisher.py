@@ -62,8 +62,8 @@ def application_finisher():
                 f"{total_processors} processors went into an error state "
                 "when shutting down")
 
-        successful_cores_finished = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.FINISHED)
+        successful_cores_finished = txrx.get_cpu_infos(
+            all_core_subsets, CPUState.FINISHED, True)
 
         txrx.send_signal(app_id, Signal.SYNC0)
         txrx.send_signal(app_id, Signal.SYNC1)
