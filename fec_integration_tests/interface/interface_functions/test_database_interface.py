@@ -13,8 +13,7 @@
 # limitations under the License.
 from spinn_utilities.config_holder import set_config
 from spinn_machine.tags.iptag import IPTag
-from pacman.model.graphs.application import (
-    ApplicationVertex, ApplicationEdge)
+from pacman.model.graphs.application import ApplicationVertex, ApplicationEdge
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.placements import Placements, Placement
@@ -22,8 +21,7 @@ from pacman.model.routing_info import (
     RoutingInfo, MachineVertexRoutingInfo, AppVertexRoutingInfo)
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.tags.tags import Tags
-from pacman.model.partitioner_splitters.abstract_splitters import (
-    AbstractSplitterCommon)
+from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.graphs.common.slice import Slice
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
@@ -46,7 +44,7 @@ class TestSplitter(AbstractSplitterCommon):
         pass
 
     def get_out_going_vertices(self, partition_id):
-        return self._governed_app_vertex.machine_vertices
+        return self.governed_app_vertex.machine_vertices
 
     def get_in_coming_vertices(self, partition_id):
         pass

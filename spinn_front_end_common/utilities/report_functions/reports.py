@@ -18,7 +18,6 @@ import time
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Router
-from pacman import exceptions
 from pacman.model.graphs.machine import (
     MachineFPGAVertex, MachineSpiNNakerLinkVertex)
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
@@ -209,10 +208,9 @@ def _write_one_router_partition_report(f, partition):
     routing_infos = FecDataView.get_routing_infos()
     for edge in partition.edges:
         for m_vertex in outgoing:
-            source_placement = FecDataView.get_placement_of_vertex(m_vertex)
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
-            path = _search_route(source_placement, r_info.key_and_mask)
+            path = _search_route(m_vertex, r_info.key_and_mask)
             f.write(
                 f"    Edge '{edge.label}', "
                 f"from vertex: '{edge.pre_vertex.label}' "
@@ -268,7 +266,7 @@ def _write_one_vertex_partition(f, vertex):
     machine_vertices = sorted(machine_vertices,
                               key=lambda x: x.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        f.write(f"  Slice {sv.vertex_slice}\n")
+        f.write(f"  Slice {sv.vertex_slice}    Vertex {sv.label}\n")
     f.write("\n")
 
 
@@ -331,7 +329,8 @@ def _write_one_vertex_application_placement(f, vertex):
         else:
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p}) \n")
+            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p})"
+                    f" {sv.label}\n")
     f.write("\n")
 
 
@@ -386,8 +385,8 @@ def _write_one_chip_application_placement(f, chip):
             vertex_atoms = app_vertex.n_atoms
             f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
                 pro_id, vertex_label, vertex_atoms))
-            f.write("              Slice on this core: {}\n".format(
-                vertex.vertex_slice))
+            f.write(f"              Slice: {vertex.vertex_slice}")
+            f.write(f"  {vertex.label}\n")
             f.write("              Model: {}\n".format(vertex_model))
         else:
             f.write("  Processor {}: System Vertex: '{}'\n".format(
@@ -405,7 +404,7 @@ def _write_one_chip_application_placement(f, chip):
 
     if total_sdram is not None:
         f.write("Total SDRAM on chip ({} available): {}; {} per-timestep\n\n"
-                .format(chip.sdram.size, total_sdram.fixed,
+                .format(chip, total_sdram.fixed,
                         total_sdram.per_timestep))
 
 
@@ -480,7 +479,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
                     "{} KB ({} bytes)\n\n".format(
                         chip.x, chip.y,
                         int(used_sdram / 1024.0), used_sdram,
-                        int(chip.sdram.size / 1024.0), chip.sdram.size))
+                        int(chip.sdram / 1024.0), chip.sdram))
         except KeyError:
             # Do Nothing
             pass
@@ -676,31 +675,29 @@ def generate_comparison_router_report(compressed_routing_tables):
             "Can't open file {} for writing.", file_name)
 
 
-def _search_route(source_placement, key_and_mask):
+def _search_route(source_vertex, key_and_mask):
     """
-    :param ~pacman.model.placements.Placement source_placement:
+    :param ~pacman.model.graphs.machine.MachineVertex source_vertex:
     :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:
     :rtype: tuple(str, int)
     """
     # Create text for starting point
     machine = FecDataView.get_machine()
-    source_vertex = source_placement.vertex
     text = ""
     if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
-        text = "        Virtual SpiNNaker Link on {}:{}:{} -> ".format(
-            source_placement.x, source_placement.y, source_placement.p)
         slink = machine.get_spinnaker_link_with_id(
             source_vertex.spinnaker_link_id)
         x = slink.connected_chip_x
         y = slink.connected_chip_y
+        text = f"        Virtual SpiNNaker Link {x}:{y} -> "
     elif isinstance(source_vertex, MachineFPGAVertex):
-        text = "        Virtual FPGA Link on {}:{}:{} -> ".format(
-            source_placement.x, source_placement.y, source_placement.p)
         flink = machine.get_fpga_link_with_id(
             source_vertex.fpga_id, source_vertex.fpga_link_id)
         x = flink.connected_chip_x
         y = flink.connected_chip_y
+        text = f"        Virtual FPGA Link {x}:{y}-> "
     else:
+        source_placement = FecDataView.get_placement_of_vertex(source_vertex)
         x = source_placement.x
         y = source_placement.y
         text = "        {}:{}:{} -> ".format(
@@ -730,17 +727,21 @@ def _recursive_trace_to_destinations(
     routing_tables = FecDataView.get_uncompressed()
     table = routing_tables.get_routing_table_for_chip(chip_x, chip_y)
     entry = _locate_routing_entry(table, key_and_mask.key)
-    new_pre_space = pre_space + (" " * len(text))
-    first = True
-    for link_id in entry.link_ids:
-        if not first:
-            text += f"\n{pre_space}"
-        link = chip.router.get_link(link_id)
-        text += f"-> {link}"
-        text += _recursive_trace_to_destinations(
-            link.destination_x, link.destination_y, key_and_mask,
-            new_pre_space)
-        first = False
+    if entry is None:
+        text += " -> No Entry"
+    else:
+        new_pre_space = pre_space + (" " * len(text))
+        first = True
+        for link_id in entry.link_ids:
+            if not first:
+                text += f"\n{pre_space}"
+            link = chip.router.get_link(link_id)
+            text += f"-> {link}"
+            if link is not None:
+                text += _recursive_trace_to_destinations(
+                    link.destination_x, link.destination_y, key_and_mask,
+                    new_pre_space)
+            first = False
 
     return text
 
@@ -760,4 +761,4 @@ def _locate_routing_entry(current_router, key):
     for entry in current_router.multicast_routing_entries:
         if entry.mask & key == entry.routing_entry_key:
             return entry
-    raise exceptions.PacmanRoutingException("no entry located")
+    return None

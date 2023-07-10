@@ -21,7 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from spinnman.model.enums import ExecutableType
+from spinnman.model.enums import ExecutableType, SDP_PORTS
 from pacman.model.resources import ReverseIPtagResource, VariableSDRAM
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
@@ -39,7 +39,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
         BufferedSendingRegion)
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
@@ -576,8 +576,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             if self._send_buffer_size:
                 spec.reserve_memory_region(
                     region=self._REGIONS.SEND_BUFFER,
-                    size=self._send_buffer_size, label="SEND_BUFFER",
-                    empty=True)
+                    size=self._send_buffer_size, label="SEND_BUFFER")
 
         self.reserve_provenance_data_region(spec)
 

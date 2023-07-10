@@ -37,12 +37,12 @@ def _emergency_state_check():
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
         if rte_count or watchdog_count:
-            states = txrx.get_cores_in_state(
-                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
+            states = txrx.get_cpu_infos(
+                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG], True)
             logger.warning(
                 "unexpected core states (rte={}, wdog={})",
                 rte_count, watchdog_count)
-            logger.warning(txrx.get_core_status_string(states))
+            logger.warning(states.get_status_string())
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
@@ -60,8 +60,8 @@ def _emergency_state_check():
                 except Exception:
                     errors.append((chip.x, chip.y, p))
         if len(infos):
-            logger.warning(txrx.get_core_status_string(infos))
-        if len(len(errors) > 10):
+            logger.warning(infos.get_status_string())
+        if len(errors) > 10:
             logger.warning(
                 "Could not read information from {} cores", len(errors))
         else:
@@ -98,8 +98,8 @@ def _emergency_exit():
         for chip_subset in all_core_subsets:
             try:
                 chip_subsets = CoreSubsets([chip_subset])
-                running_cores = txrx.get_cores_in_state(
-                    chip_subsets, CPUState.RUNNING)
+                running_cores = txrx.get_cpu_infos(
+                    chip_subsets, CPUState.RUNNING, include=True)
                 for (c_x, c_y, proc) in running_cores.keys():
                     send_chip_update_provenance_and_exit(txrx, c_x, c_y, proc)
                 # Don't even bother to check; with luck this happens and all

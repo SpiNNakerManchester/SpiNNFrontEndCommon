@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from spinn_utilities.overrides import overrides
-from pacman.model.partitioner_splitters.abstract_splitters import (
-    AbstractSplitterCommon)
+from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.placements import Placement
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     vertex_xy)

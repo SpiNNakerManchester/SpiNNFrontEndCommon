@@ -573,15 +573,15 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_executable_targets([])
 
-    def test_dsg_target(self):
+    def test_ds_database(self):
         writer = FecDataWriter.mock()
         with self.assertRaises(DataNotYetAvialable):
-            FecDataView.get_dsg_targets()
+            FecDataView.get_ds_database()
         targets = DsSqlliteDatabase()
-        writer.set_dsg_targets(targets)
-        self.assertEqual(targets, FecDataView.get_dsg_targets())
+        writer.set_ds_database(targets)
+        self.assertEqual(targets, FecDataView.get_ds_database())
         with self.assertRaises(TypeError):
-            writer.set_dsg_targets(dict())
+            writer.set_ds_database(dict())
 
     def test_gatherer_map(self):
         writer = FecDataWriter.mock()
@@ -744,3 +744,26 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIsNone(FecDataView.get_run_step())
         self.assertEqual(1, writer.next_run_step())
         self.assertEqual(1, FecDataView.get_run_step())
+
+    def test_ds_references(self):
+        refs1 = FecDataView.get_next_ds_references(7)
+        self.assertEqual(7, len(refs1))
+        self.assertEqual(7, len(set(refs1)))
+        refs2 = FecDataView.get_next_ds_references(5)
+        self.assertEqual(5, len(refs2))
+        set2 = set(refs2)
+        self.assertEqual(5, len(set2))
+        self.assertEqual(0, len(set2.intersection(refs1)))
+
+        # reference repeat after a hard reset
+        # So if called the same way will generate teh same results
+        # setup is also a hard reset
+        writer = FecDataWriter.setup()
+        self.assertListEqual(refs1, FecDataView.get_next_ds_references(7))
+        self.assertListEqual(refs2, FecDataView.get_next_ds_references(5))
+
+        writer.start_run()
+        writer.finish_run()
+        writer.hard_reset()
+        self.assertListEqual(refs1, FecDataView.get_next_ds_references(7))
+        self.assertListEqual(refs2, FecDataView.get_next_ds_references(5))

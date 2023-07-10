@@ -35,8 +35,6 @@ from spinn_machine import Machine
 from spinnman import __version__ as spinnman_version
 from spinnman.model.enums import ExecutableType
 
-from data_specification import __version__ as data_spec_version
-
 from spalloc_client import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
@@ -77,7 +75,7 @@ from spinn_front_end_common.interface.interface_functions import (
     chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
     reload_dsg_regions, energy_provenance_reporter,
-    execute_application_data_specs, execute_system_data_specs,
+    load_application_data_specs, load_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
     graph_provenance_gatherer,
     host_based_bit_field_router_compressor, hbp_allocator,
@@ -109,7 +107,6 @@ from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
     fixed_route_from_machine_report, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
-    router_collision_potential_report,
     routing_table_from_machine_report, tags_from_machine_report,
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
@@ -157,8 +154,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # A dict of live packet gather params to Application LGP vertices
         "_lpg_vertices",
 
-        # Used in exception handling and control c
-        "_last_except_hook",
+        # original sys.excepthook Used in exception handling and control c
+        "__sys_excepthook",
 
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
@@ -205,7 +202,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._create_version_provenance()
 
-        self._last_except_hook = sys.excepthook
+        self.__sys_excepthook = sys.excepthook
 
         FecTimer.setup(self)
 
@@ -278,7 +275,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         logger.error("Shutdown on exception")
         self._shutdown()
-        return self._last_except_hook(exc_type, value, traceback_obj)
+        return self.__sys_excepthook(exc_type, value, traceback_obj)
 
     def _should_run(self):
         """
@@ -425,7 +422,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if isinstance(threading.current_thread(), threading._MainThread):
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
-            sys.excepthook = self._last_except_hook
+            sys.excepthook = self.__sys_excepthook
 
         logger.info("Starting execution process")
 
@@ -548,7 +545,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # pylint: disable=protected-access
         if isinstance(threading.current_thread(), threading._MainThread):
             self._raise_keyboard_interrupt = False
-            self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
 
     def _is_per_timestep_sdram(self):
@@ -616,7 +612,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the minimum number of machine timesteps to assign
         max_time_steps = sys.maxsize
         for (x, y), sdram in usage_by_chip.items():
-            size = self._data_writer.get_chip_at(x, y).sdram.size
+            size = self._data_writer.get_chip_at(x, y).sdram
             if sdram.fixed > size:
                 raise PacmanPlaceException(
                     f"Too much SDRAM has been allocated on chip {x}, {y}: "
@@ -767,7 +763,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             db.insert_version("spalloc_version", spalloc_version)
             db.insert_version("spinnman_version", spinnman_version)
             db.insert_version("pacman_version", pacman_version)
-            db.insert_version("data_specification_version", data_spec_version)
             db.insert_version("front_end_common_version", fec_version)
             db.insert_version("numpy_version", numpy_version)
             db.insert_version("scipy_version", scipy_version)
@@ -856,7 +851,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            insert_chip_power_monitors_to_graphs(system_placements)
+            a_monitor = insert_chip_power_monitors_to_graphs(system_placements)
+            self._data_writer.add_monitor_all_chips(a_monitor)
 
     def _execute_insert_extra_monitor_vertices(self, system_placements):
         """
@@ -873,6 +869,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
+        self._data_writer.add_monitor_all_chips(monitor_map[(0, 0)])
 
     def _report_partitioner(self):
         """
@@ -1238,18 +1235,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             write_json_routing_tables(self._data_writer.get_uncompressed())
             # Output ignored as never used
 
-    def _report_router_collision_potential(self):
-        """
-        Write, time and log the router collision report.
-        """
-        with FecTimer(
-                "Router collision potential report",
-                TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_router_collision_potential_report"):
-                return
-            router_collision_potential_report()
-
     def _report_drift(self, start):
         """
         Write, time and log the inter-board timer drift.
@@ -1357,10 +1342,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_routers()
         self._report_router_summary()
         self._json_routing_tables()
-        # self._report_router_collision_potential()
         self._execute_locate_executable_start_type()
         self._execute_buffer_manager_creator()
-        self._execute_sdram_outgoing_partition_allocator()
 
         FecTimer.end_category(TimerCategory.MAPPING)
 
@@ -1369,17 +1352,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times, and logs the GraphDataSpecificationWriter.
 
-        Sets the dsg_targets data
+        Creates and fills the data spec database
         """
         with FecTimer("Graph data specification writer", TimerWork.OTHER):
-            self._data_writer.set_dsg_targets(
+            self._data_writer.set_ds_database(
                 graph_data_specification_writer())
 
     def _do_data_generation(self):
         """
         Runs, Times and logs the data generation.
         """
-        # set up timing
+        self._execute_sdram_outgoing_partition_allocator()
         self._execute_graph_data_specification_writer()
 
     def _execute_routing_setup(self,):
@@ -1722,15 +1705,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_fixed_routes()
 
-    def _execute_system_data_specification(self):
+    def _execute_load_system_data_specification(self):
         """
-        Runs, times and logs the execute_system_data_specs if required.
+        Runs, times and logs the load_system_data_specs if required.
         """
         with FecTimer(
-                "Execute system data specification", TimerWork.OTHER) as timer:
+                "Load system data specification", TimerWork.OTHER) as timer:
             if timer.skip_if_virtual_board():
                 return None
-            execute_system_data_specs()
+            load_system_data_specs()
 
     def _execute_load_system_executable_images(self):
         """
@@ -1742,18 +1725,19 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_sys_images()
 
-    def _execute_application_data_specification(self):
+    def _execute_load_application_data_specification(self):
         """
-        Runs, times and logs :py:meth:`execute_application_data_specs`
+        Runs, times and logs :py:meth:`load_application_data_specs`
         if required.
 
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
-        with FecTimer("Host data specification", TimerWork.LOADING) as timer:
+        with FecTimer("Load Application data specification",
+                      TimerWork.LOADING) as timer:
             if timer.skip_if_virtual_board():
                 return
-            return execute_application_data_specs()
+            return load_application_data_specs()
 
     def _execute_tags_from_machine_report(self):
         """
@@ -1879,10 +1863,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_control_sync(False)
         if self._data_writer.get_requires_mapping():
             self._execute_load_fixed_routes()
-        self._execute_system_data_specification()
+        self._execute_load_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
-        self._execute_application_data_specification()
+        self._execute_load_application_data_specification()
 
         self._do_extra_load_algorithms()
         compressed = self._do_delayed_compression(compressor, compressed)

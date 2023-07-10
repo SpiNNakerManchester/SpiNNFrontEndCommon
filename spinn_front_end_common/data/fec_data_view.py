@@ -54,7 +54,7 @@ class _FecDataModel(object):
         "_data_in_multicast_routing_tables",
         "_database_file_path",
         "_database_socket_addresses",
-        "_dsg_targets",
+        "_ds_database",
         "_executable_targets",
         "_executable_types",
         "_first_machine_time_step",
@@ -70,6 +70,7 @@ class _FecDataModel(object):
         "_n_chips_required",
         "_n_chips_in_graph",
         "_next_sync_signal",
+        "_next_ds_reference",
         "_none_labelled_edge_count",
         "_notification_protocol",
         "_max_run_time_steps",
@@ -132,7 +133,8 @@ class _FecDataModel(object):
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
         self._database_file_path = None
-        self._dsg_targets = None
+        self._ds_database = None
+        self._next_ds_reference = 0
         self._executable_targets = None
         self._fixed_routes = None
         self._gatherer_map = None
@@ -968,17 +970,17 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._executable_targets
 
     @classmethod
-    def get_dsg_targets(cls):
+    def get_ds_database(cls):
         """
-        Data Spec targets database.
+        Data Spec database.
 
-        :rtype: DsSqlliteDatabase
+        :rtype: ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the dsg_targets is currently unavailable
+            If the ds_database is currently unavailable
         """
-        if cls.__fec_data._dsg_targets is None:
-            raise cls._exception("dsg_targets")
-        return cls.__fec_data._dsg_targets
+        if cls.__fec_data._ds_database is None:
+            raise cls._exception("_ds_database")
+        return cls.__fec_data._ds_database
 
     @classmethod
     def has_monitors(cls):
@@ -1190,3 +1192,18 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             str))
         """
         return iter(cls.__fec_data._live_output_vertices)
+
+    @classmethod
+    def get_next_ds_references(cls, number):
+        """
+        Get a a list of unigue ds references
+
+        These will be Unigue since the last hard reset
+
+        :param number: number of values in the list
+        :rtype: list(inrt)
+        """
+        references = range(cls.__fec_data._next_ds_reference,
+                           cls.__fec_data._next_ds_reference+number)
+        cls.__fec_data._next_ds_reference += number
+        return list(references)

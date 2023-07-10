@@ -165,8 +165,8 @@ class ExtraMonitorSupportMachineVertex(
         Looks up from the machine what the current transaction id is
         and updates the extra monitor.
         """
-        self._transaction_id = FecDataView.get_transceiver().read_user_1(
-            self._placement.x, self._placement.y, self._placement.p)
+        self._transaction_id = FecDataView.get_transceiver().read_user(
+            self._placement.x, self._placement.y, self._placement.p, 1)
 
     @property
     def reinject_point_to_point(self):
@@ -342,7 +342,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
-            label="provenance collection region", empty=True)
+            label="provenance collection region")
 
     def __get_provenance_region_address(self, txrx, place):
         """

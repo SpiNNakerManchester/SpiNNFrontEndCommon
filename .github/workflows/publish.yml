@@ -21,7 +21,6 @@ on:
 env:
   ROOT_DOC_DIR: doc/global
   C_DOC_DIR: c_common/doc/html
-  PY_DOC_DIR: doc/source/_build/html
   DEPLOY_DIR: deploy
 
 jobs:
@@ -29,10 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
       - name: Checkout
         uses: actions/checkout@v3
       - name: Checkout SupportScripts
@@ -43,17 +38,11 @@ jobs:
       - name: Set dynamic environment variables
         run: |
           echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
-      - name: Install pip, etc
-        uses: ./support/actions/python-tools
-        with:
-          coverage: false
 
       - name: Checkout SpiNNaker Dependencies
         uses: ./support/actions/install-spinn-deps
         with:
-          # Need spinnaker_tools so we can run the makefiles
           repositories: >
-            SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
             spinnaker_tools
           install: true
 
@@ -61,13 +50,6 @@ jobs:
         run: make doxysetup
         working-directory: c_common
 
-      - name: Install Python code
-        uses: ./support/actions/run-install
-
-      - name: Build Python documentation
-        uses: ./support/actions/sphinx
-        with:
-          directory: doc/source
       - name: Build C documentation
         uses: mattnotmitt/doxygen-action@v1.9.5
         with:
@@ -77,9 +59,8 @@ jobs:
         run: |
           cp -vaT $ROOT_DOC_DIR $DEPLOY_DIR
           cp -vaT $C_DOC_DIR $DEPLOY_DIR/c
-          cp -vaT $PY_DOC_DIR $DEPLOY_DIR/python
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        uses: JamesIves/github-pages-deploy-action@v4.4.2
         with:
           branch: gh-pages
           folder: ${{ env.DEPLOY_DIR }}

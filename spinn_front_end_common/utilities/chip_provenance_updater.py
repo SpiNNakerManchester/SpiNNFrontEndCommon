@@ -18,10 +18,10 @@ from time import sleep
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import (
+    CPUState, SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
+
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -43,8 +43,8 @@ def chip_provenance_updater(all_core_subsets, limit=10):
     attempts = 0
     while n_running_cores and attempts < limit:
         attempts += 1
-        running_cores = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.RUNNING)
+        running_cores = txrx.get_cpu_infos(
+            all_core_subsets, CPUState.RUNNING, include=True)
 
         for (c_x, c_y, proc) in running_cores.keys():
             send_chip_update_provenance_and_exit(txrx, c_x, c_y, proc)

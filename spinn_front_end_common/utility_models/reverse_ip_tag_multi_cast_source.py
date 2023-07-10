@@ -17,8 +17,8 @@ import numpy
 
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
+from spinnman.model.enums import SDP_PORTS
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -104,8 +104,8 @@ class ReverseIpTagMultiCastSource(
             If not `None`, will enable injection and specify the partition to
             send injected keys with
         :param splitter: the splitter object needed for this vertex
-        :type splitter: None or
-            ~pacman.model.partitioner_splitters.abstract_splitters.AbstractSplitterCommon
+        :type splitter:
+            ~pacman.model.partitioner_splitters.AbstractSplitterCommon or None
         """
         # pylint: disable=too-many-arguments
         super().__init__(label, max_atoms_per_core, splitter=splitter)
@@ -206,7 +206,7 @@ class ReverseIpTagMultiCastSource(
         return machine_vertex
 
     def _filtered_send_buffer_times(self, vertex_slice):
-        ids = vertex_slice.get_raster_ids(self.atoms_shape)
+        ids = vertex_slice.get_raster_ids()
         send_buffer_times = self._send_buffer_times
         n_buffer_times = 0
         if send_buffer_times is not None:
