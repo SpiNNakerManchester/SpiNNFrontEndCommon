@@ -230,7 +230,7 @@ _MACHINE_VERSION = 5
 
 def spalloc_allocator(
         bearer_token: str = None, group: str = None, collab: str = None,
-        nmpi_job: int = None) -> Tuple[
+        nmpi_job: int = None, nmpi_user: str = None) -> Tuple[
             str, int, None, bool, bool, Dict[Tuple[int, int], str], None,
             MachineAllocationController]:
     """
@@ -245,6 +245,8 @@ def spalloc_allocator(
     :type collab: str or None
     :param nmpi_job: The NMPI Job to associate with or None for no job
     :type nmpi_job: str or None
+    :param nmpi_user: The NMPI username to associate with or None for no user
+    :type nmpi_user: str or None
     :return:
         host, board version, BMP details, reset on startup flag,
         auto-detect BMP flag, board address map, allocation controller
@@ -271,7 +273,8 @@ def spalloc_allocator(
 
     if is_server_address(spalloc_server):
         host, connections, mac = _allocate_job_new(
-            spalloc_server, n_boards, bearer_token, group, collab, nmpi_job)
+            spalloc_server, n_boards, bearer_token, group, collab, nmpi_job,
+            nmpi_user)
     else:
         host, connections, mac = _allocate_job_old(spalloc_server, n_boards)
     return (host, _MACHINE_VERSION, None, False, False, connections, mac)
@@ -280,7 +283,7 @@ def spalloc_allocator(
 def _allocate_job_new(
         spalloc_server: str, n_boards: int,
         bearer_token: str = None, group: str = None, collab: str = None,
-        nmpi_job: int = None) -> Tuple[
+        nmpi_job: int = None, nmpi_user: str = None) -> Tuple[
             str, Dict[Tuple[int, int], str], MachineAllocationController]:
     """
     Request a machine from an new-style spalloc server that will fit the
@@ -297,6 +300,9 @@ def _allocate_job_new(
     :type collab: str or None
     :param nmpi_job: The NMPI Job to associate with or None for no job
     :type nmpi_job: str or None
+    :param nmpi_user: The NMPI username to associate with or None for no user
+    :type nmpi_user: str or None
+
     :rtype: tuple(str, dict(tuple(int,int),str), MachineAllocationController)
     """
     logger.info(f"Requesting job with {n_boards} boards")
@@ -305,7 +311,7 @@ def _allocate_job_new(
         use_proxy = get_config_bool("Machine", "spalloc_use_proxy")
         client = SpallocClient(
             spalloc_server, bearer_token=bearer_token, group=group,
-            collab=collab, nmpi_job=nmpi_job)
+            collab=collab, nmpi_job=nmpi_job, nmpi_user=nmpi_user)
         stack.enter_context(client)
         job = client.create_job(n_boards, spalloc_machine)
         stack.enter_context(job)

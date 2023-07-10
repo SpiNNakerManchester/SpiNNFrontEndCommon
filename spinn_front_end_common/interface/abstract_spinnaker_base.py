@@ -282,7 +282,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         # Try to get a NMPI Job
         nmpi_job = os.getenv("NMPI_JOB_ID")
-        if nmpi_job is not None:
+        if nmpi_job is not None and nmpi_job != "":
+            nmpi_user = os.getenv("NMPI_USER")
+            if nmpi_user is not None and nmpi_user != "":
+                logger.info("Requesting job for NMPI job {}, user {}",
+                            nmpi_job, nmpi_user)
+                return {"nmpi_job": nmpi_job, "nmpi_user": nmpi_user}
+            logger.info("Requesting spalloc job for NMPI job {}", nmpi_job)
             return {"nmpi_job": nmpi_job}
 
         # Try to get the collab from the path
