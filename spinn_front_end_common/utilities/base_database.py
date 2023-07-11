@@ -15,7 +15,8 @@
 import os
 import sqlite3
 import time
-from typing import Optional, cast
+from typing import Optional, Union, cast
+from typing_extensions import TypeAlias
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -23,7 +24,7 @@ from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 _DDL_FILE = os.path.join(os.path.dirname(__file__),
                          "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
-#: Name of the database in the data folder
+_SqliteTypes: TypeAlias = Union[str, int, float, bytes, None]
 
 
 def _timestamp():

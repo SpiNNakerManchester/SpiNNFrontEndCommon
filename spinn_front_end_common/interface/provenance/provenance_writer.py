@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import logging
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utilities.base_database import (
+    BaseDatabase, _SqliteTypes)
 from spinn_front_end_common.utilities.sqlite_db import Isolation
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -51,7 +52,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         super().__init__(database_file)
 
-    def insert_power(self, description: str, the_value: float):
+    def insert_power(self, description: str, the_value: _SqliteTypes):
         """
         Inserts a general power value into the `power_provenance` table.
 
@@ -68,7 +69,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_gatherer(
             self, x: int, y: int, address: int, bytes_read: int, run: int,
-            description: str, the_value: float):
+            description: str, the_value: _SqliteTypes):
         """
         Records provenance into the `gatherer_provenance` table.
 
@@ -88,7 +89,8 @@ class ProvenanceWriter(BaseDatabase):
                 VALUES(?, ?, ?, ?, ?, ?, ?)
                 """, [x, y, address, bytes_read, run, description, the_value])
 
-    def insert_monitor(self, x: int, y: int, description: str, the_value: int):
+    def insert_monitor(
+            self, x: int, y: int, description: str, the_value: _SqliteTypes):
         """
         Inserts data into the `monitor_provenance` table.
 
@@ -107,7 +109,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_router(
             self, x: int, y: int, description: str,
-            the_value: Union[int, float],
+            the_value: _SqliteTypes,
             expected: bool = True):
         """
         Inserts data into the `router_provenance` table.
@@ -129,7 +131,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_core(
             self, x: int, y: int, p: int, description: str,
-            the_value: Union[int, float]):
+            the_value: _SqliteTypes):
         """
         Inserts data for a specific core into the `core_provenance` table.
 
@@ -174,7 +176,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_connector(
             self, pre_population: str, post_population: str, the_type: str,
-            description: str, the_value: str):
+            description: str, the_value: _SqliteTypes):
         """
         Inserts edge data into the `connector_provenance`
 

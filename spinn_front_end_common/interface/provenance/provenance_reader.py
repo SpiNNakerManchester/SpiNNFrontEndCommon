@@ -13,17 +13,17 @@
 # limitations under the License.
 
 import os
-from typing import Iterable, List, Optional, Sequence, Tuple, Union, cast
+from typing import Iterable, List, Optional, Sequence, Tuple, cast
 from typing_extensions import TypeAlias
 from spinn_utilities.typing.coords import XYP
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
-from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utilities.base_database import (
+    BaseDatabase, _SqliteTypes)
 
 #: Basic types supported natively by SQLite
-_SqliteTypes: TypeAlias = Union[str, int, float, bytes, None]
-_MonitorItem: TypeAlias = Tuple[int, int, int]
-_RouterItem: TypeAlias = Tuple[int, int, Union[int, float]]
+_MonitorItem: TypeAlias = Tuple[int, int, _SqliteTypes]
+_RouterItem: TypeAlias = Tuple[int, int, _SqliteTypes]
 
 
 class ProvenanceReader(BaseDatabase):
