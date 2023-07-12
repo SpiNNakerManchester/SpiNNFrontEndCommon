@@ -15,7 +15,7 @@
 import os
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
-from spinn_machine import Machine, Router
+from spinn_machine import Router
 
 AREA_CODE_REPORT_NAME = "board_chip_report.txt"
 

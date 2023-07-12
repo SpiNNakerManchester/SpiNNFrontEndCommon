@@ -26,7 +26,6 @@ from spinn_front_end_common.interface.interface_functions.compute_energy_used\
     import (JOULES_PER_SPIKE, MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
             MILLIWATTS_PER_FRAME_ACTIVE_COST, MILLIWATTS_PER_FPGA,
             MILLIWATTS_PER_IDLE_CHIP)
-from spinn_machine.machine import Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
