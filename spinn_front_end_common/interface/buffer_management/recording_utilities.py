@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List
+from typing import List, Sequence
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, BYTES_PER_WORD)
 
@@ -46,7 +46,8 @@ def get_recording_data_constant_size(n_recording_regions: int) -> int:
     return (n_recording_regions * SARK_PER_MALLOC_SDRAM_USAGE)
 
 
-def get_recording_header_array(recorded_region_sizes: List[int]) -> List[int]:
+def get_recording_header_array(
+        recorded_region_sizes: Sequence[int]) -> List[int]:
     """
     Get data to be written for the recording header.
 
@@ -56,10 +57,7 @@ def get_recording_header_array(recorded_region_sizes: List[int]) -> List[int]:
     :rtype: list(int)
     """
     # See recording.h/recording_initialise for data included in the header
-    data = list()
-
-    # The parameters
-    data.append(len(recorded_region_sizes))
+    data = [len(recorded_region_sizes)]
 
     # Add (space, size, pointer) for each region
     for space in recorded_region_sizes:

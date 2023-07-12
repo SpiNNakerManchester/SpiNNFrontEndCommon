@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Iterable
+from typing import List
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
@@ -29,7 +29,7 @@ class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def get_recorded_region_ids(self) -> Iterable[int]:
+    def get_recorded_region_ids(self) -> List[int]:
         """
         Get the recording region IDs that have been recorded using buffering.
 

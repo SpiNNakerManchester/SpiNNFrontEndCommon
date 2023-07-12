@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import numpy
-from typing import List, Optional, TextIO, Union
+from typing import Optional, Sequence, TextIO, Union
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from .data_type import DataType
 from .ds_sqllite_database import DsSqlliteDatabase
@@ -179,7 +179,8 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         self._content_debug += f"{data}:{data_type.name} "
 
     def write_array(self, array_values: Union[
-            List[int], List[float], numpy.ndarray], data_type=DataType.UINT32):
+            Sequence[int], Sequence[float], numpy.ndarray],
+            data_type=DataType.UINT32):
         """
         Insert command to write an array, causing the write pointer
         to move on by (data type size * the array size), in bytes.
