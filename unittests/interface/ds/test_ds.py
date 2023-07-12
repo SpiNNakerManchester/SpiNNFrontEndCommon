@@ -14,6 +14,7 @@
 
 from sqlite3 import IntegrityError
 import unittest
+from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 from spinn_machine import Chip
 from spinn_machine.virtual_machine import virtual_machine
@@ -51,6 +52,7 @@ class TestDataSpecification(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        set_config("Machine", "version", 5)
 
     def test_init(self):
         db = DsSqlliteDatabase()
