@@ -272,7 +272,8 @@ class EnergyReport(object):
         f.write("\n")
 
         # detailed report print out
-        for core in range(Machine.DEFAULT_MAX_CORES_PER_CHIP):
+        n_cores = FecDataView.get_machine_version().max_cores_per_chip
+        for core in range(n_cores):
             if core in labels:
                 label = f" (running {labels[core]})"
             else:

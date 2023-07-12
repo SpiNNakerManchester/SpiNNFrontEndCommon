@@ -362,7 +362,7 @@ def _calculate_loading_energy(machine, load_time_ms, n_monitors, n_frames):
     energy_cost = (
         total_time_ms * n_monitors_active *
         MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD /
-        machine.DEFAULT_MAX_CORES_PER_CHIP)
+        FecDataView.get_machine_version().max_cores_per_chip)
 
     # handle all idle cores
     energy_cost += _calculate_idle_cost(total_time_ms, machine)
@@ -410,7 +410,7 @@ def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
             total_time_ms *
             min(N_MONITORS_ACTIVE_DURING_COMMS, n_monitors) *
             MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD /
-            machine.DEFAULT_MAX_CORES_PER_CHIP)
+            FecDataView.get_machine_version().max_cores_per_chip)
 
         # add idle chip cost
         energy_cost += _calculate_idle_cost(total_time_ms, machine)
@@ -434,7 +434,7 @@ def _calculate_idle_cost(time, machine):
     """
     return (time * machine.total_available_user_cores *
             MILLIWATTS_PER_IDLE_CHIP /
-            machine.DEFAULT_MAX_CORES_PER_CHIP)
+            FecDataView.get_machine_version().max_cores_per_chip)
 
 
 def _calculate_power_down_energy(time, machine, n_frames):

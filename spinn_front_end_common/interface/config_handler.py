@@ -73,11 +73,6 @@ class ConfigHandler(object):
         self._debug_configs()
         self._previous_handler()
 
-        # Pass max_machine_cores to Machine so if effects everything!
-        max_machine_core = get_config_int("Machine", "max_machine_core")
-        if max_machine_core is not None:
-            Machine.set_max_cores_per_chip(max_machine_core)
-
     def _debug_configs(self):
         """
         Adjusts and checks the configuration based on mode and
