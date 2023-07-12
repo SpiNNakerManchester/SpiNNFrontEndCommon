@@ -30,12 +30,10 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 
 from spinn_machine import __version__ as spinn_machine_version
-from spinn_machine import CoreSubsets, Machine
+from spinn_machine import Machine
 
 from spinnman import __version__ as spinnman_version
-from spinnman.exceptions import SpiNNManCoresNotInStateException
-from spinnman.model.cpu_infos import CPUInfos
-from spinnman.model.enums import CPUState, ExecutableType
+from spinnman.model.enums import ExecutableType
 
 from spalloc_client import __version__ as spalloc_version
 
@@ -74,7 +72,7 @@ from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
     chip_io_buf_clearer, chip_io_buf_extractor,
-    chip_provenance_updater, chip_runtime_updater, compute_energy_used,
+    chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
     reload_dsg_regions, energy_provenance_reporter,
     load_application_data_specs, load_system_data_specs,
@@ -112,7 +110,8 @@ from spinn_front_end_common.utilities.report_functions import (
     routing_table_from_machine_report, tags_from_machine_report,
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
-from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
+from spinn_front_end_common.utilities.emergency_recovery import (
+    emergency_recover_states_from_failure)
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
@@ -2193,76 +2192,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         except Exception:
             logger.exception("Error reading router provenance")
 
-        # Find the cores that are not in an expected state
-        unsuccessful_cores = CPUInfos()
-        if isinstance(exception, SpiNNManCoresNotInStateException):
-            unsuccessful_cores = exception.failed_core_states()
-
-        # If there are no cores in a bad state, find those not yet in
-        # their finished state
-        transceiver = self._data_writer.get_transceiver()
-        if not unsuccessful_cores:
-            for executable_type, core_subsets in \
-                    self._data_writer.get_executable_types().items():
-                failed_cores = transceiver.get_cpu_infos(
-                    core_subsets, executable_type.end_state, False)
-                for (x, y, p) in failed_cores:
-                    unsuccessful_cores.add_processor(
-                        x, y, p, failed_cores.get_cpu_info(x, y, p))
-
-        # Print the details of error cores
-        logger.error(unsuccessful_cores.get_status_string())
-
-        # Find the cores that are not in RTE i.e. that can still be read
-        non_rte_cores = [
-            (x, y, p)
-            for (x, y, p), core_info in unsuccessful_cores.items()
-            if (core_info.state != CPUState.RUN_TIME_EXCEPTION and
-                core_info.state != CPUState.WATCHDOG)]
-
-        # If there are any cores that are not in RTE, extract data from them
-        if (non_rte_cores and
-                ExecutableType.USES_SIMULATION_INTERFACE in
-                self._data_writer.get_executable_types()):
-            non_rte_core_subsets = CoreSubsets()
-            for (x, y, p) in non_rte_cores:
-                non_rte_core_subsets.add_processor(x, y, p)
-
-            # Attempt to force the cores to write provenance and exit
-            try:
-                chip_provenance_updater(non_rte_core_subsets)
-            except Exception:
-                logger.exception("Could not update provenance on chip")
-
-            # Extract any written provenance data
-            try:
-                transceiver = self._data_writer.get_transceiver()
-                finished_cores = transceiver.get_cpu_infos(
-                    non_rte_core_subsets, CPUState.FINISHED, True)
-                finished_placements = Placements()
-                for (x, y, p) in finished_cores:
-                    try:
-                        placement = self._data_writer.\
-                            get_placement_on_processor(x, y, p)
-                        finished_placements.add_placement(placement)
-                    except Exception:   # pylint: disable=broad-except
-                        pass  # already recovering from error
-                placements_provenance_gatherer(
-                    finished_placements.n_placements,
-                    finished_placements.placements)
-            except Exception as pro_e:
-                logger.exception(f"Could not read provenance due to {pro_e}")
-
-        # Read IOBUF where possible (that should be everywhere)
-        iobuf = IOBufExtractor()
-        try:
-            errors, warnings = iobuf.extract_iobuf()
-        except Exception:
-            logger.exception("Could not get iobuf")
-            errors, warnings = [], []
-
-        # Print the IOBUFs
-        self._print_iobuf(errors, warnings)
+        emergency_recover_states_from_failure()
 
     @staticmethod
     def _print_iobuf(errors, warnings):

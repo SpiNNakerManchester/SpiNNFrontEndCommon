@@ -14,13 +14,17 @@
 
 import logging
 import time
+from math import ceil
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.exceptions import (
+    ConfigurationException, ExecutableFailedToStopException)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
+from spinnman.model.enums.cpu_state import CPUState
 
 SAFETY_FINISH_TIME = 0.1
 
@@ -117,10 +121,27 @@ class _ApplicationRunner(object):
                       MICRO_TO_MILLISECOND_CONVERSION)
             scaled_runtime = runtime * factor
             time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
-            logger.info(
-                "Application started; waiting {}s for it to stop",
-                time_to_wait)
-            time.sleep(time_to_wait)
+            steps = ceil(time_to_wait)
+            progress = ProgressBar(
+                steps,
+                f"Application started; waiting {time_to_wait}s for it to stop")
+            time_now = time.time()
+            start_time = time_now
+            last_progress = 0
+            end_time = time_now + time_to_wait
+            while time_now < end_time:
+                time.sleep(min(1.0, end_time - time_now))
+                for state in [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG]:
+                    if self.__txrx.get_core_state_count(self.__app_id, state):
+                        raise ExecutableFailedToStopException(
+                            "Some cores have reached an error state during"
+                            " simulation; stopping early!")
+                time_now = time.time()
+                total_progress = min(ceil(time_now - start_time), steps)
+                progress_update = total_progress - last_progress
+                progress.update(progress_update)
+                last_progress = total_progress
+            progress.end()
             self._wait_for_end(timeout=time_threshold)
         else:
             logger.info("Application started; waiting until finished")
@@ -155,9 +176,16 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
+        # Do progress here as if any cores overrun, it is nice to know
+        # that the wait has finished at least
+        exec_types = FecDataView.get_executable_types()
+        n_cores = sum(len(cores) for cores in exec_types.values())
+        progress = ProgressBar(n_cores, "Waiting for cores to finish")
         for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
-                cores, self.__app_id, ex_type.end_state, timeout=timeout)
+                cores, self.__app_id, ex_type.end_state, timeout=timeout,
+                progress_bar=progress)
+        progress.end()
 
     def _determine_simulation_sync_signals(self):
         """

@@ -14,9 +14,12 @@
 import logging
 
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import CoreSubsets
 from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.data import FecDataView
+from .chip_provenance_updater import (
+    chip_provenance_updater, send_chip_update_provenance_and_exit)
 from .iobuf_extractor import IOBufExtractor
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -79,6 +82,37 @@ def _emergency_iobuf_extract(executable_targets=None):
     extractor.extract_iobuf()
 
 
+def _emergency_exit():
+    """ Tries to get the cores to exit
+    """
+    # pylint: disable=broad-except
+    all_core_subsets = CoreSubsets()
+    for place in FecDataView.iterate_placemements():
+        all_core_subsets.add_processor(place.x, place.y, place.p)
+    try:
+        chip_provenance_updater(all_core_subsets)
+    except Exception:
+        logger.error("Could not exit - going to individual chips")
+        errors = list()
+        txrx = FecDataView.get_transceiver()
+        for chip_subset in all_core_subsets:
+            try:
+                chip_subsets = CoreSubsets([chip_subset])
+                running_cores = txrx.get_cpu_infos(
+                    chip_subsets, CPUState.RUNNING, include=True)
+                for (c_x, c_y, proc) in running_cores.keys():
+                    send_chip_update_provenance_and_exit(txrx, c_x, c_y, proc)
+                # Don't even bother to check; with luck this happens and all
+                # is well, but at this point we can't do much more than send
+                # the request and hope!
+            except Exception:
+                errors.append((chip_subset.x, chip_subset.y))
+        if len(errors) > 10:
+            logger.error(f"Could not stop cores on {len(errors)} chips")
+        elif errors:
+            logger.error(f"Could not stop cores on {errors}")
+
+
 def emergency_recover_state_from_failure(vertex, placement):
     """
     Used to get at least *some* information out of a core when something
@@ -109,4 +143,5 @@ def emergency_recover_states_from_failure():
         The what/where mapping
     """
     _emergency_state_check()
+    _emergency_exit()
     _emergency_iobuf_extract()
