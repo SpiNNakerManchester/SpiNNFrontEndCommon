@@ -37,11 +37,6 @@ from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
 logger = FormatAdapter(logging.getLogger(__name__))
 _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
 
-#: The number of chips per board to use in calculations to ensure that
-#: the number of boards allocated is enough.  This is 2 less than the maximum
-#: as there are a few boards with 2 down chips in the big machine.
-CALC_CHIPS_PER_BOARD = Machine.MAX_CHIPS_PER_48_BOARD - 2
-
 
 class SpallocJobController(MachineAllocationController):
     __slots__ = (
@@ -252,7 +247,9 @@ def spalloc_allocator(
         n_boards = FecDataView.get_n_boards_required()
     else:
         n_chips = FecDataView.get_n_chips_needed()
-        n_boards_float = float(n_chips) / CALC_CHIPS_PER_BOARD
+        # reduce max chips by 2 in case you get a bad board(s)
+        chips_div = FecDataView.get_machine_version().n_chips_per_board - 2
+        n_boards_float = float(n_chips) / chips_div
         logger.info("{:.2f} Boards Required for {} chips",
                     n_boards_float, n_chips)
         # If the number of boards rounded up is less than 50% of a board
