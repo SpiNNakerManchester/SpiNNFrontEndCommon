@@ -508,7 +508,7 @@ class DataType(Enum):
         """
         return array / float(self._scale)
 
-    def decode_array(self, values: bytes) -> np.ndarray:
+    def decode_array(self, values: Union[np.ndarray, bytes]) -> np.ndarray:
         """
         Decodes a byte array into iterable of this type.
 
