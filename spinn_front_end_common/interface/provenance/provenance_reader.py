@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from typing import Iterable, List, Optional, Sequence, Tuple, cast
+from typing import Iterable, List, Optional, Sequence, Tuple, Union, cast
 from typing_extensions import TypeAlias
 from spinn_utilities.typing.coords import XYP
 from spinn_front_end_common.data import FecDataView
@@ -23,7 +23,7 @@ from spinn_front_end_common.utilities.base_database import (
 
 #: Basic types supported natively by SQLite
 _MonitorItem: TypeAlias = Tuple[int, int, _SqliteTypes]
-_RouterItem: TypeAlias = Tuple[int, int, _SqliteTypes]
+_RouterItem: TypeAlias = Tuple[int, int, Union[int, float]]
 
 
 class ProvenanceReader(BaseDatabase):

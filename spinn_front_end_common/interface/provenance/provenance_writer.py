@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import (
@@ -109,7 +109,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_router(
             self, x: int, y: int, description: str,
-            the_value: _SqliteTypes,
+            the_value: Union[int, float],
             expected: bool = True):
         """
         Inserts data into the `router_provenance` table.
@@ -117,7 +117,7 @@ class ProvenanceWriter(BaseDatabase):
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
         :param str description: type of value
-        :param float the_value: data
+        :param the_value: data
         :type the_value: int or float
         :param bool expected: Flag to say this data was expected
         """
