@@ -62,7 +62,7 @@ class _HBPJobController(MachineAllocationController):
 
     def _check_lease(self, wait_time):
         r = requests.get(self._check_lease_url, params={
-            "waitTime": wait_time}, timeout=10)
+            "waitTime": wait_time}, timeout=10 + wait_time)
         r.raise_for_status()
         return r.json()
 
