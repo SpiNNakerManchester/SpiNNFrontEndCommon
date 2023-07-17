@@ -149,11 +149,11 @@ def _get_machine(url, total_run_time):
     if FecDataView.has_n_boards_required():
         get_machine_request = requests.get(
             url, params={"nBoards": FecDataView.get_n_boards_required(),
-                         "runTime": total_run_time}, timeout=10)
+                         "runTime": total_run_time}, timeout=30)
     elif FecDataView.has_n_chips_needed():
         get_machine_request = requests.get(
             url, params={"nChips": FecDataView.get_n_chips_needed(),
-                         "runTime": total_run_time}, timeout=10)
+                         "runTime": total_run_time}, timeout=30)
     else:
         raise PacmanConfigurationException(
             "At least one of n_chips or n_boards must be provided")
