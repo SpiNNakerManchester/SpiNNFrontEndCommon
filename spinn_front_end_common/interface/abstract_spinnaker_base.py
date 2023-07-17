@@ -17,12 +17,15 @@ main interface for the SpiNNaker tools
 import logging
 import math
 import os
+import re
 import signal
 import sys
 import threading
 import requests
 from threading import Condition
 from numpy import __version__ as numpy_version
+
+import ebrains_drive
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
@@ -131,6 +134,11 @@ except ImportError:
     scipy_version = "scipy not installed"
 
 logger = FormatAdapter(logging.getLogger(__name__))
+
+SHARED_PATH = re.compile(r".*\/shared\/([^\/]+)")
+SHARED_GROUP = 1
+SHARED_WITH_PATH = re.compile(r".*\/Shared with (all|groups|me)\/([^\/]+)")
+SHARED_WITH_GROUP = 2
 
 
 class AbstractSpinnakerBase(ConfigHandler):
@@ -265,6 +273,60 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Try a simple environment variable, or None if that doesn't exist
         return os.getenv("OIDC_BEARER_TOKEN")
+
+    @property
+    def __group_collab_or_job(self):
+        """
+        :return: The group, collab, or NMPI Job ID to associate with jobs
+        :rtype: dict()
+        """
+        # Try to get a NMPI Job
+        nmpi_job = os.getenv("NMPI_JOB_ID")
+        if nmpi_job is not None and nmpi_job != "":
+            nmpi_user = os.getenv("NMPI_USER")
+            if nmpi_user is not None and nmpi_user != "":
+                logger.info("Requesting job for NMPI job {}, user {}",
+                            nmpi_job, nmpi_user)
+                return {"nmpi_job": nmpi_job, "nmpi_user": nmpi_user}
+            logger.info("Requesting spalloc job for NMPI job {}", nmpi_job)
+            return {"nmpi_job": nmpi_job}
+
+        # Try to get the collab from the path
+        cwd = os.getcwd()
+        match_obj = SHARED_PATH.match(cwd)
+        if match_obj:
+            return self.__get_collab_id_from_folder(
+                match_obj.group(SHARED_GROUP))
+        match_obj = SHARED_WITH_PATH.match(cwd)
+        if match_obj:
+            return self.__get_collab_id_from_folder(
+                match_obj.group(SHARED_WITH_GROUP))
+
+        # Try to use the config to get a group
+        group = get_config_str("Machine", "spalloc_group")
+        if group is not None:
+            return {"group": group}
+
+        # Nothing ventured, nothing gained
+        return {}
+
+    def __get_collab_id_from_folder(self, folder):
+        """ Currently hacky way to get the EBRAINS collab id from the
+            drive folder, replicated from the NMPI collab template.
+        """
+        ebrains_drive_client = ebrains_drive.connect(token=self.__bearer_token)
+        repo_by_title = ebrains_drive_client.repos.get_repos_by_name(folder)
+        if len(repo_by_title) != 1:
+            logger.warning(f"The repository for collab {folder} could not be"
+                           " found; continuing as if not in a collaboratory")
+            return {}
+        # Owner is formatted as collab-<collab_id>-<permission>, and we want
+        # to extract the <collab-id>
+        owner = repo_by_title[0].owner
+        collab_id = owner[:owner.rindex("-")]
+        collab_id = collab_id[collab_id.find("-") + 1:]
+        logger.info(f"Requesting job in collaboratory {collab_id}")
+        return {"collab": collab_id}
 
     def exception_handler(self, exc_type, value, traceback_obj):
         """
@@ -669,7 +731,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return None
         if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer("SpallocAllocator", TimerWork.OTHER):
-                return spalloc_allocator(self.__bearer_token)
+                return spalloc_allocator(
+                    self.__bearer_token, **self.__group_collab_or_job)
         if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer("HBPAllocator", TimerWork.OTHER):
                 # TODO: Would passing the bearer token to this ever make sense?
@@ -2204,8 +2267,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not unsuccessful_cores:
             for executable_type, core_subsets in \
                     self._data_writer.get_executable_types().items():
-                failed_cores = transceiver.get_cores_not_in_state(
-                    core_subsets, executable_type.end_state)
+                failed_cores = transceiver.get_cpu_infos(
+                    core_subsets, executable_type.end_state, False)
                 for (x, y, p) in failed_cores:
                     unsuccessful_cores.add_processor(
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
@@ -2237,8 +2300,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Extract any written provenance data
             try:
                 transceiver = self._data_writer.get_transceiver()
-                finished_cores = transceiver.get_cores_in_state(
-                    non_rte_core_subsets, CPUState.FINISHED)
+                finished_cores = transceiver.get_cpu_infos(
+                    non_rte_core_subsets, CPUState.FINISHED, True)
                 finished_placements = Placements()
                 for (x, y, p) in finished_cores:
                     try:
