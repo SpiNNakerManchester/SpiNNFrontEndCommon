@@ -13,6 +13,7 @@ version = None
 spalloc_server = None
 spalloc_port = 22244
 spalloc_user = None
+spalloc_group = None
 
 # If using virtual_board both width and height must be set
 virtual_board = False
