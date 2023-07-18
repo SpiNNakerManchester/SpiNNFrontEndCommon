@@ -69,9 +69,6 @@ intersphinx_mapping = {
     'pacman': (
         f'https://pacman.readthedocs.io/en/{spinnaker_doc_version}/',
         None),
-    'data_specification': (
-        'https://dataspecification.readthedocs.io/en/'
-        f'{spinnaker_doc_version}/', None),
     'spalloc': (
         f'https://spalloc.readthedocs.io/en/{spinnaker_doc_version}/', None),
 }
