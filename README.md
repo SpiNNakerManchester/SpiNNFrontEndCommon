@@ -1,8 +1,3 @@
-[![PyPi version](https://img.shields.io/pypi/v/SpiNNFrontEndCommon.svg?style=flat)](https://pypi.org/project/SpiNNFrontEndCommon/)
-[![Python Build Status](https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/workflows/Python%20Actions/badge.svg?branch=master)](https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/actions?query=workflow%3A%22Python+Actions%22+branch%3Amaster)
-[![C Build Status](https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/workflows/C%20Actions/badge.svg?branch=master)](https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/actions?query=workflow%3A%22C+Actions%22+branch%3Amaster)
-[![Documentation Status](https://readthedocs.org/projects/spinnfrontendcommon/badge/?version=latest)](https://spinnfrontendcommon.readthedocs.io/en/latest/?badge=latest)
-[![Coverage Status](https://coveralls.io/repos/github/SpiNNakerManchester/SpiNNFrontEndCommon/badge.svg?branch=master)](https://coveralls.io/github/SpiNNakerManchester/SpiNNFrontEndCommon?branch=master)
 
 This package provides functionality which are common to front ends that
 translate application level programs into executables which run on a SpiNNaker
@@ -56,8 +51,8 @@ deactivated.
 
 Documentation
 =============
-[SpiNNFrontEndCommon python documentation](https://spinnfrontendcommon.readthedocs.io)
+[SpiNNFrontEndCommon python documentation](https://spinnfrontendcommon.readthedocs.io/en/7.0.0-a6)
 <br>
 [SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
 
-[Combined python documentation](http://spinnakermanchester.readthedocs.io)
+[Combined python documentation](http://spinnakermanchester.readthedocs.io/en/7.0.0-a6)
