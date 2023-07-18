@@ -62,7 +62,7 @@ class _HBPJobController(MachineAllocationController):
 
     def _check_lease(self, wait_time):
         r = requests.get(self._check_lease_url, params={
-            "waitTime": wait_time}, timeout=10)
+            "waitTime": wait_time}, timeout=10 + wait_time)
         r.raise_for_status()
         return r.json()
 
@@ -149,11 +149,11 @@ def _get_machine(url, total_run_time):
     if FecDataView.has_n_boards_required():
         get_machine_request = requests.get(
             url, params={"nBoards": FecDataView.get_n_boards_required(),
-                         "runTime": total_run_time}, timeout=10)
+                         "runTime": total_run_time}, timeout=30)
     elif FecDataView.has_n_chips_needed():
         get_machine_request = requests.get(
             url, params={"nChips": FecDataView.get_n_chips_needed(),
-                         "runTime": total_run_time}, timeout=10)
+                         "runTime": total_run_time}, timeout=30)
     else:
         raise PacmanConfigurationException(
             "At least one of n_chips or n_boards must be provided")
