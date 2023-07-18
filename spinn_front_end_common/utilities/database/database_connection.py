@@ -58,7 +58,8 @@ class DatabaseConnection(UDPConnection):
     def __init__(
             self, start_resume_callback_function: Optional[_CB] = None,
             stop_pause_callback_function: Optional[_CB] = None,
-            local_host: Optional[str] = None, local_port: int = NOTIFY_PORT):
+            local_host: Optional[str] = None,
+            local_port: Optional[int] = NOTIFY_PORT):
         """
         :param callable start_resume_callback_function:
             A function to be called when the start message has been received.
