@@ -80,8 +80,6 @@ def virtual_machine_generator():
     machine.add_spinnaker_links()
     machine.add_fpga_links()
 
-    logger.info(
-        "Created a virtual machine which has {}",
-        machine.cores_and_link_output_string())
+    logger.info("Created {}", machine.summary_string())
 
     return machine
