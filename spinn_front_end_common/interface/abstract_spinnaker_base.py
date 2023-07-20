@@ -33,7 +33,7 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 
 from spinn_machine import __version__ as spinn_machine_version
-from spinn_machine import CoreSubsets, Machine
+from spinn_machine import CoreSubsets
 
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException

@@ -22,7 +22,6 @@ from spalloc_client import Job
 from spalloc_client.states import JobState
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_int, get_config_str
-from spinn_machine import Machine
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
     is_server_address, SpallocClient, SpallocJob, SpallocState)
