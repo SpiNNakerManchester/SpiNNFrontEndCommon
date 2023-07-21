@@ -240,7 +240,8 @@ class JavaCaller(object):
             self._recording = True
             json_vertex = cast(JsonObject, json_placement["vertex"])
             # Replace fields in template above
-            json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
+            json_vertex["recordedRegionIds"] = list(
+                vertex.get_recorded_region_ids())
             json_vertex["recordingRegionBaseAddress"] = \
                 vertex.get_recording_region_base_address(placement)
 
