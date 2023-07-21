@@ -15,13 +15,16 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
+from pacman.utilities.utility_calls import get_field_based_keys
+from pacman.model.graphs.application.abstract import (
+    AbstractOneAppOneMachineVertex)
+from spinnman.spalloc import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
-from spinnman.spalloc import SpallocJob
 from spinn_front_end_common.utility_models import LivePacketGather
-from pacman.utilities.utility_calls import get_field_based_keys
+from spinn_front_end_common.utility_models import LivePacketGatherMachineVertex
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -267,6 +270,22 @@ class DatabaseWriter(SQLiteDB):
                     """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
                 )
 
+    def _get_machine_lpg_mappings(self, part):
+        """ Get places where an LPG Machine vertex has been added to a graph
+            "directly" (via GFE); and so it's application vertex *isn't* a
+            LivePacketGather
+        """
+        for edge in part.edges:
+            if (isinstance(edge.pre_vertex,
+                           AbstractOneAppOneMachineVertex) and
+                    isinstance(edge.post_vertex,
+                               AbstractOneAppOneMachineVertex) and
+                    isinstance(edge.post_vertex.machine_vertex,
+                               LivePacketGatherMachineVertex) and
+                    not isinstance(edge.post_vertex, LivePacketGather)):
+                yield (edge.pre_vertex.machine_vertex, part.identifier,
+                       edge.post_vertex.machine_vertex)
+
     def add_lpg_mapping(self):
         """
         Add mapping from machine vertex to LPG machine vertex.
@@ -279,6 +298,10 @@ class DatabaseWriter(SQLiteDB):
                    if isinstance(vertex, LivePacketGather)
                    for lpg_m_vertex, m_vertex, part_id
                    in vertex.splitter.targeted_lpgs]
+        targets.extend((m_vertex, part_id, lpg_m_vertex)
+                       for part in FecDataView.iterate_partitions()
+                       for (m_vertex, part_id, lpg_m_vertex) in
+                       self._get_machine_lpg_mappings(part))
 
         with self.transaction() as cur:
             cur.executemany(
