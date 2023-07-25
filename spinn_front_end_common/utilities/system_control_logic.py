@@ -27,7 +27,8 @@ from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 def run_system_application(
         executable_cores: ExecutableTargets, app_id: int,
         read_algorithm_iobuf: bool,
-        check_for_success_function: Callable[[ExecutableTargets], bool],
+        check_for_success_function: Optional[
+            Callable[[ExecutableTargets], bool]],
         cpu_end_states: FrozenSet[CPUState], needs_sync_barrier: bool,
         filename_template: str, binaries_to_track: Optional[List[str]] = None,
         progress_bar: Optional[ProgressBar] = None,
