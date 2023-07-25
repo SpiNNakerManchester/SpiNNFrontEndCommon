@@ -410,10 +410,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             FecDataView.get_data_in_multicast_key_to_chip_map())
         # write each chip x and y and base key
         for chip_xy in chip_xys_on_board:
-            board_chip_x, board_chip_y = machine.get_local_xy(
-                machine.get_chip_at(*chip_xy))
-            spec.write_value(board_chip_x)
-            spec.write_value(board_chip_y)
+            local_x, local_y = machine.get_local_xy(machine[chip_xy])
+            spec.write_value(local_x)
+            spec.write_value(local_y)
             spec.write_value(mc_data_chips_to_keys[chip_xy])
             log.debug("for chip {}:{} base key is {}",
                       chip_xy[0], chip_xy[1], mc_data_chips_to_keys[chip_xy])

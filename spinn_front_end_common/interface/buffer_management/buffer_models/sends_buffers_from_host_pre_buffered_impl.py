@@ -56,7 +56,7 @@ class SendsBuffersFromHostPreBufferedImpl(
 
     @overrides(AbstractSendsBuffersFromHost.get_next_timestamp)
     def get_next_timestamp(self, region: int) -> int:
-        return self.send_buffers[region].next_timestamp
+        return self.send_buffers[region].next_timestamp or 0
 
     @overrides(AbstractSendsBuffersFromHost.is_next_key)
     def is_next_key(self, region: int, timestamp: int) -> bool:

@@ -17,7 +17,7 @@ import requests
 from typing import Optional, Tuple, cast
 from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.overrides import overrides
-from spinn_utilities.typing.json import JsonObject
+from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.abstract_models import (
@@ -78,7 +78,7 @@ class _HBPJobController(MachineAllocationController):
         r.raise_for_status()
 
     def _where_is(
-            self, machine_name: str, chip_x: int, chip_y: int) -> JsonObject:
+            self, machine_name: str, chip_x: int, chip_y: int) -> JsonArray:
         r = requests.get(self._where_is_url, params={
             "machineName": machine_name, "chipX": str(chip_x),
             "chipY": str(chip_y)}, timeout=10)
@@ -103,8 +103,11 @@ class _HBPJobController(MachineAllocationController):
         self._power_on = power
 
     @overrides(AbstractMachineAllocationController.where_is_machine)
-    def where_is_machine(self, chip_x: int, chip_y: int) -> JsonObject:
-        return self._where_is(self._machine_name, chip_x, chip_y)
+    def where_is_machine(self, chip_x: int, chip_y: int) -> Tuple[
+            int, int, int]:
+        c, f, b = cast(Tuple[int, int, int],
+                       self._where_is(self._machine_name, chip_x, chip_y))
+        return (c, f, b)
 
     @overrides(MachineAllocationController._wait)
     def _wait(self) -> bool:
@@ -112,7 +115,7 @@ class _HBPJobController(MachineAllocationController):
 
 
 def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
-        str, int, Optional[JsonObject], bool, bool, None,
+        str, int, Optional[str], bool, bool, None,
         MachineAllocationController]:
     """
     Request a machine from the HBP remote access server that will fit
@@ -138,7 +141,7 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
 
     return (
         name, cast(int, machine["version"]),
-        cast(Optional[JsonObject], machine.get("bmpDetails")),
+        cast(Optional[str], machine.get("bmpDetails")),
         False, False, None, hbp_job_controller)
 
 

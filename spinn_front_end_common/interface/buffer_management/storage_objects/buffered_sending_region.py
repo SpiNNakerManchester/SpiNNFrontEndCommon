@@ -14,7 +14,7 @@
 
 import bisect
 import math
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Sequence
 from spinnman.messages.eieio.command_messages import HostSendSequencedData
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
 from spinnman.messages.eieio import EIEIOType
@@ -104,7 +104,7 @@ class BufferedSendingRegion(object):
         return len(self._timestamps)
 
     @property
-    def timestamps(self) -> Iterable[int]:
+    def timestamps(self) -> Sequence[int]:
         """
         The timestamps for which there are keys.
 

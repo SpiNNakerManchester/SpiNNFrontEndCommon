@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from typing import Collection, Dict, Optional, Set, Sequence, Tuple, TypeVar
+from typing import Dict, Optional, Set, Sequence, Tuple, TypeVar
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
@@ -79,9 +79,9 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
         return []
 
     @overrides(AbstractSplitterCommon.get_in_coming_vertices)
-    def get_in_coming_vertices(self, partition_id: str) -> Collection[
+    def get_in_coming_vertices(self, partition_id: str) -> Sequence[
             LivePacketGatherMachineVertex]:
-        return self._governed_app_vertex.machine_vertices
+        return tuple(self._governed_app_vertex.machine_vertices)
 
     @overrides(AbstractSplitterCommon.get_source_specific_in_coming_vertices)
     def get_source_specific_in_coming_vertices(

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from contextlib import ExitStack
+from contextlib import AbstractContextManager, ExitStack
 import logging
 import math
 from typing import ContextManager, Dict, Tuple, Optional, cast
@@ -21,7 +21,6 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
 from spalloc_client import Job  # type: ignore[import]
 from spalloc_client.states import JobState  # type: ignore[import]
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine
 from spinnman.constants import SCP_SCAMP_PORT
@@ -83,24 +82,31 @@ class SpallocJobController(MachineAllocationController):
         # Does Nothing in this allocator - machines are held until exit
         pass
 
-    @overrides(AbstractMachineAllocationController.close)
-    def close(self):
-        super().close()
-        self.__closer.close()
+    def __stop(self) -> None:
+        self.__closer.__exit__(None, None, None)
         self._job.destroy()
         self.__client.close()
 
+    @overrides(AbstractMachineAllocationController.close)
+    def close(self) -> None:
+        super().close()
+        self.__stop()
+
     @overrides(AbstractMachineAllocationController.where_is_machine)
-    def where_is_machine(self, chip_x, chip_y):
+    def where_is_machine(
+            self, chip_x: int, chip_y: int) -> Tuple[int, int, int]:
         """
         :param int chip_x:
         :param int chip_y:
         :rtype: tuple(int,int,int)
         """
-        return self._job.where_is_machine(x=chip_x, y=chip_y)
+        result = self._job.where_is_machine(x=chip_x, y=chip_y)
+        if result is None:
+            raise ValueError("coordinates lie outside machine")
+        return result
 
     @overrides(MachineAllocationController._wait)
-    def _wait(self):
+    def _wait(self) -> bool:
         try:
             if self._state != SpallocState.DESTROYED:
                 self._state = self._job.wait_for_state_change(self._state)
@@ -114,45 +120,61 @@ class SpallocJobController(MachineAllocationController):
     @overrides(MachineAllocationController._teardown)
     def _teardown(self) -> None:
         if not self._exited:
-            self.__closer.close()
-            self._job.destroy()
-            self.__client.close()
+            self.__stop()
         super()._teardown()
 
-    @overrides(AbstractMachineAllocationController.create_transceiver)
+    @overrides(AbstractMachineAllocationController.create_transceiver,
+               extend_doc=True)
     def create_transceiver(self) -> Optional[Transceiver]:
         """
         .. note::
             This allocation controller proxies the transceiver's connections
             via Spalloc. This allows it to work even outside the UNIMAN
             firewall.
-
         """
         if not self.__use_proxy:
-            return super(SpallocJobController, self).create_transceiver()
+            return super().create_transceiver()
         txrx = self._job.create_transceiver()
         txrx.ensure_board_is_ready()
         return txrx
 
-    @overrides(AbstractMachineAllocationController.open_sdp_connection)
+    @overrides(AbstractMachineAllocationController.open_sdp_connection,
+               extend_doc=True)
     def open_sdp_connection(
             self, chip_x: int, chip_y: int,
-            udp_port: int = SCP_SCAMP_PORT) -> SCAMPConnection:
+            udp_port: int = SCP_SCAMP_PORT) -> Optional[SCAMPConnection]:
         """
         .. note::
             This allocation controller proxies connections via Spalloc. This
             allows it to work even outside the UNIMAN firewall.
-
         """
+        if not self.__use_proxy:
+            return super().open_sdp_connection(chip_x, chip_y, udp_port)
         return self._job.connect_to_board(chip_x, chip_y, udp_port)
 
-    @overrides(AbstractMachineAllocationController.open_eieio_connection)
+    @overrides(AbstractMachineAllocationController.open_eieio_connection,
+               extend_doc=True)
     def open_eieio_connection(
-            self, chip_x: int, chip_y: int) -> EIEIOConnection:
-        return self._job.open_eieio_connection(chip_x, chip_y, SCP_SCAMP_PORT)
+            self, chip_x: int, chip_y: int) -> Optional[EIEIOConnection]:
+        """
+        .. note::
+            This allocation controller proxies connections via Spalloc. This
+            allows it to work even outside the UNIMAN firewall.
+        """
+        if not self.__use_proxy:
+            return super().open_eieio_connection(chip_x, chip_y)
+        return self._job.open_eieio_connection(chip_x, chip_y)
 
-    @overrides(AbstractMachineAllocationController.open_eieio_listener)
+    @overrides(AbstractMachineAllocationController.open_eieio_listener,
+               extend_doc=True)
     def open_eieio_listener(self) -> EIEIOConnection:
+        """
+        .. note::
+            This allocation controller proxies connections via Spalloc. This
+            allows it to work even outside the UNIMAN firewall.
+        """
+        if not self.__use_proxy:
+            return super().open_eieio_listener()
         return self._job.open_eieio_listener_connection()
 
     @property
@@ -314,6 +336,7 @@ def _allocate_job_new(
         # Success! We don't want to close the client, job or task now;
         # the allocation controller now owns them.
         stack.pop_all()
+    assert root is not None, "no root of ready board"
     return (root, connections, allocation_controller)
 
 

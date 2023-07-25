@@ -16,7 +16,7 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import (
-    EIEIOConnection, SDPConnection)
+    EIEIOConnection, SCAMPConnection)
 # mypy: disable-error-code=empty-body
 
 
@@ -76,7 +76,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
     @abstractmethod
     def open_sdp_connection(
             self, chip_x: int, chip_y: int,
-            udp_port: int = SCP_SCAMP_PORT) -> Optional[SDPConnection]:
+            udp_port: int = SCP_SCAMP_PORT) -> Optional[SCAMPConnection]:
         """
         Open a connection to a specific Ethernet-enabled SpiNNaker chip.
         Caller will have to arrange for SpiNNaker to pay attention to the

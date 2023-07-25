@@ -75,8 +75,13 @@ def machine_generator(
         if txrx:
             return txrx.get_machine_details(), txrx
 
+    if board_version is None:
+        raise ConfigurationException(
+            "Please set a machine version number in the "
+            "corresponding configuration (cfg) file")
+
     txrx = create_transceiver_from_hostname(
-        FecDataView.get_ipaddress(), board_version,
+        FecDataView.get_ipaddress(), board_version or 5,
         bmp_connection_data=_parse_bmp_details(bmp_details),
         auto_detect_bmp=auto_detect_bmp)
 
@@ -90,10 +95,6 @@ def machine_generator(
             logger.warning(POWER_CYCLE_FAILURE_WARNING)
 
     # do auto boot if possible
-    if board_version is None:
-        raise ConfigurationException(
-            "Please set a machine version number in the "
-            "corresponding configuration (cfg) file")
     txrx.ensure_board_is_ready()
     if scamp_connection_data:
         txrx.add_scamp_connections(scamp_connection_data)

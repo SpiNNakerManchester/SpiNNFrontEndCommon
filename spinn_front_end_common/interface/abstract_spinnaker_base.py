@@ -34,7 +34,6 @@ from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, set_config)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
-from spinn_utilities.typing.json import JsonObject
 
 from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import CoreSubsets, Machine
@@ -442,7 +441,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         n_machine_time_steps, total_run_time = self._calc_run_time(run_time)
         if FecDataView.has_allocation_controller():
             FecDataView.get_allocation_controller().extend_allocation(
-                total_run_time)
+                total_run_time or 0.0)
 
         n_sync_steps = self.__timesteps(sync_time)
 
@@ -662,8 +661,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_ipaddress("virtual")
 
     def _execute_allocator(self, total_run_time: Optional[float]) -> Optional[
-            Tuple[str, int, Optional[JsonObject], bool, bool,
-                  Optional[Dict[XY, str]], MachineAllocationController]]:
+            Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
+                  MachineAllocationController]]:
         """
         Runs, times and logs the SpallocAllocator or HBPAllocator if required.
 
@@ -686,7 +685,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return hbp_allocator(total_run_time)
         return None
 
-    def _execute_machine_generator(self, allocator_data) -> None:
+    def _execute_machine_generator(self, allocator_data: Optional[Tuple[
+            str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
+            MachineAllocationController]]) -> None:
         """
         Runs, times and logs the MachineGenerator if required.
 
