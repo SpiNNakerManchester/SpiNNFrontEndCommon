@@ -33,7 +33,7 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 
 from spinn_machine import __version__ as spinn_machine_version
-from spinn_machine import CoreSubsets, Machine
+from spinn_machine import CoreSubsets
 
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
@@ -1631,7 +1631,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if get_config_bool(
                 "Mapping", "router_table_compress_as_far_as_possible"):
             return False
-        return tables.max_number_of_entries <= Machine.ROUTER_ENTRIES
+        machine = self._data_writer.get_machine()
+        return tables.max_number_of_entries <= machine.min_n_router_enteries
 
     def _execute_pre_compression(self, pre_compress):
         if pre_compress:
