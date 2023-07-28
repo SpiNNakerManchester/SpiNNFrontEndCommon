@@ -15,7 +15,7 @@
 import os
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
-from spinn_machine import Machine, Router
+from spinn_machine import Router
 
 AREA_CODE_REPORT_NAME = "board_chip_report.txt"
 
@@ -55,7 +55,8 @@ def _write_report(writer, machine, progress_bar):
                 chip = machine.get_chip_at(x, y)
                 existing_chips.append(
                     f"({x}, {y}, P: {chip.get_physical_core_id(0)})")
-                down_procs = set(range(Machine.DEFAULT_MAX_CORES_PER_CHIP))
+                n_cores = FecDataView.get_machine_version().max_cores_per_chip
+                down_procs = set(range(n_cores))
                 for proc in chip.processors:
                     down_procs.remove(proc.processor_id)
                 for p in down_procs:

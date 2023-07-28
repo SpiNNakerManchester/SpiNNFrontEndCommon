@@ -496,6 +496,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_ds_database(self):
         writer = FecDataWriter.mock()
+        set_config("Machine", "version", 5)
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_ds_database()
         targets = DsSqlliteDatabase()
