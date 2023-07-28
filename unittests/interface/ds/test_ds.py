@@ -14,8 +14,9 @@
 
 from sqlite3 import IntegrityError
 import unittest
+from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
-from spinn_machine import Chip
+from spinn_machine import Chip, Router
 from spinn_machine.virtual_machine import virtual_machine
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
@@ -51,6 +52,7 @@ class TestDataSpecification(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        set_config("Machine", "version", 5)
 
     def test_init(self):
         db = DsSqlliteDatabase()
@@ -105,7 +107,8 @@ class TestDataSpecification(unittest.TestCase):
         self.assertEqual(app_infos, db.get_core_infos(False))
 
     def test_bad_ethernet(self):
-        bad = Chip(10, 10, 15, None, 100, 8, 8)
+        router = Router([], 123)
+        bad = Chip(10, 10, 15, router, 100, 8, 8)
         FecDataView.get_machine().add_chip(bad)
         db = DsSqlliteDatabase()
         vertex = _TestVertexWithBinary(

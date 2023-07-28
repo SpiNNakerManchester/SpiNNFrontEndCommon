@@ -26,7 +26,6 @@ from spinn_front_end_common.interface.interface_functions.compute_energy_used\
     import (JOULES_PER_SPIKE, MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
             MILLIWATTS_PER_FRAME_ACTIVE_COST, MILLIWATTS_PER_FPGA,
             MILLIWATTS_PER_IDLE_CHIP)
-from spinn_machine.machine import Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -272,7 +271,8 @@ class EnergyReport(object):
         f.write("\n")
 
         # detailed report print out
-        for core in range(Machine.DEFAULT_MAX_CORES_PER_CHIP):
+        n_cores = FecDataView.get_machine_version().max_cores_per_chip
+        for core in range(n_cores):
             if core in labels:
                 label = f" (running {labels[core]})"
             else:
