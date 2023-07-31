@@ -158,7 +158,9 @@ def _parse_bmp_connection(bmp_detail):
     # if there is no split, then assume its one board, located at 0
     boards = [0] if len(pieces) == 1 else _parse_bmp_boards(pieces[1])
     port_num = None if port_num is None else int(port_num)
-    return BMPConnectionData(cabinet, frame, hostname, boards, port_num)
+    assert (cabinet == 0)
+    assert (frame == 0)
+    return BMPConnectionData(hostname, boards, port_num)
 
 
 def _parse_bmp_details(bmp_string):
