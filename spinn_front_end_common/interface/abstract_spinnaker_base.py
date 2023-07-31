@@ -302,9 +302,24 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self.__get_collab_id_from_folder(
                 match_obj.group(SHARED_WITH_GROUP))
 
+        # Allow this too as it helps in testing; it doesn't matter if it is
+        # spoofed since the user has to have the right permissions for it to
+        # work.
+        collab_id = os.getenv("COLLAB_ID")
+        if collab_id is not None:
+            logger.info(f"Requesting job in collaboratory {collab_id}")
+            return {"collab": collab_id}
+
+        # Another way to get a collab id
+        collab_id = get_config_str("Machine", "spalloc_collab")
+        if collab_id is not None:
+            logger.info(f"Requesting job in collaboratory {collab_id}")
+            return {"collab": collab_id}
+
         # Try to use the config to get a group
         group = get_config_str("Machine", "spalloc_group")
         if group is not None:
+            logger.info(f"Requesting job in group {group}")
             return {"group": group}
 
         # Nothing ventured, nothing gained
