@@ -119,8 +119,7 @@ def generate_key_to_atom_map() -> Dict[int, int]:
             key = routing_infos.get_first_key_from_pre_vertex(
                 vertex, partition.identifier)
             if key is not None:
-                s = vertex.vertex_slice
-                key_to_n_atoms_map[key] = s.n_atoms if s else 0
+                key_to_n_atoms_map[key] = vertex.vertex_slice.n_atoms
     return key_to_n_atoms_map
 
 

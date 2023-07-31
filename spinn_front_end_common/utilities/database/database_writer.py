@@ -255,7 +255,6 @@ class DatabaseWriter(SQLiteDB):
                     # at which point there is nothing to do here anyway
                     if r_info is not None:
                         vertex_slice = m_vertex.vertex_slice
-                        assert vertex_slice is not None
                         keys = get_field_based_keys(r_info.key, vertex_slice)
                         start = vertex_slice.lo_atom
                         atom_keys = [(i, k) for i, k in enumerate(keys, start)]

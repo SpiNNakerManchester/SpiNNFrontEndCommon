@@ -245,7 +245,6 @@ class LivePacketGatherMachineVertex(
                 r_info = routing_info.get_routing_info_from_pre_vertex(
                     vertex, partition_id)
                 assert r_info is not None
-                assert vertex.vertex_slice is not None
                 spec.write_value(r_info.key)
                 spec.write_value(r_info.mask)
                 spec.write_value(vertex.vertex_slice.lo_atom)
