@@ -104,26 +104,18 @@ def machine_generator(
     return txrx.get_machine_details(), txrx
 
 
-def _parse_bmp_cabinet_and_frame(bmp_cabinet_and_frame):
+def _parse_bmp_cabinet_and_frame(bmp_names):
     """
-    :param str bmp_cabinet_and_frame:
+    :param str bmp_names:
     :rtype: tuple(int or str, int or str, str, str or None)
     """
-    split_string = bmp_cabinet_and_frame.split(";", 2)
-    if len(split_string) == 1:
-        host = split_string[0].split(",")
-        if len(host) == 1:
-            return 0, 0, split_string[0], None
-        return 0, 0, host[0], host[1]
-    if len(split_string) == 2:
-        host = split_string[1].split(",")
-        if len(host) == 1:
-            return 0, split_string[0], host[0], None
-        return 0, split_string[0], host[0], host[1]
-    host = split_string[2].split(",")
+    if ";" in bmp_names:
+        raise NotImplementedError(
+            "cabinet_id and frame_id no longer supported in bmp_names")
+    host = bmp_names.split(",")
     if len(host) == 1:
-        return split_string[0], split_string[1], host[0], None
-    return split_string[0], split_string[1], host[0], host[1]
+        return bmp_names, None
+    return host[0], host[1]
 
 
 def _parse_bmp_boards(bmp_boards):
@@ -153,12 +145,11 @@ def _parse_bmp_connection(bmp_detail):
     :rtype: ~.BMPConnectionData
     """
     pieces = bmp_detail.split("/")
-    (cabinet, frame, hostname, port_num) = \
-        _parse_bmp_cabinet_and_frame(pieces[0])
+    (hostname, port_num) = _parse_bmp_cabinet_and_frame(pieces[0])
     # if there is no split, then assume its one board, located at 0
     boards = [0] if len(pieces) == 1 else _parse_bmp_boards(pieces[1])
     port_num = None if port_num is None else int(port_num)
-    return BMPConnectionData(cabinet, frame, hostname, boards, port_num)
+    return BMPConnectionData(hostname, boards, port_num)
 
 
 def _parse_bmp_details(bmp_string):
