@@ -173,5 +173,7 @@ def _parse_bmp_details(bmp_string):
     """
     if bmp_string is None or bmp_string == "None":
         return None
-    return [_parse_bmp_connection(bmp_connection)
-            for bmp_connection in bmp_string.split(":")]
+    if ":" in bmp_string:
+        raise NotImplementedError(
+            "bmp_names can no longer contain multiple bmps")
+    return _parse_bmp_connection(bmp_string)
