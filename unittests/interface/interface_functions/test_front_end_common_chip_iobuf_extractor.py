@@ -26,7 +26,7 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     chip_io_buf_extractor)
 from spinnman.model import ExecutableTargets
-from spinnman.transceiver import Transceiver
+from spinnman.transceiver.transceiver import Transceiver
 
 
 class _PretendTransceiver(Transceiver):

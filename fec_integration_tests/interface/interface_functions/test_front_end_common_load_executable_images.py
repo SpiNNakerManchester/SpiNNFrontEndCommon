@@ -15,7 +15,7 @@
 import unittest
 from collections import defaultdict
 from spinn_utilities.overrides import overrides
-from spinnman.transceiver import Transceiver
+from spinnman.transceiver.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter

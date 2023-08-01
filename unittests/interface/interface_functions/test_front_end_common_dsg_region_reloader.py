@@ -28,7 +28,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset, n_word_struct)
 from pacman.model.graphs.machine import (SimpleMachineVertex)
-from spinnman.transceiver import Transceiver
+from spinnman.transceiver.transceiver import Transceiver
 from spinnman.model import CPUInfo
 
 # test specific stuff
