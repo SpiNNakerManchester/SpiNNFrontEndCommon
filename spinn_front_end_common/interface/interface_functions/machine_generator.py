@@ -107,15 +107,15 @@ def machine_generator(
 def _parse_bmp_cabinet_and_frame(bmp_str):
     """
     :param str bmp_str:
-    :rtype: tuple(int or str, int or str, str, str or None)
+    :rtype: tuple(str, str or None)
     """
     if ";" in bmp_str:
         raise NotImplementedError(
             "cfg bmp_names no longer supports cabinet and frame")
     host = bmp_str.split(",")
     if len(host) == 1:
-        return 0, 0, bmp_str, None
-    return 0, 0, host[0], host[1]
+        return bmp_str, None
+    return host[0], host[1]
 
 
 def _parse_bmp_boards(bmp_boards):
@@ -159,7 +159,7 @@ def _parse_bmp_details(bmp_string):
 
     :param str bmp_string: the BMP string to be converted
     :return: the BMP connection data
-    :rtype: list(~.BMPConnectionData) or None
+    :rtype: ~.BMPConnectionData or None
     """
     if bmp_string is None or bmp_string == "None":
         return None
