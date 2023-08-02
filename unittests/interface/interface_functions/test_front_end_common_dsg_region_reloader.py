@@ -28,7 +28,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset, n_word_struct)
 from pacman.model.graphs.machine import (SimpleMachineVertex)
-from spinnman.transceiver.transceiver import Transceiver
+from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 from spinnman.model import CPUInfo
 
 # test specific stuff
@@ -93,7 +93,7 @@ class _MockCPUInfo(object):
         return [self._user_0]
 
 
-class _MockTransceiver(Transceiver):
+class _MockTransceiver(MockableTransceiver):
     """ Pretend transceiver
     """
     # pylint: disable=unused-argument
@@ -105,11 +105,11 @@ class _MockTransceiver(Transceiver):
         self._regions_rewritten = list()
         self._user_0_addresses = user_0_addresses
 
-    @overrides(Transceiver.get_cpu_information_from_core)
+    @overrides(MockableTransceiver.get_cpu_information_from_core)
     def get_cpu_information_from_core(self, x, y, p):
         return _MockCPUInfo(self._user_0_addresses[(x, y, p)])
 
-    @overrides(Transceiver.read_memory)
+    @overrides(MockableTransceiver.read_memory)
     def read_memory(self, x, y, base_address, length, cpu=0):
         ptr_table_end = get_region_base_address_offset(
             base_address, MAX_MEM_REGIONS)
@@ -118,15 +118,11 @@ class _MockTransceiver(Transceiver):
         addresses = [j for lst in addresses for j in lst]
         return n_word_struct(MAX_MEM_REGIONS * 3).pack(*addresses)
 
-    @overrides(Transceiver.write_memory)
+    @overrides(MockableTransceiver.write_memory)
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
             cpu=0, is_filename=False, get_sum=False):
         self._regions_rewritten.append((base_address, data))
-
-    @overrides(Transceiver.close)
-    def close(self):
-        pass
 
 
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
