@@ -109,7 +109,7 @@ class TestWriteJson(unittest.TestCase):
     def testSpin4(self):
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
-        trans = transceiver.create_transceiver_from_hostname(self.spin4Host, 5)
+        trans = transceiver.create_transceiver_from_hostname(self.spin4Host)
         try:
             trans.ensure_board_is_ready()
         except (SpinnmanIOException):
@@ -154,7 +154,7 @@ class TestWriteJson(unittest.TestCase):
         except (JobDestroyedError, ConnectionRefusedError):
             self.skipTest("Skipping as getting Job failed")
 
-        trans = transceiver.create_transceiver_from_hostname(hostname, 5)
+        trans = transceiver.create_transceiver_from_hostname(hostname)
         trans.ensure_board_is_ready()
         writer.set_machine(trans.get_machine_details())
 
