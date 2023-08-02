@@ -104,6 +104,7 @@ def _place_vertices(app_vertex, placements, chips):
 
 def test_database_interface():
     unittest_setup()
+    set_config("Machine", "version", 5)
     set_config("Database", "create_database", "True")
     set_config("Database", "create_routing_info_to_neuron_id_mapping", "True")
 
