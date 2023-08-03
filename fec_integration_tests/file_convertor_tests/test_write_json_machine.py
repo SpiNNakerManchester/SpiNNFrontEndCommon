@@ -39,6 +39,7 @@ class TestWriteJson(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        set_config("Machine", "version", 5)
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
@@ -126,10 +127,10 @@ class TestWriteJson(unittest.TestCase):
 
         # Create a machine with Exception
         chip = machine.get_chip_at(1, 1)
-        chip._sdram._size = chip._sdram._size - 100
+        chip._sdram = chip._sdram - 100
         chip._router._n_available_multicast_entries -= 10
         chip = machine.get_chip_at(1, 2)
-        chip._sdram._size = chip._sdram._size - 101
+        chip._sdram = chip._sdram - 101
 
         folder = "spinn4_fiddle"
         self._remove_old_json(folder)
