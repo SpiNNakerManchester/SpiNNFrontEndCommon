@@ -1001,7 +1001,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
             the vertex that needs to send to a given LPG
         :param iterable(str) partition_ids:
-            the IDs of the partitions to connect from the vertex
+            the IDs of the partitions to connect from the vertex;
+            can also be a single string (strings are iterable)
         """
         if cls.__fec_data._live_packet_recorder_params is None:
             # pylint: disable=attribute-defined-outside-init
@@ -1017,9 +1018,15 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             cls.__fec_data._live_packet_recorder_params[
                 live_packet_gatherer_params] = lpg_vertex
             cls.add_vertex(lpg_vertex)
-        for part_id in partition_ids:
+        if isinstance(partition_ids, str):
             cls.add_edge(
-                ApplicationEdge(vertex_to_record_from, lpg_vertex), part_id)
+                ApplicationEdge(vertex_to_record_from, lpg_vertex),
+                partition_ids)
+        else:
+            for part_id in partition_ids:
+                cls.add_edge(
+                    ApplicationEdge(vertex_to_record_from, lpg_vertex),
+                    part_id)
 
     @classmethod
     def get_database_file_path(cls) -> Optional[str]:
