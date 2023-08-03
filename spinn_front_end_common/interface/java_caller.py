@@ -136,7 +136,7 @@ class JavaCaller(object):
                         f"No jar file at {auto_jar_file} "
                         "nor is java_jar_path set.")
             elif os.path.exists(java_jar_path):
-                self._jar_file = auto_jar_file
+                self._jar_file = java_jar_path
             else:
                 raise ConfigurationException(
                     f"No file found at java_jar_path: {java_jar_path}")
