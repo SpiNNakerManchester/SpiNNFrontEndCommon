@@ -14,7 +14,7 @@
 from contextlib import AbstractContextManager, ExitStack
 import logging
 import math
-from typing import ContextManager, Dict, Tuple, Optional, cast
+from typing import ContextManager, Dict, Tuple, Optional, Union, cast
 from spinn_utilities.config_holder import get_config_str_list, get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -22,7 +22,6 @@ from spinn_utilities.typing.coords import XY
 from spalloc_client import Job  # type: ignore[import]
 from spalloc_client.states import JobState  # type: ignore[import]
 from spinn_utilities.config_holder import get_config_int, get_config_str
-from spinn_machine import Machine
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
     is_server_address, SpallocClient, SpallocJob, SpallocState)
@@ -39,11 +38,6 @@ from spinnman.connections.udp_packet_connections import (
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
-
-#: The number of chips per board to use in calculations to ensure that
-#: the number of boards allocated is enough.  This is 2 less than the maximum
-#: as there are a few boards with 2 down chips in the big machine.
-CALC_CHIPS_PER_BOARD = Machine.MAX_CHIPS_PER_48_BOARD - 2
 
 
 class SpallocJobController(MachineAllocationController):
@@ -257,15 +251,26 @@ class _OldSpallocJobController(MachineAllocationController):
 _MACHINE_VERSION = 5
 
 
-def spalloc_allocator(bearer_token: Optional[str] = None) -> Tuple[
-        str, int, None, bool, bool, Dict[XY, str],
-        MachineAllocationController]:
+def spalloc_allocator(
+        bearer_token: Optional[str] = None, group: Optional[str] = None,
+        collab: Optional[str] = None, nmpi_job: Union[int, str, None] = None,
+        nmpi_user: Optional[str] = None) -> Tuple[
+            str, int, None, bool, bool, Dict[XY, str],
+            MachineAllocationController]:
     """
     Request a machine from a SPALLOC server that will fit the given
     number of chips.
 
     :param bearer_token: The bearer token to use
     :type bearer_token: str or None
+    :param group: The group to associate with or None for no group
+    :type group: str or None
+    :param collab: The collab to associate with or None for no collab
+    :type collab: str or None
+    :param nmpi_job: The NMPI Job to associate with or None for no job
+    :type nmpi_job: str or None
+    :param nmpi_user: The NMPI username to associate with or None for no user
+    :type nmpi_user: str or None
     :return:
         host, board version, BMP details, reset on startup flag,
         auto-detect BMP flag, board address map, allocation controller
@@ -280,7 +285,9 @@ def spalloc_allocator(bearer_token: Optional[str] = None) -> Tuple[
         n_boards = FecDataView.get_n_boards_required()
     else:
         n_chips = FecDataView.get_n_chips_needed()
-        n_boards_float = float(n_chips) / CALC_CHIPS_PER_BOARD
+        # reduce max chips by 2 in case you get a bad board(s)
+        chips_div = FecDataView.get_machine_version().n_chips_per_board - 2
+        n_boards_float = float(n_chips) / chips_div
         logger.info("{:.2f} Boards Required for {} chips",
                     n_boards_float, n_chips)
         # If the number of boards rounded up is less than 50% of a board
@@ -292,7 +299,9 @@ def spalloc_allocator(bearer_token: Optional[str] = None) -> Tuple[
 
     if is_server_address(spalloc_server):
         host, connections, mac = _allocate_job_new(
-            spalloc_server, n_boards, bearer_token)
+            spalloc_server, n_boards, bearer_token, group, collab,
+            int(nmpi_job) if nmpi_job is not None else None,
+            nmpi_user)
     else:
         host, connections, mac = _allocate_job_old(spalloc_server, n_boards)
     return (host, _MACHINE_VERSION, None, False, False, connections, mac)
@@ -300,7 +309,9 @@ def spalloc_allocator(bearer_token: Optional[str] = None) -> Tuple[
 
 def _allocate_job_new(
         spalloc_server: str, n_boards: int,
-        bearer_token: Optional[str] = None) -> Tuple[
+        bearer_token: Optional[str] = None, group: Optional[str] = None,
+        collab: Optional[str] = None, nmpi_job: Optional[int] = None,
+        nmpi_user: Optional[str] = None) -> Tuple[
             str, Dict[XY, str], MachineAllocationController]:
     """
     Request a machine from an new-style spalloc server that will fit the
@@ -311,13 +322,24 @@ def _allocate_job_new(
     :param int n_boards: The number of boards required
     :param bearer_token: The bearer token to use
     :type bearer_token: str or None
+    :param group: The group to associate with or None for no group
+    :type group: str or None
+    :param collab: The collab to associate with or None for no collab
+    :type collab: str or None
+    :param nmpi_job: The NMPI Job to associate with or None for no job
+    :type nmpi_job: int or None
+    :param nmpi_user: The NMPI username to associate with or None for no user
+    :type nmpi_user: str or None
+
     :rtype: tuple(str, dict(tuple(int,int),str), MachineAllocationController)
     """
     logger.info(f"Requesting job with {n_boards} boards")
     with ExitStack() as stack:
         spalloc_machine = get_config_str("Machine", "spalloc_machine")
-        use_proxy = get_config_bool("Machine", "spalloc_use_proxy") or False
-        client = SpallocClient(spalloc_server, bearer_token=bearer_token)
+        use_proxy = get_config_bool("Machine", "spalloc_use_proxy")
+        client = SpallocClient(
+            spalloc_server, bearer_token=bearer_token, group=group,
+            collab=collab, nmpi_job=nmpi_job, nmpi_user=nmpi_user)
         stack.enter_context(cast(ContextManager[SpallocClient], client))
         job = client.create_job(n_boards, spalloc_machine)
         stack.enter_context(job)
@@ -332,7 +354,7 @@ def _allocate_job_new(
                 "boards: {}",
                 str(connections).replace("{", "[").replace("}", "]"))
         allocation_controller = SpallocJobController(
-            client, job, task, use_proxy)
+            client, job, task, use_proxy or False)
         # Success! We don't want to close the client, job or task now;
         # the allocation controller now owns them.
         stack.pop_all()

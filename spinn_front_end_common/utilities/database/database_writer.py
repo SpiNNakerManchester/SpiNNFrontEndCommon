@@ -20,6 +20,9 @@ from spinn_machine import Machine
 from pacman.utilities.utility_calls import get_field_based_keys
 from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.machine import MachineVertex
+from pacman.model.graphs.application.abstract import (
+    AbstractOneAppOneMachineVertex)
+from pacman.model.graphs.abstract_edge_partition import AbstractEdgePartition
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB, Isolation
 from spinn_front_end_common.abstract_models import (
@@ -29,6 +32,7 @@ if TYPE_CHECKING:
     from spinn_front_end_common.utility_models.live_packet_gather \
         import _LPGSplitter
     _ = _LPGSplitter,
+from spinn_front_end_common.utility_models import LivePacketGatherMachineVertex
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -267,6 +271,25 @@ class DatabaseWriter(SQLiteDB):
                     """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
                 )
 
+    def _get_machine_lpg_mappings(
+            self, part: AbstractEdgePartition) -> Iterable[
+                Tuple[MachineVertex, str, MachineVertex]]:
+        """
+        Get places where an LPG Machine vertex has been added to a graph
+        "directly" (via GFE); and so it's application vertex *isn't* a
+        LivePacketGather
+        """
+        for edge in part.edges:
+            if (isinstance(edge.pre_vertex,
+                           AbstractOneAppOneMachineVertex) and
+                    isinstance(edge.post_vertex,
+                               AbstractOneAppOneMachineVertex) and
+                    isinstance(edge.post_vertex.machine_vertex,
+                               LivePacketGatherMachineVertex) and
+                    not isinstance(edge.post_vertex, LivePacketGather)):
+                yield (edge.pre_vertex.machine_vertex, part.identifier,
+                       edge.post_vertex.machine_vertex)
+
     def add_lpg_mapping(self) -> List[Tuple[MachineVertex, str]]:
         """
         Add mapping from machine vertex to LPG machine vertex.
@@ -279,6 +302,10 @@ class DatabaseWriter(SQLiteDB):
                    if isinstance(vertex, LivePacketGather)
                    for lpg_m_vertex, m_vertex, part_id
                    in cast('_LPGSplitter', vertex.splitter).targeted_lpgs]
+        targets.extend((m_vertex, part_id, lpg_m_vertex)
+                       for part in FecDataView.iterate_partitions()
+                       for (m_vertex, part_id, lpg_m_vertex) in
+                       self._get_machine_lpg_mappings(part))
 
         with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.executemany(

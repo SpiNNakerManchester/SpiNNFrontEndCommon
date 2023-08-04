@@ -89,6 +89,7 @@ class TestLoadDataSpecification(unittest.TestCase):
     def setUp(self):
         unittest_setup()
         set_config("Machine", "enable_advanced_monitor_support", "False")
+        set_config("Machine", "version", 5)
 
     def test_call(self):
         writer = FecDataWriter.mock()

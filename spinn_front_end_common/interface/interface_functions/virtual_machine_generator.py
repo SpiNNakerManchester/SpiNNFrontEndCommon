@@ -16,6 +16,7 @@ import logging
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import json_machine, virtual_machine, Machine
+from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -61,9 +62,10 @@ def virtual_machine_generator() -> Machine:
 
     if json_path is None:
         assert width is not None and height is not None
+        n_cores = FecDataView.get_machine_version().max_cores_per_chip
         machine = virtual_machine(
             width=width, height=height,
-            n_cpus_per_chip=Machine.max_cores_per_chip(),
+            n_cpus_per_chip=n_cores,
             validate=True)
     else:
         if (height is not None or width is not None or
@@ -79,8 +81,6 @@ def virtual_machine_generator() -> Machine:
     machine.add_spinnaker_links()
     machine.add_fpga_links()
 
-    logger.info(
-        "Created a virtual machine which has {}",
-        machine.cores_and_link_output_string())
+    logger.info("Created {}", machine.summary_string())
 
     return machine

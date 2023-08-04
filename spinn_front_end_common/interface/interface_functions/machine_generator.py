@@ -15,7 +15,7 @@
 import logging
 import re
 import time
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
 from spinn_machine import Machine
@@ -103,27 +103,18 @@ def machine_generator(
     return txrx.get_machine_details(), txrx
 
 
-def _parse_bmp_cabinet_and_frame(bmp_cabinet_and_frame: str) -> Tuple[
-        Union[int, str], Union[int, str], str, Optional[str]]:
+def _parse_bmp_cabinet_and_frame(bmp_str: str) -> Tuple[str, Optional[str]]:
     """
-    :param str bmp_cabinet_and_frame:
-    :rtype: tuple(int or str, int or str, str, str or None)
+    :param str bmp_str:
+    :rtype: tuple(str, str or None)
     """
-    split_string = bmp_cabinet_and_frame.split(";", 2)
-    if len(split_string) == 1:
-        host = split_string[0].split(",")
-        if len(host) == 1:
-            return 0, 0, split_string[0], None
-        return 0, 0, host[0], host[1]
-    if len(split_string) == 2:
-        host = split_string[1].split(",")
-        if len(host) == 1:
-            return 0, split_string[0], host[0], None
-        return 0, split_string[0], host[0], host[1]
-    host = split_string[2].split(",")
+    if ";" in bmp_str:
+        raise NotImplementedError(
+            "cfg bmp_names no longer supports cabinet and frame")
+    host = bmp_str.split(",")
     if len(host) == 1:
-        return split_string[0], split_string[1], host[0], None
-    return split_string[0], split_string[1], host[0], host[1]
+        return bmp_str, None
+    return host[0], host[1]
 
 
 def _parse_bmp_boards(bmp_boards: str) -> List[int]:
@@ -153,13 +144,11 @@ def _parse_bmp_connection(bmp_detail: str) -> BMPConnectionData:
     :rtype: ~.BMPConnectionData
     """
     pieces = bmp_detail.split("/")
-    (cabinet, frame, hostname, port) = \
-        _parse_bmp_cabinet_and_frame(pieces[0])
+    (hostname, port_num) = _parse_bmp_cabinet_and_frame(pieces[0])
     # if there is no split, then assume its one board, located at 0
     boards = [0] if len(pieces) == 1 else _parse_bmp_boards(pieces[1])
-    port_num = None if port is None else int(port)
-    return BMPConnectionData(
-        int(cabinet), int(frame), hostname, boards, port_num)
+    port_num = None if port_num is None else int(port_num)
+    return BMPConnectionData(hostname, boards, port_num)
 
 
 def _parse_bmp_details(
@@ -170,9 +159,11 @@ def _parse_bmp_details(
 
     :param str bmp_string: the BMP string to be converted
     :return: the BMP connection data
-    :rtype: list(~.BMPConnectionData) or None
+    :rtype: ~.BMPConnectionData or None
     """
     if bmp_string is None or bmp_string == "None":
         return None
-    return [_parse_bmp_connection(bmp_connection)
-            for bmp_connection in bmp_string.split(":")]
+    if ":" in bmp_string:
+        raise NotImplementedError(
+            "bmp_names can no longer contain multiple bmps")
+    return _parse_bmp_connection(bmp_string)

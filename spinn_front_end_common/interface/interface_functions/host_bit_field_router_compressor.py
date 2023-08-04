@@ -22,7 +22,7 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.ordered_set import OrderedSet
-from spinn_machine import Machine, MulticastRoutingEntry, Chip
+from spinn_machine import MulticastRoutingEntry, Chip
 from pacman.exceptions import (
     PacmanAlgorithmFailedToGenerateOutputsException,
     PacmanElementAllocationException, MinimisationFailedError)
@@ -586,7 +586,8 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         compressor = _PairCompressor(ordered=True)
         compressed_entries = compressor.compress_table(router_table)
-        if len(compressed_entries) > Machine.ROUTER_ENTRIES:
+        chip = FecDataView.get_chip_at(router_table.x, router_table.y)
+        if len(compressed_entries) > chip.n_user_processors:
             raise MinimisationFailedError(
                 f"Compression failed as {len(compressed_entries)} "
                 f"entries found")
