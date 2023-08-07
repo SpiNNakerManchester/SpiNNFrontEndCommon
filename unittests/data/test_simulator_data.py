@@ -586,6 +586,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_gatherer_map(self):
         writer = FecDataWriter.mock()
+        set_config("Machine", "version", 5)
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_gatherer_by_xy(0, 0)
         with self.assertRaises(DataNotYetAvialable):
@@ -634,6 +635,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_monitor_map(self):
         writer = FecDataWriter.mock()
+        set_config("Machine", "version", 5)
         self.assertFalse(FecDataView.has_monitors())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_monitor_by_xy(0, 0)
