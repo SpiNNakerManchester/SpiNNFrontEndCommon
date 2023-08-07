@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
 import logging
 import os
 from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
@@ -27,12 +28,11 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB, Isolation
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
-from spinn_front_end_common.utility_models import LivePacketGather
+from spinn_front_end_common.utility_models import (
+    LivePacketGather, LivePacketGatherMachineVertex)
 if TYPE_CHECKING:
-    from spinn_front_end_common.utility_models.live_packet_gather \
-        import _LPGSplitter
-    _ = _LPGSplitter,
-from spinn_front_end_common.utility_models import LivePacketGatherMachineVertex
+    from spinn_front_end_common.utility_models.live_packet_gather import (
+        _LPGSplitter)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -290,6 +290,10 @@ class DatabaseWriter(SQLiteDB):
                 yield (edge.pre_vertex.machine_vertex, part.identifier,
                        edge.post_vertex.machine_vertex)
 
+    @staticmethod
+    def __lpg_splitter(vertex: LivePacketGather) -> _LPGSplitter:
+        return cast('_LPGSplitter', vertex.splitter)
+
     def add_lpg_mapping(self) -> List[Tuple[MachineVertex, str]]:
         """
         Add mapping from machine vertex to LPG machine vertex.
@@ -297,15 +301,17 @@ class DatabaseWriter(SQLiteDB):
         :return: A list of (source vertex, partition id)
         :rtype: list(~pacman.model.graphs.machine.MachineVertex, str)
         """
-        targets = [(m_vertex, part_id, lpg_m_vertex)
-                   for vertex in FecDataView.iterate_vertices()
-                   if isinstance(vertex, LivePacketGather)
-                   for lpg_m_vertex, m_vertex, part_id
-                   in cast('_LPGSplitter', vertex.splitter).targeted_lpgs]
-        targets.extend((m_vertex, part_id, lpg_m_vertex)
-                       for part in FecDataView.iterate_partitions()
-                       for (m_vertex, part_id, lpg_m_vertex) in
-                       self._get_machine_lpg_mappings(part))
+        targets: List[Tuple[MachineVertex, str, MachineVertex]] = [
+            (m_vertex, part_id, lpg_m_vertex)
+            for vertex in FecDataView.iterate_vertices()
+            if isinstance(vertex, LivePacketGather)
+            for lpg_m_vertex, m_vertex, part_id
+            in self.__lpg_splitter(vertex).targeted_lpgs]
+        targets.extend(
+            (m_vertex, part_id, lpg_m_vertex)
+            for part in FecDataView.iterate_partitions()
+            for (m_vertex, part_id, lpg_m_vertex) in
+            self._get_machine_lpg_mappings(part))
 
         with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.executemany(

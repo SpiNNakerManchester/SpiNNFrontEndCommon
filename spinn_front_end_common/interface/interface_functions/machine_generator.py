@@ -147,12 +147,12 @@ def _parse_bmp_connection(bmp_detail: str) -> BMPConnectionData:
     (hostname, port_num) = _parse_bmp_cabinet_and_frame(pieces[0])
     # if there is no split, then assume its one board, located at 0
     boards = [0] if len(pieces) == 1 else _parse_bmp_boards(pieces[1])
-    port_num = None if port_num is None else int(port_num)
-    return BMPConnectionData(hostname, boards, port_num)
+    port = None if port_num is None else int(port_num)
+    return BMPConnectionData(hostname, boards, port)
 
 
 def _parse_bmp_details(
-        bmp_string: Optional[str]) -> Optional[List[BMPConnectionData]]:
+        bmp_string: Optional[str]) -> Optional[BMPConnectionData]:
     """
     Take a BMP line (a colon-separated list) and split it into the
     BMP connection data.
