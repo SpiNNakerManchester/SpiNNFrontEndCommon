@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
 from typing import Optional
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets
@@ -20,7 +21,6 @@ from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.impl import CheckOKResponse
 from spinnman.processes import AbstractMultiConnectionProcess
-from spinnman.processes import ConnectionSelector
 from spinnman.model.enums import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
 
 
@@ -48,16 +48,11 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     .. note::
         The cores must be using the simulation interface.
     """
-    def __init__(self, connection_selector: ConnectionSelector):
-        """
-        :param ~spinnman.processes.ConnectionSelector connection_selector:
-        """
-        super().__init__(connection_selector)
-        self._progress: Optional[ProgressBar] = None
+    __slots__ = ()
 
-    def __receive_response(self, _response: CheckOKResponse):
-        if self._progress:
-            self._progress.update()
+    def __receive_response(
+            self, progress: ProgressBar, _response: CheckOKResponse):
+        progress.update()
 
     def clear_iobuf(self, core_subsets: CoreSubsets,
                     n_cores: Optional[int] = None):
@@ -68,12 +63,11 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
         if n_cores is None:
             n_cores = len(core_subsets)
         with ProgressBar(
-                n_cores, "clearing IOBUF from the machine") as self._progress,\
+                n_cores, "clearing IOBUF from the machine") as progress, \
                 self._collect_responses():
             for core_subset in core_subsets:
                 for processor_id in core_subset.processor_ids:
                     self._send_request(
                         _ClearIOBUFRequest(
                             core_subset.x, core_subset.y, processor_id),
-                        callback=self.__receive_response)
-        self._progress = None
+                        callback=partial(self.__receive_response, progress))

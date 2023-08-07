@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
 import struct
 from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
@@ -20,8 +21,7 @@ from spinnman.messages.sdp import SDPHeader, SDPFlag
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.impl import CheckOKResponse
-from spinnman.processes import (
-    AbstractMultiConnectionProcess, ConnectionSelector)
+from spinnman.processes import AbstractMultiConnectionProcess
 from spinnman.model.enums import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 
@@ -66,17 +66,11 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     .. note::
         The cores must be using the simulation interface.
     """
+    __slots__ = ()
 
-    def __init__(self, connection_selector: ConnectionSelector):
-        """
-        :param ~spinnman.processes.ConnectionSelector connection_selector:
-        """
-        super().__init__(connection_selector)
-        self._progress = None
-
-    def __receive_response(self, _response: CheckOKResponse):
-        if self._progress:
-            self._progress.update()
+    def __receive_response(
+            self, progress: ProgressBar, _response: CheckOKResponse):
+        progress.update()
 
     def update_runtime(
             self, current_time: int, run_time: int, infinite_run: bool,
@@ -89,7 +83,7 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
         :param int n_cores: Number of cores being updated
         :param int n_sync_steps:
         """
-        with ProgressBar(n_cores, "Updating run time") as self._progress,\
+        with ProgressBar(n_cores, "Updating run time") as progress, \
                 self._collect_responses():
             for core_subset in core_subsets:
                 for processor_id in core_subset.processor_ids:
@@ -98,5 +92,4 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
                             core_subset.x, core_subset.y, processor_id,
                             current_time, run_time, infinite_run,
                             n_sync_steps),
-                        callback=self.__receive_response)
-        self._progress = None
+                        callback=partial(self.__receive_response, progress))
