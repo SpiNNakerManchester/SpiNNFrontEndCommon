@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
 import ctypes
 import difflib
 import logging
-from typing import Dict, Iterable, List, Optional, Set, Tuple, cast
+from typing import (
+    Dict, Iterable, List, Optional, Set, Tuple, cast, TYPE_CHECKING)
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
@@ -31,7 +33,6 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
-from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferDatabase)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
@@ -39,6 +40,8 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
+if TYPE_CHECKING:
+    from spinn_front_end_common.interface.java_caller import JavaCaller
 
 
 logger = FormatAdapter(logging.getLogger(__name__))
