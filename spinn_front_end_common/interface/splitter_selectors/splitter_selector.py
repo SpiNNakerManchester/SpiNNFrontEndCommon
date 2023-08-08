@@ -31,7 +31,7 @@ def splitter_selector() -> None:
     everything without a splitter object.
     """
     for app_vertex in PacmanDataView.iterate_vertices():
-        if app_vertex.splitter is None:
+        if not app_vertex.has_splitter:
             vertex_selector(app_vertex)
 
 
