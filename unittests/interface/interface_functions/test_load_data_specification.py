@@ -17,7 +17,7 @@ import struct
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
-from spinnman.transceiver.version5Transceiver import Version5Transceiver
+from spinnman.transceiver.version5transceiver import Version5Transceiver
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placements

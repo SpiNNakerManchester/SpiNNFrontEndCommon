@@ -21,7 +21,7 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher)
 from spinnman.model.cpu_infos import CPUInfos
-from spinnman.transceiver.version5Transceiver import Version5Transceiver
+from spinnman.transceiver.version5transceiver import Version5Transceiver
 
 
 class _MockTransceiver(Version5Transceiver):
