@@ -43,7 +43,7 @@ def _emergency_state_check():
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
-        machine = txrx.get_machine_details()
+        machine = FecDataView.get_machine()
         infos = CPUInfos()
         errors = list()
         for chip in machine.chips:
