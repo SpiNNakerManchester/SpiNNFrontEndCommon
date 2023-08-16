@@ -24,7 +24,6 @@ import logging
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-
 def machine_generator(
         bmp_details, board_version, auto_detect_bmp,
         scamp_connection_data, reset_machine_on_start_up):
