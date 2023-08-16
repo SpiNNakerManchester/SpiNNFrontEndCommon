@@ -15,32 +15,14 @@
 import re
 
 from spinn_utilities.log import FormatAdapter
-from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-import time
 import logging
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-POWER_CYCLE_WARNING = (
-    "When power-cycling a board, it is recommended that you wait for 30 "
-    "seconds before attempting a reboot. Therefore, the tools will now "
-    "wait for 30 seconds. If you wish to avoid this wait, please set "
-    "reset_machine_on_startup = False in the [Machine] section of the "
-    "relevant configuration (cfg) file.")
-
-POWER_CYCLE_FAILURE_WARNING = (
-    "The end user requested the power-cycling of the board. But the "
-    "tools did not have the required BMP connection to facilitate a "
-    "power-cycling, and therefore will not do so. please set the "
-    "bmp_names accordingly in the [Machine] section of the relevant "
-    "configuration (cfg) file. Or use a machine assess process which "
-    "provides the BMP data (such as a spalloc system) or finally set "
-    "reset_machine_on_startup = False in the [Machine] section of the "
-    "relevant configuration (cfg) file to avoid this warning in future.")
 
 
 def machine_generator(
@@ -80,23 +62,14 @@ def machine_generator(
         hostname=FecDataView.get_ipaddress(),
         bmp_connection_data=_parse_bmp_details(bmp_details),
         version=board_version,
-        auto_detect_bmp=auto_detect_bmp)
-
-    if reset_machine_on_start_up:
-        success = txrx.power_off_machine()
-        if success:
-            logger.warning(POWER_CYCLE_WARNING)
-            time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
-            logger.warning("Power cycle wait complete")
-        else:
-            logger.warning(POWER_CYCLE_FAILURE_WARNING)
+        auto_detect_bmp=auto_detect_bmp,
+        power_cycle=reset_machine_on_start_up)
 
     # do auto boot if possible
     if board_version is None:
         raise ConfigurationException(
             "Please set a machine version number in the "
             "corresponding configuration (cfg) file")
-    txrx.ensure_board_is_ready()
     if scamp_connection_data:
         txrx.add_scamp_connections(scamp_connection_data)
     else:

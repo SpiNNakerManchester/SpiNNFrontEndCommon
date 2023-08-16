@@ -111,10 +111,6 @@ class TestWriteJson(unittest.TestCase):
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
         trans = transceiver.create_transceiver_from_hostname(self.spin4Host, 5)
-        try:
-            trans.ensure_board_is_ready()
-        except (SpinnmanIOException):
-            self.skipTest("Skipping as getting Job failed")
 
         machine = trans.get_machine_details()
         FecDataWriter.mock().set_machine(machine)
@@ -156,7 +152,6 @@ class TestWriteJson(unittest.TestCase):
             self.skipTest("Skipping as getting Job failed")
 
         trans = transceiver.create_transceiver_from_hostname(hostname, 5)
-        trans.ensure_board_is_ready()
         writer.set_machine(trans.get_machine_details())
 
         m_allocation_controller.close()
