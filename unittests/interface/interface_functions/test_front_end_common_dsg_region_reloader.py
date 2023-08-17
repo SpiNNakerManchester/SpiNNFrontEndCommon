@@ -98,16 +98,12 @@ class _MockTransceiver(Transceiver):
     """
     # pylint: disable=unused-argument
 
-    def __init__(self, user_0_addresses):
-        """
-        :param user_0_addresses: dict of (x, y, p) to user_0_address
-        """
-        self._regions_rewritten = list()
-        self._user_0_addresses = user_0_addresses
+    def __init__(self):
+        pass
 
-    @overrides(Transceiver.get_cpu_information_from_core)
-    def get_cpu_information_from_core(self, x, y, p):
-        return _MockCPUInfo(self._user_0_addresses[(x, y, p)])
+    @overrides(Transceiver.get_region_base_address)
+    def get_region_base_address(self, x, y, p):
+        return p * MAX_MEM_REGIONS * 512
 
     @overrides(Transceiver.read_memory)
     def read_memory(self, x, y, base_address, length, cpu=0):
@@ -147,11 +143,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             Placement(m_vertex_2, 0, 0, 2)
         ])
 
-        user_0_addresses = {
-            placement.location: i * MAX_MEM_REGIONS * 512
-            for i, placement in enumerate(placements.placements)
-        }
-        transceiver = _MockTransceiver(user_0_addresses)
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
         writer.set_placements(placements)
         writer.set_ipaddress("localhost")
