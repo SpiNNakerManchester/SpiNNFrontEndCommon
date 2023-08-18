@@ -34,36 +34,23 @@ def _emergency_state_check():
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
         if rte_count or watchdog_count:
-            states = txrx.get_cpu_infos(
-                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG], True)
+            bad_cores = txrx.get_cores_in_states(
+                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
             logger.warning(
                 "unexpected core states (rte={}, wdog={})",
                 rte_count, watchdog_count)
-            logger.warning(states.get_status_string())
+            logger.warning("cores {}", set(bad_cores))
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
-        machine = txrx.get_machine_details()
-        infos = CPUInfos()
-        errors = list()
-        for chip in machine.chips:
-            for p in chip.processors:
-                try:
-                    info = txrx.get_cpu_information_from_core(
-                        chip.x, chip.y, p)
-                    if info.state in (
-                            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):
-                        infos.add_processor(chip.x, chip.y, p, info)
-                except Exception:
-                    errors.append((chip.x, chip.y, p))
-        if len(infos):
-            logger.warning(infos.get_status_string())
+        errors = txrx.get_cores_in_states(
+            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG)
         if len(errors) > 10:
             logger.warning(
                 "Could not read information from {} cores", len(errors))
         else:
             logger.warning(
-                "Could not read information from cores {}", errors)
+                "Could not read information from cores {}", set(errors))
 
 
 def _emergency_iobuf_extract(executable_targets=None):

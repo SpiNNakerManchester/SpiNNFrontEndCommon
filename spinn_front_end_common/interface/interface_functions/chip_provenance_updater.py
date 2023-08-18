@@ -61,15 +61,17 @@ class _ChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        cpu_infos = self.__txrx.get_cpu_infos(
+        bad_cores = self.__txrx.get_cores_in_states(
             self.__all_cores,
-            [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG, CPUState.IDLE],
-            True)
-        error_cores = cpu_infos.infos_for_state(CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = cpu_infos.infos_for_state(CPUState.WATCHDOG)
-        idle_cores = cpu_infos.infos_for_state(CPUState.IDLE)
+            [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG, CPUState.IDLE])
 
-        if error_cores or watchdog_cores or idle_cores:
+        if bad_cores:
+            error_cores = self.__txrx.get_cores_in_states(
+                self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
+            watchdog_cores = self.__txrx.get_cores_in_states(
+                self.__all_cores, CPUState.WATCHDOG)
+            idle_cores = self.__txrx.get_cores_in_states(
+                self.__all_cores, CPUState.IDLE)
             raise ConfigurationException(
                 "Some cores have crashed. "
                 f"RTE cores {error_cores.values()}, "
@@ -94,10 +96,10 @@ class _ChipProvenanceUpdater(object):
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:
             attempts += 1
-            unsuccessful_cores = self.__txrx.get_cpu_infos(
-                self.__all_cores, CPUState.FINISHED, False)
+            unsuccessful_cores = self.__txrx.get_cores_not_in_states(
+                self.__all_cores, CPUState.FINISHED)
 
-            for (x, y, p) in unsuccessful_cores.keys():
+            for (x, y, p) in unsuccessful_cores:
                 self._send_chip_update_provenance_and_exit(x, y, p)
 
             processors_completed = self.__txrx.get_core_state_count(

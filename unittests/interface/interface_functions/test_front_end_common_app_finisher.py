@@ -40,8 +40,8 @@ class _MockTransceiver(Transceiver):
                 count += 1
         return count
 
-    @overrides(Transceiver.get_cpu_infos)
-    def get_cpu_infos(
+    @overrides(Transceiver._get_cpu_infos)
+    def _get_cpu_infos(
             self, core_subsets=None, states=None, include=True):
         if states is None or not include:
             raise NotImplementedError("oops")
