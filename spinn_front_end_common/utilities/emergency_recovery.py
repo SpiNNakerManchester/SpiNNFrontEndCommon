@@ -14,7 +14,7 @@
 import logging
 
 from spinn_utilities.log import FormatAdapter
-from spinnman.model import ExecutableTargets, CPUInfos
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.data import FecDataView
 from .iobuf_extractor import IOBufExtractor
