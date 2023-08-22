@@ -14,7 +14,9 @@
 
 import unittest
 import numpy
+from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
+from spinnman.model.enums import ExecutableType
 from pacman.model.placements import Placements, Placement
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
@@ -23,19 +25,28 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     reload_dsg_regions)
-from spinn_front_end_common.utilities.constants import (
-    BYTES_PER_WORD, MAX_MEM_REGIONS, TABLE_TYPE)
-from spinn_front_end_common.utilities.helpful_functions import (
-    get_region_base_address_offset, n_word_struct)
 from pacman.model.graphs.machine import (SimpleMachineVertex)
 from spinnman.transceiver import Transceiver
 from spinnman.model import CPUInfo
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 # test specific stuff
-reload_region_data = [
-    (0, [0] * 10),
-    (1, [1] * 20)
-]
+# vertex/ p: region, size, data
+reload_region_data = {
+    # core 4
+    4: [
+        (0, 40, [0] * 10),
+        (1, 120, [1] * 20)
+    ],
+    # core 5
+    5: [
+        (5, 120, [3] * 15),
+        (7, 80, [4] * 20),
+        (10, 90, [5] * 4)
+    ]
+}
+
 regenerate_call_count = 0
 
 
@@ -60,8 +71,8 @@ class _TestMachineVertex(
     @overrides(AbstractRewritesDataSpecification.regenerate_data_specification)
     def regenerate_data_specification(self, spec, placement):
         global regenerate_call_count
-        for region_id, data in reload_region_data:
-            spec.reserve_memory_region(region_id, len(data) * BYTES_PER_WORD)
+        for region_id, size, data in reload_region_data[placement.p]:
+            spec.reserve_memory_region(region_id, size)
             spec.switch_write_focus(region_id)
             spec.write_array(data)
         spec.end_specification()
@@ -73,7 +84,7 @@ class _TestMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        raise NotImplementedError()
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
@@ -98,29 +109,8 @@ class _MockTransceiver(Transceiver):
     """
     # pylint: disable=unused-argument
 
-    def __init__(self, user_0_addresses):
-        """
-        :param user_0_addresses: dict of (x, y, p) to user_0_address
-        """
+    def __init__(self):
         self._regions_rewritten = list()
-        self._user_0_addresses = user_0_addresses
-
-    @property
-    def regions_rewritten(self):
-        return list(self._regions_rewritten)
-
-    @overrides(Transceiver.get_cpu_information_from_core)
-    def get_cpu_information_from_core(self, x, y, p):
-        return _MockCPUInfo(self._user_0_addresses[(x, y, p)])
-
-    @overrides(Transceiver.read_memory)
-    def read_memory(self, x, y, base_address, length, *, cpu=0):
-        ptr_table_end = get_region_base_address_offset(
-            base_address, MAX_MEM_REGIONS)
-        addresses = [((i * 512) + ptr_table_end, 0, 0)
-                     for i in range(MAX_MEM_REGIONS)]
-        addresses = [j for lst in addresses for j in lst]
-        return n_word_struct(MAX_MEM_REGIONS * 3).pack(*addresses)
 
     @overrides(Transceiver.write_memory)
     def write_memory(
@@ -132,33 +122,46 @@ class _MockTransceiver(Transceiver):
     def close(self):
         pass
 
+    @property
+    def regions_rewritten(self):
+        return list(self._regions_rewritten)
+
 
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        set_config("Machine", "version", 5)
 
-    def test_with_application_vertices(self):
+    def test_with_good_sizes(self):
         """ Test that an application vertex's data is rewritten correctly
         """
-        raise self.skipTest("pointer now from database")
         writer = FecDataWriter.mock()
+
         m_vertex_1 = _TestMachineVertex()
         m_vertex_2 = _TestMachineVertex()
-
         placements = Placements([
-            Placement(m_vertex_1, 0, 0, 1),
-            Placement(m_vertex_2, 0, 0, 2)
+            Placement(m_vertex_1, 0, 0, 4),
+            Placement(m_vertex_2, 0, 0, 5)
         ])
-
-        user_0_addresses = {
-            placement.location: i * MAX_MEM_REGIONS * 512
-            for i, placement in enumerate(placements.placements)
-        }
-        transceiver = _MockTransceiver(user_0_addresses)
-        writer.set_transceiver(transceiver)
         writer.set_placements(placements)
-        writer.set_ipaddress("localhost")
+
+        transceiver = _MockTransceiver()
+        writer.set_transceiver(transceiver)
+        ds = DsSqlliteDatabase()
+        writer.set_ds_database(ds)
+        for placement in placements:
+            ds.set_core(
+                placement.x, placement.y, placement.p, placement.vertex)
+            base = placement.p * 1000
+            regions = reload_region_data[placement.p]
+            for (reg_num, size, _) in regions:
+                ds.set_memory_region(
+                    placement.x, placement.y, placement.p, reg_num, size,
+                    None, None)
+                ds.set_region_pointer(
+                    placement.x, placement.y, placement.p, reg_num, base)
+                base += size
 
         reload_dsg_regions()
 
@@ -169,26 +172,54 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         self.assertEqual(regenerate_call_count, placements.n_placements)
 
         # Check that the number of regions rewritten is correct
-        # (time 2 as there are 2 writes per region)
         self.assertEqual(
             len(regions_rewritten),
-            placements.n_placements * len(reload_region_data) * 2)
+            sum(len(x) for x in reload_region_data.values()))
 
         # Check that the data rewritten is correct
-        for i, placement in enumerate(placements.placements):
-            user_0_address = user_0_addresses[placement.location]
-            ptr_table_addr = get_region_base_address_offset(user_0_address, 0)
-            ptr_table = numpy.frombuffer(transceiver.read_memory(
-                placement.x, placement.y, ptr_table_addr, 0),
-                dtype=TABLE_TYPE)
-            for j in range(len(reload_region_data)):
-                pos = ((i * len(reload_region_data)) + j) * 2
-                region, data = reload_region_data[j]
-                address = ptr_table[region]["pointer"]
+        pos = 0
+        for placement in placements:
+            regions = reload_region_data[placement.p]
+            address = placement.p * 1000
+            for (_, size, data) in regions:
                 data = bytearray(numpy.array(data, dtype="uint32").tobytes())
-
                 # Check that the base address and data written is correct
                 self.assertEqual(regions_rewritten[pos], (address, data))
+                pos += 1
+                address += size
+
+    def test_with_size_changed(self):
+        """ Test that an application vertex's data is rewritten correctly
+        """
+        writer = FecDataWriter.mock()
+
+        m_vertex_1 = _TestMachineVertex()
+        m_vertex_2 = _TestMachineVertex()
+        placements = Placements([
+            Placement(m_vertex_1, 0, 0, 4),
+            Placement(m_vertex_2, 0, 0, 5)
+        ])
+        writer.set_placements(placements)
+
+        transceiver = _MockTransceiver()
+        writer.set_transceiver(transceiver)
+        ds = DsSqlliteDatabase()
+        writer.set_ds_database(ds)
+        for placement in placements:
+            ds.set_core(
+                placement.x, placement.y, placement.p, placement.vertex)
+            base = placement.p * 1000
+            regions = reload_region_data[placement.p]
+            for (reg_num, size, _) in regions:
+                ds.set_memory_region(
+                    placement.x, placement.y, placement.p, reg_num, size-1,
+                    None, None)
+                ds.set_region_pointer(
+                    placement.x, placement.y, placement.p, reg_num, base)
+                base += size
+
+        with self.assertRaises(DataSpecException):
+            reload_dsg_regions()
 
 
 if __name__ == "__main__":
