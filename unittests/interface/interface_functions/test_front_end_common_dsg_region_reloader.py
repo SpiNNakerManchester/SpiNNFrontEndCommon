@@ -35,12 +35,12 @@ from spinn_front_end_common.utilities.exceptions import DataSpecException
 # vertex/ p: region, size, data
 reload_region_data = {
     # core 4
-    4:[
+    4: [
         (0, 40, [0] * 10),
         (1, 120, [1] * 20)
     ],
     # core 5
-    5:[
+    5: [
         (5, 120, [3] * 15),
         (7, 80, [4] * 20),
         (10, 90, [5] * 4)
