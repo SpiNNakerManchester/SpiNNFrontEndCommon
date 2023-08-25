@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import logging
-from spinn_utilities.config_holder import get_config_int, get_config_str
+from spinn_utilities.config_holder import (
+    get_config_int, get_config_str_or_none)
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import json_machine, virtual_machine
 from spinn_front_end_common.data import FecDataView
@@ -30,10 +31,8 @@ def virtual_machine_generator():
     """
     height = get_config_int("Machine", "height")
     width = get_config_int("Machine", "width")
-    json_path = get_config_str("Machine", "json_path")
 
-    # For backward compatibility support version in csf files for now
-    version = get_config_int("Machine", "version")
+    version = FecDataView.get_machine_version().number
     if version is not None:
         if version in [2, 3]:
             if height is None:
@@ -60,6 +59,7 @@ def virtual_machine_generator():
         else:
             raise ValueError(f"Unknown version {version}")
 
+    json_path = get_config_str_or_none("Machine", "json_path")
     if json_path is None:
         n_cores = FecDataView.get_machine_version().max_cores_per_chip
         machine = virtual_machine(
@@ -69,9 +69,9 @@ def virtual_machine_generator():
     else:
         if (height is not None or width is not None or
                 version is not None or
-                get_config_str("Machine", "down_chips") is not None or
-                get_config_str("Machine", "down_cores") is not None or
-                get_config_str("Machine", "down_links") is not None):
+                get_config_str_or_none("Machine", "down_chips") is not None or
+                get_config_str_or_none("Machine", "down_cores") is not None or
+                get_config_str_or_none("Machine", "down_links") is not None):
             logger.warning("As json_path specified all other virtual "
                            "machine settings ignored.")
         machine = json_machine.machine_from_json(json_path)

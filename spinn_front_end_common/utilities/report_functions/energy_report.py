@@ -15,8 +15,9 @@
 from collections import defaultdict
 import logging
 import os
-from spinn_utilities.config_holder import (get_config_int, get_config_str)
+from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.log import FormatAdapter
+from spinn_machine.version import version_factory
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     FecTimer, GlobalProvenance, TimerCategory)
@@ -208,7 +209,7 @@ class EnergyReport(object):
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
         """
-        version = get_config_int("Machine", "version")
+        version = version_factory().number
         # if not spalloc, then could be any type of board
         if (not get_config_str("Machine", "spalloc_server") and
                 not get_config_str("Machine", "remote_spinnaker_url")):
