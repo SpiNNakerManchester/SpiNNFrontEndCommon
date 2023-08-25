@@ -32,32 +32,8 @@ def virtual_machine_generator():
     height = get_config_int("Machine", "height")
     width = get_config_int("Machine", "width")
 
-    version = FecDataView.get_machine_version().number
-    if version is not None:
-        if version in [2, 3]:
-            if height is None:
-                height = 2
-            else:
-                assert height == 2
-            if width is None:
-                width = 2
-            else:
-                assert width == 2
-            logger.warning("For virtual Machines version is deprecated."
-                           "use width=2, height=2 instead")
-        elif version in [4, 5]:
-            if height is None:
-                height = 8
-            else:
-                assert height == 8
-            if width is None:
-                width = 8
-            else:
-                assert width == 8
-            logger.warning("For virtual Machines version is deprecated."
-                           "use width=8, height=8 instead")
-        else:
-            raise ValueError(f"Unknown version {version}")
+    version = FecDataView.get_machine_version()
+    version.verify_size(height, width)
 
     json_path = get_config_str_or_none("Machine", "json_path")
     if json_path is None:
