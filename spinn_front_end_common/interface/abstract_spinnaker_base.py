@@ -766,7 +766,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             scamp_connection_data = None
             reset_machine = get_config_bool(
                 "Machine", "reset_machine_on_startup")
-            board_version = version_factory().number
+            board_version = FecDataView.get_machine_version().number
 
         elif allocator_data:
             (ipaddress, board_version, bmp_details,
