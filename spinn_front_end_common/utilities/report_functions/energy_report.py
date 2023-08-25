@@ -15,9 +15,8 @@
 from collections import defaultdict
 import logging
 import os
-from spinn_utilities.config_holder import get_config_str
+from spinn_utilities.config_holder import is_config_none
 from spinn_utilities.log import FormatAdapter
-from spinn_machine.version import version_factory
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     FecTimer, GlobalProvenance, TimerCategory)
@@ -209,10 +208,10 @@ class EnergyReport(object):
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
         """
-        version = version_factory().number
+        version = FecDataView.get_machine_version().number
         # if not spalloc, then could be any type of board
-        if (not get_config_str("Machine", "spalloc_server") and
-                not get_config_str("Machine", "remote_spinnaker_url")):
+        if (is_config_none("Machine", "spalloc_server") and
+                is_config_none("Machine", "remote_spinnaker_url")):
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
             if version in (2, 3):
                 f.write(
