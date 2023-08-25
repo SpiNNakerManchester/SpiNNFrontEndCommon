@@ -35,7 +35,6 @@ from spinn_utilities.log import FormatAdapter
 
 from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import CoreSubsets
-from spinn_machine.version import version_factory
 
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
