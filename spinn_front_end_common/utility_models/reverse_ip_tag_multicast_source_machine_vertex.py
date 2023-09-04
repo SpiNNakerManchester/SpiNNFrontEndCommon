@@ -16,6 +16,7 @@ import logging
 import math
 import struct
 import numpy
+from numpy.typing import NDArray
 from enum import IntEnum
 from typing import (
     Collection, Dict, List, Optional, Sequence, Union, TYPE_CHECKING)
@@ -61,7 +62,7 @@ if TYPE_CHECKING:
     from typing_extensions import TypeAlias
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
     from .reverse_ip_tag_multi_cast_source import _EIEIOParameters as Params
-    _SBT: TypeAlias = Union[numpy.ndarray, List[numpy.ndarray]]
+    _SBT: TypeAlias = Union[NDArray, List[NDArray]]
     _SendBufferTimes: TypeAlias = Optional[_SBT]
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -76,7 +77,7 @@ _MAX_OFFSET_DENOMINATOR = 10
 _MAX_OFFSET_MODULO = 1000
 
 
-def _is_array_list(val: _SendBufferTimes) -> TypeGuard[List[numpy.ndarray]]:
+def _is_array_list(val: _SendBufferTimes) -> TypeGuard[List[NDArray]]:
     """
     Whether the send buffer times are a list of arrays (i.e., are 2D).
     Ugly, but we'll have the ugly in one place.
@@ -466,7 +467,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         first_step = first_step or 0
         return end_step is None or (first_step <= step < end_step)
 
-    def _fill_send_buffer(self):
+    def _fill_send_buffer(self) -> None:
         """
         Fill the send buffer with keys to send.
         """

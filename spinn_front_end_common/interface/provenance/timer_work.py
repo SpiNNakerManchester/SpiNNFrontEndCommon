@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from enum import auto, Enum
-from typing import cast
 
 
 class TimerWork(Enum):
@@ -21,23 +20,27 @@ class TimerWork(Enum):
     Different Work types an Algorithm could be doing
     """
 
-    OTHER = cast('TimerWork', (auto(), "Other"))
-    GET_MACHINE = cast('TimerWork', (auto(), "Turning on Machine"))
-    LOADING = cast('TimerWork', (auto(), "Loading Stage"))
+    OTHER = (auto(), "Other")
+    GET_MACHINE = (auto(), "Turning on Machine")
+    LOADING = (auto(), "Loading Stage")
     # LOADING
-    BITFIELD = cast('TimerWork', (auto(), "BitField work"))
+    BITFIELD = (auto(), "BitField work")
     # Only for on Machine Compression
-    COMPRESSING = cast('TimerWork', (auto(), "Compressing"))
-    CONTROL = cast('TimerWork', (auto(), "Control"))
-    SYNAPSE = cast('TimerWork', (auto(), "Expanding Synapse"))
-    RUNNING = cast('TimerWork', (auto(), "Running"))
-    EXTRACTING = cast('TimerWork', (auto(), "Extracting"))
+    COMPRESSING = (auto(), "Compressing")
+    CONTROL = (auto(), "Control")
+    SYNAPSE = (auto(), "Expanding Synapse")
+    RUNNING = (auto(), "Running")
+    EXTRACTING = (auto(), "Extracting")
     # TODO is in right to treat this separately
-    EXTRACT_DATA = cast('TimerWork', (auto(), "Extracting"))
-    REPORT = cast('TimerWork', (auto(), "Reporting"))
+    EXTRACT_DATA = (auto(), "Extracting")
+    REPORT = (auto(), "Reporting")
 
-    def __init__(self, value: 'TimerWork', work_name: str):
-        self._value_ = value
+    def __new__(cls, *args) -> 'TimerWork':
+        obj = object.__new__(cls)
+        obj._value_ = args[0]
+        return obj
+
+    def __init__(self, __, work_name: str):
         self._work_name = work_name
 
     @property
