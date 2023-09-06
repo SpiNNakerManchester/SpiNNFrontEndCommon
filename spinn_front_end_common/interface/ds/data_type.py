@@ -342,12 +342,13 @@ class DataType(Enum):
         # pylint: disable=protected-access, too-many-arguments
         obj = object.__new__(cls)
         obj._value_ = args[0]
+        obj.__doc__ = args[-1]
         return obj
 
     def __init__(self, __, size: int, min_val: Decimal, max_val: Decimal,
                  scale: Decimal, struct_encoding: str, apply_scale: bool,
                  force_cast: Optional[Callable[[Any], int]],
-                 numpy_typename: type):
+                 numpy_typename: type, _doc: str = ""):
         # pylint: disable=protected-access, too-many-arguments
         self._size = size
         self._min = min_val
