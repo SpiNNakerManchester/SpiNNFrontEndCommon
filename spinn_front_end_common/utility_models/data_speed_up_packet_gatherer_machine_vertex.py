@@ -17,19 +17,19 @@ import datetime
 import logging
 import time
 import struct
-from enum import Enum, IntEnum
+from enum import IntEnum
 from typing import (
-    BinaryIO, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING)
+    Any, BinaryIO, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING)
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.typing.coords import XY
 from spinn_machine import Chip
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.model.enums import (
     CPUState, ExecutableType, SDP_PORTS, UserRegister)
-from spinnman.connections.udp_packet_connections import (
-    SCAMPConnection, UDPConnection)
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, IPtagResource
 from pacman.model.placements import Placement
@@ -134,7 +134,7 @@ class _DATA_REGIONS(IntEnum):
     PROVENANCE_REGION = 2
 
 
-class DATA_OUT_COMMANDS(Enum):
+class DATA_OUT_COMMANDS(IntEnum):
     """
     Command IDs for the SDP packets for data out.
     """
@@ -144,7 +144,7 @@ class DATA_OUT_COMMANDS(Enum):
     CLEAR = 2000
 
 
-class DATA_IN_COMMANDS(Enum):
+class DATA_IN_COMMANDS(IntEnum):
     """
     Command IDs for the SDP packets for data in.
     """
@@ -171,7 +171,7 @@ VERIFY_SENT_DATA = False
 _PROVENANCE_DATA_SIZE = 4 * BYTES_PER_WORD
 
 
-def ceildiv(dividend, divisor):
+def ceildiv(dividend, divisor) -> int:
     """
     How to divide two possibly-integer numbers and round up.
     """
@@ -345,7 +345,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             port=self._TAG_INITIAL_PORT, strip_sdp=True,
             ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
 
-    def update_transaction_id_from_machine(self) -> None:
+    def _read_transaction_id_from_machine(self) -> None:
         """
         Looks up from the machine what the current transaction ID is
         and updates the data speed up gatherer.
@@ -395,7 +395,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         machine = FecDataView.get_machine()
         spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE)
         chip_xys_on_board = list(machine.get_existing_xys_on_board(
-            machine[placement.x, placement.y]))
+            machine[placement.xy]))
 
         # write how many chips to read
         spec.write_value(len(chip_xys_on_board))
@@ -404,7 +404,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         router_timeout_key = (
             FecDataView.get_system_multicast_router_timeout_keys())
         # pylint: disable=unsubscriptable-object
-        spec.write_value(router_timeout_key[placement.x, placement.y])
+        spec.write_value(router_timeout_key[placement.xy])
 
         mc_data_chips_to_keys = (
             FecDataView.get_data_in_multicast_key_to_chip_map())
@@ -450,8 +450,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         return "data_speed_up_packet_gatherer.aplx"
 
     def _generate_data_in_report(
-            self, time_diff, data_size, x, y,
-            address_written_to, missing_seq_nums):
+            self, time_diff, data_size: int, x: int, y: int,
+            address_written_to: int, missing_seq_nums):
         """
         Writes the data in report for this stage.
 
@@ -480,7 +480,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                              time_diff.total_seconds() * 1000000)
         megabits = (data_size * 8.0) / (1024 * BYTES_PER_KB)
         if time_took_ms == 0:
-            mbs = "unknown, below threshold"
+            mbs: Any = "unknown, below threshold"
         else:
             mbs = megabits / (float(time_took_ms) / 100000.0)
 
@@ -565,21 +565,27 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if a != b:
                     raise ValueError(f"Mismatch found as position {i}")
 
+    def __make_data_in_message(self, payload: bytes) -> SDPMessage:
+        return SDPMessage(
+            sdp_header=SDPHeader(
+                destination_chip_x=self._placement.x,
+                destination_chip_y=self._placement.y,
+                destination_cpu=self._placement.p,
+                destination_port=(
+                    SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP.value),
+                flags=SDPFlag.REPLY_NOT_EXPECTED),
+            data=payload)
+
     @staticmethod
-    def __make_sdp_message(placement: Placement, port: SDP_PORTS,
-                           payload: bytes):
-        """
-        :param ~.Placement placement:
-        :param SDP_PORTS port:
-        :param bytearray payload:
-        :rtype: ~.SDPMessage
-        """
+    def __make_data_out_message(
+            placement: Placement, payload: bytes) -> SDPMessage:
         return SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=placement.x,
                 destination_chip_y=placement.y,
                 destination_cpu=placement.p,
-                destination_port=port.value,
+                destination_port=(
+                    SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=payload)
 
@@ -596,7 +602,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return connection
 
     @property
-    def _connection(self):
+    def _connection(self) -> SCAMPConnection:
         assert self.__connection is not None
         return self.__connection
 
@@ -624,7 +630,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # for safety, check the transaction id from the machine before
             # updating
-            self.update_transaction_id_from_machine()
+            self._read_transaction_id_from_machine()
             self._transaction_id = (
                 self._transaction_id + 1) & TRANSACTION_ID_CAP
             time_out_count = 0
@@ -655,12 +661,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                             continue
 
                         # Decide what to do with the packet
-                        if cmd == DATA_IN_COMMANDS.RECEIVE_FINISHED.value:
+                        if cmd == DATA_IN_COMMANDS.RECEIVE_FINISHED:
                             received_confirmation = True
                             break
 
-                        if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA\
-                                .value:
+                        if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA:
                             raise ValueError(f"Unknown command {cmd} received")
 
                         # The currently received packet has missing sequence
@@ -750,16 +755,15 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # send seq data
         for missing_seq_num in missing_seqs_as_list:
-            message, _length = self._calculate_data_in_data_from_seq_number(
-                data_to_write, missing_seq_num,
-                DATA_IN_COMMANDS.SEND_SEQ_DATA.value, None)
+            message, _length = self.__make_data_in_stream_message(
+                data_to_write, missing_seq_num, None)
             self.__throttled_send(message)
 
         # request an update on what is missing
-        self._send_tell_flag()
+        self.__send_tell_flag()
 
     @staticmethod
-    def _calculate_position_from_seq_number(seq_num: int) -> int:
+    def __position_from_seq_number(seq_num: int) -> int:
         """
         Calculates where in the raw data to start reading from, given a
         sequence number.
@@ -770,8 +774,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         return BYTES_IN_FULL_PACKET_WITH_KEY * seq_num
 
-    def _calculate_data_in_data_from_seq_number(
-            self, data_to_write: bytes, seq_num: int, command_id: int,
+    def __make_data_in_stream_message(
+            self, data_to_write: bytes, seq_num: int,
             position: Optional[int]) -> Tuple[SDPMessage, int]:
         """
         Determine the data needed to be sent to the SpiNNaker machine
@@ -780,8 +784,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param bytearray data_to_write:
             the data to write to the SpiNNaker machine
         :param int seq_num: the sequence number to get the data for
-        :param int command_id:
-        :param position: the position in the data to write to SpiNNaker
+        :param position:
+            the position in the data to write to SpiNNaker,
+            or None to infer from the sequence number
         :type position: int or None
         :return: SDP message and how much data has been written
         :rtype: tuple(~.SDPMessage, int)
@@ -791,63 +796,45 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # determine position in data if not given
         if position is None:
-            position = self._calculate_position_from_seq_number(seq_num)
+            position = self.__position_from_seq_number(seq_num)
 
         # if less than a full packet worth of data, adjust length
         if position + packet_data_length > len(data_to_write):
             packet_data_length = len(data_to_write) - position
 
         if packet_data_length < 0:
-            raise ValueError("weird packet data length.")
+            raise ValueError("weird packet data length")
 
-        # determine the true packet length (with header)
-        packet_length = (
-            packet_data_length + BYTES_FOR_COMMAND_AND_ADDRESS_HEADER)
-
-        # create struct
-        packet_data = bytearray(packet_length)
-        _THREE_WORDS.pack_into(
-            packet_data, 0, command_id, self._transaction_id, seq_num)
-        struct.pack_into(
-            f"<{packet_data_length}B", packet_data,
-            BYTES_FOR_COMMAND_AND_ADDRESS_HEADER,
-            *data_to_write[position:position+packet_data_length])
-
-        # debug
-        # self._print_out_packet_data(packet_data, position)
-
-        # build sdp packet
-        message = self.__make_sdp_message(
-            self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
-            packet_data)
+        # create message body
+        packet_data = _THREE_WORDS.pack(
+            DATA_IN_COMMANDS.SEND_SEQ_DATA, self._transaction_id,
+            seq_num) + data_to_write[position:position+packet_data_length]
 
         # return message for sending, and the length in data sent
-        return message, packet_data_length
+        return self.__make_data_in_message(packet_data), packet_data_length
 
-    def _send_location(self, start_address: int):
+    def __send_location(self, start_address: int):
         """
         Send location as separate message.
 
         :param int start_address: SDRAM location
         """
-        self._connection.send_sdp_message(self.__make_sdp_message(
-            self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
+        self._connection.send_sdp_message(self.__make_data_in_message(
             _FIVE_WORDS.pack(
-                DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION.value,
+                DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION,
                 self._transaction_id, start_address, self._coord_word,
                 self._max_seq_num - 1)))
         log.debug(
             "start address for transaction {} is {}",
             self._transaction_id, start_address)
 
-    def _send_tell_flag(self) -> None:
+    def __send_tell_flag(self) -> None:
         """
         Send tell flag as separate message.
         """
-        self._connection.send_sdp_message(self.__make_sdp_message(
-            self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
+        self._connection.send_sdp_message(self.__make_data_in_message(
             _TWO_WORDS.pack(
-                DATA_IN_COMMANDS.SEND_TELL.value, self._transaction_id)))
+                DATA_IN_COMMANDS.SEND_TELL, self._transaction_id)))
 
     def _send_all_data_based_packets(
             self, data_to_write: bytes, start_address: int):
@@ -858,7 +845,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int start_address:
         """
         # Send the location
-        self._send_location(start_address)
+        self.__send_location(start_address)
 
         # where in the data we are currently up to
         position_in_data = 0
@@ -866,10 +853,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         # send rest of data
         for seq_num in range(self._max_seq_num or 0):
             # put in command flag and seq num
-            message, length_to_send = \
-                self._calculate_data_in_data_from_seq_number(
-                    data_to_write, seq_num,
-                    DATA_IN_COMMANDS.SEND_SEQ_DATA.value, position_in_data)
+            message, length_to_send = self.__make_data_in_stream_message(
+                data_to_write, seq_num, position_in_data)
             position_in_data += length_to_send
 
             # send the message
@@ -877,7 +862,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             log.debug("sent seq {} of {} bytes", seq_num, length_to_send)
 
         # check for end flag
-        self._send_tell_flag()
+        self.__send_tell_flag()
         log.debug("sent end flag")
 
     def set_cores_for_data_streaming(self) -> None:
@@ -1024,9 +1009,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # create report elements
         if get_config_bool("Reports", "write_data_speed_up_reports"):
-            self._write_routers_used_into_report(
-                self._determine_which_routers_were_used(placement),
-                placement)
+            self._report_routers_used_for_out(placement)
 
         start = float(time.time())
         # if asked for no data, just return a empty byte array
@@ -1047,24 +1030,22 @@ class DataSpeedUpPacketGatherMachineVertex(
             transaction_id = extra_monitor.transaction_id
 
             # send
-            connection.send_sdp_message(self.__make_sdp_message(
-                placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
-                _FOUR_WORDS.pack(
-                    DATA_OUT_COMMANDS.START_SENDING.value, transaction_id,
+            connection.send_sdp_message(self.__make_data_out_message(
+                placement, _FOUR_WORDS.pack(
+                    DATA_OUT_COMMANDS.START_SENDING, transaction_id,
                     memory_address, length_in_bytes)))
 
             # receive
             self._output = bytearray(length_in_bytes)
             self._view = memoryview(self._output)
-            self._max_seq_num = self.calculate_max_seq_num()
+            self._max_seq_num = self.__calculate_max_seq_num()
             lost_seq_nums = self._receive_data(
                 placement, connection, transaction_id)
 
             # Stop anything else getting through (and reduce traffic)
-            connection.send_sdp_message(self.__make_sdp_message(
-                placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
-                _TWO_WORDS.pack(
-                    DATA_OUT_COMMANDS.CLEAR.value, transaction_id)))
+            connection.send_sdp_message(self.__make_data_out_message(
+                placement, _TWO_WORDS.pack(
+                    DATA_OUT_COMMANDS.CLEAR, transaction_id)))
 
         end = float(time.time())
         with ProvenanceWriter() as db:
@@ -1087,7 +1068,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return self._output
 
     def _receive_data(
-            self, placement: Placement, connection: UDPConnection,
+            self, placement: Placement, connection: SCAMPConnection,
             transaction_id: int) -> List[int]:
         """
         :param ~.Placement placement:
@@ -1101,13 +1082,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         finished = False
         while not finished:
             try:
-                data = connection.receive(
-                    timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
+                data = connection.receive(self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
                 response_transaction_id, = _ONE_WORD.unpack_from(data, 4)
                 if transaction_id == response_transaction_id:
                     timeoutcount = 0
                     seq_nums, finished = self._process_data(
-                        data, seq_nums, finished, placement,
+                        connection, data, seq_nums, finished, placement,
                         lost_seq_nums, transaction_id)
                 else:
                     log.info(
@@ -1124,12 +1104,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                 # self.__reset_connection()
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
-                        seq_nums, placement, lost_seq_nums, transaction_id)
+                        connection, seq_nums, placement, lost_seq_nums,
+                        transaction_id)
         return lost_seq_nums
 
     @staticmethod
-    def _determine_which_routers_were_used(
-            placement: Placement) -> List[Tuple[int, int]]:
+    def __describe_fixed_route_from(placement: Placement) -> List[XY]:
         """
         Traverse the fixed route paths from a given location to its
         destination. Used for determining which routers were used.
@@ -1154,22 +1134,20 @@ class DataSpeedUpPacketGatherMachineVertex(
             entry = fixed_routes[chip]
         return routers
 
-    def _write_routers_used_into_report(
-            self, routers_been_in_use: List[Tuple[int, int]],
-            placement: Placement):
+    def _report_routers_used_for_out(self, placement: Placement):
         """
         Write the used routers into a report.
 
-        :param list(tuple(int,int)) routers_been_in_use:
-            the routers been in use
-        :param ~.Placement placement: the first placement used
+        :param ~.Placement placement:
+            The placement that we have been routing data out from
         """
+        routers_used = self.__describe_fixed_route_from(placement)
         with open(self._out_report_path, "a", encoding="utf-8") as writer:
             writer.write(
                 f"[{placement.x}:{placement.y}:{placement.p}] "
-                f"= {routers_been_in_use}\n")
+                f"= {routers_used}\n")
 
-    def _calculate_missing_seq_nums(self, seq_nums: Set[int]) -> List[int]:
+    def __missing_seq_nums(self, seq_nums: Set[int]) -> List[int]:
         """
         Determine which sequence numbers we've missed.
 
@@ -1180,13 +1158,15 @@ class DataSpeedUpPacketGatherMachineVertex(
         return [sn for sn in range(self._max_seq_num) if sn not in seq_nums]
 
     def _determine_and_retransmit_missing_seq_nums(
-            self, seq_nums: Set[int], placement: Placement,
+            self, connection: SCAMPConnection, seq_nums: Set[int],
+            placement: Placement,
             lost_seq_nums: List[int], transaction_id: int) -> bool:
         """
         Determine if there are any missing sequence numbers, and if so
         retransmits the missing sequence numbers back to the core for
         retransmission.
 
+        :param SCAMPConnection connection: how to talk to the board
         :param set(int) seq_nums: the sequence numbers already received
         :param ~.Placement placement: placement instance
         :param list(int) lost_seq_nums:
@@ -1194,13 +1174,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: whether all packets are transmitted
         :rtype: bool
         """
-        transceiver = FecDataView.get_transceiver()
-
         # locate missing sequence numbers from pile
-        missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
+        missing_seq_nums = self.__missing_seq_nums(seq_nums)
 
         lost_seq_nums.append(len(missing_seq_nums))
-        # self._print_missing(missing_seq_nums)
+        # for seq_num in sorted(seq_nums):
+        #     log.debug("from list I'm missing sequence num {}", seq_num)
         if not missing_seq_nums:
             return True
 
@@ -1212,12 +1191,12 @@ class DataSpeedUpPacketGatherMachineVertex(
             n_packets += ceildiv(
                 length_via_format2,
                 WORDS_PER_FULL_PACKET - WORDS_FOR_COMMAND_TRANSACTION)
-        # self._print_missing_n_packets(n_packets)
+        # log.debug("missing packets = {}", n_packets)
 
         # transmit missing sequence as a new SDP packet
         first = True
         seq_num_offset = 0
-        for _ in range(n_packets):
+        for _packet_count in range(n_packets):
             length_left_in_packet = WORDS_PER_FULL_PACKET
             offset = 0
 
@@ -1235,10 +1214,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                      WORDS_FOR_COMMAND_N_MISSING_TRANSACTION) * BYTES_PER_WORD)
 
                 # pack flag and n packets
-                _ONE_WORD.pack_into(
-                    data, offset, DATA_OUT_COMMANDS.START_MISSING_SEQ.value)
-                _TWO_WORDS.pack_into(
-                    data, BYTES_PER_WORD, transaction_id, n_packets)
+                _THREE_WORDS.pack_into(
+                    data, 0, DATA_OUT_COMMANDS.START_MISSING_SEQ,
+                    transaction_id, n_packets)
 
                 # update state
                 offset += (
@@ -1260,8 +1238,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # pack flag
                 _TWO_WORDS.pack_into(
-                    data, offset,
-                    DATA_OUT_COMMANDS.MISSING_SEQ.value, transaction_id)
+                    data, offset, DATA_OUT_COMMANDS.MISSING_SEQ,
+                    transaction_id)
                 offset += BYTES_PER_WORD * WORDS_FOR_COMMAND_TRANSACTION
                 length_left_in_packet -= WORDS_FOR_COMMAND_TRANSACTION
 
@@ -1273,17 +1251,19 @@ class DataSpeedUpPacketGatherMachineVertex(
             seq_num_offset += length_left_in_packet
 
             # build SDP message and send it to the core
-            transceiver.send_sdp_message(self.__make_sdp_message(
-                placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP, data))
+            connection.send_sdp_message(self.__make_data_out_message(
+                placement, data))
 
             # sleep for ensuring core doesn't lose packets
             time.sleep(self._TIMEOUT_FOR_SENDING_IN_SECONDS)
-            # self._print_packet_num_being_sent(packet_count, n_packets)
+            # log.debug(
+            #     "send SDP packet with missing sequence numbers: {} of {}",
+            #     _packet_count + 1, n_packets)
         return False
 
     def _process_data(
-            self, data: bytes, seq_nums: Set[int], finished: bool,
-            placement: Placement, lost_seq_nums: List[int],
+            self, connection: SCAMPConnection, data: bytes, seq_nums: Set[int],
+            finished: bool, placement: Placement, lost_seq_nums: List[int],
             transaction_id: int) -> Tuple[Set[int], bool]:
         """
         Take a packet and process it see if we're finished yet.
@@ -1301,7 +1281,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: tuple(set(int), bool)
         """
         # pylint: disable=too-many-arguments
-        # self._print_out_packet_data(data)
         length_of_data = len(data)
         first_packet_element, = _ONE_WORD.unpack_from(data, 0)
 
@@ -1318,7 +1297,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 f"with a length of {length_of_data}")
 
         # figure offset for where data is to be put
-        offset = self._calculate_offset(seq_num)
+        offset = self.__offset(seq_num)
 
         # write data
 
@@ -1328,7 +1307,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 offset + length_of_data - BYTES_FOR_SEQ_AND_TRANSACTION_ID)
         if (not is_end_of_stream or
                 length_of_data != BYTES_FOR_SEQ_AND_TRANSACTION_ID):
-            self._write_into_view(
+            self.__write_into_view(
                 offset, true_data_length, data,
                 BYTES_FOR_SEQ_AND_TRANSACTION_ID, length_of_data)
 
@@ -1338,16 +1317,16 @@ class DataSpeedUpPacketGatherMachineVertex(
         # if received a last flag on its own, its during retransmission.
         #  check and try again if required
         if is_end_of_stream:
-            if not self._check(seq_nums):
+            if not self.__check(seq_nums):
                 finished = self._determine_and_retransmit_missing_seq_nums(
-                    placement=placement, transaction_id=transaction_id,
-                    seq_nums=seq_nums, lost_seq_nums=lost_seq_nums)
+                    connection, seq_nums, placement, lost_seq_nums,
+                    transaction_id)
             else:
                 finished = True
         return seq_nums, finished
 
     @staticmethod
-    def _calculate_offset(seq_num: int) -> int:
+    def __offset(seq_num: int) -> int:
         """
         :param int seq_num:
         :rtype: int
@@ -1355,7 +1334,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return (seq_num * WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
                 BYTES_PER_WORD)
 
-    def _write_into_view(
+    def __write_into_view(
             self, view_start_position: int, view_end_position: int,
             data: bytes, data_start_position: int, data_end_position: int):
         """
@@ -1379,7 +1358,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._view[view_start_position: view_end_position] = \
             data[data_start_position:data_end_position]
 
-    def _check(self, seq_nums: Iterable[int]) -> bool:
+    def __check(self, seq_nums: Iterable[int]) -> bool:
         """
         Verify if the sequence numbers are correct.
 
@@ -1389,12 +1368,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # hand back
         seq_nums = sorted(seq_nums)
-        max_needed = self.calculate_max_seq_num()
+        max_needed = self.__calculate_max_seq_num()
         if len(seq_nums) > max_needed + 1:
-            raise ValueError(f"too many seg_nums: {len(seq_nums)}")
+            raise ValueError(f"too many seq_nums: {len(seq_nums)}")
         return len(seq_nums) == max_needed + 1
 
-    def calculate_max_seq_num(self) -> int:
+    def __calculate_max_seq_num(self) -> int:
         """
         Deduce the max sequence number expected to be received.
 
@@ -1406,66 +1385,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ceildiv(
             len(self._output),
             WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD)
-
-    @staticmethod
-    def _print_missing(seq_nums: Iterable[int]):
-        """
-        Debug printer for the missing sequence numbers from the pile.
-
-        :param list(int) seq_nums: the sequence numbers received so far
-        """
-        for seq_num in sorted(seq_nums):
-            log.info("from list I'm missing sequence num {}", seq_num)
-
-    @staticmethod
-    def _print_missing_n_packets(n_packets: int):
-        """
-        Debug printer for the number of missing packets from the pile.
-
-        :param n_packets: the number of packets
-        """
-        log.info("missing packets = {}", n_packets)
-
-    @staticmethod
-    def _print_out_packet_data(data: bytes, position: int):
-        """
-        Debug prints out the data from the packet.
-
-        :param bytearray data: the packet data
-        """
-        reread_data = struct.unpack(f"<{len(data)}B", data)
-        output = ""
-        position2 = position
-        log.debug("size of data is {}", (len(data) / 4) - 3)
-        for index, reread_data_element in enumerate(reread_data):
-            if index >= 12:
-                output += f"{position2}:{reread_data_element},"
-                position2 += 1
-        log.debug("converted data back into readable form is {}", output)
-
-    @staticmethod
-    def _print_length_of_received_seq_nums(
-            seq_nums: List[int], max_needed: int):
-        """
-        Debug helper method for figuring out if everything been received.
-
-        :param list(int) seq_nums: sequence numbers received
-        :param int max_needed: biggest expected to have
-        """
-        if len(seq_nums) != max_needed:
-            log.info("should have received {} sequence numbers, but received "
-                     "{} sequence numbers", max_needed, len(seq_nums))
-
-    @staticmethod
-    def _print_packet_num_being_sent(packet_count, n_packets):
-        """
-        Debug helper for printing missing sequence number packet transmission.
-
-        :param int packet_count: which packet is being fired
-        :param int n_packets: how many packets to fire.
-        """
-        log.debug("send SDP packet with missing sequence numbers: {} of {}",
-                  packet_count + 1, n_packets)
 
     @overrides(AbstractProvidesProvenanceDataFromMachine
                .get_provenance_data_from_machine)
