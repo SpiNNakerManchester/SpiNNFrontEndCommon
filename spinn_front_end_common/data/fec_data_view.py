@@ -1264,7 +1264,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def add_database_socket_addresses(
-            cls, database_socket_addresses: Iterable[SocketAddress]):
+            cls, database_socket_addresses: Optional[Iterable[SocketAddress]]):
         """
         Adds all socket addresses to the list of known addresses.
 

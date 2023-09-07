@@ -375,7 +375,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run(n_steps, sync_time=0.0)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
 
-    def run(self, run_time: int, sync_time: float = 0):
+    def run(self, run_time: Optional[int], sync_time: float = 0):
         """
         Run a simulation for a fixed amount of time.
 
