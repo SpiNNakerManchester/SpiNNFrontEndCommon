@@ -17,7 +17,7 @@ import datetime
 import logging
 import time
 import struct
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import (
     Any, BinaryIO, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING)
 from spinn_utilities.config_holder import get_config_bool
@@ -134,6 +134,13 @@ class _DATA_REGIONS(IntEnum):
     PROVENANCE_REGION = 2
 
 
+class _PROV_LABELS(str, Enum):
+    SENT = "Sent_SDP_Packets"
+    RECEIVED = "Received_SDP_Packets"
+    IN_STREAMS = "Speed_Up_Input_Streams"
+    OUT_STREAMS = "Speed_Up_Output_Streams"
+
+
 class DATA_OUT_COMMANDS(IntEnum):
     """
     Command IDs for the SDP packets for data out.
@@ -168,7 +175,7 @@ _FIVE_WORDS = struct.Struct("<IIIII")
 VERIFY_SENT_DATA = False
 
 # provenance data size
-_PROVENANCE_DATA_SIZE = 4 * BYTES_PER_WORD
+_PROVENANCE_DATA_SIZE = _FOUR_WORDS.size
 
 
 def ceildiv(dividend, divisor) -> int:
@@ -906,7 +913,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         Set the wait1 field for a set of routers.
 
         :param tuple(int,int) timeout:
-        :param ~pacman.model.placements.Placements placements:
+            The mantissa and exponent of the timeout value, each between
+            0 and 15
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self])
@@ -924,6 +932,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         Set the wait2 field for a set of routers.
 
         :param tuple(int,int) timeout:
+            The mantissa and exponent of the timeout value, each between
+            0 and 15
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self])
@@ -1386,34 +1396,27 @@ class DataSpeedUpPacketGatherMachineVertex(
             len(self._output),
             WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD)
 
-    @overrides(AbstractProvidesProvenanceDataFromMachine
-               .get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, placement: Placement):
-        # Get the App Data for the core
-        transceiver = FecDataView.get_transceiver()
-        region_table_address = transceiver.get_cpu_information_from_core(
-            placement.x, placement.y, placement.p).user[0]
+    @staticmethod
+    def __provenance_address(x: int, y: int, p: int) -> int:
+        txrx = FecDataView.get_transceiver()
+        region_table = txrx.get_cpu_information_from_core(x, y, p).user[0]
 
         # Get the provenance region base address
         prov_region_entry_address = get_region_base_address_offset(
-            region_table_address, _DATA_REGIONS.PROVENANCE_REGION)
-        provenance_address = transceiver.read_word(
-            placement.x, placement.y, prov_region_entry_address)
-        data = transceiver.read_memory(
-            placement.x, placement.y, provenance_address,
-            _PROVENANCE_DATA_SIZE)
+            region_table, _DATA_REGIONS.PROVENANCE_REGION)
+        return txrx.read_word(x, y, prov_region_entry_address)
+
+    @overrides(AbstractProvidesProvenanceDataFromMachine
+               .get_provenance_data_from_machine)
+    def get_provenance_data_from_machine(self, placement: Placement):
+        x, y, p = placement.x, placement.y, placement.p
+        # Get the App Data for the core
+        data = FecDataView.read_memory(
+            x, y, self.__provenance_address(x, y, p), _PROVENANCE_DATA_SIZE)
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = (
             _FOUR_WORDS.unpack_from(data))
         with ProvenanceWriter() as db:
-            db.insert_core(
-                placement.x, placement.y, placement.p,
-                "Sent_SDP_Packets", n_sdp_sent)
-            db.insert_core(
-                placement.x, placement.y, placement.p,
-                "Received_SDP_Packets", n_sdp_recvd)
-            db.insert_core(
-                placement.x, placement.y, placement.p,
-                "Speed_Up_Input_Streams", n_in_streams)
-            db.insert_core(
-                placement.x, placement.y, placement.p,
-                "Speed_Up_Output_Streams", n_out_streams)
+            db.insert_core(x, y, p, _PROV_LABELS.SENT, n_sdp_sent)
+            db.insert_core(x, y, p, _PROV_LABELS.RECEIVED, n_sdp_recvd)
+            db.insert_core(x, y, p, _PROV_LABELS.IN_STREAMS, n_in_streams)
+            db.insert_core(x, y, p, _PROV_LABELS.OUT_STREAMS, n_out_streams)
