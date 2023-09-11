@@ -48,7 +48,7 @@ def virtual_machine_generator() -> Machine:
                 version is not None or
                 not is_config_none("Machine", "down_chips") or
                 not is_config_none("Machine", "down_cores") or
-                mot is_config_none("Machine", "down_links"):
+                not is_config_none("Machine", "down_links")):
             logger.warning("As json_path specified all other virtual "
                            "machine settings ignored.")
         machine = json_machine.machine_from_json(json_path)
