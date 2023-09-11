@@ -15,11 +15,8 @@ from contextlib import AbstractContextManager, ExitStack
 import logging
 import math
 from typing import ContextManager, Dict, Tuple, Optional, Union, cast
-from spinn_utilities.config_holder import get_config_str_list, get_config_bool
-from typing import Dict, Tuple
 from spinn_utilities.config_holder import (
-    get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
-    get_config_str_list)
+    get_config_bool, get_config_str_or_none, get_config_str_list)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
@@ -285,7 +282,6 @@ def spalloc_allocator(
         MachineAllocationController)
     """
     spalloc_server = get_config_str("Machine", "spalloc_server")
-    assert spalloc_server is not None, "no spalloc server defined at all"
 
     # Work out how many boards are needed
     if FecDataView.has_n_boards_required():
@@ -342,7 +338,7 @@ def _allocate_job_new(
     """
     logger.info(f"Requesting job with {n_boards} boards")
     with ExitStack() as stack:
-        spalloc_machine = get_config_str("Machine", "spalloc_machine")
+        spalloc_machine = get_config_str_or_none("Machine", "spalloc_machine")
         use_proxy = get_config_bool("Machine", "spalloc_use_proxy")
         client = SpallocClient(
             spalloc_server, bearer_token=bearer_token, group=group,

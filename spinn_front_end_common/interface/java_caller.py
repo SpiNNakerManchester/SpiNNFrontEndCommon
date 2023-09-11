@@ -18,7 +18,6 @@ import logging
 import os
 import subprocess
 from typing import Dict, Iterable, List, Optional, cast
-from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.config_holder import (
     get_config_str, get_config_str_or_none)
 from spinn_utilities.log import FormatAdapter
@@ -82,8 +81,6 @@ class JavaCaller(object):
         """
         self._recording: Optional[bool] = None
         java_call = get_config_str("Java", "java_call")
-        if java_call is None:
-            raise ConfigurationException("undefined java_call")
         self._java_call = java_call
         result = subprocess.call([self._java_call, '-version'])
         if result != 0:

@@ -116,8 +116,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         default_report_file_path = get_config_str(
             "Reports", "default_report_file_path")
         # determine common report folder
-        if default_report_file_path is None or (
-                default_report_file_path == "DEFAULT"):
+        if default_report_file_path == "DEFAULT":
             directory = os.getcwd()
         else:
             directory = default_report_file_path

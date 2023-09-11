@@ -283,14 +283,18 @@ def __config_values(clocks_per_cycle: int) -> Tuple[
     __check_at_most_one(
         "time_between_cores", time_between_cores,
         "clock_cycles_betwen_cores", clocks_between_cores)
-    if (time_between_cores is None and clocks_between_cores is None and
-            app_machine_quantity is None):
+    if (time_between_cores is None and clocks_between_cores is None):
         raise ConfigurationException(
             "Either one of time_between_cores and clocks_between_cores"
             " must be specified or else app_machine_quantity must be"
             " specified")
     if time_between_cores is not None:
-        clocks_between_cores = int(time_between_cores * CLOCKS_PER_US)
+        if clocks_between_cores is None:
+            clocks_between_cores = int(time_between_cores * CLOCKS_PER_US)
+        else:
+            raise ConfigurationException(
+                "Only one of time_between_cores and clocks_between_cores"
+                " may be specified")
 
     # time spend sending
     fraction_of_sending = get_config_float_or_none(
@@ -309,7 +313,7 @@ def __config_values(clocks_per_cycle: int) -> Tuple[
     fraction_of_waiting = get_config_float_or_none(
         "Simulation", "fraction_of_time_before_sending")
     clocks_waiting = get_config_int(
-        "Simulation", "clock_cycles_before_sending") or 600
+        "Simulation", "clock_cycles_before_sending")
     __check_only_one(
         "fraction_of_time_before_sending", fraction_of_waiting,
         "clock_cycles_before_sending", clocks_waiting)
@@ -319,7 +323,7 @@ def __config_values(clocks_per_cycle: int) -> Tuple[
     # time to offset app vertices between each other
     fraction_initial = get_config_float_or_none(
         "Simulation", "fraction_of_time_for_offset")
-    clocks_initial = get_config_int(
+    clocks_initial = get_config_int_or_none(
         "Simulation", "clock_cycles_for_offset")
     __check_only_one(
         "fraction_of_time_for_offset", fraction_initial,

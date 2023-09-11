@@ -131,7 +131,7 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
         If neither `n_chips` or `n_boards` provided
     """
 
-    url = str(get_config_str("Machine", "remote_spinnaker_url"))
+    url = get_config_str("Machine", "remote_spinnaker_url")
     if url.endswith("/"):
         url = url[:-1]
 

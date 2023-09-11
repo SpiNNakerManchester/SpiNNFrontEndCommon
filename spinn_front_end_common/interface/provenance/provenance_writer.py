@@ -168,7 +168,6 @@ class ProvenanceWriter(BaseDatabase):
                 """, [message])
             recorded = cur.lastrowid
             assert recorded is not None
-        cutoff = get_config_int("Reports", "provenance_report_cutoff")
         cutoff = get_config_int_or_none("Reports", "provenance_report_cutoff")
         if cutoff is None or recorded < cutoff:
             logger.warning(message)

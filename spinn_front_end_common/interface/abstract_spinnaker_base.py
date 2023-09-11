@@ -1670,8 +1670,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 name = get_config_str("Mapping", "compressor")
         else:
             name = get_config_str("Mapping", "compressor")
-        if name is None:
-            raise ConfigurationException("no routing compressor set")
         pre_compress = "BitField" not in name
         return name, pre_compress
 
@@ -2575,9 +2573,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __pick_from_config(
             section: str, option: str, choices: Mapping[str, _T]) -> _T:
         name = get_config_str(section, option)
-        if name is None:
-            raise ConfigurationException(
-                f"Unexpected cfg setting {option}: None")
         if "," in name:
             raise ConfigurationException(
                 f"Only a single algorithm is supported for {option}")

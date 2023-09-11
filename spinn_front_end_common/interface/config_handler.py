@@ -183,7 +183,7 @@ class ConfigHandler(object):
         report_dir_path = self._data_writer.get_report_dir_path()
         if os.listdir(report_dir_path):
             self._remove_excess_folders(
-                get_config_int("Reports", "max_reports_kept") or 0,
+                get_config_int("Reports", "max_reports_kept"),
                 report_dir_path,
                 get_config_bool("Reports", "remove_errored_folders"))
 

@@ -31,8 +31,7 @@ def insert_chip_power_monitors_to_graphs(
     :return: One of the Vertices added
     :rtype: ChipPowerMonitorMachineVertex
     """
-    sampling_frequency = get_config_int(
-        "EnergyMonitor", "sampling_frequency") or 10
+    sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     machine = FecDataView.get_machine()
     # create progress bar
     progress = ProgressBar(

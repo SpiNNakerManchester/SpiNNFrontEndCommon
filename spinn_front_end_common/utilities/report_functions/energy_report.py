@@ -16,7 +16,6 @@ from collections import defaultdict
 import logging
 import os
 from typing import Dict, Final, TextIO
-from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.config_holder import is_config_none
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY

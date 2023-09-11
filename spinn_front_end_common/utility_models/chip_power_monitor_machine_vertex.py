@@ -80,7 +80,7 @@ class ChipPowerMonitorMachineVertex(
             label=label, app_vertex=None, vertex_slice=None)
         self._sampling_frequency = sampling_frequency
         self.__n_samples_per_recording = get_config_int(
-            "EnergyMonitor", "n_samples_per_recording_entry") or 0
+            "EnergyMonitor", "n_samples_per_recording_entry")
 
     @property
     def sampling_frequency(self) -> int:

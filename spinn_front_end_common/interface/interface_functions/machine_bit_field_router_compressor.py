@@ -438,7 +438,7 @@ class _MachineBitFieldRouterCompressor(object):
                 or 1000
             self.__txrx.write_user(
                 chip_x, chip_y, processor_id, UserRegister.USER_1,
-                int(time_per_iteration * SECOND_TO_MICRO_SECOND))
+                time_per_iteration * SECOND_TO_MICRO_SECOND)
             # user 2 Compress as much as needed flag
             self.__txrx.write_user(
                 chip_x, chip_y, processor_id, UserRegister.USER_2,

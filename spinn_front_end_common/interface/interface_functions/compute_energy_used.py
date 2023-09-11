@@ -14,7 +14,6 @@
 
 import itertools
 from typing import Final, Iterable, Optional, Sequence, cast
-from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine, Chip
 from pacman.model.placements import Placement
 from spinn_utilities.config_holder import (get_config_int, is_config_none)
@@ -216,7 +215,7 @@ def _calculate_chips_active_energy(
 
     # deduce time in milliseconds per recording element
     n_samples_per_recording = get_config_int(
-        "EnergyMonitor", "n_samples_per_recording_entry") or 1
+        "EnergyMonitor", "n_samples_per_recording_entry")
     time_for_recorded_sample = (
         chip_power_monitor.sampling_frequency *
         n_samples_per_recording) / 1000
