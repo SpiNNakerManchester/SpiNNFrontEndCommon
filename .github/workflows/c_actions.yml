@@ -24,9 +24,9 @@ jobs:
 
     steps:
     - name: "Prepare: Checkout"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: "Prepare: Checkout SupportScripts"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: SpiNNakerManchester/SupportScripts
         path: support
