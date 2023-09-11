@@ -16,7 +16,8 @@ import logging
 import math
 from typing import Any, Optional, Tuple
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.config_holder import get_config_float, get_config_int
+from spinn_utilities.config_holder import (
+    get_config_float_or_none, get_config_int, get_config_int_or_none)
 from spinn_front_end_common.abstract_models.impl.\
     tdma_aware_application_vertex import (
         TDMAAwareApplicationVertex)
@@ -275,9 +276,9 @@ def __config_values(clocks_per_cycle: int) -> Tuple[
         "Simulation", "app_machine_quantity")
 
     # set the time between cores to fire
-    time_between_cores = get_config_float(
+    time_between_cores = get_config_float_or_none(
         "Simulation", "time_between_cores")
-    clocks_between_cores = get_config_int(
+    clocks_between_cores = get_config_int_or_none(
         "Simulation", "clock_cycles_between_cores")
     __check_at_most_one(
         "time_between_cores", time_between_cores,
@@ -292,9 +293,9 @@ def __config_values(clocks_per_cycle: int) -> Tuple[
         clocks_between_cores = int(time_between_cores * CLOCKS_PER_US)
 
     # time spend sending
-    fraction_of_sending = get_config_float(
+    fraction_of_sending = get_config_float_or_none(
         "Simulation", "fraction_of_time_spike_sending")
-    clocks_for_sending = get_config_int(
+    clocks_for_sending = get_config_int_or_none(
         "Simulation", "clock_cycles_sending")
     __check_only_one(
         "fraction_of_time_spike_sending", fraction_of_sending,
@@ -305,7 +306,7 @@ def __config_values(clocks_per_cycle: int) -> Tuple[
     assert clocks_for_sending is not None
 
     # time waiting before sending
-    fraction_of_waiting = get_config_float(
+    fraction_of_waiting = get_config_float_or_none(
         "Simulation", "fraction_of_time_before_sending")
     clocks_waiting = get_config_int(
         "Simulation", "clock_cycles_before_sending") or 600
@@ -316,7 +317,7 @@ def __config_values(clocks_per_cycle: int) -> Tuple[
         clocks_waiting = int(round(clocks_per_cycle * fraction_of_waiting))
 
     # time to offset app vertices between each other
-    fraction_initial = get_config_float(
+    fraction_initial = get_config_float_or_none(
         "Simulation", "fraction_of_time_for_offset")
     clocks_initial = get_config_int(
         "Simulation", "clock_cycles_for_offset")

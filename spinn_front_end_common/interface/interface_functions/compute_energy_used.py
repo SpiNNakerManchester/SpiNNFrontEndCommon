@@ -17,6 +17,7 @@ from typing import Final, Iterable, Optional, Sequence, cast
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine, Chip
 from pacman.model.placements import Placement
+from spinn_utilities.config_holder import (get_config_int, is_config_none)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     GlobalProvenance, ProvenanceReader, TimerCategory, TimerWork)
@@ -250,8 +251,8 @@ def _calculate_fpga_energy(
     """
     total_fpgas = 0
     # if not spalloc, then could be any type of board
-    if (not get_config_str("Machine", "spalloc_server") and
-            not get_config_str("Machine", "remote_spinnaker_url")):
+    if (is_config_none("Machine", "spalloc_server") and
+            is_config_none("Machine", "remote_spinnaker_url")):
         # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
         if machine.n_chips <= 4:
             return 0, 0

@@ -15,6 +15,7 @@
 import logging
 from typing import Dict, Optional, Tuple, Union
 from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.config_holder import get_config_int_or_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import (
     BaseDatabase, _SqliteTypes)
@@ -168,6 +169,7 @@ class ProvenanceWriter(BaseDatabase):
             recorded = cur.lastrowid
             assert recorded is not None
         cutoff = get_config_int("Reports", "provenance_report_cutoff")
+        cutoff = get_config_int_or_none("Reports", "provenance_report_cutoff")
         if cutoff is None or recorded < cutoff:
             logger.warning(message)
         elif recorded == cutoff:

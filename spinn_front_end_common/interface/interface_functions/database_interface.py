@@ -15,6 +15,8 @@
 import logging
 from typing import Optional, Set, Tuple
 from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import (
+    get_config_bool, get_config_bool_or_none)
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.machine import MachineVertex
@@ -34,7 +36,8 @@ def database_interface(runtime: Optional[float]) -> Optional[str]:
     :rtype: str or None
     """
     needs_db = DatabaseWriter.auto_detect_database()
-    user_create_database = get_config_bool("Database", "create_database")
+    user_create_database = get_config_bool_or_none(
+        "Database", "create_database")
     if user_create_database is not None:
         if user_create_database != needs_db:
             logger.warning(

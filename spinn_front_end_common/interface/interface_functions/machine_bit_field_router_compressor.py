@@ -17,7 +17,8 @@ import logging
 import struct
 from typing import Dict, List, NewType, Sequence, Tuple
 from collections import defaultdict
-from spinn_utilities.config_holder import get_config_bool, get_config_int
+from spinn_utilities.config_holder import (
+    get_config_bool, get_config_int, get_config_int_or_none)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets, Router, Chip, CoreSubset
@@ -145,7 +146,7 @@ class _MachineBitFieldRouterCompressor(object):
         self._threshold_percentage = get_config_int(
             "Mapping",
             "router_table_compression_with_bit_field_acceptance_threshold")
-        self._retry_count = get_config_int(
+        self._retry_count = get_config_int_or_none(
             "Mapping", "router_table_compression_with_bit_field_retry_count")
         self._report_iobuf = get_config_bool(
             "Reports", "write_compressor_iobuf") or False

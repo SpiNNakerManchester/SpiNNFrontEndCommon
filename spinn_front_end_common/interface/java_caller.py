@@ -19,6 +19,8 @@ import os
 import subprocess
 from typing import Dict, Iterable, List, Optional, cast
 from spinn_utilities.config_holder import get_config_str
+from spinn_utilities.config_holder import (
+    get_config_str, get_config_str_or_none)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_machine import Chip
@@ -97,7 +99,7 @@ class JavaCaller(object):
         self._monitor_cores: Optional[Dict[Chip, int]] = None
         self._gatherer_iptags: Optional[Dict[Chip, IPTag]] = None
         self._gatherer_cores: Optional[Dict[Chip, int]] = None
-        java_properties = get_config_str("Java", "java_properties")
+        java_properties = get_config_str_or_none("Java", "java_properties")
         self._chip_by_ethernet: Optional[Dict[Chip, List[Chip]]] = None
         if java_properties is not None:
             self._java_properties = java_properties.split()
@@ -111,8 +113,9 @@ class JavaCaller(object):
             self._java_properties = []
 
     def _find_java_jar(self) -> None:
-        java_spinnaker_path = get_config_str("Java", "java_spinnaker_path")
-        java_jar_path = get_config_str("Java", "java_jar_path")
+        java_spinnaker_path = get_config_str_or_none(
+            "Java", "java_spinnaker_path")
+        java_jar_path = get_config_str_or_none("Java", "java_jar_path")
         if java_spinnaker_path is None:
             interface = os.path.dirname(os.path.realpath(__file__))
             spinn_front_end_common = os.path.dirname(interface)

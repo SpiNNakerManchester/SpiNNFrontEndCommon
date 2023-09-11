@@ -19,7 +19,7 @@ import os
 import time
 from typing import Dict, Optional, Tuple
 from spinn_utilities.config_holder import (
-    get_config_int, get_config_str)
+    get_config_int, get_config_int_or_none, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
@@ -291,7 +291,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         if time_scale_factor is None:
             # Note while this reads from the cfg the cfg default is None
-            time_scale_factor = get_config_int("Machine", "time_scale_factor")
+            time_scale_factor = get_config_int_or_none(
+                "Machine", "time_scale_factor")
 
         if time_scale_factor is None:
             if default_time_scale_factor is not None:
