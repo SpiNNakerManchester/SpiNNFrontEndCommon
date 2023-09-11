@@ -29,7 +29,8 @@ import ebrains_drive
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
-    get_config_bool, get_config_int, get_config_str, set_config)
+    get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
+    is_config_none, set_config)
 from spinn_utilities.log import FormatAdapter
 
 from spinn_machine import __version__ as spinn_machine_version
@@ -303,7 +304,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 match_obj.group(SHARED_WITH_GROUP))
 
         # Try to use the config to get a group
-        group = get_config_str("Machine", "spalloc_group")
+        group = get_config_str_or_none("Machine", "spalloc_group")
         if group is not None:
             return {"group": group}
 
@@ -729,14 +730,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_machine():
             return None
-        if get_config_str("Machine", "spalloc_server") is not None:
+        if not is_config_none("Machine", "spalloc_server"):
             with FecTimer("SpallocAllocator", TimerWork.OTHER):
                 return spalloc_allocator(
                     self.__bearer_token, **self.__group_collab_or_job)
-        if get_config_str("Machine", "remote_spinnaker_url") is not None:
+        if not is_config_none("Machine", "remote_spinnaker_url"):
             with FecTimer("HBPAllocator", TimerWork.OTHER):
                 # TODO: Would passing the bearer token to this ever make sense?
                 return hbp_allocator(total_run_time)
+        return None
 
     def _execute_machine_generator(self, allocator_data):
         """
@@ -754,17 +756,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_machine():
             return
-        machine_name = get_config_str("Machine", "machine_name")
+        machine_name = get_config_str_or_none("Machine", "machine_name")
         if machine_name is not None:
             self._data_writer.set_ipaddress(machine_name)
-            bmp_details = get_config_str("Machine", "bmp_names")
+            bmp_details = get_config_str_or_none("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
             scamp_connection_data = None
             reset_machine = get_config_bool(
                 "Machine", "reset_machine_on_startup")
-            board_version = get_config_int(
-                "Machine", "version")
+            board_version = FecDataView.get_machine_version().number
 
         elif allocator_data:
             (ipaddress, board_version, bmp_details,
@@ -1615,7 +1616,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _compressor_name(self):
         if get_config_bool("Machine", "virtual_board"):
-            name = get_config_str("Mapping", "virtual_compressor")
+            name = get_config_str_or_none("Mapping", "virtual_compressor")
             if name is None:
                 logger.info("As no virtual_compressor specified "
                             "using compressor setting")
@@ -1634,7 +1635,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_pre_compression(self, pre_compress):
         if pre_compress:
-            name = get_config_str("Mapping", "precompressor")
+            name = get_config_str_or_none("Mapping", "precompressor")
             if name is None:
                 self._data_writer.set_precompressed(
                     self._data_writer.get_uncompressed())
