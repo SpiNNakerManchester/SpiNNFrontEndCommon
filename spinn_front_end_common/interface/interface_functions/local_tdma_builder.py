@@ -283,11 +283,6 @@ def __config_values(clocks_per_cycle: int) -> Tuple[
     __check_at_most_one(
         "time_between_cores", time_between_cores,
         "clock_cycles_betwen_cores", clocks_between_cores)
-    if (time_between_cores is None and clocks_between_cores is None):
-        raise ConfigurationException(
-            "Either one of time_between_cores and clocks_between_cores"
-            " must be specified or else app_machine_quantity must be"
-            " specified")
     if time_between_cores is not None:
         if clocks_between_cores is None:
             clocks_between_cores = int(time_between_cores * CLOCKS_PER_US)
