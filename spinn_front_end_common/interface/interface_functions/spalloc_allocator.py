@@ -20,12 +20,9 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
-from spalloc_client import Job  # type: ignore[import]
-from spalloc_client.states import JobState  # type: ignore[import]
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spalloc_client import Job
 from spalloc_client.states import JobState
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
     is_server_address, SpallocClient, SpallocJob, SpallocState)

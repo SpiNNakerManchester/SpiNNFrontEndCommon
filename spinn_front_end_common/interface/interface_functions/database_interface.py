@@ -14,7 +14,6 @@
 
 import logging
 from typing import Optional, Set, Tuple
-from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_bool_or_none)
 from spinn_utilities.progress_bar import ProgressBar

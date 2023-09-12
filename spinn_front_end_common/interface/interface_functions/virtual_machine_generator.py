@@ -14,7 +14,7 @@
 
 import logging
 from spinn_utilities.config_holder import (
-    get_config_int, is_config_none)
+    get_config_int, get_config_str_or_none, is_config_none)
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import json_machine, virtual_machine, Machine
 from spinn_front_end_common.data import FecDataView
