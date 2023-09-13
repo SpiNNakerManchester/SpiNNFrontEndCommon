@@ -39,7 +39,7 @@ class DatabaseReader(SQLiteDB):
     def __r2t(row, *args):
         return tuple(None if row is None else row[key] for key in args)
 
-    def get_job(self) -> SpallocJob:
+    def get_job(self) -> Optional[SpallocJob]:
         """
         Get the job described in the database. If no job exists, direct
         connection to boards should be used.
@@ -52,7 +52,6 @@ class DatabaseReader(SQLiteDB):
             with self.transaction() as cur:
                 self.__job = SpallocClient.open_job_from_database(cur)
             self.__looked_for_job = True
-        assert self.__job is not None
         return self.__job
 
     def get_key_to_atom_id_mapping(self, label: str) -> Dict[int, int]:
