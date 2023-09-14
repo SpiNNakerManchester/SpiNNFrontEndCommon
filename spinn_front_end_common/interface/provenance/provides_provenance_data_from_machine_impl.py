@@ -25,8 +25,7 @@ from .abstract_provides_provenance_data_from_machine import (
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
-from spinn_front_end_common.interface.provenance.provenance_writer import (
-    ProvenanceWriter)
+from .provenance_writer import ProvenanceWriter
 # mypy: disable-error-code=empty-body
 
 

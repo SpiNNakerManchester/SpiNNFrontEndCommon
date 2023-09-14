@@ -14,6 +14,7 @@
 
 import logging
 from typing import Dict, Optional, Tuple, Union
+from typing_extensions import Literal
 from spinn_utilities.config_holder import get_config_int_or_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import (
@@ -36,7 +37,7 @@ class ProvenanceWriter(BaseDatabase):
         You can't port to a different database engine without a lot of work.
     """
 
-    __slots__ = ()
+    __slots__ = ("__started_tx", )
 
     def __init__(self, database_file: Optional[str] = None):
         """
@@ -51,6 +52,7 @@ class ProvenanceWriter(BaseDatabase):
             Otherwise a `None` file will mean the default should be used
         """
         super().__init__(database_file)
+        self.__started_tx: bool = False
 
     def insert_power(self, description: str, the_value: _SqliteTypes):
         """
@@ -216,6 +218,22 @@ class ProvenanceWriter(BaseDatabase):
                 VALUES (?, ?, ?)
                 """, ((x, y, ipaddress)
                       for ((x, y), ipaddress) in connections.items()))
+
+    def _context_entered(self) -> None:
+        db = self.connection
+        if not db.in_transaction:
+            db.execute("BEGIN")
+            self.__started_tx = True
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> Literal[False]:
+        if self.__started_tx:
+            db = self.connection
+            if exc_type is None:
+                db.commit()
+            else:
+                db.rollback()
+            self.__started_tx = False
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
     def _test_log_locked(self, text):
         """
