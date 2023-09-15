@@ -1633,7 +1633,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Mapping", "router_table_compress_as_far_as_possible"):
             return False
         machine = self._data_writer.get_machine()
-        return tables.max_number_of_entries <= machine.min_n_router_enteries
+        return (tables.get_max_number_of_entries()
+                <= machine.min_n_router_enteries)
 
     def _execute_pre_compression(self, pre_compress):
         if pre_compress:
