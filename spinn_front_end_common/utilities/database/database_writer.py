@@ -15,9 +15,9 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
-from pacman.utilities.utility_calls import get_field_based_keys
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
+from pacman.utilities.utility_calls import get_keys
 from spinnman.spalloc import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -25,7 +25,6 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
 from spinn_front_end_common.utility_models import LivePacketGather
 from spinn_front_end_common.utility_models import LivePacketGatherMachineVertex
-from pacman.utilities.utility_calls import get_keys
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
