@@ -26,7 +26,7 @@ from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.ds import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
-    execute_application_data_specs)
+    load_application_data_specs)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import (
@@ -39,14 +39,9 @@ class _MockTransceiver(Transceiver):
     """
     # pylint: disable=unused-argument
 
-    def __init__(self, user_0_addresses):
-        """
-
-        :param user_0_addresses: dict of (x, y, p) to user_0_address
-        """
+    def __init__(self):
         self._regions_written = list()
         self._next_address = 0
-        self._user_0_addresses = user_0_addresses
 
     @property
     def regions_written(self):
@@ -59,9 +54,6 @@ class _MockTransceiver(Transceiver):
         address = self._next_address
         self._next_address += size
         return address
-
-    def get_user_0_register_address_from_core(self, p):
-        return self._user_0_addresses[p]
 
     @overrides(Transceiver.write_memory)
     def write_memory(
@@ -92,15 +84,16 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
         return self._binary_start_type
 
 
-class TestHostExecuteDataSpecification(unittest.TestCase):
+class TestLoadDataSpecification(unittest.TestCase):
 
     def setUp(cls):
         unittest_setup()
         set_config("Machine", "enable_advanced_monitor_support", "False")
+        set_config("Machine", "version", 5)
 
     def test_call(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(user_0_addresses={0: 1000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
 
         vertex = _TestVertexWithBinary(
@@ -118,9 +111,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.write_value(3)
         spec.end_specification()
 
-        writer.set_dsg_targets(db)
+        writer.set_ds_database(db)
 
-        execute_application_data_specs()
+        load_application_data_specs()
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -140,7 +133,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(regions[2][0], header_and_table_size + 200)
 
         # User 0 write address
-        self.assertEqual(regions[0][0], 1000)
+        self.assertEqual(regions[0][0], 3842011248)
 
         # Size of header and table
         self.assertEqual(len(regions[3][1]), header_and_table_size)
@@ -167,8 +160,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_multi_spec_with_references(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(
-            user_0_addresses={0: 1000, 1: 2000, 2: 3000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
 
         db = DsSqlliteDatabase()
@@ -189,9 +181,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.reference_memory_region(0, 1)
         spec.end_specification()
 
-        writer.set_dsg_targets(db)
+        writer.set_ds_database(db)
 
-        execute_application_data_specs()
+        load_application_data_specs()
 
         # User 0 for each spec (3) + header and table for each spec (3)
         # + 1 actual region (as rest are references)
@@ -218,9 +210,15 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # Find the base addresses
         base_addresses = dict()
         for base_addr, data in regions:
-            if base_addr != 0 and base_addr % 1000 == 0:
-                base_addresses[(base_addr // 1000) - 1] = struct.unpack(
-                    "<I", data)[0]
+            # user 0 p 0
+            if base_addr == 3842011248:
+                base_addresses[0] = struct.unpack("<I", data)[0]
+            # user 0 p 1
+            if base_addr == 3842011376:
+                base_addresses[1] = struct.unpack("<I", data)[0]
+            # user 0 p 2
+            if base_addr == 3842011504:
+                base_addresses[2] = struct.unpack("<I", data)[0]
 
         # Find the headers
         header_data = dict()
@@ -236,8 +234,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_multispec_with_reference_error(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(
-            user_0_addresses={0: 1000, 1: 2000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
@@ -254,7 +251,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.write_value(0)
         spec.end_specification()
 
-        writer.set_dsg_targets(db)
+        writer.set_ds_database(db)
 
         # This safety query should yield nothing
         bad = list(db.get_unlinked_references())
@@ -263,12 +260,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # DataSpecException because one of the regions can't be found
         with self.assertRaises(DataSpecException):
-            execute_application_data_specs()
+            load_application_data_specs()
 
     def test_multispec_with_double_reference(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(
-            user_0_addresses={0: 1000, 1: 2000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
@@ -282,8 +278,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_multispec_with_wrong_chip_reference(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(
-            user_0_addresses={0: 1000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
         writer.set_placements(Placements([]))
         vertex = _TestVertexWithBinary(
@@ -301,7 +296,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.reference_memory_region(0, 1)
         spec.end_specification()
 
-        writer.set_dsg_targets(db)
+        writer.set_ds_database(db)
 
         # This safety query should yield nothing
         bad = list(db.get_unlinked_references())
@@ -310,7 +305,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # DataSpecException because the reference is on a different chip
         with self.assertRaises(DataSpecException):
-            execute_application_data_specs()
+            load_application_data_specs()
 
 
 if __name__ == "__main__":

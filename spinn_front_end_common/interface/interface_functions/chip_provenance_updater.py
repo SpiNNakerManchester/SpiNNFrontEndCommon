@@ -18,10 +18,9 @@ from time import sleep
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import (
+    CPUState, SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -62,12 +61,13 @@ class _ChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        error_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.WATCHDOG)
-        idle_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.IDLE)
+        cpu_infos = self.__txrx.get_cpu_infos(
+            self.__all_cores,
+            [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG, CPUState.IDLE],
+            True)
+        error_cores = cpu_infos.infos_for_state(CPUState.RUN_TIME_EXCEPTION)
+        watchdog_cores = cpu_infos.infos_for_state(CPUState.WATCHDOG)
+        idle_cores = cpu_infos.infos_for_state(CPUState.IDLE)
 
         if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(
@@ -94,8 +94,8 @@ class _ChipProvenanceUpdater(object):
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:
             attempts += 1
-            unsuccessful_cores = self.__txrx.get_cores_not_in_state(
-                self.__all_cores, CPUState.FINISHED)
+            unsuccessful_cores = self.__txrx.get_cpu_infos(
+                self.__all_cores, CPUState.FINISHED, False)
 
             for (x, y, p) in unsuccessful_cores.keys():
                 self._send_chip_update_provenance_and_exit(x, y, p)

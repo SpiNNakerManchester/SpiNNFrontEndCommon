@@ -17,6 +17,7 @@ main interface for the SpiNNaker tools
 import logging
 import math
 import os
+import re
 import signal
 import sys
 import threading
@@ -24,13 +25,16 @@ import requests
 from threading import Condition
 from numpy import __version__ as numpy_version
 
+import ebrains_drive
+
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
-    get_config_bool, get_config_int, get_config_str, set_config)
+    get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
+    is_config_none, set_config)
 from spinn_utilities.log import FormatAdapter
 
 from spinn_machine import __version__ as spinn_machine_version
-from spinn_machine import CoreSubsets, Machine
+from spinn_machine import CoreSubsets
 
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
@@ -77,7 +81,7 @@ from spinn_front_end_common.interface.interface_functions import (
     chip_provenance_updater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
     reload_dsg_regions, energy_provenance_reporter,
-    execute_application_data_specs, execute_system_data_specs,
+    load_application_data_specs, load_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
     graph_provenance_gatherer,
     host_based_bit_field_router_compressor, hbp_allocator,
@@ -128,6 +132,11 @@ except ImportError:
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
+SHARED_PATH = re.compile(r".*\/shared\/([^\/]+)")
+SHARED_GROUP = 1
+SHARED_WITH_PATH = re.compile(r".*\/Shared with (all|groups|me)\/([^\/]+)")
+SHARED_WITH_GROUP = 2
+
 
 class AbstractSpinnakerBase(ConfigHandler):
     """
@@ -151,8 +160,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # A dict of live packet gather params to Application LGP vertices
         "_lpg_vertices",
 
-        # Used in exception handling and control c
-        "_last_except_hook",
+        # original sys.excepthook Used in exception handling and control c
+        "__sys_excepthook",
 
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
@@ -199,7 +208,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._create_version_provenance()
 
-        self._last_except_hook = sys.excepthook
+        self.__sys_excepthook = sys.excepthook
 
         FecTimer.setup(self)
 
@@ -262,6 +271,60 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Try a simple environment variable, or None if that doesn't exist
         return os.getenv("OIDC_BEARER_TOKEN")
 
+    @property
+    def __group_collab_or_job(self):
+        """
+        :return: The group, collab, or NMPI Job ID to associate with jobs
+        :rtype: dict()
+        """
+        # Try to get a NMPI Job
+        nmpi_job = os.getenv("NMPI_JOB_ID")
+        if nmpi_job is not None and nmpi_job != "":
+            nmpi_user = os.getenv("NMPI_USER")
+            if nmpi_user is not None and nmpi_user != "":
+                logger.info("Requesting job for NMPI job {}, user {}",
+                            nmpi_job, nmpi_user)
+                return {"nmpi_job": nmpi_job, "nmpi_user": nmpi_user}
+            logger.info("Requesting spalloc job for NMPI job {}", nmpi_job)
+            return {"nmpi_job": nmpi_job}
+
+        # Try to get the collab from the path
+        cwd = os.getcwd()
+        match_obj = SHARED_PATH.match(cwd)
+        if match_obj:
+            return self.__get_collab_id_from_folder(
+                match_obj.group(SHARED_GROUP))
+        match_obj = SHARED_WITH_PATH.match(cwd)
+        if match_obj:
+            return self.__get_collab_id_from_folder(
+                match_obj.group(SHARED_WITH_GROUP))
+
+        # Try to use the config to get a group
+        group = get_config_str_or_none("Machine", "spalloc_group")
+        if group is not None:
+            return {"group": group}
+
+        # Nothing ventured, nothing gained
+        return {}
+
+    def __get_collab_id_from_folder(self, folder):
+        """ Currently hacky way to get the EBRAINS collab id from the
+            drive folder, replicated from the NMPI collab template.
+        """
+        ebrains_drive_client = ebrains_drive.connect(token=self.__bearer_token)
+        repo_by_title = ebrains_drive_client.repos.get_repos_by_name(folder)
+        if len(repo_by_title) != 1:
+            logger.warning(f"The repository for collab {folder} could not be"
+                           " found; continuing as if not in a collaboratory")
+            return {}
+        # Owner is formatted as collab-<collab_id>-<permission>, and we want
+        # to extract the <collab-id>
+        owner = repo_by_title[0].owner
+        collab_id = owner[:owner.rindex("-")]
+        collab_id = collab_id[collab_id.find("-") + 1:]
+        logger.info(f"Requesting job in collaboratory {collab_id}")
+        return {"collab": collab_id}
+
     def exception_handler(self, exc_type, value, traceback_obj):
         """
         Handler of exceptions.
@@ -272,7 +335,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         logger.error("Shutdown on exception")
         self._shutdown()
-        return self._last_except_hook(exc_type, value, traceback_obj)
+        return self.__sys_excepthook(exc_type, value, traceback_obj)
 
     def _should_run(self):
         """
@@ -419,7 +482,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if isinstance(threading.current_thread(), threading._MainThread):
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
-            sys.excepthook = self._last_except_hook
+            sys.excepthook = self.__sys_excepthook
 
         logger.info("Starting execution process")
 
@@ -542,7 +605,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # pylint: disable=protected-access
         if isinstance(threading.current_thread(), threading._MainThread):
             self._raise_keyboard_interrupt = False
-            self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
 
     def _is_per_timestep_sdram(self):
@@ -664,13 +726,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_machine():
             return None
-        if get_config_str("Machine", "spalloc_server") is not None:
+        if not is_config_none("Machine", "spalloc_server"):
             with FecTimer("SpallocAllocator", TimerWork.OTHER):
-                return spalloc_allocator(self.__bearer_token)
-        if get_config_str("Machine", "remote_spinnaker_url") is not None:
+                return spalloc_allocator(
+                    self.__bearer_token, **self.__group_collab_or_job)
+        if not is_config_none("Machine", "remote_spinnaker_url"):
             with FecTimer("HBPAllocator", TimerWork.OTHER):
                 # TODO: Would passing the bearer token to this ever make sense?
                 return hbp_allocator(total_run_time)
+        return None
 
     def _execute_machine_generator(self, allocator_data):
         """
@@ -688,17 +752,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_machine():
             return
-        machine_name = get_config_str("Machine", "machine_name")
+        machine_name = get_config_str_or_none("Machine", "machine_name")
         if machine_name is not None:
             self._data_writer.set_ipaddress(machine_name)
-            bmp_details = get_config_str("Machine", "bmp_names")
+            bmp_details = get_config_str_or_none("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
             scamp_connection_data = None
             reset_machine = get_config_bool(
                 "Machine", "reset_machine_on_startup")
-            board_version = get_config_int(
-                "Machine", "version")
+            board_version = FecDataView.get_machine_version().number
 
         elif allocator_data:
             (ipaddress, board_version, bmp_details,
@@ -1350,10 +1413,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times, and logs the GraphDataSpecificationWriter.
 
-        Sets the dsg_targets data
+        Creates and fills the data spec database
         """
         with FecTimer("Graph data specification writer", TimerWork.OTHER):
-            self._data_writer.set_dsg_targets(
+            self._data_writer.set_ds_database(
                 graph_data_specification_writer())
 
     def _do_data_generation(self):
@@ -1515,7 +1578,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _compressor_name(self):
         if get_config_bool("Machine", "virtual_board"):
-            name = get_config_str("Mapping", "virtual_compressor")
+            name = get_config_str_or_none("Mapping", "virtual_compressor")
             if name is None:
                 logger.info("As no virtual_compressor specified "
                             "using compressor setting")
@@ -1529,11 +1592,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         if get_config_bool(
                 "Mapping", "router_table_compress_as_far_as_possible"):
             return False
-        return tables.max_number_of_entries <= Machine.ROUTER_ENTRIES
+        machine = self._data_writer.get_machine()
+        return tables.max_number_of_entries <= machine.min_n_router_enteries
 
     def _execute_pre_compression(self, pre_compress):
         if pre_compress:
-            name = get_config_str("Mapping", "precompressor")
+            name = get_config_str_or_none("Mapping", "precompressor")
             if name is None:
                 self._data_writer.set_precompressed(
                     self._data_writer.get_uncompressed())
@@ -1664,15 +1728,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_fixed_routes()
 
-    def _execute_system_data_specification(self):
+    def _execute_load_system_data_specification(self):
         """
-        Runs, times and logs the execute_system_data_specs if required.
+        Runs, times and logs the load_system_data_specs if required.
         """
         with FecTimer(
-                "Execute system data specification", TimerWork.OTHER) as timer:
+                "Load system data specification", TimerWork.OTHER) as timer:
             if timer.skip_if_virtual_board():
                 return None
-            execute_system_data_specs()
+            load_system_data_specs()
 
     def _execute_load_system_executable_images(self):
         """
@@ -1684,18 +1748,19 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_sys_images()
 
-    def _execute_application_data_specification(self):
+    def _execute_load_application_data_specification(self):
         """
-        Runs, times and logs :py:meth:`execute_application_data_specs`
+        Runs, times and logs :py:meth:`load_application_data_specs`
         if required.
 
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
-        with FecTimer("Host data specification", TimerWork.LOADING) as timer:
+        with FecTimer("Load Application data specification",
+                      TimerWork.LOADING) as timer:
             if timer.skip_if_virtual_board():
                 return
-            return execute_application_data_specs()
+            return load_application_data_specs()
 
     def _execute_tags_from_machine_report(self):
         """
@@ -1821,10 +1886,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_control_sync(False)
         if self._data_writer.get_requires_mapping():
             self._execute_load_fixed_routes()
-        self._execute_system_data_specification()
+        self._execute_load_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
-        self._execute_application_data_specification()
+        self._execute_load_application_data_specification()
 
         self._do_extra_load_algorithms()
         compressed = self._do_delayed_compression(compressor, compressed)
@@ -2161,14 +2226,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not unsuccessful_cores:
             for executable_type, core_subsets in \
                     self._data_writer.get_executable_types().items():
-                failed_cores = transceiver.get_cores_not_in_state(
-                    core_subsets, executable_type.end_state)
+                failed_cores = transceiver.get_cpu_infos(
+                    core_subsets, executable_type.end_state, False)
                 for (x, y, p) in failed_cores:
                     unsuccessful_cores.add_processor(
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
-        logger.error(transceiver.get_core_status_string(unsuccessful_cores))
+        logger.error(unsuccessful_cores.get_status_string())
 
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
@@ -2194,8 +2259,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Extract any written provenance data
             try:
                 transceiver = self._data_writer.get_transceiver()
-                finished_cores = transceiver.get_cores_in_state(
-                    non_rte_core_subsets, CPUState.FINISHED)
+                finished_cores = transceiver.get_cpu_infos(
+                    non_rte_core_subsets, CPUState.FINISHED, True)
                 finished_placements = Placements()
                 for (x, y, p) in finished_cores:
                     try:
