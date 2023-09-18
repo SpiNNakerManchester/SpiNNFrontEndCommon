@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.config_holder import get_config_int_or_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
@@ -156,7 +156,7 @@ class ProvenanceWriter(BaseDatabase):
                 VALUES(?)
                 """, [message])
             recorded = cur.lastrowid
-        cutoff = get_config_int("Reports", "provenance_report_cutoff")
+        cutoff = get_config_int_or_none("Reports", "provenance_report_cutoff")
         if cutoff is None or recorded < cutoff:
             logger.warning(message)
         elif recorded == cutoff:
