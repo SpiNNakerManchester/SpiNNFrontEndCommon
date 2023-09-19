@@ -21,7 +21,6 @@ import pathlib
 import sqlite3
 import struct
 from spinn_utilities.abstract_context_manager import AbstractContextManager
-from spinn_utilities.logger_utils import warn_once
 logger = logging.getLogger(__name__)
 
 
@@ -140,7 +139,7 @@ class SQLiteDB(AbstractContextManager):
         try:
             if self.__db is not None:
                 if self.__db.in_transaction:
-                     raise NotImplementedError(
+                    raise NotImplementedError(
                         "This call is illegal with an open transaction")
                 self.__db.close()
                 self.__db = None
