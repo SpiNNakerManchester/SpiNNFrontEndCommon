@@ -249,7 +249,11 @@ class BufferDatabase(BaseDatabase):
             job = mac._job
             if isinstance(job, SpallocJob):
                 with self.get_cursor as cur:
-                    job._write_session_credentials_to_db(cur)
+                    config = job.get_session_credentials_for_db()
+                    cur.executemany("""
+                        INSERT INTO proxy_configuration(kind, name, value)
+                        VALUES(?, ?, ?)
+                        """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
     def _set_core_name(self, x, y, p, core_name):
         """
