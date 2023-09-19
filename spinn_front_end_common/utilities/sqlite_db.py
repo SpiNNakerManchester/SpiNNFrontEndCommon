@@ -122,13 +122,13 @@ class SQLiteDB(AbstractContextManager):
             # The application_id pragma would be used within the DDL schema.
             ddl_hash, = struct.unpack_from(
                 ">I", hashlib.md5(sql.encode()).digest())
-            self.pragma("user_version", ddl_hash)
+            self.__pragma("user_version", ddl_hash)
         if case_insensitive_like:
-            self.pragma("case_sensitive_like", False)
+            self.__pragma("case_sensitive_like", False)
         # Official recommendations!
-        self.pragma("foreign_keys", True)
-        self.pragma("recursive_triggers", True)
-        self.pragma("trusted_schema", False)
+        self.__pragma("foreign_keys", True)
+        self.__pragma("recursive_triggers", True)
+        self.__pragma("trusted_schema", False)
 
     def __del__(self):
         self.close()
@@ -144,7 +144,7 @@ class SQLiteDB(AbstractContextManager):
         except AttributeError:
             self.__db = None
 
-    def pragma(self, pragma_name, value):
+    def __pragma(self, pragma_name, value):
         """
         Set a database ``PRAGMA``. See the `SQLite PRAGMA documentation
         <https://www.sqlite.org/pragma.html>`_ for details.
