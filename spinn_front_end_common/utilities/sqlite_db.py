@@ -22,6 +22,8 @@ import sqlite3
 import struct
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.logger_utils import warn_once
+from spinn_front_end_common.utilities.exceptions import DatabaseException
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,6 +58,8 @@ class SQLiteDB(AbstractContextManager):
     """
 
     __slots__ = [
+        # the cursor object to use
+        "__cursor",
         # the database holding the data to store
         "__db",
     ]
@@ -130,6 +134,27 @@ class SQLiteDB(AbstractContextManager):
         self.__pragma("recursive_triggers", True)
         self.__pragma("trusted_schema", False)
 
+        self.__cursor = None
+
+    def _context_entered(self):
+        if self.__db is None:
+            raise DatabaseException("database has been closed")
+        if self.__cursor is not None:
+            raise DatabaseException("double cursor")
+        if not self.__db.in_transaction:
+            self.__db.execute("BEGIN")
+        self.__cursor = self.__db.cursor()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.__db is not None:
+            if exc_type is None:
+                self.__db.commit()
+            else:
+                self.__db.rollback()
+        self.__cursor = None
+        # calls close
+        return super().__exit__(exc_type, exc_val, exc_tb)
+
     def __del__(self):
         self.close()
 
@@ -167,29 +192,37 @@ class SQLiteDB(AbstractContextManager):
         else:
             raise TypeError("can only set pragmas to bool, int or str")
 
+    def execute(self, sql, paramters=()):
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.execute(sql, paramters)
+
+    def executemany(self, sql, paramters=()):
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.executemany(sql, paramters)
+
     @property
-    def connection(self):
-        """
-        The underlying SQLite database connection.
+    def lastrowid(self):
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.lastrowid
 
-        .. warning::
-            If you're using this a lot, consider contacting the SpiNNaker
-            Software Team with details of your use case so we can extend the
-            relevant core class to support you. *Normally* it is better to use
-            :py:meth:`transaction` to obtain a cursor with appropriate
-            transactional guards.
+    @property
+    def rowcount(self):
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.rowcount
 
-        :rtype: ~sqlite3.Connection
-        :raises AttributeError: if the database connection has been closed
-        """
-        warn_once(
-            logger,
-            "Low-level connection used instead of transaction() context. "
-            "Please contact SpiNNaker Software Team with your use-case for "
-            "assistance.")
-        if not self.__db:
-            raise AttributeError("database has been closed")
-        return self.__db
+    def get_cursor(self):
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor
 
     def transaction(self, isolation_level=None):
         """
