@@ -170,30 +170,6 @@ class SQLiteDB(AbstractContextManager):
         else:
             raise TypeError("can only set pragmas to bool, int or str")
 
-    @property
-    def connection(self):
-        """
-        The underlying SQLite database connection.
-
-        .. warning::
-            If you're using this a lot, consider contacting the SpiNNaker
-            Software Team with details of your use case so we can extend the
-            relevant core class to support you. *Normally* it is better to use
-            :py:meth:`transaction` to obtain a cursor with appropriate
-            transactional guards.
-
-        :rtype: ~sqlite3.Connection
-        :raises AttributeError: if the database connection has been closed
-        """
-        warn_once(
-            logger,
-            "Low-level connection used instead of transaction() context. "
-            "Please contact SpiNNaker Software Team with your use-case for "
-            "assistance.")
-        if not self.__db:
-            raise AttributeError("database has been closed")
-        return self.__db
-
     def start_transaction(self):
         """
         This starts a transaction which then allows the cursor to be obtained.
