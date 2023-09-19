@@ -171,6 +171,33 @@ class TestProvenanceDatabase(unittest.TestCase):
             data = db.messages()
         self.assertEqual(4, len(data))
 
+    def test_weird_case(self):
+        db1 = ProvenanceWriter()
+        # a commit with a transaction is not a problem
+        db1.commit()
+        db1.close()
+        # A second close is not a problem
+        db1.close()
+        # a commit after a close is ignored
+        db1.commit()
+
+        db2 = ProvenanceWriter()
+        with self.assertRaises(NotImplementedError):
+            # an insert_report outside of a with goes boom
+            db2.insert_report("een")
+
+        with ProvenanceWriter() as db3:
+            db3.insert_report("een")
+            with self.assertRaises(NotImplementedError):
+                # a direct close (no commit) goes boom
+                db3.close()
+
+        with ProvenanceWriter() as db4:
+            db4.insert_report("een")
+            # committing and closing inside the with is not an issue
+            db4.commit()
+            db4.close()
+
     def test_connector(self):
         with ProvenanceWriter() as db:
             db.insert_connector("the pre", "A post", "OneToOne", "foo", 12)

@@ -139,6 +139,9 @@ class SQLiteDB(AbstractContextManager):
         """
         try:
             if self.__db is not None:
+                if self.__db.in_transaction:
+                     raise NotImplementedError(
+                        "This call is illegal with an open transaction")
                 self.__db.close()
                 self.__db = None
         except AttributeError:
@@ -191,6 +194,49 @@ class SQLiteDB(AbstractContextManager):
             raise AttributeError("database has been closed")
         return self.__db
 
+    def start_transaction(self):
+        """
+        This starts a transaction which then allows the cursor to be obtained.
+
+        This requires that commit or rollback be called before close.
+        """
+        if self.__db is None:
+            raise AttributeError("database has been closed")
+        if not self.__db.in_transaction:
+            self.__db.execute("BEGIN")
+
+    def commit(self):
+        """
+        Does a commit on the database if a transaction is open.
+
+        Nothing happens if there is no open transaction or if the database
+        is already closed
+        """
+        if self.__db is not None:
+            self.__db.commit()
+
+    def rollback(self):
+        """
+        Does a rollback on the database if a transaction is open.
+
+        Nothing happens if there is no open transaction or if the database
+        is already closed
+        """
+        if self.__db is not None:
+            self.__db.rollback()
+
+    def cursor(self):
+        """
+        Gets the curosr for an open database and transaction
+
+        :rtype: ~typing.ContextManager(~sqlite3.Cursor)
+        :raises AttributeError: If the database connection has been closed
+        :raises  NotImplementedError: If no transaction open
+        """
+        if self.__db is None:
+            raise AttributeError("database has been closed")
+        return _CursorWrapper(self.__db)
+
     def transaction(self, isolation_level=None):
         """
         Get a context manager that manages a transaction on the database.
@@ -214,6 +260,20 @@ class SQLiteDB(AbstractContextManager):
         if isolation_level:
             db.isolation_level = isolation_level.value
         return _DbWrapper(db)
+
+
+class _CursorWrapper(ACMBase):
+    def __init__(self, db):
+        self.__d = db
+
+    def __enter__(self):
+        if self.__d.in_transaction:
+            return self.__d.cursor()
+        raise NotImplementedError(
+            "This call is only valid when a transaction is open")
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
 
 
 class _DbWrapper(ACMBase):

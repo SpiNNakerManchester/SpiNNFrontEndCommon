@@ -56,7 +56,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: Type of value
         :param float the_value: data
         """
-        with self.transaction() as cur:
+        with self.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO power_provenance(
@@ -77,7 +77,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param float the_value: data
         """
-        with self.transaction() as cur:
+        with self.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO gatherer_provenance(
@@ -94,7 +94,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction() as cur:
+        with self.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO monitor_provenance(
@@ -113,7 +113,7 @@ class ProvenanceWriter(BaseDatabase):
         :param float the_value: data
         :param bool expected: Flag to say this data was expected
         """
-        with self.transaction() as cur:
+        with self.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO router_provenance(
@@ -131,7 +131,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction() as cur:
+        with self.cursor() as cur:
             core_id = self._get_core_id(cur, x, y, p)
             cur.execute(
                 """
@@ -149,7 +149,7 @@ class ProvenanceWriter(BaseDatabase):
 
         :param str message:
         """
-        with self.transaction() as cur:
+        with self.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO reports(message)
@@ -204,6 +204,16 @@ class ProvenanceWriter(BaseDatabase):
                 VALUES (?, ?, ?)
                 """, ((x, y, ipaddress)
                       for ((x, y), ipaddress) in connections.items()))
+
+    def _context_entered(self):
+        self.start_transaction()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is None:
+            self.commit()
+        else:
+            self.rollback()
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
     def _test_log_locked(self, text):
         """
