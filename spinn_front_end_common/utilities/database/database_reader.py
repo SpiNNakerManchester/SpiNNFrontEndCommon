@@ -31,7 +31,7 @@ class DatabaseReader(SQLiteDB):
 
     def __exec_one(self, query, *args):
         with self.transaction() as cur:
-            cur.execute(query + " LIMIT 1", args)
+            cur._execute(query + " LIMIT 1", args)
             return cur.fetchone()
 
     @staticmethod
@@ -64,7 +64,7 @@ class DatabaseReader(SQLiteDB):
         with self.transaction() as cur:
             return {
                 row["event"]: row["atom"]
-                for row in cur.execute(
+                for row in cur._execute(
                     """
                     SELECT * FROM label_event_atom_view
                     WHERE label = ?
@@ -81,7 +81,7 @@ class DatabaseReader(SQLiteDB):
         with self.transaction() as cur:
             return {
                 row["atom"]: row["event"]
-                for row in cur.execute(
+                for row in cur._execute(
                     """
                     SELECT * FROM label_event_atom_view
                     WHERE label = ?
@@ -136,7 +136,7 @@ class DatabaseReader(SQLiteDB):
         """
         with self.transaction() as cur:
             return [
-                self.__xyp(row) for row in cur.execute(
+                self.__xyp(row) for row in cur._execute(
                     """
                     SELECT x, y, p FROM application_vertex_placements
                     WHERE vertex_label = ?
