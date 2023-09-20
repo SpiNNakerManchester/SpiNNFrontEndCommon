@@ -204,7 +204,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         logger.warning("this works")
         with GlobalProvenance() as db:
             db._test_log_locked("locked")
-            logger.warning("not locked")
+        logger.warning("not locked")
         logger.warning("this wis fine")
         # the use of class variables and tests run in parallel dont work.
         if "JENKINS_URL" not in os.environ:
