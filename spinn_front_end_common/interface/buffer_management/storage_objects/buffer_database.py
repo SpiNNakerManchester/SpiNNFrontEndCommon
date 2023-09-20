@@ -58,7 +58,7 @@ class BufferDatabase(BaseDatabase):
         :return: True if any region was changed
         :rtype: bool
         """
-        for row in self.execute(
+        for row in self._execute(
                 """
                 SELECT region_id FROM region_view
                 WHERE x = ? AND y = ? AND processor = ?
@@ -68,14 +68,14 @@ class BufferDatabase(BaseDatabase):
             break
         else:
             return False
-        self.execute(
+        self._execute(
             """
             UPDATE region SET
                 content = CAST('' AS BLOB), content_len = 0,
                 fetches = 0, append_time = NULL
             WHERE region_id = ?
             """, locus)
-        self.execute(
+        self._execute(
             """
             DELETE FROM region_extra WHERE region_id = ?
             """, locus)
@@ -86,7 +86,7 @@ class BufferDatabase(BaseDatabase):
         :param int region_id:
         :rtype: memoryview
         """
-        for row in self.execute(
+        for row in self._execute(
                 """
                 SELECT content
                 FROM region_view
@@ -99,7 +99,7 @@ class BufferDatabase(BaseDatabase):
             raise LookupError(f"no record for region {region_id}")
 
         c_buffer = None
-        for row in self.execute(
+        for row in self._execute(
                 """
                 SELECT r.content_len + (
                     SELECT SUM(x.content_len)
@@ -113,7 +113,7 @@ class BufferDatabase(BaseDatabase):
 
         if c_buffer is not None:
             idx = len(data)
-            for row in self.execute(
+            for row in self._execute(
                     """
                     SELECT content FROM region_extra
                     WHERE region_id = ? ORDER BY extra_id ASC
@@ -131,7 +131,7 @@ class BufferDatabase(BaseDatabase):
         :param int p:
         :param int region:
         """
-        for row in self.execute(
+        for row in self._execute(
                 """
                 SELECT region_id FROM region_view
                 WHERE x = ? AND y = ? AND processor = ?
@@ -140,13 +140,13 @@ class BufferDatabase(BaseDatabase):
                 """, (x, y, p, region)):
             return row["region_id"]
         core_id = self._get_core_id(x, y, p)
-        self.execute(
+        self._execute(
             """
             INSERT INTO region(
                 core_id, local_region_index, content, content_len, fetches)
             VALUES(?, ?, CAST('' AS BLOB), 0, 0)
             """, (core_id, region))
-        return self.lastrowid
+        return self._lastrowid
 
     def store_data_in_region_buffer(self, x, y, p, region, missing, data):
         """
@@ -169,7 +169,7 @@ class BufferDatabase(BaseDatabase):
         datablob = sqlite3.Binary(data)
         region_id = self._get_region_id(x, y, p, region)
         if self.__use_main_table(region_id):
-            self.execute(
+            self._execute(
                 """
                 UPDATE region SET
                     content = CAST(? AS BLOB),
@@ -179,27 +179,27 @@ class BufferDatabase(BaseDatabase):
                 WHERE region_id = ?
                 """, (datablob, len(data), _timestamp(), region_id))
         else:
-            self.execute(
+            self._execute(
                 """
                 UPDATE region SET
                     fetches = fetches + 1,
                     append_time = ?
                 WHERE region_id = ?
                 """, (_timestamp(), region_id))
-            assert self.rowcount == 1
-            self.execute(
+            assert self._rowcount == 1
+            self._execute(
                 """
                 INSERT INTO region_extra(
                     region_id, content, content_len)
                 VALUES (?, CAST(? AS BLOB), ?)
                 """, (region_id, datablob, len(data)))
-        assert self.rowcount == 1
+        assert self._rowcount == 1
 
     def __use_main_table(self, region_id):
         """
         :param int region_id:
         """
-        for row in self.execute(
+        for row in self._execute(
                 """
                 SELECT COUNT(*) AS existing FROM region
                 WHERE region_id = ? AND fetches = 0
@@ -249,7 +249,7 @@ class BufferDatabase(BaseDatabase):
             job = mac._job
             if isinstance(job, SpallocJob):
                 config = job.get_session_credentials_for_db()
-                self.executemany("""
+                self._executemany("""
                     INSERT INTO proxy_configuration(kind, name, value)
                     VALUES(?, ?, ?)
                     """, [(k1, k2, v) for (k1, k2), v in config.items()])
@@ -262,13 +262,13 @@ class BufferDatabase(BaseDatabase):
         :param str core_name:
         """
         try:
-            self.execute(
+            self._execute(
                 """
                 INSERT INTO core (x, y, processor, core_name)
                 VALUES (?, ?, ? ,?)
                 """, (x, y, p, core_name))
         except sqlite3.IntegrityError:
-            self.execute(
+            self._execute(
                 """
                 UPDATE core SET core_name = ?
                 WHERE x = ? AND y = ? and processor = ?
@@ -286,7 +286,7 @@ class BufferDatabase(BaseDatabase):
                         f"SCAMP(OS)_{chip.x}:{chip.y}")
 
     def get_core_name(self, x, y, p):
-        for row in self.execute(
+        for row in self._execute(
                 """
                 SELECT core_name
                 FROM core
