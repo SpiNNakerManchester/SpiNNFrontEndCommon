@@ -193,12 +193,28 @@ class SQLiteDB(AbstractContextManager):
             raise TypeError("can only set pragmas to bool, int or str")
 
     def _execute(self, sql, paramters=()):
+        """
+        Executes a query by passing it to the database
+
+        :param str sql:
+        :param paramters:
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
+        """
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
         return self.__cursor.execute(sql, paramters)
 
     def _executemany(self, sql, paramters=()):
+        """
+        Repeatedly executes a query by passing it to the database
+
+        :param str sql:
+        :param paramters:
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
+        """
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
@@ -206,6 +222,13 @@ class SQLiteDB(AbstractContextManager):
 
     @property
     def _lastrowid(self):
+        """
+        Gets the lastrow from the last query run
+
+        :rtype: int
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
+        """
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
@@ -213,49 +236,26 @@ class SQLiteDB(AbstractContextManager):
 
     @property
     def _rowcount(self):
+        """
+        Gets the rowcount from the last query run
+
+        :rtype: int
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
+        """
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
         return self.__cursor.rowcount
 
     def _fetchone(self):
+        """
+        Gets the fetchone from the last query run
+
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
+        """
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
         return self.__cursor.fetchone()
-
-    def transaction(self, isolation_level=None):
-        """
-        Get a context manager that manages a transaction on the database.
-        The value of the context manager is a :py:class:`~sqlite3.Cursor`.
-        This means you can do this::
-
-            with db.transaction() as cursor:
-                cursor.execute(...)
-
-        :param Isolation isolation_level:
-            The transaction isolation level.
-
-            .. note::
-                This sets it for the connection!
-                Can usually be *not* specified.
-        :rtype: ~typing.ContextManager(~sqlite3.Cursor)
-        """
-        if not self.__db:
-            raise AttributeError("database has been closed")
-        db = self.__db
-        if isolation_level:
-            db.isolation_level = isolation_level.value
-        return _DbWrapper(db)
-
-
-class _DbWrapper(ACMBase):
-    def __init__(self, db):
-        self.__d = db
-
-    def __enter__(self):
-        self.__d.__enter__()
-        return self.__d.cursor()
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        return self.__d.__exit__(exc_type, exc_value, traceback)
