@@ -196,27 +196,27 @@ class SQLiteDB(AbstractContextManager):
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
-        return self.__cursor._execute(sql, paramters)
+        return self.__cursor.execute(sql, paramters)
 
     def _executemany(self, sql, paramters=()):
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
-        return self.__cursor._executemany(sql, paramters)
+        return self.__cursor.executemany(sql, paramters)
 
     @property
     def _lastrowid(self):
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
-        return self.__cursor._lastrowid
+        return self.__cursor.lastrowid
 
     @property
     def _rowcount(self):
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
-        return self.__cursor._rowcount
+        return self.__cursor.rowcount
 
     def transaction(self, isolation_level=None):
         """
