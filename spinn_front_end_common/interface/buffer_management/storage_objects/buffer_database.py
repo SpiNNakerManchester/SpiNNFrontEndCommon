@@ -248,12 +248,11 @@ class BufferDatabase(BaseDatabase):
             # can't check that because of import circularity.
             job = mac._job
             if isinstance(job, SpallocJob):
-                with self.get_cursor as cur:
-                    config = job.get_session_credentials_for_db()
-                    cur.executemany("""
-                        INSERT INTO proxy_configuration(kind, name, value)
-                        VALUES(?, ?, ?)
-                        """, [(k1, k2, v) for (k1, k2), v in config.items()])
+                config = job.get_session_credentials_for_db()
+                self.executemany("""
+                    INSERT INTO proxy_configuration(kind, name, value)
+                    VALUES(?, ?, ?)
+                    """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
     def _set_core_name(self, x, y, p, core_name):
         """
