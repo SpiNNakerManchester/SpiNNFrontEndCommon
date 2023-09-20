@@ -77,7 +77,8 @@ class _GraphDataSpecificationWriter(object):
             else:
                 n_placements = len(placement_order)
 
-            progress = ProgressBar(n_placements, "Generating data specifications")
+            progress = ProgressBar(
+                n_placements, "Generating data specifications")
             vertices_to_reset = list()
 
             for placement in progress.over(placement_order):

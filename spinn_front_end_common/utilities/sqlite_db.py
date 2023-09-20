@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from contextlib import AbstractContextManager as ACMBase
 import enum
 import hashlib
 import logging
@@ -21,7 +20,6 @@ import pathlib
 import sqlite3
 import struct
 from spinn_utilities.abstract_context_manager import AbstractContextManager
-from spinn_utilities.logger_utils import warn_once
 from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = logging.getLogger(__name__)

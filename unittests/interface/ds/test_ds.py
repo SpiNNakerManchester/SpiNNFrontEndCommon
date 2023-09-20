@@ -270,7 +270,8 @@ class TestDataSpecification(unittest.TestCase):
             self.assertIsNone(pointer)
             self.assertEqual(3 * 4, len(content))
             self.assertEqual(
-                bytearray(b'\x0c\x00\x00\x00"\x00\x00\x008\x00\x00\x00'), content)
+                bytearray(b'\x0c\x00\x00\x00"\x00\x00\x008\x00\x00\x00'),
+                content)
 
             pcs = list(db.get_region_pointers_and_content(0, 1, 6))
             self.assertEqual(0, len(pcs))
@@ -279,7 +280,8 @@ class TestDataSpecification(unittest.TestCase):
             size2 = APP_PTR_TABLE_BYTE_SIZE + 100 + 123456
             size3 = APP_PTR_TABLE_BYTE_SIZE + 444
             self.assertIn(((0, 1, 2), None, size2, 404), info)
-            self.assertIn(((0, 1, 3), None, size3, APP_PTR_TABLE_BYTE_SIZE), info)
+            self.assertIn(
+                ((0, 1, 3), None, size3, APP_PTR_TABLE_BYTE_SIZE), info)
 
             with self.assertRaises(DsDatabaseException):
                 db.set_region_content(

@@ -58,7 +58,7 @@ def regenerate_data_spec(placement, ds_database):
 
     # build the file writer for the spec
     reloader = DataSpecificationReloader(
-        placement.x, placement.y, placement.p, ds_database)
+        placement.x, placement.y, placement.p, ds_database, report_writer)
 
     # Execute the regeneration
     vertex.regenerate_data_specification(reloader, placement)

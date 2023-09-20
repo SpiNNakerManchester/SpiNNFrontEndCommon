@@ -49,7 +49,8 @@ def memory_map_on_host_chip_report():
                     _describe_mem_map(f, transceiver, x, y, p)
             except IOError:
                 logger.exception(
-                    "Generate_placement_reports: Can't open file {} for writing.",
+                    "Generate_placement_reports: "
+                    "Can't open file {} for writing.",
                     file_name)
 
 
