@@ -600,7 +600,7 @@ class DsSqlliteDatabase(SQLiteDB):
             # can't check that because of import circularity.
             job = mac._job
             if isinstance(job, SpallocJob):
-                config = job.get_session_credentials_for_db
+                config = job.get_session_credentials_for_db()
                 self._executemany("""
                     INSERT INTO proxy_configuration(kind, name, value)
                     VALUES(?, ?, ?)
