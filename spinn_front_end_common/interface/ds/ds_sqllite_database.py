@@ -221,7 +221,6 @@ class DsSqlliteDatabase(SQLiteDB):
                 x, y, p, region_num, reference_num, ref_label)
             VALUES(?, ?, ?, ?, ?, ?)
             """, (x, y, p, region_num, reference, ref_label))
-        print(f"{x=} {y=} {p=}")
         assert (self._rowcount == 1)
 
     def get_reference_pointers(self, x, y, p):
@@ -305,29 +304,28 @@ class DsSqlliteDatabase(SQLiteDB):
         :type content_debug: str or None
         :raises DsDatabaseException: If the region already has content
         """
-        with self.transaction() as cursor:
-            # check for previous content
-            for row in cursor.execute(
-                    """
-                    SELECT content
-                    FROM region
-                    WHERE x = ? AND y = ? and p = ? and region_num = ?
-                    LIMIT 1
-                     """, (x, y, p, region_num)):
-                if row["content"]:
-                    raise DsDatabaseException(
-                        f"Illegal attempt to overwrite content for "
-                        f"{x=} {y=} {p=} {region_num=}")
-
-            cursor.execute(
+        # check for previous content
+        for row in self._execute(
                 """
-                UPDATE region
-                SET content = ?, content_debug = ?
+                SELECT content
+                FROM region
                 WHERE x = ? AND y = ? and p = ? and region_num = ?
-                """, (content, content_debug, x, y, p, region_num))
-            if cursor.rowcount == 0:
+                LIMIT 1
+                 """, (x, y, p, region_num)):
+            if row["content"]:
                 raise DsDatabaseException(
-                    f"No region {x=} {y=} {p=} {region_num=}")
+                    f"Illegal attempt to overwrite content for "
+                    f"{x=} {y=} {p=} {region_num=}")
+
+        self._execute(
+            """
+            UPDATE region
+            SET content = ?, content_debug = ?
+            WHERE x = ? AND y = ? and p = ? and region_num = ?
+            """, (content, content_debug, x, y, p, region_num))
+        if self._rowcount == 0:
+            raise DsDatabaseException(
+                f"No region {x=} {y=} {p=} {region_num=}")
 
     def get_region_pointer(self, x, y, p, region_num):
         """
@@ -446,16 +444,15 @@ class DsSqlliteDatabase(SQLiteDB):
         raise DsDatabaseException(f"No core {x=} {y=} {p=}")
 
     def set_region_pointer(self, x, y, p, region_num, pointer):
-        with self.transaction() as cursor:
-            cursor.execute(
-                """
-                UPDATE region
-                SET pointer = ?
-                WHERE x = ? AND y = ? and p = ? and region_num = ?
-                """, (pointer, x, y, p, region_num))
-            if cursor.rowcount == 0:
-                raise DsDatabaseException(
-                    f"No region {x=} {y=} {p=} {region_num=}")
+        self._execute(
+            """
+            UPDATE region
+            SET pointer = ?
+            WHERE x = ? AND y = ? and p = ? and region_num = ?
+            """, (pointer, x, y, p, region_num))
+        if self._rowcount == 0:
+            raise DsDatabaseException(
+                f"No region {x=} {y=} {p=} {region_num=}")
 
     def get_region_pointers_and_content(self, x, y, p):
         """
@@ -603,12 +600,11 @@ class DsSqlliteDatabase(SQLiteDB):
             # can't check that because of import circularity.
             job = mac._job
             if isinstance(job, SpallocJob):
-                with self.transaction() as cur:
-                    config = job.get_session_credentials_for_db
-                    cur.executemany("""
-                        INSERT INTO proxy_configuration(kind, name, value)
-                        VALUES(?, ?, ?)
-                        """, [(k1, k2, v) for (k1, k2), v in config.items()])
+                config = job.get_session_credentials_for_db
+                self._executemany("""
+                    INSERT INTO proxy_configuration(kind, name, value)
+                    VALUES(?, ?, ?)
+                    """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
     def set_app_id(self):
         """

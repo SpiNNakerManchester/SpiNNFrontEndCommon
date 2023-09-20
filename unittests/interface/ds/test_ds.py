@@ -196,7 +196,6 @@ class TestDataSpecification(unittest.TestCase):
             dsg4 = DataSpecificationGenerator(1, 1, 4, vertex, db)
             dsg4.reference_memory_region(8, 3, "oops")
 
-        with DsSqlliteDatabase() as db:
             with self.assertRaises(DsDatabaseException):
                 db.set_start_address(1, 3, 4, 123)
 
