@@ -14,6 +14,7 @@
 
 from collections import defaultdict
 import logging
+import os
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -35,11 +36,13 @@ def graph_data_specification_writer(placement_order=None):
     """
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
+    :return: Path to DSG targets database
+    :rtype: str
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
     writer = _GraphDataSpecificationWriter()
-    writer.run(placement_order)
+    return writer.run(placement_order)
 
 
 class _GraphDataSpecificationWriter(object):
@@ -61,13 +64,16 @@ class _GraphDataSpecificationWriter(object):
         """
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
-        :return: DSG targets
+        :return: Path to DSG targets database
+        :rtype: str
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        with DsSqlliteDatabase() as ds_db:
+        path = os.path.join(FecDataView.get_run_dir_path(),
+                            f"ds{FecDataView.get_reset_str()}.sqlite3")
+        with DsSqlliteDatabase(path) as ds_db:
             ds_db.write_session_credentials_to_db()
             ds_db. set_app_id()
 
@@ -106,6 +112,7 @@ class _GraphDataSpecificationWriter(object):
                 vertex.set_reload_required(False)
 
             self._run_check_queries(ds_db)
+        return path
 
     def __generate_data_spec_for_vertices(self, pl, vertex, ds_db):
         """

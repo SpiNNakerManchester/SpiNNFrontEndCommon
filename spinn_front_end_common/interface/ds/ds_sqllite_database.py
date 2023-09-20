@@ -40,8 +40,9 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     __slots__ = ["_init_file"]
 
-    def __init__(self):
-        database_file = self.default_database_file()
+    def __init__(self, database_file=None):
+        if database_file is None:
+            database_file = FecDataView.get_ds_database_path()
 
         self._init_file = not os.path.exists(database_file)
 
@@ -53,17 +54,6 @@ class DsSqlliteDatabase(SQLiteDB):
         if self._init_file:
             self.__init_ethernets()
             self._init_file = False
-
-    @classmethod
-    def default_database_file(cls):
-        """
-        Gets the path to the default/ current database file
-
-        :rtype: str
-        :return: Path where the database is or should be written
-        """
-        return os.path.join(FecDataView.get_run_dir_path(),
-                            f"ds{FecDataView.get_reset_str()}.sqlite3")
 
     def __init_ethernets(self):
         """

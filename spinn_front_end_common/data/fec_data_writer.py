@@ -478,6 +478,17 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("executable_targets must be a ExecutableTargets")
         self.__fec_data._executable_targets = executable_targets
 
+    def set_ds_database_path(self, ds_database_path):
+        """
+        Sets the Data Spec targets database.
+        :type ds_database:
+            ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
+        """
+        if not os.path.isfile(ds_database_path):
+            raise TypeError("ds_database path must be a filee")
+
+        self.__fec_data._ds_database_path = ds_database_path
+
     def __gatherer_map_error(self):
         return TypeError(
             "gatherer_map must be a dict((int, int), "
