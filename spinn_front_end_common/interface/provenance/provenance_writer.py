@@ -56,7 +56,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: Type of value
         :param float the_value: data
         """
-        self.execute(
+        self._execute(
             """
             INSERT INTO power_provenance(
                 description, the_value)
@@ -76,7 +76,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param float the_value: data
         """
-        self.execute(
+        self._execute(
             """
             INSERT INTO gatherer_provenance(
                 x, y, address, bytes, run, description, the_value)
@@ -92,7 +92,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        self.execute(
+        self._execute(
             """
             INSERT INTO monitor_provenance(
                 x, y, description, the_value)
@@ -110,7 +110,7 @@ class ProvenanceWriter(BaseDatabase):
         :param float the_value: data
         :param bool expected: Flag to say this data was expected
         """
-        self.execute(
+        self._execute(
             """
             INSERT INTO router_provenance(
                 x, y, description, the_value, expected)
@@ -128,7 +128,7 @@ class ProvenanceWriter(BaseDatabase):
         :param int the_value: data
         """
         core_id = self._get_core_id(x, y, p)
-        self.execute(
+        self._execute(
             """
             INSERT INTO core_provenance(
                 core_id, description, the_value)
@@ -144,12 +144,12 @@ class ProvenanceWriter(BaseDatabase):
 
         :param str message:
         """
-        self.execute(
+        self._execute(
             """
             INSERT INTO reports(message)
             VALUES(?)
             """, [message])
-        recorded = self.lastrowid
+        recorded = self._lastrowid
         cutoff = get_config_int_or_none("Reports", "provenance_report_cutoff")
         if cutoff is None or recorded < cutoff:
             logger.warning(message)
@@ -169,7 +169,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        self.execute(
+        self._execute(
             """
             INSERT OR IGNORE INTO connector_provenance(
                 pre_population, post_population, the_type, description,
@@ -189,7 +189,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not connections:
             return
-        self.executemany(
+        self._executemany(
             """
             INSERT OR IGNORE INTO boards_provenance(
             ethernet_x, ethernet_y, ip_addres)
