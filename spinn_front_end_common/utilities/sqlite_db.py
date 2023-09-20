@@ -218,6 +218,12 @@ class SQLiteDB(AbstractContextManager):
                 "This method should only be used inside a with")
         return self.__cursor.rowcount
 
+    def _fetchone(self):
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.fetchone()
+
     def transaction(self, isolation_level=None):
         """
         Get a context manager that manages a transaction on the database.
