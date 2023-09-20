@@ -27,7 +27,7 @@ def reload_dsg_regions():
     """
     progress = ProgressBar(
         FecDataView.get_n_placements(), "Reloading data")
-    with DsSqlliteDatabase as ds_database:
+    with DsSqlliteDatabase() as ds_database:
         for placement in progress.over(FecDataView.iterate_placemements()):
             # Generate the data spec for the placement if needed
             regenerate_data_spec(placement, ds_database)
@@ -58,7 +58,7 @@ def regenerate_data_spec(placement, ds_database):
 
     # build the file writer for the spec
     reloader = DataSpecificationReloader(
-        placement.x, placement.y, placement.p, db)
+        placement.x, placement.y, placement.p, ds_database)
 
     # Execute the regeneration
     vertex.regenerate_data_specification(reloader, placement)
