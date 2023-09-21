@@ -68,7 +68,7 @@ class Plotter(object):
         # Does the query in one of two ways, depending on schema version
         if self.__have_insertion_order:
             try:
-                return self._db._execute("""
+                return self._db.execute("""
                     SELECT source_name AS "source", x, y,
                         description_name AS "description",
                         the_value AS "value"
@@ -81,7 +81,7 @@ class Plotter(object):
                 if "no such column: insertion_order" != str(e):
                     raise
                 self.__have_insertion_order = False
-        return self._db._execute("""
+        return self._db.execute("""
             SELECT source_name AS "source", x, y,
                 description_name AS "description",
                 MAX(the_value) AS "value"
@@ -96,7 +96,7 @@ class Plotter(object):
             FROM provenance_view
             WHERE x IS NOT NULL AND p IS NULL AND "description" IS NOT NULL
             """
-        return frozenset(row["description"] for row in self._db._execute(
+        return frozenset(row["description"] for row in self._db.execute(
             query))
 
     def get_per_chip_prov_details(self, info):
@@ -123,7 +123,7 @@ class Plotter(object):
         # Does the query in one of two ways, depending on schema version
         if self.__have_insertion_order:
             try:
-                return self._db._execute("""
+                return self._db.execute("""
                     SELECT "source", x, y, "description",
                         SUM("value") AS "value"
                     FROM (
@@ -140,7 +140,7 @@ class Plotter(object):
                 if "no such column: insertion_order" != str(e):
                     raise
                 self.__have_insertion_order = False
-        return self._db._execute("""
+        return self._db.execute("""
             SELECT "source", x, y, "description",
                 SUM("value") AS "value"
             FROM (
@@ -160,7 +160,7 @@ class Plotter(object):
             WHERE x IS NOT NULL AND p IS NOT NULL
                 AND "description" IS NOT NULL
             """
-        return frozenset(row["description"] for row in self._db._execute(
+        return frozenset(row["description"] for row in self._db.execute(
             query))
 
     def get_sum_chip_prov_details(self, info):

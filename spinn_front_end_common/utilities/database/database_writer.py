@@ -99,8 +99,8 @@ class DatabaseWriter(SQLiteDB):
         :rtype: int
         """
         try:
-            self._execute(sql, args)
-            return self._lastrowid
+            self.execute(sql, args)
+            return self.lastrowid
         except Exception:
             logger.exception("problem with insertion; argument types are {}",
                              str(map(type, args)))
@@ -117,7 +117,7 @@ class DatabaseWriter(SQLiteDB):
                 x_dimension, y_dimension)
             VALUES(?, ?)
             """, machine.width, machine.height)
-        self._executemany(
+        self.executemany(
             """
             INSERT INTO Machine_chip(
                 no_processors, chip_x, chip_y, machine_id,
@@ -162,7 +162,7 @@ class DatabaseWriter(SQLiteDB):
 
         :param int runtime: the amount of time the application is to run for
         """
-        self._executemany(
+        self.executemany(
             """
             INSERT INTO configuration_parameters (
                 parameter_id, value)
@@ -190,7 +190,7 @@ class DatabaseWriter(SQLiteDB):
             job = mac._job
             if isinstance(job, SpallocJob):
                 config = job.get_session_credentials_for_db()
-                self._executemany("""
+                self.executemany("""
                     INSERT INTO proxy_configuration(kind, name, value)
                     VALUES(?, ?, ?)
                     """, [(k1, k2, v) for (k1, k2), v in config.items()])
@@ -204,7 +204,7 @@ class DatabaseWriter(SQLiteDB):
             if placement.vertex not in self.__vertex_to_id:
                 self.__add_machine_vertex(placement.vertex)
         # add records
-        self._executemany(
+        self.executemany(
             """
             INSERT INTO Placements(
                 vertex_id, chip_x, chip_y, chip_p, machine_id)
@@ -219,7 +219,7 @@ class DatabaseWriter(SQLiteDB):
         Adds the tags into the database.
         """
         tags = FecDataView.get_tags()
-        self._executemany(
+        self.executemany(
             """
             INSERT INTO IP_tags(
                 vertex_id, tag, board_address, ip_address, port,
@@ -256,7 +256,7 @@ class DatabaseWriter(SQLiteDB):
                     start = vertex_slice.lo_atom
                     atom_keys = [(i, k) for i, k in enumerate(keys, start)]
             m_vertex_id = self.__vertex_to_id[m_vertex]
-            self._executemany(
+            self.executemany(
                 """
                 INSERT INTO event_to_atom_mapping(
                     vertex_id, event_id, atom_id)
@@ -297,7 +297,7 @@ class DatabaseWriter(SQLiteDB):
                        for (m_vertex, part_id, lpg_m_vertex) in
                        self._get_machine_lpg_mappings(part))
 
-        self._executemany(
+        self.executemany(
             """
             INSERT INTO m_vertex_to_lpg_vertex(
                 pre_vertex_id, partition_id, post_vertex_id)

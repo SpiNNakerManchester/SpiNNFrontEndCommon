@@ -30,8 +30,8 @@ class DatabaseReader(SQLiteDB):
         self.__looked_for_job = False
 
     def __exec_one(self, query, *args):
-        self._execute(query + " LIMIT 1", args)
-        return self._fetchone()
+        self.execute(query + " LIMIT 1", args)
+        return self.fetchone()
 
     @staticmethod
     def __r2t(row, *args):
@@ -51,7 +51,7 @@ class DatabaseReader(SQLiteDB):
             job_url = None
             cookies = {}
             headers = {}
-            for row in self._execute("""
+            for row in self.execute("""
                     SELECT kind, name, value FROM proxy_configuration
                     """):
                 kind, name, value = row
@@ -82,7 +82,7 @@ class DatabaseReader(SQLiteDB):
         """
         return {
             row["event"]: row["atom"]
-            for row in self._execute(
+            for row in self.execute(
                 """
                 SELECT * FROM label_event_atom_view
                 WHERE label = ?
@@ -98,7 +98,7 @@ class DatabaseReader(SQLiteDB):
         """
         return {
             row["atom"]: row["event"]
-            for row in self._execute(
+            for row in self.execute(
                 """
                 SELECT * FROM label_event_atom_view
                 WHERE label = ?
@@ -152,7 +152,7 @@ class DatabaseReader(SQLiteDB):
         :rtype: list(tuple(int, int, int))
         """
         return [
-            self.__xyp(row) for row in self._execute(
+            self.__xyp(row) for row in self.execute(
                 """
                 SELECT x, y, p FROM application_vertex_placements
                 WHERE vertex_label = ?

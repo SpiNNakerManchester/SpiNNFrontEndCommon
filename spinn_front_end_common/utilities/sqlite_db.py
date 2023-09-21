@@ -190,7 +190,7 @@ class SQLiteDB(AbstractContextManager):
         else:
             raise TypeError("can only set pragmas to bool, int or str")
 
-    def _execute(self, sql, paramters=()):
+    def execute(self, sql, paramters=()):
         """
         Executes a query by passing it to the database
 
@@ -204,7 +204,7 @@ class SQLiteDB(AbstractContextManager):
                 "This method should only be used inside a with")
         return self.__cursor.execute(sql, paramters)
 
-    def _executemany(self, sql, paramters=()):
+    def executemany(self, sql, paramters=()):
         """
         Repeatedly executes a query by passing it to the database
 
@@ -219,9 +219,9 @@ class SQLiteDB(AbstractContextManager):
         return self.__cursor.executemany(sql, paramters)
 
     @property
-    def _lastrowid(self):
+    def lastrowid(self):
         """
-        Gets the lastrow from the last query run
+        Gets the lastrow from the last query run/ execute
 
         :rtype: int
         :raises DatabaseException: If there is no cursor.
@@ -233,9 +233,9 @@ class SQLiteDB(AbstractContextManager):
         return self.__cursor.lastrowid
 
     @property
-    def _rowcount(self):
+    def rowcount(self):
         """
-        Gets the rowcount from the last query run
+        Gets the rowcount from the last query run/ execute
 
         :rtype: int
         :raises DatabaseException: If there is no cursor.
@@ -246,7 +246,7 @@ class SQLiteDB(AbstractContextManager):
                 "This method should only be used inside a with")
         return self.__cursor.rowcount
 
-    def _fetchone(self):
+    def fetchone(self):
         """
         Gets the fetchone from the last query run
 

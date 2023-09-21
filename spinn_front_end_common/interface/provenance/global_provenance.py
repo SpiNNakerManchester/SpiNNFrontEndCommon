@@ -87,7 +87,7 @@ class GlobalProvenance(SQLiteDB):
         :param str description: The package for which the version applies
         :param str the_value: The version to be recorded
         """
-        self._execute(
+        self.execute(
             """
             INSERT INTO version_provenance(
                 description, the_value)
@@ -102,7 +102,7 @@ class GlobalProvenance(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        self._execute(
+        self.execute(
             """
             INSERT INTO category_timer_provenance(
                 category, machine_on, n_run, n_loop)
@@ -111,7 +111,7 @@ class GlobalProvenance(SQLiteDB):
             [category.category_name, machine_on,
              FecDataView.get_run_number(),
              FecDataView.get_run_step()])
-        return self._lastrowid
+        return self.lastrowid
 
     def insert_category_timing(self, category_id, timedelta):
         """
@@ -124,7 +124,7 @@ class GlobalProvenance(SQLiteDB):
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
-        self._execute(
+        self.execute(
             """
             UPDATE category_timer_provenance
             SET
@@ -148,7 +148,7 @@ class GlobalProvenance(SQLiteDB):
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        self._execute(
+        self.execute(
             """
             INSERT INTO timer_provenance(
                 category_id, algorithm, work, time_taken, skip_reason)
@@ -165,7 +165,7 @@ class GlobalProvenance(SQLiteDB):
         """
         if timestamp is None:
             timestamp = datetime.now()
-        self._execute(
+        self.execute(
             """
             INSERT INTO p_log_provenance(
                 timestamp, level, message)
@@ -180,7 +180,7 @@ class GlobalProvenance(SQLiteDB):
         This will lock the database and then try to do a log
         """
         # lock the database
-        self._execute(
+        self.execute(
             """
             INSERT INTO version_provenance(
                 description, the_value)
@@ -220,7 +220,7 @@ class GlobalProvenance(SQLiteDB):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
-        for row in self._execute(query, params):
+        for row in self.execute(query, params):
             results.append(row)
         return results
 

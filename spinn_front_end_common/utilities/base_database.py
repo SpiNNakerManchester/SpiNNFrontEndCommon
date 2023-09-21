@@ -75,15 +75,15 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
         :param int p:
         :rtype: int
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT core_id FROM core
                 WHERE x = ? AND y = ? AND processor = ?
                 LIMIT 1
                 """, (x, y, p)):
             return row["core_id"]
-        self._execute(
+        self.execute(
             """
             INSERT INTO core(x, y, processor) VALUES(?, ?, ?)
             """, (x, y, p))
-        return self._lastrowid
+        return self.lastrowid

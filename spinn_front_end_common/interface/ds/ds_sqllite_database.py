@@ -60,7 +60,7 @@ class DsSqlliteDatabase(SQLiteDB):
         Set up the database contents from the machine.
         """
         eth_chips = FecDataView.get_machine().ethernet_connected_chips
-        self._executemany(
+        self.executemany(
             """
             INSERT INTO ethernet(
                 ethernet_x, ethernet_y, ip_address)
@@ -94,7 +94,7 @@ class DsSqlliteDatabase(SQLiteDB):
             is_system = 1
         else:
             is_system = 0
-        self._execute(
+        self.execute(
             """
             INSERT INTO core(x, y, p, is_system)
             VALUES(?, ?, ?, ?)
@@ -113,7 +113,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: list(int, int, int, int, int, int)
         """
         core_infos = []
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT x, y, p, ethernet_x, ethernet_y
                 FROM core_view
@@ -131,7 +131,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int y:
         """
         # skip if it already exists
-        for _ in self._execute(
+        for _ in self.execute(
                 """
                 SELECT x
                 FROM chip
@@ -140,7 +140,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 """, (x, y)):
             return
         chip = FecDataView().get_chip_at(x, y)
-        self._execute(
+        self.execute(
             """
             INSERT INTO chip(x, y, ethernet_x, ethernet_y) VALUES(?, ?, ?, ?)
             """, (x, y, chip.nearest_ethernet_x, chip.nearest_ethernet_y))
@@ -164,13 +164,13 @@ class DsSqlliteDatabase(SQLiteDB):
         :param label:
         :return:
         """
-        self._execute(
+        self.execute(
             """
             INSERT INTO region(
                 x, y, p, region_num, size, reference_num, region_label)
             VALUES(?, ?, ?, ?, ?, ?, ?)
             """, (x, y, p, region_num, size, reference, label))
-        return self._lastrowid
+        return self.lastrowid
 
     def get_region_size(self, x, y, p, region_num):
         """
@@ -183,7 +183,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: The database id for this region and the size in bytes
         :rtype: int
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT size
                 FROM region
@@ -205,13 +205,13 @@ class DsSqlliteDatabase(SQLiteDB):
         :param ref_label: label for the referencing region
         :type ref_label: str or None
         """
-        self._execute(
+        self.execute(
             """
             INSERT INTO reference(
                 x, y, p, region_num, reference_num, ref_label)
             VALUES(?, ?, ?, ?, ?, ?)
             """, (x, y, p, region_num, reference, ref_label))
-        assert (self._rowcount == 1)
+        assert (self.rowcount == 1)
 
     def get_reference_pointers(self, x, y, p):
         """
@@ -229,7 +229,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: Yields the referencing vertex region number and the pointer
         :rtype: iterable(tuple(int,int))
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT ref_region, pointer
                 FROM linked_reference_view
@@ -249,7 +249,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: x, y, p, region, reference, label for all unlinked references
         :rtype: iterable(tuple(int, int, int, int, int, str))
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT  x, y, ref_p, ref_region, reference_num,
                     COALESCE(ref_label, "") as ref_label
@@ -272,7 +272,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: x, y, p
         :rtype: iterable(tuple(int, int, int))
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT x, y, p, region_num
                 FROM pointer_content_view
@@ -295,7 +295,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :raises DsDatabaseException: If the region already has content
         """
         # check for previous content
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT content
                 FROM region
@@ -307,13 +307,13 @@ class DsSqlliteDatabase(SQLiteDB):
                     f"Illegal attempt to overwrite content for "
                     f"{x=} {y=} {p=} {region_num=}")
 
-        self._execute(
+        self.execute(
             """
             UPDATE region
             SET content = ?, content_debug = ?
             WHERE x = ? AND y = ? and p = ? and region_num = ?
             """, (content, content_debug, x, y, p, region_num))
-        if self._rowcount == 0:
+        if self.rowcount == 0:
             raise DsDatabaseException(
                 f"No region {x=} {y=} {p=} {region_num=}")
 
@@ -332,7 +332,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int or None
         :raises DsDatabaseException: if the region is not known
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT pointer
                 FROM region
@@ -356,7 +356,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: dict(int, int)
         """
         regions = dict()
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT region_num, size
                 FROM region
@@ -381,7 +381,7 @@ class DsSqlliteDatabase(SQLiteDB):
             or 0 if there are no regions for this core
         :rtype: int
         """
-        for row in self._execute(
+        for row in self.execute(
             """
                 SELECT COALESCE(sum(size), 0) as total
                 FROM region
@@ -403,13 +403,13 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException: if the region is not known
         """
-        self._execute(
+        self.execute(
             """
             UPDATE core
             SET start_address = ?
             WHERE x = ? AND y = ? AND p = ?
             """, (start_address, x, y, p))
-        if self._rowcount == 0:
+        if self.rowcount == 0:
             raise DsDatabaseException(
                 f"No core {x=} {y=} {p=}")
 
@@ -423,7 +423,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: The base address for the whole core
         :rtype: int
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT start_address
                 FROM core
@@ -434,13 +434,13 @@ class DsSqlliteDatabase(SQLiteDB):
         raise DsDatabaseException(f"No core {x=} {y=} {p=}")
 
     def set_region_pointer(self, x, y, p, region_num, pointer):
-        self._execute(
+        self.execute(
             """
             UPDATE region
             SET pointer = ?
             WHERE x = ? AND y = ? and p = ? and region_num = ?
             """, (pointer, x, y, p, region_num))
-        if self._rowcount == 0:
+        if self.rowcount == 0:
             raise DsDatabaseException(
                 f"No region {x=} {y=} {p=} {region_num=}")
 
@@ -459,7 +459,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: number, pointer and (content or None)
         :rtype: iterable(tuple(int, int, bytearray or None))
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT region_num, content, pointer
                 FROM pointer_content_view
@@ -486,7 +486,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: Yields the (x, y, p)
         :rtype: iterable(tuple(int,int,int))
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT x, y, p FROM core
                 """):
@@ -501,7 +501,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT COUNT(*) as count FROM core
                 LIMIT 1
@@ -521,7 +521,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         to_malloc = APP_PTR_TABLE_BYTE_SIZE
         # try the fast way using regions
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT regions_size
                 FROM region_size_view
@@ -543,7 +543,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         to_write = APP_PTR_TABLE_BYTE_SIZE
         # try the fast way using regions
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT contents_size
                 FROM content_size_view
@@ -569,7 +569,7 @@ class DsSqlliteDatabase(SQLiteDB):
             and memory_written
         :rtype: iterable(tuple(tuple(int, int, int), int, int, int))
         """
-        for row in self._execute(
+        for row in self.execute(
                 """
                 SELECT x, y, p, start_address, to_write,malloc_size
                 FROM core_summary_view
@@ -591,7 +591,7 @@ class DsSqlliteDatabase(SQLiteDB):
             job = mac._job
             if isinstance(job, SpallocJob):
                 config = job.get_session_credentials_for_db()
-                self._executemany("""
+                self.executemany("""
                     INSERT INTO proxy_configuration(kind, name, value)
                     VALUES(?, ?, ?)
                     """, [(k1, k2, v) for (k1, k2), v in config.items()])
@@ -602,10 +602,10 @@ class DsSqlliteDatabase(SQLiteDB):
 
         """
         # check for previous content
-        self._execute(
+        self.execute(
             """
             INSERT INTO app_id(app_id)
             VALUES(?)
             """, (FecDataView.get_app_id(), ))
-        if self._rowcount == 0:
+        if self.rowcount == 0:
             raise DsDatabaseException("Unable to set app id")

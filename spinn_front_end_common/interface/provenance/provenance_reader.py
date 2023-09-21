@@ -99,7 +99,7 @@ class ProvenanceReader(BaseDatabase):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
-        for row in self._execute(query, params):
+        for row in self.execute(query, params):
             results.append(row)
         return results
 
