@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import annotations
-from contextlib import contextmanager
-import csv
+
 import logging
 import os
 import time
@@ -28,6 +26,7 @@ from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
 from pacman.utilities.algorithm_utilities.routes_format import format_route
 from spinn_front_end_common.data import FecDataView
 from .router_summary import RouterSummary
+from .utils import csvopen
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -51,18 +50,11 @@ _ROUTING_SUMMARY_CSV = "routing_summary.csv"
 _ROUTING_TABLE_DIR = "routing_tables_generated"
 _SDRAM_FILENAME = "chip_sdram_usage_by_core.rpt"
 _TAGS_FILENAME = "tags.rpt"
+_TAGS_CSV = "tags.csv"
 _VIRTKEY_FILENAME = "virtual_key_space_information_report.rpt"
 _VIRTKEY_CSV = "virtual_key_space_information.csv"
 
 _LOWER_16_BITS = 0xFFFF
-
-
-@contextmanager
-def _csvopen(filename, header):
-    with open(filename, "w", encoding="utf-8", newline="") as f:
-        csv_writer = csv.writer(f)
-        csv_writer.writerow(header.split(","))
-        yield csv_writer
 
 
 def tag_allocator_report():
@@ -71,17 +63,31 @@ def tag_allocator_report():
     simulation.
     """
     tag_infos = FecDataView.get_tags()
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _TAGS_FILENAME)
+    file_name = FecDataView.get_run_dir_file_name(_TAGS_FILENAME)
+    csv_file = FecDataView.get_run_dir_file_name(_TAGS_CSV)
     try:
-        with open(file_name, "w", encoding="utf-8") as f:
+        with open(file_name, "w", encoding="utf-8") as f, csvopen(
+                csv_file, "Type,Board Address,X,Y,P,Tag ID,UDP Port,"
+                "Outbound IP Address,Strip SDP Header,Traffic ID,"
+                "Target SDP Port") as csvf:
             progress = ProgressBar(
                 len(list(tag_infos.ip_tags)) +
                 len(list(tag_infos.reverse_ip_tags)),
                 "Reporting Tags")
             for ip_tag in progress.over(tag_infos.ip_tags, False):
                 f.write(str(ip_tag) + "\n")
+                csvf.writerow([
+                    "Forward", ip_tag.board_address,
+                    ip_tag.destination_x, ip_tag.destination_y, "",
+                    ip_tag.tag, ip_tag.port, ip_tag.ip_address,
+                    ip_tag.strip_sdp, ip_tag.traffic_identifier, ""])
             for reverse_ip_tag in progress.over(tag_infos.reverse_ip_tags):
                 f.write(str(reverse_ip_tag) + "\n")
+                csvf.writerow([
+                    "Reverse", reverse_ip_tag.board_address,
+                    reverse_ip_tag.destination_x, reverse_ip_tag.destination_y,
+                    reverse_ip_tag.destination_p, reverse_ip_tag.tag,
+                    reverse_ip_tag.port, "", "", "", reverse_ip_tag.sdp_port])
     except IOError:
         logger.error(
             "Generate tag report: Can't open file {} for writing.", file_name)
@@ -102,10 +108,8 @@ def router_summary_report():
 
     :rtype: RouterSummary
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _ROUTING_SUMMARY_FILENAME)
-    csv_name = os.path.join(
-        FecDataView.get_run_dir_path(), _ROUTING_SUMMARY_CSV)
+    file_name = FecDataView.get_run_dir_file_name(_ROUTING_SUMMARY_FILENAME)
+    csv_name = FecDataView.get_run_dir_file_name(_ROUTING_SUMMARY_CSV)
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     routing_tables = FecDataView.get_uncompressed()
@@ -121,10 +125,10 @@ def router_compressed_summary_report(routing_tables):
         The in-operation COMPRESSED routing tables.
     :rtype: RouterSummary
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _COMPRESSED_ROUTING_SUMMARY_FILENAME)
-    csv_name = os.path.join(
-        FecDataView.get_run_dir_path(), _COMPRESSED_ROUTING_SUMMARY_CSV)
+    file_name = FecDataView.get_run_dir_file_name(
+        _COMPRESSED_ROUTING_SUMMARY_FILENAME)
+    csv_name = FecDataView.get_run_dir_file_name(
+        _COMPRESSED_ROUTING_SUMMARY_CSV)
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(
@@ -142,7 +146,7 @@ def _do_router_summary_report(file_name, csv_name, progress, routing_tables):
     time_date_string = time.strftime("%c")
     convert = Router.convert_routing_table_entry_to_spinnaker_route
     try:
-        with open(file_name, "w", encoding="utf-8") as f, _csvopen(
+        with open(file_name, "w", encoding="utf-8") as f, csvopen(
                 csv_name, "X,Y,Entries,Defaultable,Unique Routes") as csvf:
             f.write("        Routing Summary Report\n")
             f.write("        ======================\n\n")
@@ -201,7 +205,7 @@ def router_report_from_paths():
     """
     Generates a text file of routing paths.
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
+    file_name = FecDataView.get_run_dir_file_name(_ROUTING_FILENAME)
     time_date_string = time.strftime("%c")
     partitions = get_app_partitions()
     try:
@@ -253,12 +257,11 @@ def partitioner_report():
     """
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PARTITIONING_FILENAME)
-    csv_file = os.path.join(FecDataView.get_run_dir_path(), _PARTITIONING_CSV)
+    file_name = FecDataView.get_run_dir_file_name(_PARTITIONING_FILENAME)
+    csv_file = FecDataView.get_run_dir_file_name(_PARTITIONING_CSV)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w", encoding="utf-8") as f, _csvopen(
+        with open(file_name, "w", encoding="utf-8") as f, csvopen(
                 csv_file, "Vertex,Model,N Atoms,Slice,Partition") as csvf:
             progress = ProgressBar(FecDataView.get_n_vertices(),
                                    "Generating partitioner report")
@@ -307,8 +310,8 @@ def placement_report_with_application_graph_by_vertex():
     """
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PLACEMENT_VTX_GRAPH_FILENAME)
+    file_name = FecDataView.get_run_dir_file_name(
+        _PLACEMENT_VTX_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
@@ -372,14 +375,13 @@ def placement_report_with_application_graph_by_core():
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PLACEMENT_CORE_GRAPH_FILENAME)
-    csv_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PLACEMENTS_CSV)
+    file_name = FecDataView.get_run_dir_file_name(
+        _PLACEMENT_CORE_GRAPH_FILENAME)
+    csv_name = FecDataView.get_run_dir_file_name(_PLACEMENTS_CSV)
     time_date_string = time.strftime("%c")
     try:
         machine = FecDataView.get_machine()
-        with open(file_name, "w", encoding="utf-8") as f, _csvopen(
+        with open(file_name, "w", encoding="utf-8") as f, csvopen(
                 csv_name, "X,Y,Processor,Kind,Label,Atoms,Slice,Model,"
                 "Fixed Memory,Per-Timestep Memory") as csvf:
             progress = ProgressBar(machine.n_chips,
@@ -454,7 +456,7 @@ def sdram_usage_report_per_chip():
     """
     Reports the SDRAM used per chip.
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
+    file_name = FecDataView.get_run_dir_file_name(_SDRAM_FILENAME)
     n_placements = FecDataView.get_n_placements()
     time_date_string = time.strftime("%c")
     progress = ProgressBar(
@@ -532,11 +534,11 @@ def routing_info_report(extra_allocations):
     Generates a report which says which keys is being allocated to each
     vertex.
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
-    csv_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_CSV)
+    file_name = FecDataView.get_run_dir_file_name(_VIRTKEY_FILENAME)
+    csv_name = FecDataView.get_run_dir_file_name(_VIRTKEY_CSV)
     routing_infos = FecDataView.get_routing_infos()
     try:
-        with open(file_name, "w", encoding="utf-8") as f, _csvopen(
+        with open(file_name, "w", encoding="utf-8") as f, csvopen(
                 csv_name, "Vertex,Partition,Overall Routing Info,"
                 "Machine Vertex,Slice,Routing Info") as csvf:
             vertex_partitions = OrderedSet(
@@ -586,8 +588,7 @@ def router_report_from_router_tables():
     """
     Report the uncompressed routing tables.
     """
-    top_level_folder = os.path.join(
-        FecDataView.get_run_dir_path(), _ROUTING_TABLE_DIR)
+    top_level_folder = FecDataView.get_run_dir_file_name(_ROUTING_TABLE_DIR)
     routing_tables = FecDataView.get_uncompressed().routing_tables
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
@@ -604,8 +605,7 @@ def router_report_from_compressed_router_tables(routing_tables):
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the compressed routing tables
     """
-    top_level_folder = os.path.join(
-        FecDataView.get_run_dir_path(), _C_ROUTING_TABLE_DIR)
+    top_level_folder = FecDataView.get_run_dir_file_name(_C_ROUTING_TABLE_DIR)
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
@@ -627,7 +627,7 @@ def generate_routing_table(routing_table, top_level_folder):
     file_path = os.path.join(top_level_folder, file_name)
     csv_path = os.path.join(top_level_folder, csv_name)
     try:
-        with open(file_path, "w", encoding="utf-8") as f, _csvopen(
+        with open(file_path, "w", encoding="utf-8") as f, csvopen(
                 csv_path, "index,key,mask,route,default,cores,links") as csvf:
             f.write("Router contains {} entries\n".format(
                 routing_table.number_of_entries))
@@ -685,11 +685,10 @@ def generate_comparison_router_report(compressed_routing_tables):
         ~pacman.model.routing_tables.MulticastRoutingTables
     """
     routing_tables = FecDataView.get_uncompressed().routing_tables
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _COMPARED_FILENAME)
-    csv_file = os.path.join(FecDataView.get_run_dir_path(), _COMPARED_CSV)
+    file_name = FecDataView.get_run_dir_file_name(_COMPARED_FILENAME)
+    csv_file = FecDataView.get_run_dir_file_name(_COMPARED_CSV)
     try:
-        with open(file_name, "w", encoding="utf-8") as f, _csvopen(
+        with open(file_name, "w", encoding="utf-8") as f, csvopen(
                 csv_file, "x,y,uncompressed,compressed,ratio") as csvf:
             progress = ProgressBar(
                 routing_tables,

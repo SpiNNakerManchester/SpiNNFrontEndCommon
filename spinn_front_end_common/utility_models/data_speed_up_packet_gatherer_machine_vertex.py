@@ -304,9 +304,10 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # create report if it doesn't already exist
 
-        dir_path = FecDataView.get_run_dir_path()
-        self._out_report_path = os.path.join(dir_path, self.OUT_REPORT_NAME)
-        self._in_report_path = os.path.join(dir_path, self.IN_REPORT_NAME)
+        self._out_report_path = FecDataView.get_run_dir_file_name(
+            self.OUT_REPORT_NAME)
+        self._in_report_path = FecDataView.get_run_dir_file_name(
+            self.IN_REPORT_NAME)
 
         # Stored reinjection status for resetting timeouts
         self._last_status = None

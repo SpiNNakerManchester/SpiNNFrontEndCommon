@@ -55,6 +55,17 @@ class DsSqlliteDatabase(SQLiteDB):
             self.__init_ethernets()
             self._init_file = False
 
+    @classmethod
+    def default_database_file(cls) -> str:
+        """
+        Gets the path to the default/ current database file
+
+        :rtype: str
+        :return: Path where the database is or should be written
+        """
+        return FecDataView.get_run_dir_file_name(
+            f"ds{FecDataView.get_reset_str()}.sqlite3")
+
     def __init_ethernets(self):
         """
         Set up the database contents from the machine.

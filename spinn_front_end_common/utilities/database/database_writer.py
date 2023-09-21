@@ -54,8 +54,7 @@ class DatabaseWriter(SQLiteDB):
     ]
 
     def __init__(self):
-        self._database_path = os.path.join(FecDataView.get_run_dir_path(),
-                                           DB_NAME)
+        self._database_path = FecDataView.get_run_dir_file_name(DB_NAME)
         init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
 
         # delete any old database
