@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os
 import sys
 from typing import Dict, Optional, Tuple, TextIO, Union
 from collections import defaultdict
@@ -54,7 +53,7 @@ def bitfield_compressor_report() -> Optional[BitFieldSummary]:
     :return: a summary, or `None` if the report file can't be written
     :rtype: BitFieldSummary
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _FILE_NAME)
+    file_name = FecDataView.get_run_dir_file_name(_FILE_NAME)
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             return _write_report(f)

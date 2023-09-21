@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os.path
 from typing import TextIO
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.application import ApplicationVertex
@@ -28,7 +27,7 @@ def network_specification() -> None:
     """
     Generate report on the user's network specification.
     """
-    filename = os.path.join(FecDataView.get_run_dir_path(), _FILENAME)
+    filename = FecDataView.get_run_dir_file_name(_FILENAME)
     try:
         with open(filename, "w", encoding="utf-8") as f:
             f.write("*** Vertices:\n")

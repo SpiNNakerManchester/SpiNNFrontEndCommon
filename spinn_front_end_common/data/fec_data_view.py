@@ -1331,3 +1331,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                            cls.__fec_data._next_ds_reference+number)
         cls.__fec_data._next_ds_reference += number
         return list(references)
+
+    @classmethod
+    def get_run_dir_file_name(cls, *names: str) -> str:
+        """
+        Construct the name of a file in the directory that holds all the
+        reports for a run. For convenience of reporting.
+        """
+        return os.path.join(cls.get_run_dir_path(), *names)

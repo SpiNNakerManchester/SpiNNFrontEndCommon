@@ -23,6 +23,7 @@ from spinnman.transceiver import Transceiver
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, MAX_MEM_REGIONS)
+from .utils import csvopen, csvwriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -34,8 +35,7 @@ def memory_map_on_host_chip_report() -> None:
     Report on memory usage. Creates a report that states where in SDRAM
     each region is (read from machine).
     """
-    directory_name = os.path.join(
-        FecDataView.get_run_dir_path(), "memory_map_reports")
+    directory_name = FecDataView.get_run_dir_file_name("memory_map_reports")
     if not os.path.exists(directory_name):
         os.makedirs(directory_name)
 
@@ -43,19 +43,23 @@ def memory_map_on_host_chip_report() -> None:
     ds_database = FecDataView.get_ds_database()
     progress = ProgressBar(
         ds_database.get_n_ds_cores(), "Writing memory map reports")
-    for (x, y, p) in progress.over(ds_database.get_ds_cores()):
-        file_name = os.path.join(
-            directory_name, f"memory_map_from_processor_{x}_{y}_{p}.txt")
-        try:
-            with open(file_name, "w", encoding="utf-8") as f:
-                _describe_mem_map(f, transceiver, x, y, p)
-        except IOError:
-            logger.exception(
-                "Generate_placement_reports: Can't open file {} for writing.",
-                file_name)
+    with csvopen(os.path.join(directory_name, "memory_map.csv"),
+                 "x,y,p,region,address") as csv:
+        for (x, y, p) in progress.over(ds_database.get_ds_cores()):
+            file_name = os.path.join(
+                directory_name, f"memory_map_from_processor_{x}_{y}_{p}.txt")
+            try:
+                with open(file_name, "w", encoding="utf-8") as f:
+                    _describe_mem_map(f, csv, transceiver, x, y, p)
+            except IOError:
+                logger.exception(
+                    "Generate_placement_reports: "
+                    "Can't open file {} for writing.",
+                    file_name)
 
 
-def _describe_mem_map(f: TextIO, txrx: Transceiver, x: int, y: int, p: int):
+def _describe_mem_map(
+        f: TextIO, csv: csvwriter, txrx: Transceiver, x: int, y: int, p: int):
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """
@@ -70,6 +74,7 @@ def _describe_mem_map(f: TextIO, txrx: Transceiver, x: int, y: int, p: int):
         region_address, = _ONE_WORD.unpack_from(
             memmap_data, i * BYTES_PER_WORD)
         f.write(f"Region {i:d}:\n\t start address: 0x{region_address:x}\n\n")
+        csv.writerow([x, y, p, i, hex(region_address)])
 
 
 def _get_region_table_addr(txrx: Transceiver, x: int, y: int, p: int) -> int:

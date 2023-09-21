@@ -13,10 +13,12 @@
 # limitations under the License.
 import os
 import logging
+from typing import List, Optional
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
+from .utils import csvopen
 
 # The fixed point position for drift readings
 CLOCK_DRIFT_REPORT = "clock_drift.csv"
@@ -28,8 +30,7 @@ def drift_report() -> None:
     """
     A report on the clock drift as reported by each chip
     """
-    ethernet_only = get_config_bool(
-            "Reports", "drift_report_ethernet_only")
+    ethernet_only = get_config_bool("Reports", "drift_report_ethernet_only")
     machine = FecDataView.get_machine()
     eth_chips = machine.ethernet_connected_chips
     n_chips = machine.n_chips
@@ -37,38 +38,39 @@ def drift_report() -> None:
         n_chips = len(eth_chips)
 
     # create file path
-    directory_name = os.path.join(
-        FecDataView.get_run_dir_path(), CLOCK_DRIFT_REPORT)
+    file_name = FecDataView.get_run_dir_file_name(CLOCK_DRIFT_REPORT)
 
     # If the file is new, write a header
-    if not os.path.exists(directory_name):
-        with open(directory_name, "w", encoding="utf-8") as writer:
-            for eth_chip in eth_chips:
-                if ethernet_only:
-                    writer.write(f'"{eth_chip.x} {eth_chip.y}",')
-                else:
-                    for chip in machine.get_chips_by_ethernet(
-                            eth_chip.x, eth_chip.y):
-                        writer.write(f'"{chip.x} {chip.y}",')
-            writer.write("\n")
+    if not os.path.exists(file_name):
+        with csvopen(file_name, None) as writer:
+            if ethernet_only:
+                writer.writerow(
+                    f"{eth_chip.x} {eth_chip.y}"
+                    for eth_chip in eth_chips)
+            else:
+                writer.writerow(
+                    f"{chip.x} {chip.y}"
+                    for ec in eth_chips
+                    for chip in machine.get_chips_by_ethernet(ec.x, ec.y))
 
     # create the progress bar for end users
     progress = ProgressBar(n_chips, "Writing clock drift report")
 
     # iterate over ethernet chips and then the chips on that board
     txrx = FecDataView.get_transceiver()
-    with open(directory_name, "a", encoding="utf-8") as writer:
+    with csvopen(file_name, None, mode="a") as writer:
         if ethernet_only:
-            for eth_chip in progress.over(eth_chips):
-                drift = txrx.get_clock_drift(eth_chip.x, eth_chip.y)
-                writer.write(f'"{drift}",')
+            writer.writerow(
+                txrx.get_clock_drift(eth_chip.x, eth_chip.y)
+                for eth_chip in progress.over(eth_chips))
         else:
             for eth_chip in eth_chips:
-                last_drift = None
+                drifts: List[float] = []
+                last_drift: Optional[float] = None
                 for chip in progress.over(machine.get_chips_by_ethernet(
                         eth_chip.x, eth_chip.y), finish_at_end=False):
                     drift = txrx.get_clock_drift(chip.x, chip.y)
-                    writer.write(f'"{drift}",')
+                    drifts.append(drift)
                     if last_drift is None:
                         last_drift = drift
                     elif last_drift != drift:
@@ -77,4 +79,5 @@ def drift_report() -> None:
                             " ({} vs {})",
                             eth_chip.ip_address, chip.x, chip.y,
                             drift, last_drift)
-        writer.write("\n")
+                writer.writerow(drifts)
+            progress.end()

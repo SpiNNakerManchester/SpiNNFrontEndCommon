@@ -13,16 +13,16 @@
 # limitations under the License.
 from __future__ import annotations
 import logging
-import os
 import time
 from datetime import timedelta
-from typing import List, Optional, Sized, Union, TYPE_CHECKING
+from typing import Any, List, Optional, Sized, Union, TYPE_CHECKING
 from typing_extensions import Literal, Self
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from .global_provenance import GlobalProvenance
 from .timer_category import TimerCategory
+from spinn_front_end_common.utilities.report_functions.utils import csvopen
 if TYPE_CHECKING:
     from spinn_front_end_common.interface.abstract_spinnaker_base import (
         AbstractSpinnakerBase)
@@ -41,6 +41,7 @@ class FecTimer(object):
 
     _simulator: Optional[AbstractSpinnakerBase] = None
     _provenance_path: Optional[str] = None
+    _provenance_csv: Optional[str] = None
     _print_timings: bool = False
     _category_id: Optional[int] = None
     _category: Optional[TimerCategory] = None
@@ -58,14 +59,17 @@ class FecTimer(object):
     # Algorithm Names used elsewhere
     APPLICATION_RUNNER = "Application runner"
 
+    _CSV_HEADER = "Category,Algorithm,Action,Time Taken,Detail"
+
     @classmethod
     def setup(cls, simulator: AbstractSpinnakerBase):
         # pylint: disable=global-statement, protected-access
         cls._simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
-            cls._provenance_path = os.path.join(
-                FecDataView.get_run_dir_path(),
+            cls._provenance_path = FecDataView.get_run_dir_file_name(
                 "algorithm_timings.rpt")
+            cls._provenance_csv = FecDataView.get_run_dir_file_name(
+                "algorithm_timings.csv")
         else:
             cls._provenance_path = None
         cls._print_timings = get_config_bool(
@@ -80,10 +84,15 @@ class FecTimer(object):
         self._start_time = time.perf_counter_ns()
         return self
 
-    def _report(self, message: str):
+    def _report(self, message: str, act: str, time_taken: Any, detail: Any):
         if self._provenance_path is not None:
             with open(self._provenance_path, "a", encoding="utf-8") as p_file:
                 p_file.write(f"{message}\n")
+        if self._provenance_csv:
+            with csvopen(self._provenance_csv, self._CSV_HEADER,
+                         mode="a") as c_file:
+                c_file.writerow([
+                    self._category, self._algorithm, act, time_taken, detail])
         if self._print_timings:
             logger.info(message)
 
@@ -99,7 +108,7 @@ class FecTimer(object):
         message = f"{self._algorithm} skipped as {reason}"
         time_taken = self._stop_timer()
         self._insert_timing(time_taken, reason)
-        self._report(message)
+        self._report(message, "skip", "", reason)
 
     def skip_if_has_not_run(self) -> bool:
         if FecDataView.is_ran_ever():
@@ -148,7 +157,7 @@ class FecTimer(object):
         time_taken = self._stop_timer()
         message = f"{self._algorithm} failed after {time_taken} as {reason}"
         self._insert_timing(time_taken, reason)
-        self._report(message)
+        self._report(message, "fail", time_taken, reason)
 
     def _stop_timer(self) -> timedelta:
         """
@@ -179,8 +188,10 @@ class FecTimer(object):
         time_taken = self._stop_timer()
         if exc_type is None:
             message = f"{self._algorithm} took {time_taken} "
+            act = "run"
             skip = None
         else:
+            act = "exception"
             try:
                 message = (f"{self._algorithm} exited with "
                            f"{exc_type.__name__} after {time_taken}")
@@ -191,7 +202,7 @@ class FecTimer(object):
                 skip = f"Exception {ex}"
 
         self._insert_timing(time_taken, skip)
-        self._report(message)
+        self._report(message, act, time_taken, exc_value if exc_value else "")
         return False
 
     @classmethod

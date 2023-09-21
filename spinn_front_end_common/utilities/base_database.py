@@ -69,8 +69,8 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
 
     @classmethod
     def default_database_file(cls) -> str:
-        return os.path.join(FecDataView.get_run_dir_path(),
-                            f"data{FecDataView.get_reset_str()}.sqlite3")
+        return FecDataView.get_run_dir_file_name(
+            f"data{FecDataView.get_reset_str()}.sqlite3")
 
     def _get_core_id(
             self, cursor: sqlite3.Cursor, x: int, y: int, p: int) -> int:

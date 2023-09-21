@@ -70,8 +70,8 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: str
         :return: Path where the database is or should be written
         """
-        return os.path.join(FecDataView.get_run_dir_path(),
-                            f"ds{FecDataView.get_reset_str()}.sqlite3")
+        return FecDataView.get_run_dir_file_name(
+            f"ds{FecDataView.get_reset_str()}.sqlite3")
 
     def __init_ethernets(self) -> None:
         """

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -37,8 +36,7 @@ def generate_routing_compression_checker_report(
     :type compressed_routing_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(),
+    file_name = FecDataView.get_run_dir_file_name(
         "routing_compression_checker_report.rpt")
 
     try:

@@ -99,8 +99,7 @@ def get_report_writer(
     dir_name = _RPT_DIR
     if use_run_number:
         dir_name += str(FecDataView.get_run_number())
-    new_report_directory = os.path.join(
-        FecDataView.get_run_dir_path(), dir_name)
+    new_report_directory = FecDataView.get_run_dir_file_name(dir_name)
     _mkdir(new_report_directory)
     name = os.path.join(new_report_directory, _RPT_TMPL.format(
         processor_chip_x, processor_chip_y, processor_id))
