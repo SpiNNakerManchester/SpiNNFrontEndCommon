@@ -481,6 +481,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def set_ds_database_path(self, ds_database_path):
         """
         Sets the Data Spec targets database.
+
         :type ds_database:
             ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
         """
