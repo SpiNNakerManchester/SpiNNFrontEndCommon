@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import enum
 import hashlib
 import logging
 import os
@@ -23,18 +22,6 @@ from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = logging.getLogger(__name__)
-
-
-class Isolation(enum.Enum):
-    """
-    Transaction isolation levels for :py:meth:`SQLiteDB.transaction`.
-    """
-    #: Standard transaction type; postpones holding a lock until required.
-    DEFERRED = "DEFERRED"
-    #: Take the lock immediately; this may be a read-lock that gets upgraded.
-    IMMEDIATE = "IMMEDIATE"
-    #: Take a write lock immediately. This is the strongest lock type.
-    EXCLUSIVE = "EXCLUSIVE"
 
 
 class SQLiteDB(AbstractContextManager):
