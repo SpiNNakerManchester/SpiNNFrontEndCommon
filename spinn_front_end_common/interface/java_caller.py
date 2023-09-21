@@ -30,7 +30,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
