@@ -36,8 +36,8 @@ def graph_data_specification_writer(placement_order=None):
     """
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
-    :return: Path to DSG targets database
-    :rtype: str
+    :return: DSG targets database
+    :rtype: DsSqlliteDatabase
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
@@ -64,16 +64,14 @@ class _GraphDataSpecificationWriter(object):
         """
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
-        :return: Path to DSG targets database
-        :rtype: str
+        :return: DSG targets
+        :rtype: DsSqlliteDatabase
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        path = os.path.join(FecDataView.get_run_dir_path(),
-                            f"ds{FecDataView.get_reset_str()}.sqlite3")
-        with DsSqlliteDatabase(path) as ds_db:
+        with DsSqlliteDatabase() as ds_db:
             ds_db.write_session_credentials_to_db()
             ds_db. set_app_id()
 
@@ -112,7 +110,7 @@ class _GraphDataSpecificationWriter(object):
                 vertex.set_reload_required(False)
 
             self._run_check_queries(ds_db)
-        return path
+        return ds_db
 
     def __generate_data_spec_for_vertices(self, pl, vertex, ds_db):
         """

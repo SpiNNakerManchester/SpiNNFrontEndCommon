@@ -30,7 +30,7 @@ def memory_map_on_host_report():
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             f.write("On host data specification executor\n")
-            with DsSqlliteDatabase() as ds_database:
+            with FecDataView.get_ds_database() as ds_database:
                 for xyp, start_address, memory_used, memory_written in \
                         ds_database.get_info_for_cores():
                     f.write(

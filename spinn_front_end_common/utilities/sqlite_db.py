@@ -137,8 +137,6 @@ class SQLiteDB(AbstractContextManager):
             else:
                 self.__db.rollback()
         self.__cursor = None
-        # calls close
-        return super().__exit__(exc_type, exc_val, exc_tb)
 
     def __del__(self):
         self.close()
@@ -149,6 +147,8 @@ class SQLiteDB(AbstractContextManager):
         """
         try:
             if self.__db is not None:
+                if self.__cursor:
+                    self.__db.rollback()
                 self.__db.close()
                 self.__db = None
         except AttributeError:

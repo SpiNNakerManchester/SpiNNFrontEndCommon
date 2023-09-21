@@ -38,7 +38,7 @@ def memory_map_on_host_chip_report():
         os.makedirs(directory_name)
 
     transceiver = FecDataView.get_transceiver()
-    with DsSqlliteDatabase() as ds_database:
+    with FecDataView.get_ds_database() as ds_database:
         progress = ProgressBar(
             ds_database.get_n_ds_cores(), "Writing memory map reports")
         for (x, y, p) in progress.over(ds_database.get_ds_cores()):

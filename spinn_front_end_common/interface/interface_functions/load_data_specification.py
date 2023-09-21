@@ -133,7 +133,7 @@ class _LoadDataSpecification(object):
             self.__set_router_timeouts()
 
         # create a progress bar for end users
-        with DsSqlliteDatabase() as ds_database:
+        with FecDataView.get_ds_database() as ds_database:
 
             # allocate and set user 0 before loading data
 

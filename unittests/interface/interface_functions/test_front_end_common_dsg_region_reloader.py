@@ -144,7 +144,10 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
-        with DsSqlliteDatabase() as ds:
+        ds_db = DsSqlliteDatabase()
+        writer.set_ds_database(ds_db)
+
+        with ds_db as ds:
             for placement in placements:
                 ds.set_core(
                     placement.x, placement.y, placement.p, placement.vertex)
@@ -198,7 +201,10 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
-        with DsSqlliteDatabase() as ds:
+        ds_db = DsSqlliteDatabase()
+        writer.set_ds_database(ds_db)
+
+        with ds_db as ds:
             for placement in placements:
                 ds.set_core(
                     placement.x, placement.y, placement.p, placement.vertex)

@@ -98,7 +98,10 @@ class TestLoadDataSpecification(unittest.TestCase):
 
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
-        with DsSqlliteDatabase() as db:
+        ds_db = DsSqlliteDatabase()
+        writer.set_ds_database(ds_db)
+
+        with ds_db as db:
             spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
             spec.reserve_memory_region(0, 100)
             spec.reserve_memory_region(1, 100)
@@ -164,8 +167,10 @@ class TestLoadDataSpecification(unittest.TestCase):
 
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
+        ds_db = DsSqlliteDatabase()
+        writer.set_ds_database(ds_db)
 
-        with DsSqlliteDatabase() as db:
+        with ds_db as db:
             spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
             spec.reference_memory_region(0, 1)
             spec.end_specification()
@@ -237,7 +242,10 @@ class TestLoadDataSpecification(unittest.TestCase):
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
 
-        with DsSqlliteDatabase() as db:
+        ds_db = DsSqlliteDatabase()
+        writer.set_ds_database(ds_db)
+
+        with ds_db as db:
             spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
             spec.reference_memory_region(0, 2)
             spec.end_specification()
@@ -248,7 +256,6 @@ class TestLoadDataSpecification(unittest.TestCase):
             spec.write_value(0)
             spec.end_specification()
 
-        with DsSqlliteDatabase() as db:
             bad = list(db.get_unlinked_references())
             # x, y, p, region, ref, ref_label
             self.assertEqual([(0, 0, 0, 0, 2, "")], bad)
@@ -278,8 +285,10 @@ class TestLoadDataSpecification(unittest.TestCase):
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
 
-        with DsSqlliteDatabase() as db:
+        ds_db = DsSqlliteDatabase()
+        writer.set_ds_database(ds_db)
 
+        with ds_db as db:
             spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
             spec.reserve_memory_region(0, 12, reference=1)
             spec.switch_write_focus(0)
@@ -295,10 +304,9 @@ class TestLoadDataSpecification(unittest.TestCase):
             # x, y, p, region, ref, ref_label
             self.assertEqual([(1, 1, 0, 0, 1, "")], bad)
 
-        with DsSqlliteDatabase() as db:
-            # DataSpecException because the reference is on a different chip
-            with self.assertRaises(DataSpecException):
-                load_application_data_specs()
+        # DataSpecException because the reference is on a different chip
+        with self.assertRaises(DataSpecException):
+            load_application_data_specs()
 
 
 if __name__ == "__main__":
