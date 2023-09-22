@@ -45,7 +45,7 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
         Threads can access different DBs just fine.
     """
 
-    __slots__ = ["_database_file"]
+    __slots__ = ()
 
     def __init__(self, database_file=None, *, read_only=False,
                  row_factory=sqlite3.Row, text_factory=memoryview):
@@ -55,20 +55,13 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
             database holding the data.
             If omitted the default location will be used.
         """
-        if database_file:
-            self._database_file = database_file
-        else:
-            self._database_file = os.path.join(
+        if database_file is None:
+            database_file = os.path.join(
                 FecDataView.get_run_dir_path(),
                 f"data{FecDataView.get_reset_str()}.sqlite3")
         super().__init__(
-            self._database_file, read_only=read_only, row_factory=row_factory,
+            database_file, read_only=read_only, row_factory=row_factory,
             text_factory=text_factory, ddl_file=_DDL_FILE)
-
-    @classmethod
-    def default_database_file(cls):
-        return os.path.join(FecDataView.get_run_dir_path(),
-                            f"data{FecDataView.get_reset_str()}.sqlite3")
 
     def _get_core_id(self, x, y, p):
         """
