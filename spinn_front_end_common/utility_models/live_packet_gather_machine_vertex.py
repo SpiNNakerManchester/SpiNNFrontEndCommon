@@ -20,7 +20,7 @@ from pacman.model.resources import ConstantSDRAM
 from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
+    ProvidesProvenanceDataFromMachineImpl)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.abstract_models import (
@@ -109,7 +109,7 @@ class LivePacketGatherMachineVertex(
     def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
         (lost, lost_payload, events, messages) = provenance_data
 
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_core(x, y, p, "lost_packets_without_payload", lost)
             if lost > 0:
                 db.insert_report(

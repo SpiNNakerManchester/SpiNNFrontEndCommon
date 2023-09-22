@@ -58,7 +58,9 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
         if database_file:
             self._database_file = database_file
         else:
-            self._database_file = self.default_database_file()
+            self._database_file = os.path.join(
+                FecDataView.get_run_dir_path(),
+                f"data{FecDataView.get_reset_str()}.sqlite3")
         super().__init__(
             self._database_file, read_only=read_only, row_factory=row_factory,
             text_factory=text_factory, ddl_file=_DDL_FILE)

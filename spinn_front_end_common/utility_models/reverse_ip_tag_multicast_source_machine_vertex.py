@@ -37,7 +37,6 @@ from spinn_front_end_common.interface.buffer_management.storage_objects\
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -782,7 +781,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
         n_rcv, n_snt, bad_key, bad_pkt, late = provenance_data
 
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_core(x, y, p, "Received_sdp_packets", n_rcv)
             if n_rcv == 0 and self._send_buffer_times is None:
                 db.insert_report(

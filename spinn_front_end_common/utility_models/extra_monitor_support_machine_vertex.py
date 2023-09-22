@@ -41,7 +41,7 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
+    AbstractProvidesProvenanceDataFromMachine)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -372,7 +372,7 @@ class ExtraMonitorSupportMachineVertex(
             _PROVENANCE_FORMAT.size)
         (n_sdp_packets, n_in_streams, n_out_streams, n_router_changes) = \
             _PROVENANCE_FORMAT.unpack_from(data)
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_monitor(
                 placement.x, placement.y,
                 "Number_of_Router_Configuration_Changes", n_router_changes)

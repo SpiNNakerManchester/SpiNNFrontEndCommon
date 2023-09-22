@@ -31,7 +31,6 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -316,7 +315,7 @@ def _allocate_job_new(
         stack.enter_context(task)
         job.wait_until_ready()
         connections = job.get_connections()
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_board_provenance(connections)
         root = connections.get((0, 0), None)
         if logger.isEnabledFor(logging.DEBUG):
@@ -385,7 +384,7 @@ def _launch_checked_job_old(n_boards: int, spalloc_kwargs: dict) -> Tuple[
                 logger.debug("boards: {}",
                              str(connections).replace("{", "[").replace(
                                  "}", "]"))
-            with ProvenanceWriter() as db:
+            with FecDataView.get_provenance_writer() as db:
                 db.insert_board_provenance(connections)
             if hostname not in avoid_boards:
                 break

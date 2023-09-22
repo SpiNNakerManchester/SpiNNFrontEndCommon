@@ -22,8 +22,7 @@ from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
-    LogStoreDB, ProvenanceWriter, ProvenanceReader,
-    TimerCategory, TimerWork)
+    LogStoreDB, TimerCategory, TimerWork)
 from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -33,10 +32,6 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
-
-    def test_create(self):
-        ProvenanceWriter()
-        ProvenanceWriter()
 
     def as_set(self, items):
         results = set()
@@ -56,10 +51,10 @@ class TestProvenanceDatabase(unittest.TestCase):
             self.assertListEqual(data, versions)
 
     def test_power(self):
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_power("num_cores", 34)
             db.insert_power("total time (seconds)", 6.81)
-        with ProvenanceReader() as db:
+        with FecDataView.get_provenance_reader() as db:
             data = db.run_query("select * from power_provenance")
             power = [(1, 'num_cores', 34.0), (2, 'total time (seconds)', 6.81)]
             self.assertListEqual(data, power)
@@ -114,25 +109,25 @@ class TestProvenanceDatabase(unittest.TestCase):
         self.assertEqual(12 + 123, data)
 
     def test_gatherer(self):
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_gatherer(
                 1, 3, 1715886360, 80, 1, "Extraction_time", 00.234)
             db.insert_gatherer(
                 1, 3, 1715886360, 80, 1, "Lost Packets", 12)
-        with ProvenanceReader() as db:
+        with FecDataView.get_provenance_reader() as db:
             data = db.run_query("Select * from gatherer_provenance")
         expected = [(1, 1, 3, 1715886360, 80, 1, 'Extraction_time', 0.234),
                     (2, 1, 3, 1715886360, 80, 1, 'Lost Packets', 12.0)]
         self.assertListEqual(expected, data)
 
     def test_router(self):
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_router(1, 3, "des1", 34, True)
             db.insert_router(1, 2, "des1", 45, True)
             db.insert_router(1, 3, "des2", 67)
             db.insert_router(1, 3, "des1", 48)
             db.insert_router(5, 5, "des1", 48, False)
-        with ProvenanceReader() as db:
+        with FecDataView.get_provenance_reader() as db:
             data = set(db.get_router_by_chip("des1"))
             chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48), (5, 5, 48)}
             self.assertSetEqual(data, chip_set)
@@ -140,12 +135,12 @@ class TestProvenanceDatabase(unittest.TestCase):
             self.assertEqual(0, len(data))
 
     def test_monitor(self):
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_monitor(1, 3, "des1", 34)
             db.insert_monitor(1, 2, "des1", 45)
             db.insert_monitor(1, 3, "des2", 67)
             db.insert_monitor(1, 3, "des1", 48)
-        with ProvenanceReader() as db:
+        with FecDataView.get_provenance_reader() as db:
             data = set(db.get_monitor_by_chip("des1"))
             chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48)}
             self.assertSetEqual(data, chip_set)
@@ -153,7 +148,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             self.assertEqual(0, len(data))
 
     def test_cores(self):
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_core(1, 3, 2, "des1", 34)
             db.insert_core(1, 2, 3, "des1", 45)
             db.insert_core(1, 3, 2, "des2", 67)
@@ -162,28 +157,29 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_messages(self):
         set_config("Reports", "provenance_report_cutoff", 3)
         with LogCapture() as lc:
-            with ProvenanceWriter() as db:
+            with FecDataView.get_provenance_writer() as db:
                 db.insert_report("een")
                 db.insert_report("twee")
                 db.insert_report("drie")
                 db.insert_report("vier")
+                print(db.get_path())
             self.assertEqual(3, len(lc.records))
 
-        with ProvenanceReader() as db:
+        with FecDataView.get_provenance_reader() as db:
             data = db.messages()
         self.assertEqual(4, len(data))
 
     def test_connector(self):
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_connector("the pre", "A post", "OneToOne", "foo", 12)
-        with ProvenanceReader() as db:
+        with FecDataView.get_provenance_reader() as db:
             data = db.run_query("Select * from connector_provenance")
         expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 12)]
         self.assertListEqual(expected, data)
 
     def test_board(self):
         data = {(0, 0): '10.11.194.17', (4, 8): '10.11.194.81'}
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_board_provenance(data)
 
     def test_log(self):

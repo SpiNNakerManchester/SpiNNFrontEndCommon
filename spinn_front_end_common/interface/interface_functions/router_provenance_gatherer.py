@@ -17,7 +17,6 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanException
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -135,7 +134,7 @@ class _RouterProvenanceGatherer(object):
                 status.n_reinjected_packets + status.n_processor_dumps +
                 status.n_link_dumps) < diagnostics.n_dropped_multicast_packets)
 
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer()() as db:
             db.insert_router(
                 x, y, "Local_Multicast_Packets",
                 diagnostics.n_local_multicast_packets, expected)

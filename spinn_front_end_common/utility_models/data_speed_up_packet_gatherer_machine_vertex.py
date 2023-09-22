@@ -26,7 +26,6 @@ from spinnman.model.enums import CPUState, ExecutableType, SDP_PORTS
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, IPtagResource
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset, n_word_struct)
 from spinn_front_end_common.utilities.emergency_recovery import (
@@ -1034,7 +1033,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         if length_in_bytes == 0:
             data = bytearray(0)
             end = float(time.time())
-            with ProvenanceWriter() as db:
+            with FecDataView.get_provenance_writer() as db:
                 # TODO Why log the time to not read???
                 db.insert_gatherer(
                     placement.x, placement.y, memory_address, length_in_bytes,
@@ -1070,7 +1069,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     DATA_OUT_COMMANDS.CLEAR.value, transaction_id)))
 
         end = float(time.time())
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_gatherer(
                 placement.x, placement.y, memory_address, length_in_bytes,
                 self._run, "Extraction time", end - start)
@@ -1484,7 +1483,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             _PROVENANCE_DATA_SIZE)
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = (
             _FOUR_WORDS.unpack_from(data))
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_core(
                 placement.x, placement.y, placement.p,
                 "Sent_SDP_Packets", n_sdp_sent)

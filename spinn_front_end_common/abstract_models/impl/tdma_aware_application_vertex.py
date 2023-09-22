@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_utilities.abstract_base import abstractmethod
 
@@ -137,7 +137,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :param str desc_label: a descriptive label for the vertex
         :param int tdma_slots_missed: the number of TDMA slots missed
         """
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_core(
                 x, y, p, self._TDMA_MISSED_SLOTS_NAME, tdma_slots_missed)
             if tdma_slots_missed > 0:

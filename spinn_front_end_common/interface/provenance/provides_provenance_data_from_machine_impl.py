@@ -22,8 +22,6 @@ from .abstract_provides_provenance_data_from_machine import (
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
-from spinn_front_end_common.interface.provenance.provenance_writer import (
-    ProvenanceWriter)
 
 
 def add_name(names, name):
@@ -178,7 +176,7 @@ class ProvidesProvenanceDataFromMachineImpl(
          tic_overrun_max) = provenance_data[:self.N_SYSTEM_PROVENANCE_WORDS]
 
         # save provenance data items
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_core(
                 x, y, p, self._TIMES_TRANSMISSION_SPIKES_OVERRAN, tx_overflow)
             if tx_overflow != 0:

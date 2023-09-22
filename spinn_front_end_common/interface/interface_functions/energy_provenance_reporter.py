@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import re
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.data import FecDataView
 
 #: The simple properties of PowerUsed object to be reported
 _BASIC_PROPERTIES = (
@@ -39,7 +39,7 @@ def energy_provenance_reporter(power_used):
     :param PowerUsed power_used:
         The computed basic power consumption information
     """
-    with ProvenanceWriter() as db:
+    with FecDataView.get_provenance_writer() as db:
         for prop in _BASIC_PROPERTIES:
             db.insert_power(
                 __prop_name(prop), getattr(power_used, prop))

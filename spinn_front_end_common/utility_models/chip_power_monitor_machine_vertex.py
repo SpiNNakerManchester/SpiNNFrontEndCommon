@@ -30,7 +30,6 @@ from spinn_front_end_common.interface.buffer_management import (
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.ds import DataType
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.helpful_functions import (
@@ -263,7 +262,7 @@ class ChipPowerMonitorMachineVertex(
             n_samples_per_recording)
         activity_count = int(
             numpy.frombuffer(record_raw, dtype="uint32").sum())
-        with ProvenanceWriter() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_monitor(
                 placement.x, placement.y, PROVENANCE_KEY, activity_count)
         return results

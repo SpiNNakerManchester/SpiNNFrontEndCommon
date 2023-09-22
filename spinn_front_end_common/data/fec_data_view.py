@@ -75,6 +75,8 @@ class _FecDataModel(object):
         "_next_ds_reference",
         "_none_labelled_edge_count",
         "_notification_protocol",
+        "_provenance_reader",
+        "_provenance_writer",
         "_max_run_time_steps",
         "_monitor_map",
         "_reset_number",
@@ -98,8 +100,10 @@ class _FecDataModel(object):
         cls.__singleton = obj
         obj._notification_protocol = None
         # Set the databases to done so they can be checked the first time
-        obj._global_database = None
         obj._ds_database = None
+        obj._global_database = None
+        obj._provenance_reader = None
+        obj._provenance_writer = None
         obj._clear()
         return obj
 
@@ -110,6 +114,9 @@ class _FecDataModel(object):
         # Can not be cleared during hard reset as previous runs data checked
         self._database_socket_addresses = set()
         self._executable_types = None
+        if self._global_database is not None:
+            self._global_database.close()
+        self._global_database = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._live_packet_recorder_params = None
@@ -118,9 +125,6 @@ class _FecDataModel(object):
         self._n_boards_required = None
         self._n_chips_required = None
         self._none_labelled_edge_count = 0
-        if self._global_database is not None:
-            self._global_database.close()
-        self._global_database = None
         self._reset_number = 0
         self._run_number = None
         self._simulation_time_step_ms = None
@@ -154,6 +158,12 @@ class _FecDataModel(object):
         self._notification_protocol = None
         self._max_run_time_steps = None
         self._monitor_map = None
+        if self._provenance_reader is not None:
+            self._provenance_reader.close()
+        self._provenance_reader = None
+        if self._provenance_writer is not None:
+            self._provenance_writer.close()
+        self._provenance_writer = None
         self._system_multicast_router_timeout_keys = None
         self._soft_reset()
         self._clear_notification_protocol()
@@ -995,9 +1005,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_global_database(cls):
         """
-        Get the Global Provenance Data even if it has to create one
+        Get the global provenance database even if it has to create one
 
-        :return: The Global Provenance Data for this sim.setup
+        :return: The global provenance database for this sim.setup
+        :rtype: ~spinn_front_end_common.interface.provenance.GlobalProvenance
         """
         if cls.__fec_data._global_database is None:
             # Ugly deyaled import to avoid circular refrence
@@ -1005,6 +1016,36 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                 GlobalProvenance)
             cls.__fec_data._global_database = GlobalProvenance()
         return cls.__fec_data._global_database
+
+    @classmethod
+    def get_provenance_reader(cls):
+        """
+        Get the Provenance Reader Database even if it has to create one
+
+        :return: The provenance reader Database for this sim.setup
+        :rtype: ~spinn_front_end_common.interface.provenance.ProvenanceReader
+        """
+        if cls.__fec_data._provenance_reader is None:
+            # Ugly deyaled import to avoid circular refrence
+            from spinn_front_end_common.interface.provenance import (
+                ProvenanceReader)
+            cls.__fec_data._provenance_reader = ProvenanceReader()
+        return cls.__fec_data._provenance_reader
+
+    @classmethod
+    def get_provenance_writer(cls):
+        """
+        Get the Provenance Writer Database even if it has to create one
+
+        :return: The provenance writer database for this sim.setup
+        :rtype: ~spinn_front_end_common.interface.provenance.GlobalProvenance
+        """
+        if cls.__fec_data._provenance_writer is None:
+            # Ugly deyaled import to avoid circular refrence
+            from spinn_front_end_common.interface.provenance import (
+                ProvenanceWriter)
+            cls.__fec_data._provenance_writer = ProvenanceWriter()
+        return cls.__fec_data._provenance_writer
 
 
     @classmethod

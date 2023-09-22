@@ -20,8 +20,6 @@ from spinn_utilities.log import FormatAdapter
 from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import (
-    ProvenanceReader, ProvenanceWriter)
 from .bit_field_summary import BitFieldSummary
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -40,7 +38,7 @@ def generate_provenance_item(x, y, bit_fields_merged):
     :param y:
     :param bit_fields_merged:
     """
-    with ProvenanceWriter() as db:
+    with FecDataView.get_provenance_writer() as db:
         db.insert_router(x, y, MERGED_NAME, bit_fields_merged)
 
 
@@ -83,7 +81,7 @@ def _merged_component(to_merge_per_chip, writer):
     to_merge_chips = set(to_merge_per_chip.keys())
 
     found = False
-    with ProvenanceReader() as db:
+    with FecDataView.get_provenance_reader() as db:
         for (x, y, merged) in db.get_router_by_chip(
                 MERGED_NAME):
             if (x, y) not in to_merge_per_chip:
