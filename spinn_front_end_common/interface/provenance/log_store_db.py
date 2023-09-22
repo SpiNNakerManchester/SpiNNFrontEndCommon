@@ -15,6 +15,7 @@
 import sqlite3
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.utilities.exceptions import DatabaseException
 from .global_provenance import GlobalProvenance
 
 
@@ -27,6 +28,13 @@ class LogStoreDB(LogStore):
                 db.store_log(level, message, timestamp)
         except sqlite3.OperationalError as ex:
             if "database is locked" in ex.args:
+                # Ok ignore this one
+                # DO NOT log this error here or you will loop forever!
+                return
+            # all others are bad
+            raise
+        except DatabaseException as ex:
+            if "double cursor" in ex.args:
                 # Ok ignore this one
                 # DO NOT log this error here or you will loop forever!
                 return
