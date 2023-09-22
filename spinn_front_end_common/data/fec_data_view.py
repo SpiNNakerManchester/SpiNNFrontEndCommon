@@ -973,6 +973,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def get_ds_database_path(cls):
         """
         Gets the path for the Data Spec database.
+
         :rtype: str
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the ds_database is currently unavailable
