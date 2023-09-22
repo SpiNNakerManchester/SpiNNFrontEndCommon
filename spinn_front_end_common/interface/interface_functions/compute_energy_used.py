@@ -16,7 +16,7 @@ import itertools
 from spinn_utilities.config_holder import (get_config_int, is_config_none)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    ProvenanceReader, TimerCategory, TimerWork)
+    TimerCategory, TimerWork)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
@@ -180,7 +180,7 @@ def _router_packet_energy(power_used):
     :param PowerUsed power_used:
     """
     energy_cost = 0.0
-    with ProvenanceReader() as db:
+    with FecDataView.get_provenance_reader() as db:
         for name, cost in _COST_PER_TYPE.items():
             data = db.get_router_by_chip(name)
             for (x, y, value) in data:

@@ -134,7 +134,7 @@ class _RouterProvenanceGatherer(object):
                 status.n_reinjected_packets + status.n_processor_dumps +
                 status.n_link_dumps) < diagnostics.n_dropped_multicast_packets)
 
-        with FecDataView.get_provenance_writer()() as db:
+        with FecDataView.get_provenance_writer() as db:
             db.insert_router(
                 x, y, "Local_Multicast_Packets",
                 diagnostics.n_local_multicast_packets, expected)
