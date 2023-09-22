@@ -72,8 +72,6 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferDatabase
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
@@ -994,7 +992,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 "Record vertex labels to database", TimerWork.REPORT):
-            with BufferDatabase() as db:
+            with self._data_writer.get_buffer_database() as db:
                 db.store_vertex_labels()
 
     def _execute_system_multicast_routing_generator(self):

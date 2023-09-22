@@ -21,9 +21,14 @@ from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge
 # in code to avoid circular import
-# from spinn_front_end_common.interface.provenance import GlobalProvenance
+# from spinn_front_end_common.interface.buffer_management.storage_objects \
+#     import BufferDatabase
+# from spinn_front_end_common.interface.provenance import (
+#    GlobalProvenance, ProvenanceReader, ProvenanceWriter)
 # from spinn_front_end_common.utility_models import LivePacketGather
 # from spinn_front_end_common.utility_models import CommandSender
+# from spinn_front_end_common.interface.buffer_management.storage_objects \
+#    import BufferDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 # pylint: disable=protected-access
@@ -49,6 +54,7 @@ class _FecDataModel(object):
     __slots__ = [
         # Data values cached
         "_allocation_controller",
+        "_buffer_database",
         "_buffer_manager",
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
@@ -100,6 +106,7 @@ class _FecDataModel(object):
         cls.__singleton = obj
         obj._notification_protocol = None
         # Set the databases to done so they can be checked the first time
+        obj._buffer_database = None
         obj._ds_database = None
         obj._global_database = None
         obj._provenance_reader = None
@@ -158,11 +165,6 @@ class _FecDataModel(object):
         self._notification_protocol = None
         self._max_run_time_steps = None
         self._monitor_map = None
-        if self._provenance_reader is not None:
-            self._provenance_reader.close()
-        self._provenance_reader = None
-        if self._provenance_writer is not None:
-            self._provenance_writer.close()
         self._provenance_writer = None
         self._system_multicast_router_timeout_keys = None
         self._soft_reset()
@@ -172,8 +174,16 @@ class _FecDataModel(object):
         """
         Clears timing and other data that should changed every reset.
         """
+        if self._buffer_database is not None:
+            self._buffer_database.close()
+        self._buffer_database = None
         self._current_run_timesteps = 0
         self._first_machine_time_step = 0
+        if self._provenance_reader is not None:
+            self._provenance_reader.close()
+        self._provenance_reader = None
+        if self._provenance_writer is not None:
+            self._provenance_writer.close()
         self._run_step = None
 
     def _clear_notification_protocol(self):
@@ -1003,6 +1013,21 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._ds_database
 
     @classmethod
+    def get_buffer_database(cls):
+        """
+        Get the butter database even if it has to create one
+
+        :return: The buffer database for this sim.setup
+        :rtype: ~spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase
+        """
+        if cls.__fec_data._global_database is None:
+            # Ugly delayed import to avoid circular refrence
+            from spinn_front_end_common.interface.buffer_management.\
+                storage_objects import BufferDatabase
+            cls.__fec_data._buffer_database = BufferDatabase()
+        return cls.__fec_data._buffer_database
+
+    @classmethod
     def get_global_database(cls):
         """
         Get the global provenance database even if it has to create one
@@ -1011,7 +1036,22 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :rtype: ~spinn_front_end_common.interface.provenance.GlobalProvenance
         """
         if cls.__fec_data._global_database is None:
-            # Ugly deyaled import to avoid circular refrence
+            # Ugly delayed import to avoid circular refrence
+            from spinn_front_end_common.interface.provenance import (
+                GlobalProvenance)
+            cls.__fec_data._global_database = GlobalProvenance()
+        return cls.__fec_data._global_database
+
+    @classmethod
+    def get_global_database(cls):
+        """
+        Get the global provenance database even if it has to create one
+
+        :return: The global provenance database for this sim.setup
+        :rtype: ~spinn_front_end_common.interface.provenance.GlobalProvenance
+        """
+        if cls.__fec_data._global_database is None:
+            # Ugly delayed import to avoid circular refrence
             from spinn_front_end_common.interface.provenance import (
                 GlobalProvenance)
             cls.__fec_data._global_database = GlobalProvenance()
@@ -1026,7 +1066,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :rtype: ~spinn_front_end_common.interface.provenance.ProvenanceReader
         """
         if cls.__fec_data._provenance_reader is None:
-            # Ugly deyaled import to avoid circular refrence
+            # Ugly delayed import to avoid circular refrence
             from spinn_front_end_common.interface.provenance import (
                 ProvenanceReader)
             cls.__fec_data._provenance_reader = ProvenanceReader()
@@ -1038,15 +1078,14 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Get the Provenance Writer Database even if it has to create one
 
         :return: The provenance writer database for this sim.setup
-        :rtype: ~spinn_front_end_common.interface.provenance.GlobalProvenance
+        :rtype: ~spinn_front_end_common.interface.provenance.ProvenanceWriter
         """
         if cls.__fec_data._provenance_writer is None:
-            # Ugly deyaled import to avoid circular refrence
+            # Ugly delayed import to avoid circular refrence
             from spinn_front_end_common.interface.provenance import (
                 ProvenanceWriter)
             cls.__fec_data._provenance_writer = ProvenanceWriter()
         return cls.__fec_data._provenance_writer
-
 
     @classmethod
     def has_monitors(cls):

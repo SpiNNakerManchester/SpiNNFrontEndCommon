@@ -17,9 +17,8 @@ import os
 from spinn_utilities.config_holder import set_config
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placement, Placements
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferDatabase
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
@@ -30,10 +29,7 @@ class TestBufferedDatabase(unittest.TestCase):
         set_config("Machine", "version", 5)
 
     def test_use_database(self):
-        f = BufferDatabase.default_database_file()
-        self.assertFalse(os.path.isfile(f), "no existing DB at first")
-
-        with BufferDatabase() as brd:
+        with FecDataView.get_buffer_database() as brd:
             self.assertTrue(os.path.isfile(f), "DB now exists")
 
             # TODO missing
@@ -60,7 +56,7 @@ class TestBufferedDatabase(unittest.TestCase):
         info.add_placement(p2)
         info.add_placement(Placement(SimpleMachineVertex(None), 2, 2, 3))
         writer.set_placements(info)
-        with BufferDatabase() as db:
+        with FecDataView.get_buffer_database() as db:
             db.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc")
             db.store_vertex_labels()
             label = db.get_core_name(1, 2, 3)

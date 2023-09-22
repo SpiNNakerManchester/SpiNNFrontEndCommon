@@ -28,7 +28,7 @@ from spinn_front_end_common.utilities.exceptions import (
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import (BuffersSentDeque, BufferDatabase)
+    import (BuffersSentDeque)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
 from spinn_front_end_common.utility_models.streaming_context_manager import (
@@ -98,7 +98,7 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         if FecDataView.has_java_caller():
-            with BufferDatabase() as db:
+            with FecDataView.get_buffer_database() as db:
                 db.write_session_credentials_to_db()
             self._java_caller = FecDataView.get_java_caller()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
@@ -183,7 +183,7 @@ class BufferManager(object):
         Resets the buffered regions to start transmitting from the beginning
         of its expected regions and clears the buffered out data files.
         """
-        with BufferDatabase() as db:
+        with FecDataView.get_buffer_database() as db:
             db.write_session_credentials_to_db()
 
         # rewind buffered in
@@ -205,7 +205,7 @@ class BufferManager(object):
         :param int p: placement processor ID
         :param int recording_region_id: the recording region ID
         """
-        with BufferDatabase() as db:
+        with FecDataView.get_buffer_database() as db:
             db.clear_region(x, y, p, recording_region_id)
 
     def _create_message_to_send(self, size, vertex, region):
@@ -392,7 +392,7 @@ class BufferManager(object):
                 "AbstractReceiveBuffersToHost so no data read")
 
         # data flush has been completed - return appropriate data
-        with BufferDatabase() as db:
+        with FecDataView.get_buffer_database() as db:
             return db.get_region_data(
                 placement.x, placement.y, placement.p, recording_region_id)
 
@@ -415,7 +415,7 @@ class BufferManager(object):
             size, addr, missing = sizes_and_addresses[region]
             data = self._request_data(
                 placement.x, placement.y, addr, size)
-            with BufferDatabase() as db:
+            with FecDataView.get_buffer_database() as db:
                 db.store_data_in_region_buffer(
                     placement.x, placement.y, placement.p, region, missing,
                     data)

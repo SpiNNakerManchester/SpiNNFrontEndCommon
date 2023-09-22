@@ -28,8 +28,6 @@ from spinn_front_end_common.utilities.report_functions import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -355,12 +353,12 @@ class JavaCaller(object):
         if self._gatherer_iptags is None:
             result = self._run_java(
                 'download', self._placement_json, self._machine_json(),
-                BufferDatabase.default_database_file(),
+                FecDataView.get_buffer_database().get_path(),
                 FecDataView.get_run_dir_path())
         else:
             result = self._run_java(
                 'gather', self._placement_json, self._machine_json(),
-                BufferDatabase.default_database_file(),
+                FecDataView.get_buffer_database().get_path(),
                 FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(
