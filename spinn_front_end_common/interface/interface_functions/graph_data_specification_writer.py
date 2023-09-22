@@ -14,8 +14,6 @@
 
 from collections import defaultdict
 import logging
-import os
-
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM

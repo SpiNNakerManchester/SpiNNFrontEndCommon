@@ -1018,7 +1018,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Get the butter database even if it has to create one
 
         :return: The buffer database for this sim.setup
-        :rtype: ~spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase
+        :rtype: ~spinn_front_end_common.interface.buffer_management.
+            storage_objects.BufferDatabase
         """
         if cls.__fec_data._buffer_database is None:
             # Ugly delayed import to avoid circular refrence
@@ -1026,21 +1027,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                 storage_objects import BufferDatabase
             cls.__fec_data._buffer_database = BufferDatabase()
         return cls.__fec_data._buffer_database
-
-    @classmethod
-    def get_global_database(cls):
-        """
-        Get the global provenance database even if it has to create one
-
-        :return: The global provenance database for this sim.setup
-        :rtype: ~spinn_front_end_common.interface.provenance.GlobalProvenance
-        """
-        if cls.__fec_data._global_database is None:
-            # Ugly delayed import to avoid circular refrence
-            from spinn_front_end_common.interface.provenance import (
-                GlobalProvenance)
-            cls.__fec_data._global_database = GlobalProvenance()
-        return cls.__fec_data._global_database
 
     @classmethod
     def get_global_database(cls):

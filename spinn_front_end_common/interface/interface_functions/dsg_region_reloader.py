@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.interface.ds import (
-    DsSqlliteDatabase, DataSpecificationReloader)
+from spinn_front_end_common.interface.ds import DataSpecificationReloader
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import unittest
-import os
 from spinn_utilities.config_holder import set_config
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placement, Placements

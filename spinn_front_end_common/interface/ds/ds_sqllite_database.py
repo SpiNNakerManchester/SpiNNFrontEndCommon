@@ -38,23 +38,22 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     A database for holding data specification details.
     """
-    __slots__ = ["_init_file"]
+    __slots__ = ()
 
     def __init__(self, database_file=None):
         if database_file is None:
             database_file = os.path.join(
                 FecDataView.get_run_dir_path(),
                 f"ds{FecDataView.get_reset_str()}.sqlite3")
-        self._init_file = not os.path.exists(database_file)
+        init_file = not os.path.exists(database_file)
         super().__init__(
-            database_file,
-            ddl_file=_DDL_FILE if self._init_file else None)
+            database_file, ddl_file=_DDL_FILE if init_file else None)
+        if init_file:
+            with self as db:
+                db.__init_ethernets()
 
     def _context_entered(self):
         super()._context_entered()
-        if self._init_file:
-            self.__init_ethernets()
-            self._init_file = False
 
     def __init_ethernets(self):
         """

@@ -169,7 +169,6 @@ class SQLiteDB(AbstractContextManager):
             return str(id(self))
         return self._database_file
 
-
     def close(self):
         """
         Finalises and closes the database.

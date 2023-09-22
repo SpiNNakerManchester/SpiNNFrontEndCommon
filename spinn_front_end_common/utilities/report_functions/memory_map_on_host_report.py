@@ -16,7 +16,6 @@ import logging
 import os
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 logger = FormatAdapter(logging.getLogger(__name__))
 
 _FOLDER_NAME = "memory_map_from_processor_to_address_space"
