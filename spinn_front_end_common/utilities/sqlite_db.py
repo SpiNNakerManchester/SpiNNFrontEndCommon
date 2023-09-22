@@ -93,7 +93,7 @@ class SQLiteDB(AbstractContextManager):
             if not os.path.exists(database_file):
                 raise FileNotFoundError(f"no such DB: {database_file}")
             db_uri = pathlib.Path(os.path.abspath(database_file)).as_uri()
-            self._database_file = db_uri
+            self._database_file = database_file
             # https://stackoverflow.com/a/21794758/301832
             self.__db = sqlite3.connect(f"{db_uri}?mode=ro", uri=True)
         else:

@@ -165,7 +165,6 @@ class _FecDataModel(object):
         self._notification_protocol = None
         self._max_run_time_steps = None
         self._monitor_map = None
-        self._provenance_writer = None
         self._system_multicast_router_timeout_keys = None
         self._soft_reset()
         self._clear_notification_protocol()
@@ -184,6 +183,7 @@ class _FecDataModel(object):
         self._provenance_reader = None
         if self._provenance_writer is not None:
             self._provenance_writer.close()
+        self._provenance_writer = None
         self._run_step = None
 
     def _clear_notification_protocol(self):
@@ -1020,7 +1020,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :return: The buffer database for this sim.setup
         :rtype: ~spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase
         """
-        if cls.__fec_data._global_database is None:
+        if cls.__fec_data._buffer_database is None:
             # Ugly delayed import to avoid circular refrence
             from spinn_front_end_common.interface.buffer_management.\
                 storage_objects import BufferDatabase

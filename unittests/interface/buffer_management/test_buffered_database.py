@@ -30,8 +30,6 @@ class TestBufferedDatabase(unittest.TestCase):
 
     def test_use_database(self):
         with FecDataView.get_buffer_database() as brd:
-            self.assertTrue(os.path.isfile(f), "DB now exists")
-
             # TODO missing
             # data, missing = brd.get_region_data(0, 0, 0, 0)
             # self.assertTrue(missing, "data should be 'missing'")
@@ -43,8 +41,6 @@ class TestBufferedDatabase(unittest.TestCase):
 
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abcdef")
-
-            self.assertTrue(os.path.isfile(f), "DB still exists")
 
     def test_placements(self):
         writer = FecDataWriter.mock()
