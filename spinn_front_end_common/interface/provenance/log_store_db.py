@@ -15,8 +15,9 @@
 import sqlite3
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.provenance import GlobalProvenance
 from spinn_front_end_common.utilities.exceptions import DatabaseException
-from .global_provenance import GlobalProvenance
 
 
 class LogStoreDB(LogStore):
@@ -24,8 +25,14 @@ class LogStoreDB(LogStore):
     @overrides(LogStore.store_log)
     def store_log(self, level, message, timestamp=None):
         try:
-            with GlobalProvenance() as db:
-                db.store_log(level, message, timestamp)
+            try:
+                # If in the same thread the view version can be used
+                with FecDataView.get_global_database() as db:
+                    db.store_log(level, message, timestamp)
+            except Exception:
+                # If in a different thread try again with different db
+                with GlobalProvenance() as db:
+                    db.store_log(level, message, timestamp)
         except sqlite3.OperationalError as ex:
             if "database is locked" in ex.args:
                 # Ok ignore this one
@@ -43,9 +50,9 @@ class LogStoreDB(LogStore):
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(self, min_level=0):
-        with GlobalProvenance() as db:
+        with FecDataView.get_global_database() as db:
             return db.retreive_log_messages(min_level)
 
     @overrides(LogStore.get_location)
     def get_location(self):
-        return GlobalProvenance.get_global_provenace_path()
+        return FecDataView.get_global_database().get_global_provenace_path()

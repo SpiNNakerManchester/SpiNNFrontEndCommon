@@ -47,7 +47,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 f"ds{FecDataView.get_reset_str()}.sqlite3")
         self._init_file = not os.path.exists(database_file)
         super().__init__(
-            self._database_file,
+            database_file,
             ddl_file=_DDL_FILE if self._init_file else None)
 
     def _context_entered(self):

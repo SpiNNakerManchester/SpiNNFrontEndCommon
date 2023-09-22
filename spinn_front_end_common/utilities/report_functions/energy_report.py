@@ -19,7 +19,7 @@ from spinn_utilities.config_holder import is_config_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, GlobalProvenance, TimerCategory)
+    FecTimer, TimerCategory)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.interface_functions.compute_energy_used\
@@ -298,7 +298,7 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: file writer
         """
         # find time in milliseconds
-        with GlobalProvenance() as db:
+        with FecDataView.get_global_database() as db:
             total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
 
         # handle active routers etc
@@ -324,7 +324,7 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: file writer
         """
         # find time
-        with GlobalProvenance() as db:
+        with FecDataView.get_global_database() as db:
             total_time_ms = db.get_timer_sum_by_algorithm(
                 FecTimer.APPLICATION_RUNNER)
 

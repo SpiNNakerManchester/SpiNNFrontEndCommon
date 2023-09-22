@@ -58,9 +58,7 @@ class GlobalProvenance(SQLiteDB):
             if the system is in a state where path can't be retrieved,
             for example before run is called
         """
-        return os.path.join(
-            FecDataView.get_timestamp_dir_path(),
-            "global_provenance.sqlite3")
+        return
 
     def __init__(self, database_file=None, memory=False):
         """
@@ -75,7 +73,9 @@ class GlobalProvenance(SQLiteDB):
             Otherwise a `None` file will mean the default should be used
         """
         if database_file is None and not memory:
-            database_file = self.get_global_provenace_path()
+            database_file = os.path.join(
+                FecDataView.get_timestamp_dir_path(),
+                "global_provenance.sqlite3")
         self._database_file = database_file
         SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE,
                           row_factory=None, text_factory=None)

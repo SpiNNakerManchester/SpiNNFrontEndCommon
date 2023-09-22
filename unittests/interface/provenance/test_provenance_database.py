@@ -14,16 +14,17 @@
 
 import logging
 import os
-from sqlite3 import OperationalError
 from spinn_utilities.log import FormatAdapter
 from datetime import timedelta
 from testfixtures.logcapture import LogCapture
 import unittest
 from spinn_utilities.config_holder import set_config
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
-    LogStoreDB, GlobalProvenance, ProvenanceWriter, ProvenanceReader,
+    LogStoreDB, ProvenanceWriter, ProvenanceReader,
     TimerCategory, TimerWork)
+from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -45,7 +46,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         return results
 
     def test_version(self):
-        with GlobalProvenance() as db:
+        with FecDataView.get_global_database() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
             db.insert_version("numpy_version", "1.17.4")
             data = db.run_query("select * from version_provenance")
@@ -64,7 +65,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             self.assertListEqual(data, power)
 
     def test_timings(self):
-        with GlobalProvenance() as db:
+        with FecDataView.get_global_database() as db:
             mapping_id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_timing(
                 mapping_id, "compressor", TimerWork.OTHER,
@@ -96,7 +97,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             self.assertEqual(0, data)
 
     def test_category_timings(self):
-        with GlobalProvenance() as db:
+        with FecDataView.get_global_database() as db:
             id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_category_timing(id, timedelta(milliseconds=12))
 
@@ -203,26 +204,37 @@ class TestProvenanceDatabase(unittest.TestCase):
         ls = LogStoreDB()
         logger.set_log_store(ls)
         logger.warning("this works")
-        with GlobalProvenance() as db:
+        with FecDataView.get_global_database() as db:
+            # this garns and locks the global_database
             db._test_log_locked("locked")
-        logger.warning("not locked")
-        logger.warning("this wis fine")
+            # So this does not work as the outer is useless
+            logger.warning("still locked")
+        logger.warning("this is fine")
+        with FecDataView.get_global_database() as db:
+            db.execute(
+                """
+                INSERT INTO version_provenance(
+                    description, the_value)
+                VALUES("foo2", "bar2")
+                """)
+            logger.warning("also locked")
+        logger.warning("fine again")
+
         # the use of class variables and tests run in parallel dont work.
         if "JENKINS_URL" not in os.environ:
-            self.assertListEqual(
-                ["this works", "not locked", "this wis fine"],
-                ls.retreive_log_messages(20))
+            logs = ls.retreive_log_messages(20)
+            self.assertIn("this works", logs)
+            self.assertNotIn("locked", logs)
+            self.assertNotIn("still locked", logs)
+            self.assertIn("this is fine", logs)
+            self.assertNotIn("also locked", logs)
+            self.assertIn("fine again", logs)
         logger.set_log_store(None)
 
     def test_double_with(self):
         # Confirm that using the database twice goes boom
-        with GlobalProvenance() as db1:
-            with GlobalProvenance() as db2:
-                # A read does not lock the database
-                db1.get_timer_provenance("test")
-                db2.get_timer_provenance("test")
-                # A write does
-                db1.insert_version("a", "foo")
-                with self.assertRaises(OperationalError):
-                    # So a write from a different transaction goes boom
-                    db2.insert_version("b", "bar")
+        with self.assertRaises(DatabaseException):
+            with FecDataView.get_global_database() as db1:
+                with FecDataView.get_global_database() as db2:
+                    # never reached but uses up the variables
+                    assert db1 == db2 == 2

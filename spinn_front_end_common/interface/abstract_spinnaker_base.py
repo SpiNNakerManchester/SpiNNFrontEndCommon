@@ -104,7 +104,7 @@ from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, GlobalProvenance, TimerCategory, TimerWork)
+    FecTimer, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
@@ -822,7 +822,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Add the version information to the provenance data at the start.
         """
-        with GlobalProvenance() as db:
+        with FecDataView.get_global_database() as db:
             db.insert_version("spinn_utilities_version", spinn_utils_version)
             db.insert_version("spinn_machine_version", spinn_machine_version)
             db.insert_version("spalloc_version", spalloc_version)

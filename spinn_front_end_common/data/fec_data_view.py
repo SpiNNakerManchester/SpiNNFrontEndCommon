@@ -21,6 +21,7 @@ from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge
 # in code to avoid circular import
+# from spinn_front_end_common.interface.provenance import GlobalProvenance
 # from spinn_front_end_common.utility_models import LivePacketGather
 # from spinn_front_end_common.utility_models import CommandSender
 
@@ -60,6 +61,7 @@ class _FecDataModel(object):
         "_first_machine_time_step",
         "_fixed_routes",
         "_gatherer_map",
+        "_global_database",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_ipaddress",
@@ -95,6 +97,9 @@ class _FecDataModel(object):
         obj = object.__new__(cls)
         cls.__singleton = obj
         obj._notification_protocol = None
+        # Set the databases to done so they can be checked the first time
+        obj._global_database = None
+        obj._ds_database = None
         obj._clear()
         return obj
 
@@ -113,6 +118,9 @@ class _FecDataModel(object):
         self._n_boards_required = None
         self._n_chips_required = None
         self._none_labelled_edge_count = 0
+        if self._global_database is not None:
+            self._global_database.close()
+        self._global_database = None
         self._reset_number = 0
         self._run_number = None
         self._simulation_time_step_ms = None
@@ -133,6 +141,8 @@ class _FecDataModel(object):
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
         self._database_file_path = None
+        if self._ds_database is not None:
+            self._ds_database.close()
         self._ds_database = None
         self._next_ds_reference = 0
         self._executable_targets = None
@@ -972,14 +982,30 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_ds_database(cls):
         """
-        Gets the path for the Data Spec database.
-        :rtype: str
+        Gets the the Data Spec database.if is has been created
+
+        :rtype: ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the ds_database is currently unavailable
         """
         if cls.__fec_data._ds_database is None:
             raise cls._exception("_ds_database")
         return cls.__fec_data._ds_database
+
+    @classmethod
+    def get_global_database(cls):
+        """
+        Get the Global Provenance Data even if it has to create one
+
+        :return: The Global Provenance Data for this sim.setup
+        """
+        if cls.__fec_data._global_database is None:
+            # Ugly deyaled import to avoid circular refrence
+            from spinn_front_end_common.interface.provenance import (
+                GlobalProvenance)
+            cls.__fec_data._global_database = GlobalProvenance()
+        return cls.__fec_data._global_database
+
 
     @classmethod
     def has_monitors(cls):
