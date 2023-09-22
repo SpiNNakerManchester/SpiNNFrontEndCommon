@@ -47,6 +47,8 @@ class SQLiteDB(AbstractContextManager):
         "__cursor",
         # the database holding the data to store
         "__db",
+        # the file this database is saved to
+        "_database_file"
     ]
 
     def __init__(self, database_file=None, *, read_only=False, ddl_file=None,
@@ -86,14 +88,17 @@ class SQLiteDB(AbstractContextManager):
         if database_file is None:
             self.__db = sqlite3.connect(":memory:")  # Magic name!
             # in-memory DB is never read-only
+            self._database_file = None
         elif read_only:
             if not os.path.exists(database_file):
                 raise FileNotFoundError(f"no such DB: {database_file}")
             db_uri = pathlib.Path(os.path.abspath(database_file)).as_uri()
+            self._database_file = db_uri
             # https://stackoverflow.com/a/21794758/301832
             self.__db = sqlite3.connect(f"{db_uri}?mode=ro", uri=True)
         else:
             self.__db = sqlite3.connect(database_file)
+            self._database_file = database_file
 
         if row_factory:
             self.__db.row_factory = row_factory
@@ -140,6 +145,30 @@ class SQLiteDB(AbstractContextManager):
 
     def __del__(self):
         self.close()
+
+    def get_path(self):
+        """
+        Gets the path of this database
+
+        :rtype: str
+        :return: The path
+        :raises ValueError: If this is an in memorydata
+        """
+        if self._database_file is None:
+            raise ValueError("This is an in memory database")
+        return self._database_file
+
+    def get_path_str(self):
+        """
+        Gets the path of this database
+
+        :rtype: str
+        :return: The path
+        """
+        if self._database_file is None:
+            return str(id(self))
+        return self._database_file
+
 
     def close(self):
         """

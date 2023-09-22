@@ -38,16 +38,14 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     A database for holding data specification details.
     """
-    __slots__ = ["_database_file", "_init_file"]
+    __slots__ = ["_init_file"]
 
     def __init__(self, database_file=None):
         if database_file is None:
-            self._database_file = os.path.join(
+            database_file = os.path.join(
                 FecDataView.get_run_dir_path(),
                 f"ds{FecDataView.get_reset_str()}.sqlite3")
-        else:
-            self._database_file = database_file
-        self._init_file = not os.path.exists(self._database_file)
+        self._init_file = not os.path.exists(database_file)
         super().__init__(
             self._database_file,
             ddl_file=_DDL_FILE if self._init_file else None)
@@ -71,15 +69,6 @@ class DsSqlliteDatabase(SQLiteDB):
             """, (
                 (ethernet.x, ethernet.y, ethernet.ip_address)
                 for ethernet in eth_chips))
-
-    def get_path(self):
-        """
-        Gets the path of this database
-
-        :rtype: str
-        :return: The path
-        """
-        return self._database_file
 
     def set_core(self, x, y, p, vertex):
         """
