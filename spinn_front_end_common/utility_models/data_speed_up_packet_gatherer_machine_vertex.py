@@ -51,6 +51,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.scp import ReinjectorControlProcess
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+from spinn_front_end_common.utilities.report_functions.utils import csvopen
 if TYPE_CHECKING:
     from .extra_monitor_support_machine_vertex import \
         ExtraMonitorSupportMachineVertex
@@ -258,9 +259,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     _TRANSMISSION_THROTTLE_TIME = 0.000001
 
     #: report name for tracking used routers
-    OUT_REPORT_NAME = "routers_used_in_speed_up_process.rpt"
+    OUT_REPORT_NAME = "routers_used_in_speed_up_process.csv"
     #: report name for tracking performance gains
-    IN_REPORT_NAME = "speeds_gained_in_speed_up_process.rpt"
+    IN_REPORT_NAME = "speeds_gained_in_speed_up_process.csv"
 
     # the end flag is set when the high bit of the sequence number word is set
     _LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000
@@ -475,14 +476,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             the set of missing sequence numbers per data transmission attempt
         """
         if not os.path.isfile(self._in_report_path):
-            with open(self._in_report_path, "w", encoding="utf-8") as writer:
-                writer.write(
-                    "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
-                    " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
-                writer.write(
-                    "------------------------------------------------"
-                    "------------------------------------------------"
-                    "-------------------------------------------------\n")
+            COLUMNS = (
+                "x,y,SDRAM address,size (bytes),time,data rate (Mb/s),"
+                "missing sequence numbers")
+            with csvopen(self._in_report_path, COLUMNS):
+                pass
 
         time_took_ms = float(time_diff.microseconds +
                              time_diff.total_seconds() * 1000000)
@@ -492,10 +490,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         else:
             mbs = megabits / (float(time_took_ms) / 100000.0)
 
-        with open(self._in_report_path, "a", encoding="utf-8") as writer:
-            writer.write(
-                f"{x}\t\t {y}\t\t {address_written_to}\t\t {data_size}\t\t"
-                f"\t\t {time_took_ms}\t\t\t {mbs}\t\t {missing_seq_nums}\n")
+        with csvopen(self._in_report_path, None, mode="a") as writer:
+            writer.writerow([
+                x, y, hex(address_written_to), data_size, time_took_ms, mbs,
+                missing_seq_nums])
 
     def send_data_into_spinnaker(
             self, x: int, y: int, base_address: int,
@@ -1153,10 +1151,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             The placement that we have been routing data out from
         """
         routers_used = self.__describe_fixed_route_from(placement)
-        with open(self._out_report_path, "a", encoding="utf-8") as writer:
-            writer.write(
-                f"[{placement.x}:{placement.y}:{placement.p}] "
-                f"= {routers_used}\n")
+        with csvopen(
+                self._out_report_path, "x,y,p,routers used", mode="a") as f:
+            f.writerow([placement.x, placement.y, placement.p, routers_used])
 
     def __missing_seq_nums(self, seq_nums: Set[int]) -> List[int]:
         """
