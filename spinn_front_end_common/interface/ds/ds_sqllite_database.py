@@ -49,7 +49,7 @@ class DsSqlliteDatabase(SQLiteDB):
         super().__init__(
             database_file, ddl_file=_DDL_FILE if init_file else None)
         if init_file:
-             self.__init_ethernets()
+            self.__init_ethernets()
 
     def __init_ethernets(self):
         """
