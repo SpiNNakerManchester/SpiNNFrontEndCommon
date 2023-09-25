@@ -31,7 +31,6 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
@@ -572,17 +571,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(targets, FecDataView.get_executable_targets())
         with self.assertRaises(TypeError):
             writer.set_executable_targets([])
-
-    def test_ds_database(self):
-        writer = FecDataWriter.mock()
-        set_config("Machine", "version", 5)
-        with self.assertRaises(DataNotYetAvialable):
-            FecDataView.get_ds_database()
-        targets = DsSqlliteDatabase()
-        writer.set_ds_database(targets)
-        self.assertEqual(targets, FecDataView.get_ds_database())
-        with self.assertRaises(TypeError):
-            writer.set_ds_database(dict())
 
     def test_gatherer_map(self):
         writer = FecDataWriter.mock()
