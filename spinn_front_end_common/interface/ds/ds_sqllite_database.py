@@ -50,10 +50,8 @@ class DsSqlliteDatabase(SQLiteDB):
             database_file, ddl_file=_DDL_FILE if init_file else None)
         if init_file:
             with self as db:
+                # pylint: disable=protected-access
                 db.__init_ethernets()
-
-    def _context_entered(self):
-        super()._context_entered()
 
     def __init_ethernets(self):
         """
