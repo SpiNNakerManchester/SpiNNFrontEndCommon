@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from contextlib import AbstractContextManager as ACMBase
-import enum
 import hashlib
 import logging
 import os
@@ -21,20 +19,9 @@ import pathlib
 import sqlite3
 import struct
 from spinn_utilities.abstract_context_manager import AbstractContextManager
-from spinn_utilities.logger_utils import warn_once
+from spinn_front_end_common.utilities.exceptions import DatabaseException
+
 logger = logging.getLogger(__name__)
-
-
-class Isolation(enum.Enum):
-    """
-    Transaction isolation levels for :py:meth:`SQLiteDB.transaction`.
-    """
-    #: Standard transaction type; postpones holding a lock until required.
-    DEFERRED = "DEFERRED"
-    #: Take the lock immediately; this may be a read-lock that gets upgraded.
-    IMMEDIATE = "IMMEDIATE"
-    #: Take a write lock immediately. This is the strongest lock type.
-    EXCLUSIVE = "EXCLUSIVE"
 
 
 class SQLiteDB(AbstractContextManager):
@@ -56,6 +43,8 @@ class SQLiteDB(AbstractContextManager):
     """
 
     __slots__ = [
+        # the cursor object to use
+        "__cursor",
         # the database holding the data to store
         "__db",
     ]
@@ -122,13 +111,34 @@ class SQLiteDB(AbstractContextManager):
             # The application_id pragma would be used within the DDL schema.
             ddl_hash, = struct.unpack_from(
                 ">I", hashlib.md5(sql.encode()).digest())
-            self.pragma("user_version", ddl_hash)
+            self.__pragma("user_version", ddl_hash)
         if case_insensitive_like:
-            self.pragma("case_sensitive_like", False)
+            self.__pragma("case_sensitive_like", False)
         # Official recommendations!
-        self.pragma("foreign_keys", True)
-        self.pragma("recursive_triggers", True)
-        self.pragma("trusted_schema", False)
+        self.__pragma("foreign_keys", True)
+        self.__pragma("recursive_triggers", True)
+        self.__pragma("trusted_schema", False)
+
+        self.__cursor = None
+
+    def _context_entered(self):
+        if self.__db is None:
+            raise DatabaseException("database has been closed")
+        if self.__cursor is not None:
+            raise DatabaseException("double cursor")
+        if not self.__db.in_transaction:
+            self.__db.execute("BEGIN")
+        self.__cursor = self.__db.cursor()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.__db is not None:
+            if exc_type is None:
+                self.__db.commit()
+            else:
+                self.__db.rollback()
+        self.__cursor = None
+        # calls close
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
     def __del__(self):
         self.close()
@@ -144,7 +154,7 @@ class SQLiteDB(AbstractContextManager):
         except AttributeError:
             self.__db = None
 
-    def pragma(self, pragma_name, value):
+    def __pragma(self, pragma_name, value):
         """
         Set a database ``PRAGMA``. See the `SQLite PRAGMA documentation
         <https://www.sqlite.org/pragma.html>`_ for details.
@@ -167,62 +177,70 @@ class SQLiteDB(AbstractContextManager):
         else:
             raise TypeError("can only set pragmas to bool, int or str")
 
+    def execute(self, sql, paramters=()):
+        """
+        Executes a query by passing it to the database
+
+        :param str sql:
+        :param paramters:
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
+        """
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.execute(sql, paramters)
+
+    def executemany(self, sql, paramters=()):
+        """
+        Repeatedly executes a query by passing it to the database
+
+        :param str sql:
+        :param paramters:
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
+        """
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.executemany(sql, paramters)
+
     @property
-    def connection(self):
+    def lastrowid(self):
         """
-        The underlying SQLite database connection.
+        Gets the lastrow from the last query run/ execute
 
-        .. warning::
-            If you're using this a lot, consider contacting the SpiNNaker
-            Software Team with details of your use case so we can extend the
-            relevant core class to support you. *Normally* it is better to use
-            :py:meth:`transaction` to obtain a cursor with appropriate
-            transactional guards.
-
-        :rtype: ~sqlite3.Connection
-        :raises AttributeError: if the database connection has been closed
+        :rtype: int
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
         """
-        warn_once(
-            logger,
-            "Low-level connection used instead of transaction() context. "
-            "Please contact SpiNNaker Software Team with your use-case for "
-            "assistance.")
-        if not self.__db:
-            raise AttributeError("database has been closed")
-        return self.__db
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.lastrowid
 
-    def transaction(self, isolation_level=None):
+    @property
+    def rowcount(self):
         """
-        Get a context manager that manages a transaction on the database.
-        The value of the context manager is a :py:class:`~sqlite3.Cursor`.
-        This means you can do this::
+        Gets the rowcount from the last query run/ execute
 
-            with db.transaction() as cursor:
-                cursor.execute(...)
-
-        :param Isolation isolation_level:
-            The transaction isolation level.
-
-            .. note::
-                This sets it for the connection!
-                Can usually be *not* specified.
-        :rtype: ~typing.ContextManager(~sqlite3.Cursor)
+        :rtype: int
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
         """
-        if not self.__db:
-            raise AttributeError("database has been closed")
-        db = self.__db
-        if isolation_level:
-            db.isolation_level = isolation_level.value
-        return _DbWrapper(db)
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.rowcount
 
+    def fetchone(self):
+        """
+        Gets the fetchone from the last query run
 
-class _DbWrapper(ACMBase):
-    def __init__(self, db):
-        self.__d = db
-
-    def __enter__(self):
-        self.__d.__enter__()
-        return self.__d.cursor()
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        return self.__d.__exit__(exc_type, exc_value, traceback)
+        :raises DatabaseException: If there is no cursor.
+            Typically because database was used outside of a with
+        """
+        if self.__cursor is None:
+            raise DatabaseException(
+                "This method should only be used inside a with")
+        return self.__cursor.fetchone()

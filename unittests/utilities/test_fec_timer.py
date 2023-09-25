@@ -109,7 +109,8 @@ class TestFecTimer(unittest.TestCase):
             total = db.get_category_timer_sum(
                 TimerCategory.SHUTTING_DOWN)
             self.assertEqual(total, 0)
-            FecTimer.stop_category_timing()
+        FecTimer.stop_category_timing()
+        with GlobalProvenance() as db:
             total = db.get_category_timer_sum(
                 TimerCategory.SHUTTING_DOWN)
             self.assertGreater(total, 0)
@@ -141,6 +142,11 @@ class TestFecTimer(unittest.TestCase):
             FecTimer.end_category(TimerCategory.WITH_MACHINE_MAPPING)
             FecTimer.end_category(TimerCategory.RUN_OTHER)
             FecTimer.stop_category_timing()
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.RUN_OTHER)
+        FecTimer.stop_category_timing()
+        with GlobalProvenance() as db:
             total = db.get_category_timer_sum(TimerCategory.WAITING)
             self.assertGreater(total, before)
             other = db.get_category_timer_sum(TimerCategory.RUN_OTHER)
@@ -157,6 +163,12 @@ class TestFecTimer(unittest.TestCase):
             FecTimer.stop_category_timing()
             mapping = db.get_category_timer_sum(
                 TimerCategory.WITH_MACHINE_MAPPING)
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
+        FecTimer.end_category(TimerCategory.SHUTTING_DOWN)
+        FecTimer.stop_category_timing()
+        with GlobalProvenance() as db:
+            mapping = db.get_category_timer_sum(TimerCategory.MAPPING)
             self.assertGreater(mapping, 0)
             total = db.get_category_timer_sum(TimerCategory.WAITING)
             # As we never ended RUN_OTHER we never got back to WAITING

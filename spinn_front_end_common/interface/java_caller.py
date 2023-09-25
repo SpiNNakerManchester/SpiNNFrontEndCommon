@@ -30,7 +30,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -380,7 +379,7 @@ class JavaCaller(object):
         """
         result = self._run_java(
             'dse_sys', self._machine_json(),
-            DsSqlliteDatabase.default_database_file(),
+            FecDataView.get_ds_database_path(),
             FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(
@@ -405,12 +404,12 @@ class JavaCaller(object):
         if use_monitors:
             result = self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
-                DsSqlliteDatabase.default_database_file(),
+                FecDataView.get_ds_database_path(),
                 FecDataView.get_run_dir_path())
         else:
             result = self._run_java(
                 'dse_app', self._machine_json(),
-                DsSqlliteDatabase.default_database_file(),
+                FecDataView.get_ds_database_path(),
                 FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(

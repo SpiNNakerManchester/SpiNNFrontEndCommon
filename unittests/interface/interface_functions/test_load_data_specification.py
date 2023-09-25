@@ -98,20 +98,18 @@ class TestLoadDataSpecification(unittest.TestCase):
 
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
-        db = DsSqlliteDatabase()
-        spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
-        spec.reserve_memory_region(0, 100)
-        spec.reserve_memory_region(1, 100)
-        spec.reserve_memory_region(2, 100)
-        spec.switch_write_focus(0)
-        spec.write_value(0)
-        spec.write_value(1)
-        spec.write_value(2)
-        spec.switch_write_focus(2)
-        spec.write_value(3)
-        spec.end_specification()
-
-        writer.set_ds_database(db)
+        with DsSqlliteDatabase() as db:
+            spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
+            spec.reserve_memory_region(0, 100)
+            spec.reserve_memory_region(1, 100)
+            spec.reserve_memory_region(2, 100)
+            spec.switch_write_focus(0)
+            spec.write_value(0)
+            spec.write_value(1)
+            spec.write_value(2)
+            spec.switch_write_focus(2)
+            spec.write_value(3)
+            spec.end_specification()
 
         load_application_data_specs()
 
@@ -147,41 +145,40 @@ class TestLoadDataSpecification(unittest.TestCase):
         # Size of user 0
         self.assertEqual(len(regions[0][1]), 4)
 
-        pc = list(db.get_info_for_cores())
-        _, _, memory_used, memory_written = pc[0]
-        # We reserved 3 regions at 100 each
-        self.assertEqual(memory_used, header_and_table_size + 300)
-        self.assertEqual(header_and_table_size + 300,
-                         db.get_memory_to_malloc(0, 0, 0))
-        # We wrote 4 words
-        self.assertEqual(memory_written, header_and_table_size + 16)
-        self.assertEqual(db.get_memory_to_write(0, 0, 0),
-                         header_and_table_size + 16)
+        with DsSqlliteDatabase() as db:
+            pc = list(db.get_info_for_cores())
+            _, _, memory_used, memory_written = pc[0]
+            # We reserved 3 regions at 100 each
+            self.assertEqual(memory_used, header_and_table_size + 300)
+            self.assertEqual(header_and_table_size + 300,
+                             db.get_memory_to_malloc(0, 0, 0))
+            # We wrote 4 words
+            self.assertEqual(memory_written, header_and_table_size + 16)
+            self.assertEqual(db.get_memory_to_write(0, 0, 0),
+                             header_and_table_size + 16)
 
     def test_multi_spec_with_references(self):
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
 
-        db = DsSqlliteDatabase()
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
 
-        spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
-        spec.reference_memory_region(0, 1)
-        spec.end_specification()
+        with DsSqlliteDatabase() as db:
+            spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
+            spec.reference_memory_region(0, 1)
+            spec.end_specification()
 
-        spec = DataSpecificationGenerator(0, 0, 1, vertex, db)
-        spec.reserve_memory_region(0, 12, reference=1)
-        spec.switch_write_focus(0)
-        spec.write_value(0)
-        spec.end_specification()
+            spec = DataSpecificationGenerator(0, 0, 1, vertex, db)
+            spec.reserve_memory_region(0, 12, reference=1)
+            spec.switch_write_focus(0)
+            spec.write_value(0)
+            spec.end_specification()
 
-        spec = DataSpecificationGenerator(0, 0, 2, vertex, db)
-        spec.reference_memory_region(0, 1)
-        spec.end_specification()
-
-        writer.set_ds_database(db)
+            spec = DataSpecificationGenerator(0, 0, 2, vertex, db)
+            spec.reference_memory_region(0, 1)
+            spec.end_specification()
 
         load_application_data_specs()
 
@@ -192,20 +189,21 @@ class TestLoadDataSpecification(unittest.TestCase):
 
         header_and_table_size = ((MAX_MEM_REGIONS * 3) + 2) * BYTES_PER_WORD
 
-        self.assertEqual(header_and_table_size,
-                         db.get_memory_to_malloc(0, 0, 0))
-        self.assertEqual(header_and_table_size,
-                         db.get_memory_to_write(0, 0, 0))
+        with DsSqlliteDatabase() as db:
+            self.assertEqual(header_and_table_size,
+                             db.get_memory_to_malloc(0, 0, 0))
+            self.assertEqual(header_and_table_size,
+                             db.get_memory_to_write(0, 0, 0))
 
-        self.assertEqual(header_and_table_size + 12,
-                         db.get_memory_to_malloc(0, 0, 1))
-        self.assertEqual(header_and_table_size + 4,
-                         db.get_memory_to_write(0, 0, 1))
+            self.assertEqual(header_and_table_size + 12,
+                             db.get_memory_to_malloc(0, 0, 1))
+            self.assertEqual(header_and_table_size + 4,
+                             db.get_memory_to_write(0, 0, 1))
 
-        self.assertEqual(header_and_table_size,
-                         db.get_memory_to_malloc(0, 0, 2))
-        self.assertEqual(header_and_table_size,
-                         db.get_memory_to_write(0, 0, 2))
+            self.assertEqual(header_and_table_size,
+                             db.get_memory_to_malloc(0, 0, 2))
+            self.assertEqual(header_and_table_size,
+                             db.get_memory_to_write(0, 0, 2))
 
         # Find the base addresses
         base_addresses = dict()
@@ -239,24 +237,21 @@ class TestLoadDataSpecification(unittest.TestCase):
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
 
-        db = DsSqlliteDatabase()
+        with DsSqlliteDatabase() as db:
+            spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
+            spec.reference_memory_region(0, 2)
+            spec.end_specification()
 
-        spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
-        spec.reference_memory_region(0, 2)
-        spec.end_specification()
+            spec = DataSpecificationGenerator(0, 0, 1, vertex, db)
+            spec.reserve_memory_region(0, 12, reference=1)
+            spec.switch_write_focus(0)
+            spec.write_value(0)
+            spec.end_specification()
 
-        spec = DataSpecificationGenerator(0, 0, 1, vertex, db)
-        spec.reserve_memory_region(0, 12, reference=1)
-        spec.switch_write_focus(0)
-        spec.write_value(0)
-        spec.end_specification()
-
-        writer.set_ds_database(db)
-
-        # This safety query should yield nothing
-        bad = list(db.get_unlinked_references())
-        # x, y, p, region, ref, ref_label
-        self.assertEqual([(0, 0, 0, 0, 2, "")], bad)
+        with DsSqlliteDatabase() as db:
+            bad = list(db.get_unlinked_references())
+            # x, y, p, region, ref, ref_label
+            self.assertEqual([(0, 0, 0, 0, 2, "")], bad)
 
         # DataSpecException because one of the regions can't be found
         with self.assertRaises(DataSpecException):
@@ -269,12 +264,11 @@ class TestLoadDataSpecification(unittest.TestCase):
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
 
-        db = DsSqlliteDatabase()
-
-        spec = DataSpecificationGenerator(0, 0, 1, vertex, db)
-        spec.reserve_memory_region(0, 12, reference=1)
-        with self.assertRaises(IntegrityError):
-            spec.reserve_memory_region(1, 12, reference=1)
+        with DsSqlliteDatabase() as db:
+            spec = DataSpecificationGenerator(0, 0, 1, vertex, db)
+            spec.reserve_memory_region(0, 12, reference=1)
+            with self.assertRaises(IntegrityError):
+                spec.reserve_memory_region(1, 12, reference=1)
 
     def test_multispec_with_wrong_chip_reference(self):
         writer = FecDataWriter.mock()
@@ -284,28 +278,27 @@ class TestLoadDataSpecification(unittest.TestCase):
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
 
-        db = DsSqlliteDatabase()
+        with DsSqlliteDatabase() as db:
 
-        spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
-        spec.reserve_memory_region(0, 12, reference=1)
-        spec.switch_write_focus(0)
-        spec.write_value(0)
-        spec.end_specification()
+            spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
+            spec.reserve_memory_region(0, 12, reference=1)
+            spec.switch_write_focus(0)
+            spec.write_value(0)
+            spec.end_specification()
 
-        spec = DataSpecificationGenerator(1, 1, 0, vertex, db)
-        spec.reference_memory_region(0, 1)
-        spec.end_specification()
+            spec = DataSpecificationGenerator(1, 1, 0, vertex, db)
+            spec.reference_memory_region(0, 1)
+            spec.end_specification()
 
-        writer.set_ds_database(db)
+            # This safety query should yield nothing
+            bad = list(db.get_unlinked_references())
+            # x, y, p, region, ref, ref_label
+            self.assertEqual([(1, 1, 0, 0, 1, "")], bad)
 
-        # This safety query should yield nothing
-        bad = list(db.get_unlinked_references())
-        # x, y, p, region, ref, ref_label
-        self.assertEqual([(1, 1, 0, 0, 1, "")], bad)
-
-        # DataSpecException because the reference is on a different chip
-        with self.assertRaises(DataSpecException):
-            load_application_data_specs()
+        with DsSqlliteDatabase() as db:
+            # DataSpecException because the reference is on a different chip
+            with self.assertRaises(DataSpecException):
+                load_application_data_specs()
 
 
 if __name__ == "__main__":

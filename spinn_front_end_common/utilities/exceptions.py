@@ -76,6 +76,12 @@ class DsDatabaseException(SpinnFrontEndException):
     """
 
 
+class DatabaseException(SpinnFrontEndException):
+    """
+    Raise when something in a database failed.
+    """
+
+
 class DataSpecException(SpinnFrontEndException):
     """
     Raise when Data Specification did something wrong

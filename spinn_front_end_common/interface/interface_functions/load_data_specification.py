@@ -18,6 +18,7 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import (
     APPDATA_MAGIC_NUM, APP_PTR_TABLE_BYTE_SIZE, BYTES_PER_WORD,
     CORE_DATA_SDRAM_BASE_TAG, DSE_VERSION, MAX_MEM_REGIONS, TABLE_TYPE)
@@ -132,35 +133,35 @@ class _LoadDataSpecification(object):
             self.__set_router_timeouts()
 
         # create a progress bar for end users
-        ds_database = FecDataView.get_ds_database()
+        with DsSqlliteDatabase() as ds_database:
 
-        # allocate and set user 0 before loading data
+            # allocate and set user 0 before loading data
 
-        transceiver = FecDataView.get_transceiver()
-        writer = transceiver.write_memory
-        core_infos = ds_database.get_core_infos(is_system)
-        if is_system:
-            type_str = "system"
-        else:
-            type_str = "application"
-        progress = ProgressBar(
-            len(core_infos) * 2,
-            "Executing data specifications and loading data for "
-            f"{type_str} vertices")
+            transceiver = FecDataView.get_transceiver()
+            writer = transceiver.write_memory
+            core_infos = ds_database.get_core_infos(is_system)
+            if is_system:
+                type_str = "system"
+            else:
+                type_str = "application"
+            progress = ProgressBar(
+                len(core_infos) * 2,
+                "Executing data specifications and loading data for "
+                f"{type_str} vertices")
 
-        for x, y, p, _, _ in progress.over(
-                core_infos, finish_at_end=False):
-            self.__python_maloc_core(ds_database, x, y, p)
+            for x, y, p, _, _ in progress.over(
+                    core_infos, finish_at_end=False):
+                self.__python_maloc_core(ds_database, x, y, p)
 
-        for x, y, p, eth_x, eth_y in progress.over(core_infos):
-            if uses_advanced_monitors:
-                gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
-                writer = gatherer.send_data_into_spinnaker
-            written = self.__python_load_core(ds_database, x, y, p, writer)
-            to_write = ds_database.get_memory_to_write(x, y, p)
-            if (written != to_write):
-                raise DataSpecException(
-                    f"For {x=}{y=}{p=} {written=} != {to_write=}")
+            for x, y, p, eth_x, eth_y in progress.over(core_infos):
+                if uses_advanced_monitors:
+                    gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
+                    writer = gatherer.send_data_into_spinnaker
+                written = self.__python_load_core(ds_database, x, y, p, writer)
+                to_write = ds_database.get_memory_to_write(x, y, p)
+                if (written != to_write):
+                    raise DataSpecException(
+                        f"For {x=}{y=}{p=} {written=} != {to_write=}")
 
         if uses_advanced_monitors:
             self.__reset_router_timeouts()

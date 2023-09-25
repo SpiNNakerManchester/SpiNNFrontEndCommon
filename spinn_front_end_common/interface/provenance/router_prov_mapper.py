@@ -66,30 +66,29 @@ class Plotter(object):
 
     def __do_chip_query(self, description):
         # Does the query in one of two ways, depending on schema version
-        with self._db.transaction() as cur:
-            if self.__have_insertion_order:
-                try:
-                    return cur.execute("""
-                        SELECT source_name AS "source", x, y,
-                            description_name AS "description",
-                            the_value AS "value"
-                        FROM provenance_view
-                        WHERE description LIKE ?
-                        GROUP BY x, y, p
-                        HAVING insertion_order = MAX(insertion_order)
-                        """, (description, ))
-                except sqlite3.OperationalError as e:
-                    if "no such column: insertion_order" != str(e):
-                        raise
-                    self.__have_insertion_order = False
-            return cur.execute("""
-                SELECT source_name AS "source", x, y,
-                    description_name AS "description",
-                    MAX(the_value) AS "value"
-                FROM provenance_view
-                WHERE description LIKE ?
-                GROUP BY x, y, p
-                """, (description, ))
+        if self.__have_insertion_order:
+            try:
+                return self._db.execute("""
+                    SELECT source_name AS "source", x, y,
+                        description_name AS "description",
+                        the_value AS "value"
+                    FROM provenance_view
+                    WHERE description LIKE ?
+                    GROUP BY x, y, p
+                    HAVING insertion_order = MAX(insertion_order)
+                    """, (description, ))
+            except sqlite3.OperationalError as e:
+                if "no such column: insertion_order" != str(e):
+                    raise
+                self.__have_insertion_order = False
+        return self._db.execute("""
+            SELECT source_name AS "source", x, y,
+                description_name AS "description",
+                MAX(the_value) AS "value"
+            FROM provenance_view
+            WHERE description LIKE ?
+            GROUP BY x, y, p
+            """, (description, ))
 
     def get_per_chip_prov_types(self):
         query = """
@@ -97,8 +96,8 @@ class Plotter(object):
             FROM provenance_view
             WHERE x IS NOT NULL AND p IS NULL AND "description" IS NOT NULL
             """
-        with self._db.transaction() as cur:
-            return frozenset(row["description"] for row in cur.execute(query))
+        return frozenset(row["description"] for row in self._db.execute(
+            query))
 
     def get_per_chip_prov_details(self, info):
         data = []
@@ -122,38 +121,37 @@ class Plotter(object):
 
     def __do_sum_query(self, description):
         # Does the query in one of two ways, depending on schema version
-        with self._db.transaction() as cur:
-            if self.__have_insertion_order:
-                try:
-                    return cur.execute("""
-                        SELECT "source", x, y, "description",
-                            SUM("value") AS "value"
-                        FROM (
-                            SELECT source_name AS "source", x, y, p,
-                                description_name AS "description",
-                                the_value AS "value"
-                            FROM provenance_view
-                            WHERE description LIKE ? AND p IS NOT NULL
-                            GROUP BY x, y, p
-                            HAVING insertion_order = MAX(insertion_order))
-                        GROUP BY x, y
-                        """, (description, ))
-                except sqlite3.OperationalError as e:
-                    if "no such column: insertion_order" != str(e):
-                        raise
-                    self.__have_insertion_order = False
-            return cur.execute("""
-                SELECT "source", x, y, "description",
-                    SUM("value") AS "value"
-                FROM (
-                    SELECT source_name AS "source", x, y,
-                        description_name AS "description",
-                        MAX(the_value) AS "value"
-                    FROM provenance_view
-                    WHERE description LIKE ? AND p IS NOT NULL
-                    GROUP BY x, y, p)
-                GROUP BY x, y
-                """, (description, ))
+        if self.__have_insertion_order:
+            try:
+                return self._db.execute("""
+                    SELECT "source", x, y, "description",
+                        SUM("value") AS "value"
+                    FROM (
+                        SELECT source_name AS "source", x, y, p,
+                            description_name AS "description",
+                            the_value AS "value"
+                        FROM provenance_view
+                        WHERE description LIKE ? AND p IS NOT NULL
+                        GROUP BY x, y, p
+                        HAVING insertion_order = MAX(insertion_order))
+                    GROUP BY x, y
+                    """, (description, ))
+            except sqlite3.OperationalError as e:
+                if "no such column: insertion_order" != str(e):
+                    raise
+                self.__have_insertion_order = False
+        return self._db.execute("""
+            SELECT "source", x, y, "description",
+                SUM("value") AS "value"
+            FROM (
+                SELECT source_name AS "source", x, y,
+                    description_name AS "description",
+                    MAX(the_value) AS "value"
+                FROM provenance_view
+                WHERE description LIKE ? AND p IS NOT NULL
+                GROUP BY x, y, p)
+            GROUP BY x, y
+            """, (description, ))
 
     def get_per_core_prov_types(self):
         query = """
@@ -162,8 +160,8 @@ class Plotter(object):
             WHERE x IS NOT NULL AND p IS NOT NULL
                 AND "description" IS NOT NULL
             """
-        with self._db.transaction() as cur:
-            return frozenset(row["description"] for row in cur.execute(query))
+        return frozenset(row["description"] for row in self._db.execute(
+            query))
 
     def get_sum_chip_prov_details(self, info):
         data = []

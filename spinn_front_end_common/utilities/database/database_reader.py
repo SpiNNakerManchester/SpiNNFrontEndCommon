@@ -30,9 +30,8 @@ class DatabaseReader(SQLiteDB):
         self.__looked_for_job = False
 
     def __exec_one(self, query, *args):
-        with self.transaction() as cur:
-            cur.execute(query + " LIMIT 1", args)
-            return cur.fetchone()
+        self.execute(query + " LIMIT 1", args)
+        return self.fetchone()
 
     @staticmethod
     def __r2t(row, *args):
@@ -48,9 +47,29 @@ class DatabaseReader(SQLiteDB):
         """
         # This is maintaining an object we only make once
         if not self.__looked_for_job:
-            with self.transaction() as cur:
-                self.__job = SpallocClient.open_job_from_database(cur)
+            service_url = None
+            job_url = None
+            cookies = {}
+            headers = {}
+            for row in self.execute("""
+                    SELECT kind, name, value FROM proxy_configuration
+                    """):
+                kind, name, value = row
+                if kind == "SPALLOC":
+                    if name == "service uri":
+                        service_url = value
+                    elif name == "job uri":
+                        job_url = value
+                elif kind == "COOKIE":
+                    cookies[name] = value
+                elif kind == "HEADER":
+                    headers[name] = value
             self.__looked_for_job = True
+            if not service_url or not job_url or not cookies or not headers:
+                # Cannot possibly work without a session or job
+                return None
+            self.__job = SpallocClient.open_job_from_database(
+                service_url, job_url, cookies, headers)
         return self.__job
 
     def get_key_to_atom_id_mapping(self, label):
@@ -61,14 +80,13 @@ class DatabaseReader(SQLiteDB):
         :return: dictionary of atom IDs indexed by event key
         :rtype: dict(int, int)
         """
-        with self.transaction() as cur:
-            return {
-                row["event"]: row["atom"]
-                for row in cur.execute(
-                    """
-                    SELECT * FROM label_event_atom_view
-                    WHERE label = ?
-                    """, (label, ))}
+        return {
+            row["event"]: row["atom"]
+            for row in self.execute(
+                """
+                SELECT * FROM label_event_atom_view
+                WHERE label = ?
+                """, (label, ))}
 
     def get_atom_id_to_key_mapping(self, label):
         """
@@ -78,14 +96,13 @@ class DatabaseReader(SQLiteDB):
         :return: dictionary of event keys indexed by atom ID
         :rtype: dict(int, int)
         """
-        with self.transaction() as cur:
-            return {
-                row["atom"]: row["event"]
-                for row in cur.execute(
-                    """
-                    SELECT * FROM label_event_atom_view
-                    WHERE label = ?
-                    """, (label, ))}
+        return {
+            row["atom"]: row["event"]
+            for row in self.execute(
+                """
+                SELECT * FROM label_event_atom_view
+                WHERE label = ?
+                """, (label, ))}
 
     def get_live_output_details(self, label, receiver_label):
         """
@@ -134,13 +151,12 @@ class DatabaseReader(SQLiteDB):
         :return: A list of x, y, p coordinates of the vertices
         :rtype: list(tuple(int, int, int))
         """
-        with self.transaction() as cur:
-            return [
-                self.__xyp(row) for row in cur.execute(
-                    """
-                    SELECT x, y, p FROM application_vertex_placements
-                    WHERE vertex_label = ?
-                    """, (label, ))]
+        return [
+            self.__xyp(row) for row in self.execute(
+                """
+                SELECT x, y, p FROM application_vertex_placements
+                WHERE vertex_label = ?
+                """, (label, ))]
 
     def get_ip_address(self, x, y):
         """
