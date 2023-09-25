@@ -21,6 +21,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -104,16 +105,18 @@ class GlobalProvenance(SQLiteDB):
             or some of the time
         """
         with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO category_timer_provenance(
-                    category, machine_on, n_run, n_loop)
-                VALUES(?, ?, ?, ?)
-                """,
-                [category.category_name, machine_on,
-                 FecDataView.get_run_number(),
-                 FecDataView.get_run_step()])
-            return cur.lastrowid
+            for row in cur.execute(
+                    """
+                    INSERT INTO category_timer_provenance(
+                        category, machine_on, n_run, n_loop)
+                    VALUES(?, ?, ?, ?)
+                    RETURNING category_id
+                    """,
+                    [category.category_name, machine_on,
+                     FecDataView.get_run_number(),
+                     FecDataView.get_run_step()]):
+                return row["category_id"]
+        raise SpinnFrontEndException("database insert failed")
 
     def insert_category_timing(self, category_id, timedelta):
         """

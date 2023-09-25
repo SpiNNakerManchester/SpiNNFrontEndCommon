@@ -22,7 +22,8 @@ from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_BYTE_SIZE)
-from spinn_front_end_common.utilities.exceptions import DsDatabaseException
+from spinn_front_end_common.utilities.exceptions import DsDatabaseException,\
+    SpinnFrontEndException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
@@ -181,13 +182,15 @@ class DsSqlliteDatabase(SQLiteDB):
         :return:
         """
         with self.transaction() as cursor:
-            cursor.execute(
-                """
-                INSERT INTO region(
-                    x, y, p, region_num, size, reference_num, region_label)
-                VALUES(?, ?, ?, ?, ?, ?, ?)
-                """, (x, y, p, region_num, size, reference, label))
-            return cursor.lastrowid
+            for row in cursor.execute(
+                    """
+                    INSERT INTO region(
+                        x, y, p, region_num, size, reference_num, region_label)
+                    VALUES(?, ?, ?, ?, ?, ?, ?)
+                    RETURNING region_id
+                    """, (x, y, p, region_num, size, reference, label)):
+                return row["region_id"]
+        raise SpinnFrontEndException("database insert failed")
 
     def get_region_size(self, x, y, p, region_num):
         """

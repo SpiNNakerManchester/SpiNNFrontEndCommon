@@ -25,6 +25,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
 from spinn_front_end_common.utility_models import LivePacketGather
 from spinn_front_end_common.utility_models import LivePacketGatherMachineVertex
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -99,8 +100,9 @@ class DatabaseWriter(SQLiteDB):
         :rtype: int
         """
         try:
-            cur.execute(sql, args)
-            return cur.lastrowid
+            for row in cur.execute(sql, args):
+                return row["inserted"]
+            raise SpinnFrontEndException("database insert failed")
         except Exception:
             logger.exception("problem with insertion; argument types are {}",
                              str(map(type, args)))
@@ -113,11 +115,11 @@ class DatabaseWriter(SQLiteDB):
         machine = FecDataView.get_machine()
         with self.transaction() as cur:
             self.__machine_to_id[machine] = self._machine_id = self.__insert(
-                cur,
-                """
+                cur, """
                 INSERT INTO Machine_layout(
                     x_dimension, y_dimension)
                 VALUES(?, ?)
+                RETURNING machine_id AS inserted
                 """, machine.width, machine.height)
             cur.executemany(
                 """
@@ -139,25 +141,29 @@ class DatabaseWriter(SQLiteDB):
             # add vertices
             for vertex in FecDataView.iterate_vertices():
                 vertex_id = self.__insert(
-                    cur,
-                    "INSERT INTO Application_vertices(vertex_label) VALUES(?)",
-                    vertex.label)
+                    cur, """
+                    INSERT INTO Application_vertices(vertex_label)
+                    VALUES(?)
+                    RETURNING vertex_id AS inserted
+                    """, vertex.label)
                 self.__vertex_to_id[vertex] = vertex_id
                 for m_vertex in vertex.machine_vertices:
                     m_vertex_id = self.__add_machine_vertex(cur, m_vertex)
                     self.__insert(
-                        cur,
-                        """
+                        cur, """
                         INSERT INTO graph_mapper_vertex (
                             application_vertex_id, machine_vertex_id)
                         VALUES(?, ?)
-                        """,
-                        vertex_id, m_vertex_id)
+                        RETURNING rowid AS inserted
+                        """, vertex_id, m_vertex_id)
 
     def __add_machine_vertex(self, cur, m_vertex):
         m_vertex_id = self.__insert(
-            cur, "INSERT INTO Machine_vertices (label)  VALUES(?)",
-            str(m_vertex.label))
+            cur, """
+            INSERT INTO Machine_vertices (label)
+            VALUES(?)
+            RETURNING vertex_id AS inserted
+            """, str(m_vertex.label))
         self.__vertex_to_id[m_vertex] = m_vertex_id
         return m_vertex_id
 
@@ -267,8 +273,7 @@ class DatabaseWriter(SQLiteDB):
                     INSERT INTO event_to_atom_mapping(
                         vertex_id, event_id, atom_id)
                     VALUES (?, ?, ?)
-                    """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
-                )
+                    """, ((m_vertex_id, int(key), i) for i, key in atom_keys))
 
     def _get_machine_lpg_mappings(self, part):
         """ Get places where an LPG Machine vertex has been added to a graph

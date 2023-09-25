@@ -16,6 +16,7 @@ import logging
 from spinn_utilities.config_holder import get_config_int_or_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -150,12 +151,16 @@ class ProvenanceWriter(BaseDatabase):
         :param str message:
         """
         with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO reports(message)
-                VALUES(?)
-                """, [message])
-            recorded = cur.lastrowid
+            for row in cur.execute(
+                    """
+                    INSERT INTO reports(message)
+                    VALUES(?)
+                    RETURNING rowid AS row_num
+                    """, [message]):
+                recorded = row["row_num"]
+                break
+            else:
+                raise SpinnFrontEndException("database insert failed")
         cutoff = get_config_int_or_none("Reports", "provenance_report_cutoff")
         if cutoff is None or recorded < cutoff:
             logger.warning(message)
@@ -213,11 +218,12 @@ class ProvenanceWriter(BaseDatabase):
         """
         with self.transaction() as cur:
             # lock the database
-            cur.execute(
-                """
-                INSERT INTO reports(message)
-                VALUES(?)
-                """, [text])
-            cur.lastrowid  # pylint: disable=pointless-statement
+            for row in cur.execute(
+                    """
+                    INSERT INTO reports(message)
+                    VALUES(?)
+                    RETURNING rowid AS row_num
+                    """, [text]):
+                row["row_num"]  # pylint: disable=pointless-statement
             # try logging and storing while locked.
             logger.warning(text)

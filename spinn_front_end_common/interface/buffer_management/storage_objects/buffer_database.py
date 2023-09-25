@@ -17,6 +17,7 @@ import time
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 #: Name of the database in the data folder
@@ -143,13 +144,15 @@ class BufferDatabase(BaseDatabase):
                 """, (x, y, p, region)):
             return row["region_id"]
         core_id = self._get_core_id(cursor, x, y, p)
-        cursor.execute(
-            """
-            INSERT INTO region(
-                core_id, local_region_index, content, content_len, fetches)
-            VALUES(?, ?, CAST('' AS BLOB), 0, 0)
-            """, (core_id, region))
-        return cursor.lastrowid
+        for row in cursor.execute(
+                """
+                INSERT INTO region(
+                    core_id, local_region_index, content, content_len, fetches)
+                VALUES(?, ?, CAST('' AS BLOB), 0, 0)
+                RETURNING region_id
+                """, (core_id, region)):
+            return row["region_id"]
+        raise SpinnFrontEndException("database insert failed")
 
     def store_data_in_region_buffer(self, x, y, p, region, missing, data):
         """
