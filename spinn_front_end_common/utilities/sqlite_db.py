@@ -137,7 +137,7 @@ class SQLiteDB(AbstractContextManager):
             self.__db.text_factory = memoryview,
         else:
             self.__db.row_factory = None
-            self.__db.text_factory = None
+            self.__db.text_factory = str
 
     def _context_entered(self):
         if self.__db is None:
