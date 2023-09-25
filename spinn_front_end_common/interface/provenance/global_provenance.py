@@ -115,7 +115,7 @@ class GlobalProvenance(SQLiteDB):
                     [category.category_name, machine_on,
                      FecDataView.get_run_number(),
                      FecDataView.get_run_step()]):
-                return row["category_id"]
+                return row[0]
         raise SpinnFrontEndException("database insert failed")
 
     def insert_category_timing(self, category_id, timedelta):
