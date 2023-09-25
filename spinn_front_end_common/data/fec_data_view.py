@@ -81,7 +81,7 @@ class _FecDataModel(object):
         "_data_in_multicast_routing_tables",
         "_database_file_path",
         "_database_socket_addresses",
-        "_ds_database",
+        "_ds_database_path",
         "_executable_targets",
         "_executable_types",
         "_first_machine_time_step",
@@ -1052,17 +1052,19 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._executable_targets
 
     @classmethod
-    def get_ds_database(cls) -> DsSqlliteDatabase:
+    def get_ds_database_path(cls) -> str:
         """
-        Data Spec database.
+        Gets the path for the Data Spec database.
 
-        :rtype: ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
+        :rtype: str
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the ds_database is currently unavailable
         """
-        if cls.__fec_data._ds_database is None:
-            raise cls._exception("_ds_database")
-        return cls.__fec_data._ds_database
+        if cls.__fec_data._ds_database_path is None:
+            if cls._is_mocked():
+                return os.path.join(cls._temporary_dir_path(), "ds.sqlite3")
+            raise cls._exception("_ds_database+path")
+        return cls.__fec_data._ds_database_path
 
     @classmethod
     def has_monitors(cls) -> bool:

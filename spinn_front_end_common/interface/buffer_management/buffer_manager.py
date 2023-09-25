@@ -393,9 +393,8 @@ class BufferManager(object):
             len(recording_placements),
             "Extracting buffers from the last run")
 
-        with BufferDatabase() as db:
-            for placement in progress.over(recording_placements):
-                self._retreive_by_placement(db, placement)
+        for placement in progress.over(recording_placements):
+            self._retreive_by_placement(placement)
 
     def get_data_by_placement(
             self, placement: Placement, recording_region_id: int) -> Tuple[
@@ -422,11 +421,10 @@ class BufferManager(object):
             return db.get_region_data(
                 placement.x, placement.y, placement.p, recording_region_id)
 
-    def _retreive_by_placement(self, db: BufferDatabase, placement: Placement):
+    def _retreive_by_placement(self, placement: Placement):
         """
         Retrieve the data for a vertex; must be locked first.
 
-        :param BufferDatabase db: database to store into
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
         """
@@ -441,8 +439,10 @@ class BufferManager(object):
             size, addr, missing = sizes_and_addresses[region]
             data = self._request_data(
                 placement.x, placement.y, addr, size)
-            db.store_data_in_region_buffer(
-                placement.x, placement.y, placement.p, region, missing, data)
+            with BufferDatabase() as db:
+                db.store_data_in_region_buffer(
+                    placement.x, placement.y, placement.p, region, missing,
+                    data)
 
     def _get_region_information(
             self, addr: int, x: int, y: int) -> List[Tuple[int, int, bool]]:

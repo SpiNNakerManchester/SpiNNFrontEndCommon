@@ -22,7 +22,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB, Isolation
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from .timer_category import TimerCategory
 from spinn_front_end_common.interface.provenance.timer_work import TimerWork
 
@@ -90,13 +90,12 @@ class GlobalProvenance(SQLiteDB):
         :param str description: The package for which the version applies
         :param str the_value: The version to be recorded
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT INTO version_provenance(
-                    description, the_value)
-                VALUES(?, ?)
-                """, [description, the_value])
+        self.execute(
+            """
+            INSERT INTO version_provenance(
+                description, the_value)
+            VALUES(?, ?)
+            """, [description, the_value])
 
     def insert_category(self, category: TimerCategory, machine_on: bool):
         """
@@ -106,17 +105,16 @@ class GlobalProvenance(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT INTO category_timer_provenance(
-                    category, machine_on, n_run, n_loop)
-                VALUES(?, ?, ?, ?)
-                """,
-                [category.category_name, machine_on,
-                 FecDataView.get_run_number(),
-                 FecDataView.get_run_step()])
-            return cur.lastrowid
+        self.execute(
+            """
+            INSERT INTO category_timer_provenance(
+                category, machine_on, n_run, n_loop)
+            VALUES(?, ?, ?, ?)
+            """,
+            [category.category_name, machine_on,
+             FecDataView.get_run_number(),
+             FecDataView.get_run_step()])
+        return self.lastrowid
 
     def insert_category_timing(self, category_id: int, delta: timedelta):
         """
@@ -129,14 +127,13 @@ class GlobalProvenance(SQLiteDB):
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (delta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                UPDATE category_timer_provenance
-                SET
-                    time_taken = ?
-                WHERE category_id = ?
-                """, (time_taken, category_id))
+        self.execute(
+            """
+            UPDATE category_timer_provenance
+            SET
+                time_taken = ?
+            WHERE category_id = ?
+            """, (time_taken, category_id))
 
     def insert_timing(
             self, category: int, algorithm: str, work: TimerWork,
@@ -155,14 +152,13 @@ class GlobalProvenance(SQLiteDB):
         time_taken = (
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (delta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT INTO timer_provenance(
-                    category_id, algorithm, work, time_taken, skip_reason)
-                VALUES(?, ?, ?, ?, ?)
-                """,
-                [category, algorithm, work.work_name, time_taken, skip_reason])
+        self.execute(
+            """
+            INSERT INTO timer_provenance(
+                category_id, algorithm, work, time_taken, skip_reason)
+            VALUES(?, ?, ?, ?, ?)
+            """,
+            [category, algorithm, work.work_name, time_taken, skip_reason])
 
     def store_log(self, level: int, message: str,
                   timestamp: Optional[datetime] = None):
@@ -174,14 +170,13 @@ class GlobalProvenance(SQLiteDB):
         """
         if timestamp is None:
             timestamp = datetime.now()
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT INTO p_log_provenance(
-                    timestamp, level, message)
-                VALUES(?, ?, ?)
-                """,
-                [timestamp, level, message])
+        self.execute(
+            """
+            INSERT INTO p_log_provenance(
+                timestamp, level, message)
+            VALUES(?, ?, ?)
+            """,
+            [timestamp, level, message])
 
     def _test_log_locked(self, text: str):
         """
@@ -189,16 +184,15 @@ class GlobalProvenance(SQLiteDB):
 
         This will lock the database and then try to do a log
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            # lock the database
-            cur.execute(
-                """
-                INSERT INTO version_provenance(
-                    description, the_value)
-                VALUES("foo", "bar")
-                """)
-            # try logging and storing while locked.
-            logger.warning(text)
+        # lock the database
+        self.execute(
+            """
+            INSERT INTO version_provenance(
+                description, the_value)
+            VALUES("foo", "bar")
+            """)
+        # try logging and storing while locked.
+        logger.warning(text)
 
     def run_query(self, query: str,
                   params: Iterable[Union[str, int, float, None, bytes]] = ()
@@ -231,9 +225,8 @@ class GlobalProvenance(SQLiteDB):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
-        with self.transaction() as cur:
-            for row in cur.execute(query, list(params)):
-                results.append(row)
+        for row in self.execute(query, list(params)):
+            results.append(row)
         return results
 
     def get_timer_provenance(self, algorithm: str) -> str:

@@ -73,26 +73,24 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
                             f"data{FecDataView.get_reset_str()}.sqlite3")
 
     def _get_core_id(
-            self, cursor: sqlite3.Cursor, x: int, y: int, p: int) -> int:
+            self, x: int, y: int, p: int) -> int:
         """
         Get the ID for a core.
 
-        :param ~sqlite3.Cursor cursor:
-            How to talk to the DB. Must have a transaction open.
         :param int x:
         :param int y:
         :param int p:
         :rtype: int
         """
-        for row in cursor.execute(
+        for row in self.execute(
                 """
                 SELECT core_id FROM core
                 WHERE x = ? AND y = ? AND processor = ?
                 LIMIT 1
                 """, (x, y, p)):
             return row["core_id"]
-        cursor.execute(
+        self.execute(
             """
             INSERT INTO core(x, y, processor) VALUES(?, ?, ?)
             """, (x, y, p))
-        return cast(int, cursor.lastrowid)
+        return self.lastrowid

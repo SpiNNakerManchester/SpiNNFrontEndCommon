@@ -59,37 +59,35 @@ class BufferDatabase(BaseDatabase):
         :return: True if any region was changed
         :rtype: bool
         """
-        with self.transaction(Isolation.IMMEDIATE) as cursor:
-            for row in cursor.execute(
-                    """
-                    SELECT region_id FROM region_view
-                    WHERE x = ? AND y = ? AND processor = ?
-                        AND local_region_index = ? AND fetches > 0 LIMIT 1
-                    """, (x, y, p, region)):
-                locus = (row["region_id"], )
-                break
-            else:
-                return False
-            cursor.execute(
+        for row in self.execute(
                 """
-                UPDATE region SET
-                    content = CAST('' AS BLOB), content_len = 0,
-                    fetches = 0, append_time = NULL
-                WHERE region_id = ?
-                """, locus)
-            cursor.execute(
-                """
-                DELETE FROM region_extra WHERE region_id = ?
-                """, locus)
-            return True
+                SELECT region_id FROM region_view
+                WHERE x = ? AND y = ? AND processor = ?
+                    AND local_region_index = ? AND fetches > 0 LIMIT 1
+                """, (x, y, p, region)):
+            locus = (row["region_id"], )
+            break
+        else:
+            return False
+        self.execute(
+            """
+            UPDATE region SET
+                content = CAST('' AS BLOB), content_len = 0,
+                fetches = 0, append_time = NULL
+            WHERE region_id = ?
+            """, locus)
+        self.execute(
+            """
+            DELETE FROM region_extra WHERE region_id = ?
+            """, locus)
+        return True
 
-    def _read_contents(self, cursor: Cursor, region_id: int) -> memoryview:
+    def _read_contents(self, region_id: int) -> memoryview:
         """
-        :param ~sqlite3.Cursor cursor:
         :param int region_id:
         :rtype: memoryview
         """
-        for row in cursor.execute(
+        for row in self.execute(
                 """
                 SELECT content
                 FROM region_view
@@ -102,7 +100,7 @@ class BufferDatabase(BaseDatabase):
             raise LookupError(f"no record for region {region_id}")
 
         c_buffer = None
-        for row in cursor.execute(
+        for row in self.execute(
                 """
                 SELECT r.content_len + (
                     SELECT SUM(x.content_len)
@@ -116,7 +114,7 @@ class BufferDatabase(BaseDatabase):
 
         if c_buffer is not None:
             idx = len(data)
-            for row in cursor.execute(
+            for row in self.execute(
                     """
                     SELECT content FROM region_extra
                     WHERE region_id = ? ORDER BY extra_id ASC
@@ -127,16 +125,14 @@ class BufferDatabase(BaseDatabase):
             data = c_buffer
         return memoryview(data)
 
-    def _get_region_id(
-            self, cursor: Cursor, x: int, y: int, p: int, region: int) -> int:
+    def _get_region_id(self, x: int, y: int, p: int, region: int) -> int:
         """
-        :param ~sqlite3.Cursor cursor:
         :param int x:
         :param int y:
         :param int p:
         :param int region:
         """
-        for row in cursor.execute(
+        for row in self.execute(
                 """
                 SELECT region_id FROM region_view
                 WHERE x = ? AND y = ? AND processor = ?
@@ -144,14 +140,14 @@ class BufferDatabase(BaseDatabase):
                 LIMIT 1
                 """, (x, y, p, region)):
             return row["region_id"]
-        core_id = self._get_core_id(cursor, x, y, p)
-        cursor.execute(
+        core_id = self._get_core_id(x, y, p)
+        self.execute(
             """
             INSERT INTO region(
                 core_id, local_region_index, content, content_len, fetches)
             VALUES(?, ?, CAST('' AS BLOB), 0, 0)
             """, (core_id, region))
-        region_id = cursor.lastrowid
+        region_id = self.lastrowid
         assert region_id is not None
         return region_id
 
@@ -175,41 +171,39 @@ class BufferDatabase(BaseDatabase):
         # pylint: disable=too-many-arguments, unused-argument
         # TODO: Use missing
         datablob = Binary(data)
-        with self.transaction(Isolation.IMMEDIATE) as cursor:
-            region_id = self._get_region_id(cursor, x, y, p, region)
-            if self.__use_main_table(cursor, region_id):
-                cursor.execute(
-                    """
-                    UPDATE region SET
-                        content = CAST(? AS BLOB),
-                        content_len = ?,
-                        fetches = fetches + 1,
-                        append_time = ?
-                    WHERE region_id = ?
-                    """, (datablob, len(data), _timestamp(), region_id))
-            else:
-                cursor.execute(
-                    """
-                    UPDATE region SET
-                        fetches = fetches + 1,
-                        append_time = ?
-                    WHERE region_id = ?
-                    """, (_timestamp(), region_id))
-                assert cursor.rowcount == 1
-                cursor.execute(
-                    """
-                    INSERT INTO region_extra(
-                        region_id, content, content_len)
-                    VALUES (?, CAST(? AS BLOB), ?)
-                    """, (region_id, datablob, len(data)))
-            assert cursor.rowcount == 1
+        region_id = self._get_region_id(x, y, p, region)
+        if self.__use_main_table(region_id):
+            self.execute(
+                """
+                UPDATE region SET
+                    content = CAST(? AS BLOB),
+                    content_len = ?,
+                    fetches = fetches + 1,
+                    append_time = ?
+                WHERE region_id = ?
+                """, (datablob, len(data), _timestamp(), region_id))
+        else:
+            self.execute(
+                """
+                UPDATE region SET
+                    fetches = fetches + 1,
+                    append_time = ?
+                WHERE region_id = ?
+                """, (_timestamp(), region_id))
+            assert self.rowcount == 1
+            self.execute(
+                """
+                INSERT INTO region_extra(
+                    region_id, content, content_len)
+                VALUES (?, CAST(? AS BLOB), ?)
+                """, (region_id, datablob, len(data)))
+        assert self.rowcount == 1
 
-    def __use_main_table(self, cursor: Cursor, region_id: int) -> bool:
+    def __use_main_table(self, region_id: int) -> bool:
         """
-        :param ~sqlite3.Cursor cursor:
         :param int region_id:
         """
-        for row in cursor.execute(
+        for row in self.execute(
                 """
                 SELECT COUNT(*) AS existing FROM region
                 WHERE region_id = ? AND fetches = 0
@@ -239,11 +233,10 @@ class BufferDatabase(BaseDatabase):
         :rtype: tuple(memoryview, bool)
         """
         try:
-            with self.transaction() as cursor:
-                region_id = self._get_region_id(cursor, x, y, p, region)
-                data = self._read_contents(cursor, region_id)
-                # TODO missing data
-                return data, False
+            region_id = self._get_region_id(x, y, p, region)
+            data = self._read_contents(region_id)
+            # TODO missing data
+            return data, False
         except LookupError:
             return memoryview(b''), True
 
@@ -254,51 +247,50 @@ class BufferDatabase(BaseDatabase):
         # pylint: disable=protected-access
         job = FecDataView._get_spalloc_job()
         if job is not None:
-            with self.transaction(Isolation.IMMEDIATE) as cur:
-                job._write_session_credentials_to_db(cur)
+            config = job.get_session_credentials_for_db()
+            self.executemany(
+                """ 
+                INSERT INTO proxy_configuration(kind, name, value)  
+                VALUES(?, ?, ?) 
+                """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
-    def _set_core_name(
-            self, cursor: Cursor, x: int, y: int, p: int,
-            core_name: Optional[str]):
+    def _set_core_name(self, x: int, y: int, p: int, core_name: Optional[str]):
         """
-        :param ~sqlite3.Cursor cursor:
         :param int x:
         :param int y:
         :param int p:
         :param str core_name:
         """
         try:
-            cursor.execute(
+            self.execute(
                 """
                 INSERT INTO core (x, y, processor, core_name)
                 VALUES (?, ?, ? ,?)
                 """, (x, y, p, core_name))
         except IntegrityError:
-            cursor.execute(
+            self.execute(
                 """
                 UPDATE core SET core_name = ?
                 WHERE x = ? AND y = ? and processor = ?
                 """, (core_name, x, y, p))
 
     def store_vertex_labels(self) -> None:
-        with self.transaction(Isolation.IMMEDIATE) as cursor:
-            for placement in FecDataView.iterate_placemements():
-                self._set_core_name(cursor, placement.x, placement.y,
-                                    placement.p, placement.vertex.label)
-            for chip in FecDataView.get_machine().chips:
-                for processor in chip.processors:
-                    if processor.is_monitor:
-                        self._set_core_name(
-                            cursor, chip.x, chip.y, processor.processor_id,
-                            f"SCAMP(OS)_{chip.x}:{chip.y}")
+        for placement in FecDataView.iterate_placemements():
+            self._set_core_name(
+                placement.x, placement.y, placement.p, placement.vertex.label)
+        for chip in FecDataView.get_machine().chips:
+            for processor in chip.processors:
+                if processor.is_monitor:
+                    self._set_core_name(
+                        chip.x, chip.y, processor.processor_id,
+                        f"SCAMP(OS)_{chip.x}:{chip.y}")
 
     def get_core_name(self, x: int, y: int, p: int) -> Optional[str]:
-        with self.transaction() as cursor:
-            for row in cursor.execute(
-                    """
-                    SELECT core_name
-                    FROM core
-                    WHERE x = ? AND y = ? and processor = ?
-                    """, (x, y, p)):
-                return str(row["core_name"], 'utf8')
+        for row in self.execute(
+                """
+                SELECT core_name
+                FROM core
+                WHERE x = ? AND y = ? and processor = ?
+                """, (x, y, p)):
+            return str(row["core_name"], 'utf8')
         return None

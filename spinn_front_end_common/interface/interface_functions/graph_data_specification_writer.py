@@ -14,7 +14,9 @@
 
 from collections import defaultdict
 import logging
+import os
 from typing import Iterable, List, Sequence, Optional
+
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs import AbstractVertex
@@ -38,7 +40,8 @@ def graph_data_specification_writer(placement_order=None):
     """
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
-    :rtype: DsSqlliteDatabase
+    :return: Path to DSG targets database
+    :rtype: str
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
@@ -64,55 +67,58 @@ class _GraphDataSpecificationWriter(object):
         """
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
-        :return: DSG targets
-        :rtype: DsSqlliteDatabase
+        :return: Path to DSG targets database
+        :rtype: str
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        ds_db = DsSqlliteDatabase()
-        ds_db.write_session_credentials_to_db()
-        ds_db. set_app_id()
+        path = os.path.join(FecDataView.get_run_dir_path(),
+                            f"ds{FecDataView.get_reset_str()}.sqlite3")
+        with DsSqlliteDatabase(path) as ds_db:
+            ds_db.write_session_credentials_to_db()
+            ds_db. set_app_id()
 
-        placements: Iterable[Placement]
-        if placement_order is None:
-            placements = FecDataView.iterate_placemements()
-            n_placements = FecDataView.get_n_placements()
-        else:
-            placements = placement_order
-            n_placements = len(placement_order)
+            placements: Iterable[Placement]
+            if placement_order is None:
+                placements = FecDataView.iterate_placemements()
+                n_placements = FecDataView.get_n_placements()
+            else:
+                placements = placement_order
+                n_placements = len(placement_order)
 
-        progress = ProgressBar(n_placements, "Generating data specifications")
-        vertices_to_reset: List[AbstractRewritesDataSpecification] = list()
+            progress = ProgressBar(n_placements,
+                                   "Generating data specifications")
+            vertices_to_reset: List[AbstractRewritesDataSpecification] = list()
 
-        for placement in progress.over(placements):
-            # Try to generate the data spec for the placement
-            vertex = placement.vertex
-            generated = self.__generate_data_spec_for_vertices(
-                placement, vertex, ds_db)
-
-            if generated and isinstance(
-                    vertex, AbstractRewritesDataSpecification):
-                vertices_to_reset.append(vertex)
-
-            # If the spec wasn't generated directly, and there is an
-            # application vertex, try with that
-            if not generated and vertex.app_vertex is not None:
+            for placement in progress.over(placements):
+                # Try to generate the data spec for the placement
+                vertex = placement.vertex
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, vertex.app_vertex, ds_db)
+                    placement, vertex, ds_db)
+
                 if generated and isinstance(
-                        vertex.app_vertex,
-                        AbstractRewritesDataSpecification):
-                    vertices_to_reset.append(vertex.app_vertex)
+                        vertex, AbstractRewritesDataSpecification):
+                    vertices_to_reset.append(vertex)
 
-        # Ensure that the vertices know their regions have been reloaded
-        for rewriter in vertices_to_reset:
-            rewriter.set_reload_required(False)
+                # If the spec wasn't generated directly, and there is an
+                # application vertex, try with that
+                if not generated and vertex.app_vertex is not None:
+                    generated = self.__generate_data_spec_for_vertices(
+                        placement, vertex.app_vertex, ds_db)
+                    if generated and isinstance(
+                            vertex.app_vertex,
+                            AbstractRewritesDataSpecification):
+                        vertices_to_reset.append(vertex.app_vertex)
 
-        self._run_check_queries(ds_db)
+            # Ensure that the vertices know their regions have been reloaded
+            for rewriter in vertices_to_reset:
+                rewriter.set_reload_required(False)
 
-        return ds_db
+            self._run_check_queries(ds_db)
+
+        return path
 
     def __generate_data_spec_for_vertices(
             self, pl: Placement, vertex: AbstractVertex,

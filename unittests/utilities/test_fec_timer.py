@@ -108,7 +108,8 @@ class TestFecTimer(unittest.TestCase):
             total = db.get_category_timer_sum(
                 TimerCategory.SHUTTING_DOWN)
             self.assertEqual(total, 0)
-            FecTimer.stop_category_timing()
+        FecTimer.stop_category_timing()
+        with GlobalProvenance() as db:
             total = db.get_category_timer_sum(
                 TimerCategory.SHUTTING_DOWN)
             self.assertGreater(total, 0)
@@ -136,10 +137,11 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with GlobalProvenance() as db:
             before = db.get_category_timer_sum(TimerCategory.WAITING)
-            FecTimer.start_category(TimerCategory.MAPPING)
-            FecTimer.end_category(TimerCategory.MAPPING)
-            FecTimer.end_category(TimerCategory.RUN_OTHER)
-            FecTimer.stop_category_timing()
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.RUN_OTHER)
+        FecTimer.stop_category_timing()
+        with GlobalProvenance() as db:
             total = db.get_category_timer_sum(TimerCategory.WAITING)
             self.assertGreater(total, before)
             other = db.get_category_timer_sum(TimerCategory.RUN_OTHER)
@@ -150,10 +152,11 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with GlobalProvenance() as db:
             before = db.get_category_timer_sum(TimerCategory.WAITING)
-            FecTimer.start_category(TimerCategory.MAPPING)
-            FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
-            FecTimer.end_category(TimerCategory.SHUTTING_DOWN)
-            FecTimer.stop_category_timing()
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
+        FecTimer.end_category(TimerCategory.SHUTTING_DOWN)
+        FecTimer.stop_category_timing()
+        with GlobalProvenance() as db:
             mapping = db.get_category_timer_sum(TimerCategory.MAPPING)
             self.assertGreater(mapping, 0)
             total = db.get_category_timer_sum(TimerCategory.WAITING)

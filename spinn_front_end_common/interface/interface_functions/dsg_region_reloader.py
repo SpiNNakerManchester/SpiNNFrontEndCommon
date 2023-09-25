@@ -15,7 +15,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.placements import Placement
 from spinn_front_end_common.interface.ds import (
-    DataSpecificationReloader)
+    DsSqlliteDatabase, DataSpecificationReloader)
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
@@ -28,16 +28,19 @@ def reload_dsg_regions() -> None:
     """
     progress = ProgressBar(
         FecDataView.get_n_placements(), "Reloading data")
-    for placement in progress.over(FecDataView.iterate_placemements()):
-        # Generate the data spec for the placement if needed
-        regenerate_data_spec(placement)
+    with DsSqlliteDatabase() as ds_database:
+        for placement in progress.over(FecDataView.iterate_placemements()):
+            # Generate the data spec for the placement if needed
+            regenerate_data_spec(placement, ds_database)
 
 
-def regenerate_data_spec(placement: Placement) -> bool:
+def regenerate_data_spec(placement, ds_database) -> bool:
     """
     Regenerate a data specification for a placement.
 
     :param ~.Placement placement: The placement to regenerate
+    :param ds_database: The database to use for reload
+    :type ds_database: ~spinn_front_end_common.interface.ds.DsSqlliteDatabas db
     :return: Whether the data was regenerated or not
     :rtype: bool
     """
@@ -56,8 +59,7 @@ def regenerate_data_spec(placement: Placement) -> bool:
 
     # build the file writer for the spec
     reloader = DataSpecificationReloader(
-        placement.x, placement.y, placement.p, FecDataView.get_ds_database(),
-        report_writer)
+        placement.x, placement.y, placement.p, ds_database, report_writer)
 
     # Execute the regeneration
     vertex.regenerate_data_specification(reloader, placement)

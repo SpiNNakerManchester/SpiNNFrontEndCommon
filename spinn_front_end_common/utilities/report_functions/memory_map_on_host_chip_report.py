@@ -21,6 +21,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.model.enums import UserRegister
 from spinnman.transceiver import Transceiver
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, MAX_MEM_REGIONS)
 
@@ -40,19 +41,20 @@ def memory_map_on_host_chip_report() -> None:
         os.makedirs(directory_name)
 
     transceiver = FecDataView.get_transceiver()
-    ds_database = FecDataView.get_ds_database()
-    progress = ProgressBar(
-        ds_database.get_n_ds_cores(), "Writing memory map reports")
-    for (x, y, p) in progress.over(ds_database.get_ds_cores()):
-        file_name = os.path.join(
-            directory_name, f"memory_map_from_processor_{x}_{y}_{p}.txt")
-        try:
-            with open(file_name, "w", encoding="utf-8") as f:
-                _describe_mem_map(f, transceiver, x, y, p)
-        except IOError:
-            logger.exception(
-                "Generate_placement_reports: Can't open file {} for writing.",
-                file_name)
+    with DsSqlliteDatabase() as ds_database:
+        progress = ProgressBar(
+            ds_database.get_n_ds_cores(), "Writing memory map reports")
+        for (x, y, p) in progress.over(ds_database.get_ds_cores()):
+            file_name = os.path.join(
+                directory_name, f"memory_map_from_processor_{x}_{y}_{p}.txt")
+            try:
+                with open(file_name, "w", encoding="utf-8") as f:
+                    _describe_mem_map(f, transceiver, x, y, p)
+            except IOError:
+                logger.exception(
+                    "Generate_placement_reports: "
+                    "Can't open file {} for writing.",
+                    file_name)
 
 
 def _describe_mem_map(f: TextIO, txrx: Transceiver, x: int, y: int, p: int):

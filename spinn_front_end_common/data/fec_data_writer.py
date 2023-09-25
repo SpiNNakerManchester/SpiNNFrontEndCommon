@@ -34,7 +34,6 @@ from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
 from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
@@ -488,16 +487,16 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("executable_targets must be a ExecutableTargets")
         self.__fec_data._executable_targets = executable_targets
 
-    def set_ds_database(self, ds_database: DsSqlliteDatabase):
+    def set_ds_database_path(self, ds_database_path: str):
         """
         Sets the Data Spec targets database.
 
-        :type ds_database:
-            ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
+        :param str ds_database_path: Existing patj to the database
         """
-        if not isinstance(ds_database, DsSqlliteDatabase):
-            raise TypeError("ds_database must be a DsSqlliteDatabase")
-        self.__fec_data._ds_database = ds_database
+        if not os.path.isfile(ds_database_path):
+            raise TypeError("ds_database path must be a filee")
+
+        self.__fec_data._ds_database_path = ds_database_path
 
     def __gatherer_map_error(self) -> TypeError:
         return TypeError(

@@ -19,7 +19,6 @@ from spinn_utilities.config_holder import get_config_int_or_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import (
     BaseDatabase, _SqliteTypes)
-from spinn_front_end_common.utilities.sqlite_db import Isolation
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -61,13 +60,12 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: Type of value
         :param float the_value: data
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT INTO power_provenance(
-                    description, the_value)
-                VALUES(?, ?)
-                """, [description, the_value])
+        self.execute(
+            """
+            INSERT INTO power_provenance(
+                description, the_value)
+            VALUES(?, ?)
+            """, [description, the_value])
 
     def insert_gatherer(
             self, x: int, y: int, address: int, bytes_read: int, run: int,
@@ -83,13 +81,12 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param float the_value: data
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT INTO gatherer_provenance(
-                    x, y, address, bytes, run, description, the_value)
-                VALUES(?, ?, ?, ?, ?, ?, ?)
-                """, [x, y, address, bytes_read, run, description, the_value])
+        self.execute(
+            """
+            INSERT INTO gatherer_provenance(
+                x, y, address, bytes, run, description, the_value)
+            VALUES(?, ?, ?, ?, ?, ?, ?)
+            """, [x, y, address, bytes_read, run, description, the_value])
 
     def insert_monitor(
             self, x: int, y: int, description: str, the_value: _SqliteTypes):
@@ -101,13 +98,12 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT INTO monitor_provenance(
-                    x, y, description, the_value)
-                VALUES(?, ?, ?, ?)
-                """, [x, y, description, the_value])
+        self.execute(
+            """
+            INSERT INTO monitor_provenance(
+                x, y, description, the_value)
+            VALUES(?, ?, ?, ?)
+            """, [x, y, description, the_value])
 
     def insert_router(
             self, x: int, y: int, description: str,
@@ -123,13 +119,12 @@ class ProvenanceWriter(BaseDatabase):
         :type the_value: int or float
         :param bool expected: Flag to say this data was expected
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT INTO router_provenance(
-                    x, y, description, the_value, expected)
-                VALUES(?, ?, ?, ?, ?)
-                """, [x, y, description, the_value, expected])
+        self.execute(
+            """
+            INSERT INTO router_provenance(
+                x, y, description, the_value, expected)
+            VALUES(?, ?, ?, ?, ?)
+            """, [x, y, description, the_value, expected])
 
     def insert_core(
             self, x: int, y: int, p: int, description: str,
@@ -143,14 +138,13 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            core_id = self._get_core_id(cur, x, y, p)
-            cur.execute(
-                """
-                INSERT INTO core_provenance(
-                    core_id, description, the_value)
-                VALUES(?, ?, ?)
-                """, [core_id, description, the_value])
+        core_id = self._get_core_id(x, y, p)
+        self.execute(
+            """
+            INSERT INTO core_provenance(
+                core_id, description, the_value)
+            VALUES(?, ?, ?)
+            """, [core_id, description, the_value])
 
     def insert_report(self, message: str):
         """
@@ -161,14 +155,14 @@ class ProvenanceWriter(BaseDatabase):
 
         :param str message:
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT INTO reports(message)
-                VALUES(?)
-                """, [message])
-            recorded = cur.lastrowid
-            assert recorded is not None
+        self.execute(
+            """
+            INSERT INTO reports(message)
+            VALUES(?)
+            """, [message])
+        recorded = self.lastrowid
+        assert recorded is not None
+
         cutoff = get_config_int_or_none("Reports", "provenance_report_cutoff")
         if cutoff is None or recorded < cutoff:
             logger.warning(message)
@@ -188,16 +182,15 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            cur.execute(
-                """
-                INSERT OR IGNORE INTO connector_provenance(
-                    pre_population, post_population, the_type, description,
-                    the_value)
-                VALUES(?, ?, ?, ?, ?)
-                """,
-                [pre_population, post_population, the_type, description,
-                 the_value])
+        self.execute(
+            """
+            INSERT OR IGNORE INTO connector_provenance(
+                pre_population, post_population, the_type, description,
+                the_value)
+            VALUES(?, ?, ?, ?, ?)
+            """,
+            [pre_population, post_population, the_type, description,
+             the_value])
 
     def insert_board_provenance(self, connections: Optional[
             Dict[Tuple[int, int], str]]):
@@ -210,14 +203,13 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not connections:
             return
-        with self.transaction(Isolation.IMMEDIATE) as cursor:
-            cursor.executemany(
-                """
-                INSERT OR IGNORE INTO boards_provenance(
-                ethernet_x, ethernet_y, ip_addres)
-                VALUES (?, ?, ?)
-                """, ((x, y, ipaddress)
-                      for ((x, y), ipaddress) in connections.items()))
+        self.executemany(
+            """
+            INSERT OR IGNORE INTO boards_provenance(
+            ethernet_x, ethernet_y, ip_addres)
+            VALUES (?, ?, ?)
+            """, ((x, y, ipaddress)
+                  for ((x, y), ipaddress) in connections.items()))
 
     def _context_entered(self) -> None:
         db = self.connection
@@ -241,13 +233,12 @@ class ProvenanceWriter(BaseDatabase):
 
         This will lock the database and then try to do a log
         """
-        with self.transaction(Isolation.IMMEDIATE) as cur:
-            # lock the database
-            cur.execute(
-                """
-                INSERT INTO reports(message)
-                VALUES(?)
-                """, [text])
-            cur.lastrowid  # pylint: disable=pointless-statement
-            # try logging and storing while locked.
-            logger.warning(text)
+        # lock the database
+        self.execute(
+            """
+            INSERT INTO reports(message)
+            VALUES(?)
+            """, [text])
+        self.lastrowid  # pylint: disable=pointless-statement
+        # try logging and storing while locked.
+        logger.warning(text)
