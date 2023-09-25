@@ -179,7 +179,8 @@ class DsSqlliteDatabase(SQLiteDB):
         :param reference: A globally unique reference for this region
         :type reference: int or None
         :param label:
-        :return:
+        :return: The row ID (usually ignored)
+        :rtype: int
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -187,9 +188,9 @@ class DsSqlliteDatabase(SQLiteDB):
                     INSERT INTO region(
                         x, y, p, region_num, size, reference_num, region_label)
                     VALUES(?, ?, ?, ?, ?, ?, ?)
-                    RETURNING region_id
+                    RETURNING rowid AS row_num
                     """, (x, y, p, region_num, size, reference, label)):
-                return row["region_id"]
+                return row["row_num"]
         raise SpinnFrontEndException("database insert failed")
 
     def get_region_size(self, x, y, p, region_num):
