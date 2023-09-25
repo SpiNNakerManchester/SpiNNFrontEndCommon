@@ -519,8 +519,7 @@ class DataDatabase(SQLiteDB, AbstractContextManager):
         """
 
         results = []
-        a = self.execute(query, params)
-        for row in a:
+        for row in self.execute(query, params):
             results.append(row)
         return results
 
