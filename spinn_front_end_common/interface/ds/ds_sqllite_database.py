@@ -49,23 +49,23 @@ class DsSqlliteDatabase(SQLiteDB):
         super().__init__(
             database_file, ddl_file=_DDL_FILE if init_file else None)
         if init_file:
-            with self as db:
-                # pylint: disable=protected-access
-                db.__init_ethernets()
+             self.__init_ethernets()
 
     def __init_ethernets(self):
         """
         Set up the database contents from the machine.
         """
         eth_chips = FecDataView.get_machine().ethernet_connected_chips
-        self.executemany(
-            """
-            INSERT INTO ethernet(
-                ethernet_x, ethernet_y, ip_address)
-            VALUES(?, ?, ?)
-            """, (
-                (ethernet.x, ethernet.y, ethernet.ip_address)
-                for ethernet in eth_chips))
+        # start transaction
+        with self as db:
+            db.executemany(
+                """
+                INSERT INTO ethernet(
+                    ethernet_x, ethernet_y, ip_address)
+                VALUES(?, ?, ?)
+                """, (
+                    (ethernet.x, ethernet.y, ethernet.ip_address)
+                    for ethernet in eth_chips))
 
     def set_core(self, x, y, p, vertex):
         """
