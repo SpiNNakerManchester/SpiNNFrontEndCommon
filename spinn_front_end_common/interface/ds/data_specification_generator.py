@@ -39,7 +39,7 @@ class DataSpecificationGenerator(DataSpecificationBase):
             Determines if a text version of the specification is to be
             written and, if so, where. No report is written if this is `None`.
         :type report_writer: ~io.TextIOBase or None
-        :raises DsDatabaseException: If this core is not known
+        :raises DatabaseException: If this core is not known
             and no vertex supplied (during reload)
         :raises AttributeError:
             If the vertex is not an AbstractHasAssociatedBinary

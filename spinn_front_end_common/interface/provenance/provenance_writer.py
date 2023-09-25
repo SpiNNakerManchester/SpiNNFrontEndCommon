@@ -16,7 +16,7 @@ import logging
 from spinn_utilities.config_holder import get_config_int_or_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import BaseDatabase
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -160,7 +160,7 @@ class ProvenanceWriter(BaseDatabase):
                 recorded = row["row_num"]
                 break
             else:
-                raise SpinnFrontEndException("database insert failed")
+                raise DatabaseException("database insert failed (reports)")
         cutoff = get_config_int_or_none("Reports", "provenance_report_cutoff")
         if cutoff is None or recorded < cutoff:
             logger.warning(message)

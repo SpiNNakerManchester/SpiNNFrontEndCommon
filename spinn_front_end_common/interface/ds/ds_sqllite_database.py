@@ -22,8 +22,7 @@ from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_BYTE_SIZE)
-from spinn_front_end_common.utilities.exceptions import DsDatabaseException,\
-    SpinnFrontEndException
+from spinn_front_end_common.utilities.exceptions import DatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
@@ -191,7 +190,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     RETURNING rowid AS row_num
                     """, (x, y, p, region_num, size, reference, label)):
                 return row["row_num"]
-        raise SpinnFrontEndException("database insert failed")
+        raise DatabaseException("database insert failed (region)")
 
     def get_region_size(self, x, y, p, region_num):
         """
@@ -213,11 +212,11 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """, (x, y, p, region_num)):
                 return row["size"]
-        raise DsDatabaseException(f"Region {region_num} not set")
+        raise DatabaseException(f"Region {region_num} not set")
 
     def set_reference(self, x, y, p, region_num, reference, ref_label):
         """
-        Writes a outgoing region_reference into the database
+        Writes a outgoing region_reference into the database.
 
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
@@ -237,7 +236,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_reference_pointers(self, x, y, p):
         """
-        Yields the reference regions and where they point for this core
+        Yields the reference regions and where they point for this core.
 
         This may yield nothing if there are no reference pointers or
         if the core is not known
@@ -262,7 +261,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_unlinked_references(self):
         """
-        Finds and yields info on unreferenced links
+        Finds and yields info on unreferenced links.
 
         If all is well this method yields nothing!
 
@@ -276,7 +275,7 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT  x, y, ref_p, ref_region, reference_num,
-                        COALESCE(ref_label, "") as ref_label
+                        COALESCE(ref_label, "") AS ref_label
                     FROM linked_reference_view
                     WHERE act_region IS NULL
                      """):
@@ -286,7 +285,7 @@ class DsSqlliteDatabase(SQLiteDB):
     def get_double_region(self):
         """
         Finds and yields any region that was used in both region definition
-            and a reference
+        and a reference.
 
          If all is well this method yields nothing!
 
@@ -317,7 +316,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param bytearray content: content to write
         :param content_debug: debug text
         :type content_debug: str or None
-        :raises DsDatabaseException: If the region already has content
+        :raises DatabaseException: If the region already has content
         """
         with self.transaction() as cursor:
             # check for previous content
@@ -325,11 +324,11 @@ class DsSqlliteDatabase(SQLiteDB):
                     """
                     SELECT content
                     FROM region
-                    WHERE x = ? AND y = ? and p = ? and region_num = ?
+                    WHERE x = ? AND y = ? AND p = ? AND region_num = ?
                     LIMIT 1
                      """, (x, y, p, region_num)):
                 if row["content"]:
-                    raise DsDatabaseException(
+                    raise DatabaseException(
                         f"Illegal attempt to overwrite content for "
                         f"{x=} {y=} {p=} {region_num=}")
 
@@ -337,10 +336,10 @@ class DsSqlliteDatabase(SQLiteDB):
                 """
                 UPDATE region
                 SET content = ?, content_debug = ?
-                WHERE x = ? AND y = ? and p = ? and region_num = ?
+                WHERE x = ? AND y = ? AND p = ? AND region_num = ?
                 """, (content, content_debug, x, y, p, region_num))
             if cursor.rowcount == 0:
-                raise DsDatabaseException(
+                raise DatabaseException(
                     f"No region {x=} {y=} {p=} {region_num=}")
 
     def get_region_pointer(self, x, y, p, region_num):
@@ -356,7 +355,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int region_num: The DS region number
         :return: The pointer set during the original load
         :rtype: int or None
-        :raises DsDatabaseException: if the region is not known
+        :raises DatabaseException: if the region is not known
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -367,7 +366,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """, (x, y, p, region_num)):
                 return row["pointer"]
-        raise DsDatabaseException(f"No region {x=} {y=} {p=} {region_num=}")
+        raise DatabaseException(f"No region {x=} {y=} {p=} {region_num=}")
 
     def get_region_sizes(self, x, y, p):
         """
@@ -412,13 +411,13 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT COALESCE(sum(size), 0) as total
+                    SELECT COALESCE(sum(size), 0) AS total
                     FROM region
                     WHERE x = ? AND y = ? AND p = ?
                     LIMIT 1
                     """, (x, y, p)):
                 return row["total"]
-            raise DsDatabaseException("Query failed unexpectedly")
+            raise DatabaseException("Query failed unexpectedly")
 
     def set_start_address(self, x, y, p, start_address):
         """
@@ -430,7 +429,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int start_address: The base address for the whole core
         :return: The expected size of the malloced_area
         :rtype: int
-        :raises DsDatabaseException: if the region is not known
+        :raises DatabaseException: if the region is not known
         """
         with self.transaction() as cursor:
             cursor.execute(
@@ -440,8 +439,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 WHERE x = ? AND y = ? AND p = ?
                 """, (start_address, x, y, p))
             if cursor.rowcount == 0:
-                raise DsDatabaseException(
-                    f"No core {x=} {y=} {p=}")
+                raise DatabaseException(f"No core {x=} {y=} {p=}")
 
     def get_start_address(self, x, y, p):
         """
@@ -458,11 +456,11 @@ class DsSqlliteDatabase(SQLiteDB):
                     """
                     SELECT start_address
                     FROM core
-                    WHERE x = ? AND y = ? and p = ?
+                    WHERE x = ? AND y = ? AND p = ?
                     LIMIT 1
                     """, (x, y, p)):
                 return row["start_address"]
-        raise DsDatabaseException(f"No core {x=} {y=} {p=}")
+        raise DatabaseException(f"No core {x=} {y=} {p=}")
 
     def set_region_pointer(self, x, y, p, region_num, pointer):
         with self.transaction() as cursor:
@@ -470,10 +468,10 @@ class DsSqlliteDatabase(SQLiteDB):
                 """
                 UPDATE region
                 SET pointer = ?
-                WHERE x = ? AND y = ? and p = ? and region_num = ?
+                WHERE x = ? AND y = ? AND p = ? AND region_num = ?
                 """, (pointer, x, y, p, region_num))
             if cursor.rowcount == 0:
-                raise DsDatabaseException(
+                raise DatabaseException(
                     f"No region {x=} {y=} {p=} {region_num=}")
 
     def get_region_pointers_and_content(self, x, y, p):
@@ -484,6 +482,9 @@ class DsSqlliteDatabase(SQLiteDB):
 
         Will yield nothing if there are no regions reserved or if the core if
         not known
+
+        .. note::
+            Do not use the database for anything else while iterating.
 
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
@@ -522,7 +523,8 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, p FROM core
+                    SELECT x, y, p
+                    FROM core
                     """):
                 yield (row["x"], row["y"], row["p"])
 
@@ -533,16 +535,17 @@ class DsSqlliteDatabase(SQLiteDB):
         Includes cores where DataSpecs started even if no regions reserved
 
         :rtype: int
-        :raises DsDatabaseException:
+        :raises DatabaseException:
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT COUNT(*) as count FROM core
+                    SELECT COUNT(*) AS count
+                    FROM core
                     LIMIT 1
                     """):
                 return row["count"]
-        raise DsDatabaseException("Count query failed")
+        raise DatabaseException("Count query failed")
 
     def get_memory_to_malloc(self, x, y, p):
         """
@@ -609,7 +612,7 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, p, start_address, to_write,malloc_size
+                    SELECT x, y, p, start_address, to_write, malloc_size
                     FROM core_summary_view
                     """):
                 yield ((row["x"], row["y"], row["p"]), row["start_address"],
@@ -634,14 +637,15 @@ class DsSqlliteDatabase(SQLiteDB):
     def set_app_id(self):
         """
         Sets the app id
-
         """
         with self.transaction() as cursor:
             # check for previous content
-            cursor.execute(
-                """
-                INSERT INTO app_id(app_id)
-                VALUES(?)
-                """, (FecDataView.get_app_id(), ))
-            if cursor.rowcount == 0:
-                raise DsDatabaseException("Unable to set app id")
+            for _row in cursor.execute(
+                    """
+                    INSERT INTO app_id(app_id)
+                    VALUES(?)
+                    RETURNING *
+                    """, (FecDataView.get_app_id(), )):
+                break
+            else:
+                raise DatabaseException("Unable to set app id")

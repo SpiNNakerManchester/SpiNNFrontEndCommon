@@ -18,7 +18,7 @@ import time
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__),
                          "db.sql")
@@ -91,4 +91,4 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
                 RETURNING core_id
                 """, (x, y, p)):
             return row["core_id"]
-        raise SpinnFrontEndException("database insert failed")
+        raise DatabaseException("database insert failed (core)")

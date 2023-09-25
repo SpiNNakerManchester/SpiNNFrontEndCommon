@@ -70,9 +70,9 @@ class CantFindSDRAMToUseException(SpinnFrontEndException):
     """
 
 
-class DsDatabaseException(SpinnFrontEndException):
+class DatabaseException(SpinnFrontEndException):
     """
-    Raise when a query in the Data Specification database failed.
+    Raised when a query to a database failed.
     """
 
 

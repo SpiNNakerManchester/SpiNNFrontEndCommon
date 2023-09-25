@@ -25,7 +25,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
 from spinn_front_end_common.utility_models import LivePacketGather
 from spinn_front_end_common.utility_models import LivePacketGatherMachineVertex
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -102,7 +102,7 @@ class DatabaseWriter(SQLiteDB):
         try:
             for row in cur.execute(sql, args):
                 return row["inserted"]
-            raise SpinnFrontEndException("database insert failed")
+            raise DatabaseException("database insert failed")
         except Exception:
             logger.exception("problem with insertion; argument types are {}",
                              str(map(type, args)))
