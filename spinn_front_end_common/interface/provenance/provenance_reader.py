@@ -98,9 +98,11 @@ class ProvenanceReader(BaseDatabase):
             statement
         :rtype: list(tuple or ~sqlite3.Row)
         """
+        self._set_factories(memory=False)
         results = []
         for row in self.execute(query, params):
             results.append(row)
+        self._set_factories(memory=True)
         return results
 
     def cores_with_late_spikes(self):
@@ -143,9 +145,12 @@ class ProvenanceReader(BaseDatabase):
             GROUP BY description
             ORDER BY description
             """
-        return "\n".join(
+        self._set_factories(memory=False)
+        result =  "\n".join(
             f"{ row[0] }: { row[1] }"
             for row in self.run_query(query, [int(x), int(y)]))
+        self._set_factories(memory=True)
+        return result
 
     def get_cores_with_provenace(self):
         """

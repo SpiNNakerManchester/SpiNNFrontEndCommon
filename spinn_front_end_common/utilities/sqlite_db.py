@@ -126,6 +126,19 @@ class SQLiteDB(AbstractContextManager):
 
         self.__cursor = None
 
+    def _set_factories(self, *, memory):
+        """
+        Toggle the row and text factories between in memory and text version
+
+        :param bool memory: If the in memory factories should be used.
+        """
+        if memory:
+            self.__db.row_factory = sqlite3.Row
+            self.__db.text_factory = memoryview,
+        else:
+            self.__db.row_factory = None
+            self.__db.text_factory = None
+
     def _context_entered(self):
         if self.__db is None:
             raise DatabaseException("database has been closed")
