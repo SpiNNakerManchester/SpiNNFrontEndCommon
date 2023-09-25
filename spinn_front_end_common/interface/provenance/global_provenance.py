@@ -41,9 +41,7 @@ class GlobalProvenance(SQLiteDB):
         You can't port to a different database engine without a lot of work.
     """
 
-    __slots__ = [
-        "_database_file"
-    ]
+    __slots__ = ()
 
     @classmethod
     def get_global_provenace_path(cls):
@@ -76,7 +74,6 @@ class GlobalProvenance(SQLiteDB):
             database_file = os.path.join(
                 FecDataView.get_timestamp_dir_path(),
                 "global_provenance.sqlite3")
-        self._database_file = database_file
         SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE,
                           row_factory=None, text_factory=None)
 
