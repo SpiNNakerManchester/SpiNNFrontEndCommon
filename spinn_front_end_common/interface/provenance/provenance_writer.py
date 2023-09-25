@@ -163,6 +163,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             logger.warning(message)
+            return
         with self.transaction() as cur:
             cur.execute(
                 """
