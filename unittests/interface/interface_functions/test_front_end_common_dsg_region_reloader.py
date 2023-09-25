@@ -133,20 +133,19 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
-        ds = DsSqlliteDatabase()
-        writer.set_ds_database(ds)
-        for placement in placements:
-            ds.set_core(
-                placement.x, placement.y, placement.p, placement.vertex)
-            base = placement.p * 1000
-            regions = reload_region_data[placement.p]
-            for (reg_num, size, _) in regions:
-                ds.set_memory_region(
-                    placement.x, placement.y, placement.p, reg_num, size,
-                    None, None)
-                ds.set_region_pointer(
-                    placement.x, placement.y, placement.p, reg_num, base)
-                base += size
+        with DsSqlliteDatabase() as ds:
+            for placement in placements:
+                ds.set_core(
+                    placement.x, placement.y, placement.p, placement.vertex)
+                base = placement.p * 1000
+                regions = reload_region_data[placement.p]
+                for (reg_num, size, _) in regions:
+                    ds.set_memory_region(
+                        placement.x, placement.y, placement.p, reg_num, size,
+                        None, None)
+                    ds.set_region_pointer(
+                        placement.x, placement.y, placement.p, reg_num, base)
+                    base += size
 
         reload_dsg_regions()
 
@@ -188,20 +187,19 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
-        ds = DsSqlliteDatabase()
-        writer.set_ds_database(ds)
-        for placement in placements:
-            ds.set_core(
-                placement.x, placement.y, placement.p, placement.vertex)
-            base = placement.p * 1000
-            regions = reload_region_data[placement.p]
-            for (reg_num, size, _) in regions:
-                ds.set_memory_region(
-                    placement.x, placement.y, placement.p, reg_num, size-1,
-                    None, None)
-                ds.set_region_pointer(
-                    placement.x, placement.y, placement.p, reg_num, base)
-                base += size
+        with DsSqlliteDatabase() as ds:
+            for placement in placements:
+                ds.set_core(
+                    placement.x, placement.y, placement.p, placement.vertex)
+                base = placement.p * 1000
+                regions = reload_region_data[placement.p]
+                for (reg_num, size, _) in regions:
+                    ds.set_memory_region(
+                        placement.x, placement.y, placement.p, reg_num, size-1,
+                        None, None)
+                    ds.set_region_pointer(
+                        placement.x, placement.y, placement.p, reg_num, base)
+                    base += size
 
         with self.assertRaises(DataSpecException):
             reload_dsg_regions()
