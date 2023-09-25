@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import logging
-from spinn_utilities.config_holder import get_config_int_or_none,\
-    get_config_bool
+from spinn_utilities.config_holder import (
+    get_config_int_or_none, get_config_bool)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
