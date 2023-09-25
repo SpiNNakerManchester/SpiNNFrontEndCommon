@@ -72,7 +72,7 @@ class CantFindSDRAMToUseException(SpinnFrontEndException):
 
 class DatabaseException(SpinnFrontEndException):
     """
-    Raised when a query to a database failed.
+    Raise when something in a database failed.
     """
 
 

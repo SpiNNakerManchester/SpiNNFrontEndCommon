@@ -88,13 +88,12 @@ class GlobalProvenance(SQLiteDB):
         :param str description: The package for which the version applies
         :param str the_value: The version to be recorded
         """
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO version_provenance(
-                    description, the_value)
-                VALUES(?, ?)
-                """, [description, the_value])
+        self.execute(
+            """
+            INSERT INTO version_provenance(
+                description, the_value)
+            VALUES(?, ?)
+            """, [description, the_value])
 
     def insert_category(self, category, machine_on):
         """
@@ -104,18 +103,17 @@ class GlobalProvenance(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        with self.transaction() as cur:
-            for row in cur.execute(
-                    """
-                    INSERT INTO category_timer_provenance(
-                        category, machine_on, n_run, n_loop)
-                    VALUES(?, ?, ?, ?)
-                    RETURNING category_id
-                    """,
-                    [category.category_name, machine_on,
-                     FecDataView.get_run_number(),
-                     FecDataView.get_run_step()]):
-                return row[0]
+        for row in self.execute(
+                """
+                INSERT INTO category_timer_provenance(
+                    category, machine_on, n_run, n_loop)
+                VALUES(?, ?, ?, ?)
+                RETURNING category_id
+                """,
+                [category.category_name, machine_on,
+                 FecDataView.get_run_number(),
+                 FecDataView.get_run_step()]):
+            return row[0]
         raise DatabaseException(
             "database insert failed (category_timer_provenance)")
 
@@ -130,14 +128,13 @@ class GlobalProvenance(SQLiteDB):
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                UPDATE category_timer_provenance
-                SET
-                    time_taken = ?
-                WHERE category_id = ?
-                """, (time_taken, category_id))
+        self.execute(
+            """
+            UPDATE category_timer_provenance
+            SET
+                time_taken = ?
+            WHERE category_id = ?
+            """, (time_taken, category_id))
 
     def insert_timing(
             self, category, algorithm, work, timedelta, skip_reason):
@@ -155,14 +152,13 @@ class GlobalProvenance(SQLiteDB):
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO timer_provenance(
-                    category_id, algorithm, work, time_taken, skip_reason)
-                VALUES(?, ?, ?, ?, ?)
-                """,
-                [category, algorithm, work.work_name, time_taken, skip_reason])
+        self.execute(
+            """
+            INSERT INTO timer_provenance(
+                category_id, algorithm, work, time_taken, skip_reason)
+            VALUES(?, ?, ?, ?, ?)
+            """,
+            [category, algorithm, work.work_name, time_taken, skip_reason])
 
     def store_log(self, level, message, timestamp=None):
         """
@@ -173,14 +169,13 @@ class GlobalProvenance(SQLiteDB):
         """
         if timestamp is None:
             timestamp = datetime.now()
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO p_log_provenance(
-                    timestamp, level, message)
-                VALUES(?, ?, ?)
-                """,
-                [timestamp, level, message])
+        self.execute(
+            """
+            INSERT INTO p_log_provenance(
+                timestamp, level, message)
+            VALUES(?, ?, ?)
+            """,
+            [timestamp, level, message])
 
     def _test_log_locked(self, text):
         """
@@ -188,16 +183,15 @@ class GlobalProvenance(SQLiteDB):
 
         This will lock the database and then try to do a log
         """
-        with self.transaction() as cur:
-            # lock the database
-            cur.execute(
-                """
-                INSERT INTO version_provenance(
-                    description, the_value)
-                VALUES("foo", "bar")
-                """)
-            # try logging and storing while locked.
-            logger.warning(text)
+        # lock the database
+        self.execute(
+            """
+            INSERT INTO version_provenance(
+                description, the_value)
+            VALUES("foo", "bar")
+            """)
+        # try logging and storing while locked.
+        logger.warning(text)
 
     def run_query(self, query, params=()):
         """
@@ -230,9 +224,8 @@ class GlobalProvenance(SQLiteDB):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
-        with self.transaction() as cur:
-            for row in cur.execute(query, params):
-                results.append(row)
+        for row in self.execute(query, params):
+            results.append(row)
         return results
 
     def get_timer_provenance(self, algorithm):

@@ -69,22 +69,21 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
         return os.path.join(FecDataView.get_run_dir_path(),
                             f"data{FecDataView.get_reset_str()}.sqlite3")
 
-    def _get_core_id(self, cursor, x, y, p):
+    def _get_core_id(self, x, y, p):
         """
-        :param ~sqlite3.Cursor cursor:
         :param int x:
         :param int y:
         :param int p:
         :rtype: int
         """
-        for row in cursor.execute(
+        for row in self.execute(
                 """
                 SELECT core_id FROM core
                 WHERE x = ? AND y = ? AND processor = ?
                 LIMIT 1
                 """, (x, y, p)):
             return row["core_id"]
-        for row in cursor.execute(
+        for row in self.execute(
                 """
                 INSERT INTO core(x, y, processor)
                 VALUES(?, ?, ?)
