@@ -29,7 +29,7 @@ class LogStoreDB(LogStore):
                 # If in the same thread the view version can be used
                 with FecDataView.get_global_database() as db:
                     db.store_log(level, message, timestamp)
-            except Exception:
+            except sqlite3.ProgrammingError:
                 # If in a different thread try again with different db
                 with GlobalProvenance() as db:
                     db.store_log(level, message, timestamp)
