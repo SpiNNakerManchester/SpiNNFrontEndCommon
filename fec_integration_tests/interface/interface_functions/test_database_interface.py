@@ -149,17 +149,19 @@ def test_database_interface():
     db_path = database_interface(1000)
     print(db_path)
 
-    reader = DatabaseReader(db_path)
-    assert reader.get_ip_address(0, 0) == writer.get_chip_at(0, 0).ip_address
-    assert all(db_p == placements.get_placement_of_vertex(m_vertex).location
-               for db_p, m_vertex in zip(
-                   reader.get_placements(app_vertex_1.label),
-                   app_vertex_1.machine_vertices))
-    assert reader.get_configuration_parameter_value("runtime") == 1000
-    assert (
-        reader.get_live_output_details(
-            app_vertex_1.label, lpg_vertex.label) ==
-        (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address, tag.tag,
-         tag.destination_x, tag.destination_y))
-    assert reader.get_atom_id_to_key_mapping(app_vertex_1.label)
-    assert reader.get_key_to_atom_id_mapping(app_vertex_1.label)
+    with DatabaseReader(db_path) as reader:
+        assert (reader.get_ip_address(0, 0) ==
+                writer.get_chip_at(0, 0).ip_address)
+        assert all(db_p ==
+                   placements.get_placement_of_vertex(m_vertex).location
+                   for db_p, m_vertex in zip(
+                       reader.get_placements(app_vertex_1.label),
+                       app_vertex_1.machine_vertices))
+        assert reader.get_configuration_parameter_value("runtime") == 1000
+        assert (
+            reader.get_live_output_details(
+                app_vertex_1.label, lpg_vertex.label) ==
+            (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address,
+             tag.tag, tag.destination_x, tag.destination_y))
+        assert reader.get_atom_id_to_key_mapping(app_vertex_1.label)
+        assert reader.get_key_to_atom_id_mapping(app_vertex_1.label)
