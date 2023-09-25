@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import logging
-from spinn_utilities.config_holder import get_config_int_or_none
+from spinn_utilities.config_holder import get_config_int_or_none,\
+    get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
@@ -47,7 +48,8 @@ class ProvenanceWriter(BaseDatabase):
             Flag to say unshared in-memory can be used.
             Otherwise a `None` file will mean the default should be used
         """
-        super().__init__(database_file)
+        if get_config_bool("Reports", "write_provenance"):
+            super().__init__(database_file)
 
     def insert_power(self, description, the_value):
         """
@@ -56,6 +58,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: Type of value
         :param float the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -77,6 +81,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param float the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -94,6 +100,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -113,6 +121,8 @@ class ProvenanceWriter(BaseDatabase):
         :param float the_value: data
         :param bool expected: Flag to say this data was expected
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -131,6 +141,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         with self.transaction() as cur:
             core_id = self._get_core_id(cur, x, y, p)
             cur.execute(
@@ -149,6 +161,8 @@ class ProvenanceWriter(BaseDatabase):
 
         :param str message:
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            logger.warning(message)
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -175,6 +189,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -194,6 +210,8 @@ class ProvenanceWriter(BaseDatabase):
         :param connections: {(x, y): hostname, ...} or None
         :type connections: dict((int, int): str) or None
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         if not connections:
             return
         with self.transaction() as cursor:
