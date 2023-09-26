@@ -188,7 +188,7 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_app_vertex(self):
         with ProvenanceWriter() as db:
             db.insert_app_vertex("pop", "type", "description", 0.5)
-        with ProvenanceWriter() as db:
+        with ProvenanceReader() as db:
             data = db.run_query("Select * from app_vertex_provenance")
         expected = [(1, 'pop', 'type', 'description', 0.5)]
         self.assertListEqual(expected, data)
@@ -196,7 +196,7 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_lut(self):
         with ProvenanceWriter() as db:
             db.insert_lut("the pre", "A post", "OneToOne", "foo", 0.5)
-        with ProvenanceWriter() as db:
+        with ProvenanceReader() as db:
             data = db.run_query("Select * from lut_provenance")
         expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 0.5)]
         self.assertListEqual(expected, data)
