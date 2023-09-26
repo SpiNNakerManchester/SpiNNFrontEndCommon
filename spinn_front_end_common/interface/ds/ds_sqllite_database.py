@@ -44,7 +44,7 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     A database for holding data specification details.
     """
-    __slots__ = ()
+    __slots__ = ("_init_file")
 
     def __init__(self, database_file: str=None):
         """
@@ -55,37 +55,32 @@ class DsSqlliteDatabase(SQLiteDB):
         if database_file is None:
             database_file = FecDataView.get_ds_database_path()
 
-        init_file = not os.path.exists(database_file)
+        self._init_file = not os.path.exists(database_file)
 
         super().__init__(
-            database_file, ddl_file=_DDL_FILE if init_file else None)
-        self.__init_ethernets()
+            database_file, ddl_file=_DDL_FILE if self._init_file else None)
 
-    @classmethod
-    def default_database_file(cls) -> str:
-        """
-        Gets the path to the default/ current database file
-
-        :rtype: str
-        :return: Path where the database is or should be written
-        """
-        return os.path.join(FecDataView.get_run_dir_path(),
-                            f"ds{FecDataView.get_reset_str()}.sqlite3")
+    def _context_entered(self):
+        super()._context_entered()
+        if self._init_file:
+            self.__init_ethernets()
+            self._init_file = False
 
     def __init_ethernets(self) -> None:
         """
         Set up the database contents from the machine.
+
+        .. note:: Call of this method has to be delayed until inside the with
         """
         eth_chips = FecDataView.get_machine().ethernet_connected_chips
-        with self as db:
-            db.executemany(
-                """
-                INSERT INTO ethernet(
-                    ethernet_x, ethernet_y, ip_address)
-                VALUES(?, ?, ?)
-                """, (
-                    (ethernet.x, ethernet.y, ethernet.ip_address)
-                    for ethernet in eth_chips))
+        self.executemany(
+            """
+            INSERT INTO ethernet(
+                ethernet_x, ethernet_y, ip_address)
+            VALUES(?, ?, ?)
+            """, (
+                (ethernet.x, ethernet.y, ethernet.ip_address)
+                for ethernet in eth_chips))
 
     def set_core(self, x: int, y: int, p: int,
                  vertex: AbstractHasAssociatedBinary):

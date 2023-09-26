@@ -211,22 +211,6 @@ class ProvenanceWriter(BaseDatabase):
             """, ((x, y, ipaddress)
                   for ((x, y), ipaddress) in connections.items()))
 
-    def _context_entered(self) -> None:
-        db = self.connection
-        if not db.in_transaction:
-            db.execute("BEGIN")
-            self.__started_tx = True
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> Literal[False]:
-        if self.__started_tx:
-            db = self.connection
-            if exc_type is None:
-                db.commit()
-            else:
-                db.rollback()
-            self.__started_tx = False
-        return super().__exit__(exc_type, exc_val, exc_tb)
-
     def _test_log_locked(self, text):
         """
         THIS IS A TESTING METHOD.

@@ -153,7 +153,7 @@ class DatabaseWriter(SQLiteDB):
                     """,
                     vertex_id, m_vertex_id)
 
-    def __add_machine_vertex(self, cur, m_vertex: MachineVertex) -> int:
+    def __add_machine_vertex(self, m_vertex: MachineVertex) -> int:
         m_vertex_id = self.__insert(
             "INSERT INTO Machine_vertices (label)  VALUES(?)",
             str(m_vertex.label))

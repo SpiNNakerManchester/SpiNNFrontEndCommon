@@ -137,34 +137,33 @@ class _GraphDataSpecificationWriter(object):
 
         x, y, p = pl.x, pl.y, pl.p
 
-        with ds_db.transaction():
-            report_writer = get_report_writer(x, y, p)
-            spec = DataSpecificationGenerator(
-                x, y, p, vertex, ds_db, report_writer)
+        report_writer = get_report_writer(x, y, p)
+        spec = DataSpecificationGenerator(
+            x, y, p, vertex, ds_db, report_writer)
 
-            # generate the DSG file
-            vertex.generate_data_specification(spec, pl)
+        # generate the DSG file
+        vertex.generate_data_specification(spec, pl)
 
-            # Check the memory usage
-            total_size = ds_db.get_total_regions_size(x, y, p)
-            region_size = APP_PTR_TABLE_BYTE_SIZE + total_size
-            total_est_size = 0
+        # Check the memory usage
+        total_size = ds_db.get_total_regions_size(x, y, p)
+        region_size = APP_PTR_TABLE_BYTE_SIZE + total_size
+        total_est_size = 0
 
-            # Check per-region memory usage if possible
-            if isinstance(vertex, MachineVertex):
-                sdram = vertex.sdram_required
-                if isinstance(sdram, MultiRegionSDRAM):
-                    region_sizes = ds_db.get_region_sizes(x, y, p)
-                    for i, size in region_sizes.items():
-                        est_size = sdram.regions.get(i, ConstantSDRAM(0))
-                        est_size = est_size.get_total_sdram(
-                            FecDataView.get_max_run_time_steps())
-                        total_est_size += est_size
-                        if size > est_size:
-                            logger.warning(
-                                "Region {} of vertex {} is bigger than "
-                                "expected: {} estimated vs. {} actual",
-                                i, vertex.label, est_size, size)
+        # Check per-region memory usage if possible
+        if isinstance(vertex, MachineVertex):
+            sdram = vertex.sdram_required
+            if isinstance(sdram, MultiRegionSDRAM):
+                region_sizes = ds_db.get_region_sizes(x, y, p)
+                for i, size in region_sizes.items():
+                    est_size = sdram.regions.get(i, ConstantSDRAM(0))
+                    est_size = est_size.get_total_sdram(
+                        FecDataView.get_max_run_time_steps())
+                    total_est_size += est_size
+                    if size > est_size:
+                        logger.warning(
+                            "Region {} of vertex {} is bigger than "
+                            "expected: {} estimated vs. {} actual",
+                            i, vertex.label, est_size, size)
 
         self._vertices_by_chip[x, y].append(vertex)
         self._sdram_usage[x, y] += total_size
