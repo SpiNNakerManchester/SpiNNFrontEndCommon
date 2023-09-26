@@ -304,7 +304,7 @@ def _allocate_job_new(
     """
     logger.info(f"Requesting job with {n_boards} boards")
     with ExitStack() as stack:
-        spalloc_machine = get_config_str("Machine", "spalloc_machine")
+        spalloc_machine = get_config_str_or_none("Machine", "spalloc_machine")
         use_proxy = get_config_bool("Machine", "spalloc_use_proxy")
         client = SpallocClient(
             spalloc_server, bearer_token=bearer_token, group=group,
@@ -316,7 +316,8 @@ def _allocate_job_new(
         stack.enter_context(task)
         job.wait_until_ready()
         connections = job.get_connections()
-        ProvenanceWriter().insert_board_provenance(connections)
+        with ProvenanceWriter() as db:
+            db.insert_board_provenance(connections)
         root = connections.get((0, 0), None)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(

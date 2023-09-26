@@ -14,6 +14,7 @@
 
 import logging
 import os
+from sqlite3 import OperationalError
 from spinn_utilities.log import FormatAdapter
 from datetime import timedelta
 from testfixtures.logcapture import LogCapture
@@ -212,7 +213,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         logger.warning("this works")
         with GlobalProvenance() as db:
             db._test_log_locked("locked")
-            logger.warning("not locked")
+        logger.warning("not locked")
         logger.warning("this wis fine")
         # the use of class variables and tests run in parallel dont work.
         if "JENKINS_URL" not in os.environ:
@@ -220,3 +221,16 @@ class TestProvenanceDatabase(unittest.TestCase):
                 ["this works", "not locked", "this wis fine"],
                 ls.retreive_log_messages(20))
         logger.set_log_store(None)
+
+    def test_double_with(self):
+        # Confirm that using the database twice goes boom
+        with GlobalProvenance() as db1:
+            with GlobalProvenance() as db2:
+                # A read does not lock the database
+                db1.get_timer_provenance("test")
+                db2.get_timer_provenance("test")
+                # A write does
+                db1.insert_version("a", "foo")
+                with self.assertRaises(OperationalError):
+                    # So a write from a different transaction goes boom
+                    db2.insert_version("b", "bar")

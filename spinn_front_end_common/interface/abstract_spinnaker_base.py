@@ -1420,7 +1420,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Creates and fills the data spec database
         """
         with FecTimer("Graph data specification writer", TimerWork.OTHER):
-            self._data_writer.set_ds_database(
+            self._data_writer.set_ds_database_path(
                 graph_data_specification_writer())
 
     def _do_data_generation(self):
@@ -1631,7 +1631,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Mapping", "router_table_compress_as_far_as_possible"):
             return False
         machine = self._data_writer.get_machine()
-        return tables.max_number_of_entries <= machine.min_n_router_enteries
+        return (tables.get_max_number_of_entries()
+                <= machine.min_n_router_enteries)
 
     def _execute_pre_compression(self, pre_compress):
         if pre_compress:
