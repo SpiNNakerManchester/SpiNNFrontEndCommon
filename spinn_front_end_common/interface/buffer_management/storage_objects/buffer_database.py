@@ -17,7 +17,6 @@ import time
 from typing import Optional, Tuple
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
-from spinn_front_end_common.utilities.sqlite_db import Isolation
 
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 #: Name of the database in the data folder

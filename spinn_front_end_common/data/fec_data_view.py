@@ -164,7 +164,7 @@ class _FecDataModel(object):
         self._data_in_multicast_routing_tables: Optional[
             MulticastRoutingTables] = None
         self._database_file_path: Optional[str] = None
-        self._ds_database: Optional[DsSqlliteDatabase] = None
+        self._ds_database_path: Optional[str] = None
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
         self._fixed_routes: Optional[Dict[Chip, FixedRouteEntry]] = None
@@ -1058,7 +1058,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         :rtype: str
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the ds_database is currently unavailable
+            If the ds_database path is currently unavailable
         """
         if cls.__fec_data._ds_database_path is None:
             if cls._is_mocked():

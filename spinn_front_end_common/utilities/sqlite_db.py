@@ -108,6 +108,7 @@ class SQLiteDB(AbstractContextManager):
             The synchronisation level. Doesn't normally need to be altered.
         """
         self.__db = None
+        self.__cursor = None
         if database_file is None:
             self.__db = sqlite3.connect(":memory:")  # Magic name!
             # in-memory DB is never read-only

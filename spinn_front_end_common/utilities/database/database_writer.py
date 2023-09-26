@@ -195,7 +195,7 @@ class DatabaseWriter(SQLiteDB):
                 """,   [(k1, k2, v) for (k1, k2), v in config.items()])
 
 
-def add_placements(self) -> None:
+    def add_placements(self) -> None:
         """
         Adds the placements objects into the database.
         """
