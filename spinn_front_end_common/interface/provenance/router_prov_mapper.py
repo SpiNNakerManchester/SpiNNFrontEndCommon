@@ -168,7 +168,7 @@ class Plotter(ContextManager[SQLiteDB]):
                 AND "description" IS NOT NULL
             """
         return frozenset(
-            cast(str, row["description"]) for row in self.execute(query))
+            cast(str, row["description"]) for row in self._db.execute(query))
 
     def get_sum_chip_prov_details(self, info: str) -> Tuple[
             str, int, int, numpy.ndarray]:
