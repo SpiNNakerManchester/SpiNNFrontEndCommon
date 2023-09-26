@@ -614,7 +614,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 config = job.get_session_credentials_for_db()
                 self.executemany(
                     """
-                    INSERT INTO proxy_configuration(kind, name, value) 
+                    INSERT INTO proxy_configuration(kind, name, value)
                     VALUES(?, ?, ?)
                     """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
