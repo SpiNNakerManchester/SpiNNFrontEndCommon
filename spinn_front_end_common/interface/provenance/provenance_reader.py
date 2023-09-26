@@ -99,9 +99,8 @@ class ProvenanceReader(BaseDatabase):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
-        with self.transaction() as cur:
-            for row in cur.execute(query, params):
-                results.append(row)
+        for row in self.execute(query, params):
+            results.append(row)
         return results
 
     def cores_with_late_spikes(self):
