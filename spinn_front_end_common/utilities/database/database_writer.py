@@ -189,11 +189,10 @@ class DatabaseWriter(SQLiteDB):
         if job is not None:
             config = job.get_session_credentials_for_db()
             self.executemany(
-                """ 
+                """
                 INSERT INTO proxy_configuration(kind, name, value)
-                VALUES(?, ?, ?) 
+                VALUES(?, ?, ?)
                 """,   [(k1, k2, v) for (k1, k2), v in config.items()])
-
 
     def add_placements(self) -> None:
         """

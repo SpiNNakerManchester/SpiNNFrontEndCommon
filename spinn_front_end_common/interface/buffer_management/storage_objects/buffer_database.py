@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlite3 import Binary, Cursor, IntegrityError
+from sqlite3 import Binary, IntegrityError
 import time
 from typing import Optional, Tuple
 from spinn_front_end_common.data import FecDataView
@@ -248,9 +248,9 @@ class BufferDatabase(BaseDatabase):
         if job is not None:
             config = job.get_session_credentials_for_db()
             self.executemany(
-                """ 
-                INSERT INTO proxy_configuration(kind, name, value)  
-                VALUES(?, ?, ?) 
+                """
+                INSERT INTO proxy_configuration(kind, name, value)
+                VALUES(?, ?, ?)
                 """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
     def _set_core_name(self, x: int, y: int, p: int, core_name: Optional[str]):

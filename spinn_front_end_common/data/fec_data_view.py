@@ -37,7 +37,6 @@ if TYPE_CHECKING:
     from spinn_front_end_common.interface.java_caller import JavaCaller
     from spinn_front_end_common.utilities.utility_objs import (
         LivePacketGatherParameters)
-    from spinn_front_end_common.interface.ds import DsSqlliteDatabase
     from spinn_front_end_common.utility_models import (
         ExtraMonitorSupportMachineVertex,
         DataSpeedUpPacketGatherMachineVertex)

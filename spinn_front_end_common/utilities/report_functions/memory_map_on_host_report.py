@@ -37,7 +37,7 @@ def memory_map_on_host_report() -> None:
                         f"{xyp}: ('start_address': {start_address}, "
                         f"hex:{hex(start_address)}), "
                         f"'memory_used': {memory_used}, "
-                    f"'memory_written': {memory_written}\n")
+                        f"'memory_written': {memory_written}\n")
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", file_name)

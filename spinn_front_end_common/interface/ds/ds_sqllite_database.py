@@ -46,7 +46,7 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     __slots__ = ("_init_file")
 
-    def __init__(self, database_file: str=None):
+    def __init__(self, database_file:  Optional[str] = None):
         """
         :param bool init_file:
             Whether to initialise the DB from our DDL file. If not specified,
@@ -613,9 +613,9 @@ class DsSqlliteDatabase(SQLiteDB):
             if isinstance(job, SpallocJob):
                 config = job.get_session_credentials_for_db()
                 self.executemany(
-                    """  
+                    """
                     INSERT INTO proxy_configuration(kind, name, value) 
-                    VALUES(?, ?, ?)  
+                    VALUES(?, ?, ?)
                     """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
     def set_app_id(self) -> None:

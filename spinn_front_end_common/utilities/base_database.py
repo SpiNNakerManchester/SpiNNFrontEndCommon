@@ -15,7 +15,7 @@
 import os
 import sqlite3
 import time
-from typing import Optional, Union, cast
+from typing import Optional, Union
 from typing_extensions import TypeAlias
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_front_end_common.data import FecDataView
