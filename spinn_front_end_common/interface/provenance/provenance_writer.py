@@ -35,7 +35,7 @@ class ProvenanceWriter(BaseDatabase):
         You can't port to a different database engine without a lot of work.
     """
 
-    __slots__ = ("__started_tx", )
+    __slots__ = ()
 
     def __init__(self, database_file: Optional[str] = None):
         """
@@ -50,7 +50,6 @@ class ProvenanceWriter(BaseDatabase):
             Otherwise a `None` file will mean the default should be used
         """
         super().__init__(database_file)
-        self.__started_tx: bool = False
 
     def insert_power(self, description: str, the_value: _SqliteTypes):
         """
