@@ -18,7 +18,7 @@ import math
 import os
 import time
 from spinn_utilities.config_holder import (
-    get_config_int, get_config_str)
+    get_config_int, get_config_int_or_none, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.notification_protocol import (
@@ -29,7 +29,6 @@ from spinnman.model import ExecutableTargets
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
@@ -280,7 +279,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         if time_scale_factor is None:
             # Note while this reads from the cfg the cfg default is None
-            time_scale_factor = get_config_int("Machine", "time_scale_factor")
+            time_scale_factor = get_config_int_or_none(
+                "Machine", "time_scale_factor")
 
         if time_scale_factor is None:
             if default_time_scale_factor is not None:
@@ -478,16 +478,17 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("executable_targets must be a ExecutableTargets")
         self.__fec_data._executable_targets = executable_targets
 
-    def set_ds_database(self, ds_database):
+    def set_ds_database_path(self, ds_database_path):
         """
         Sets the Data Spec targets database.
 
         :type ds_database:
             ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
         """
-        if not isinstance(ds_database, DsSqlliteDatabase):
-            raise TypeError("ds_database must be a DsSqlliteDatabase")
-        self.__fec_data._ds_database = ds_database
+        if not os.path.isfile(ds_database_path):
+            raise TypeError("ds_database path must be a filee")
+
+        self.__fec_data._ds_database_path = ds_database_path
 
     def __gatherer_map_error(self):
         return TypeError(

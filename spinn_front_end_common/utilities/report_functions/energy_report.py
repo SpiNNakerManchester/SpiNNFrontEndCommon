@@ -15,7 +15,7 @@
 from collections import defaultdict
 import logging
 import os
-from spinn_utilities.config_holder import (get_config_int, get_config_str)
+from spinn_utilities.config_holder import is_config_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
@@ -26,7 +26,6 @@ from spinn_front_end_common.interface.interface_functions.compute_energy_used\
     import (JOULES_PER_SPIKE, MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
             MILLIWATTS_PER_FRAME_ACTIVE_COST, MILLIWATTS_PER_FPGA,
             MILLIWATTS_PER_IDLE_CHIP)
-from spinn_machine.machine import Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -209,10 +208,10 @@ class EnergyReport(object):
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
         """
-        version = get_config_int("Machine", "version")
+        version = FecDataView.get_machine_version().number
         # if not spalloc, then could be any type of board
-        if (not get_config_str("Machine", "spalloc_server") and
-                not get_config_str("Machine", "remote_spinnaker_url")):
+        if (is_config_none("Machine", "spalloc_server") and
+                is_config_none("Machine", "remote_spinnaker_url")):
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
             if version in (2, 3):
                 f.write(
@@ -272,7 +271,8 @@ class EnergyReport(object):
         f.write("\n")
 
         # detailed report print out
-        for core in range(Machine.DEFAULT_MAX_CORES_PER_CHIP):
+        n_cores = FecDataView.get_machine_version().max_cores_per_chip
+        for core in range(n_cores):
             if core in labels:
                 label = f" (running {labels[core]})"
             else:

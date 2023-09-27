@@ -17,7 +17,8 @@ import json
 import logging
 import os
 import subprocess
-from spinn_utilities.config_holder import get_config_str
+from spinn_utilities.config_holder import (
+    get_config_str, get_config_str_or_none)
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.model.graphs import AbstractVirtual
@@ -29,7 +30,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -88,7 +88,8 @@ class JavaCaller(object):
         self._monitor_cores = None
         self._gatherer_iptags = None
         self._gatherer_cores = None
-        self._java_properties = get_config_str("Java", "java_properties")
+        self._java_properties = get_config_str_or_none(
+            "Java", "java_properties")
         self._chipxy_by_ethernet = None
         if self._java_properties is not None:
             self._java_properties = self._java_properties.split()
@@ -100,8 +101,9 @@ class JavaCaller(object):
                         f"found at {_property}")
 
     def _find_java_jar(self):
-        java_spinnaker_path = get_config_str("Java", "java_spinnaker_path")
-        java_jar_path = get_config_str("Java", "java_jar_path")
+        java_spinnaker_path = get_config_str_or_none(
+            "Java", "java_spinnaker_path")
+        java_jar_path = get_config_str_or_none("Java", "java_jar_path")
         if java_spinnaker_path is None:
             interface = os.path.dirname(os.path.realpath(__file__))
             spinn_front_end_common = os.path.dirname(interface)
@@ -377,7 +379,7 @@ class JavaCaller(object):
         """
         result = self._run_java(
             'dse_sys', self._machine_json(),
-            DsSqlliteDatabase.default_database_file(),
+            FecDataView.get_ds_database_path(),
             FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(
@@ -402,12 +404,12 @@ class JavaCaller(object):
         if use_monitors:
             result = self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
-                DsSqlliteDatabase.default_database_file(),
+                FecDataView.get_ds_database_path(),
                 FecDataView.get_run_dir_path())
         else:
             result = self._run_java(
                 'dse_app', self._machine_json(),
-                DsSqlliteDatabase.default_database_file(),
+                FecDataView.get_ds_database_path(),
                 FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(

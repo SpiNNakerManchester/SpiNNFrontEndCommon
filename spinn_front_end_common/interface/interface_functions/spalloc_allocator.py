@@ -15,14 +15,14 @@ from contextlib import ExitStack
 import logging
 import math
 from typing import Dict, Tuple
-from spinn_utilities.config_holder import get_config_str_list, get_config_bool
+from spinn_utilities.config_holder import (
+    get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
+    get_config_str_list)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spalloc_client import Job
 from spalloc_client.states import JobState
 from spinn_utilities.abstract_context_manager import AbstractContextManager
-from spinn_utilities.config_holder import get_config_int, get_config_str
-from spinn_machine import Machine
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
     is_server_address, SpallocClient, SpallocJob, SpallocState)
@@ -36,11 +36,6 @@ from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
-
-#: The number of chips per board to use in calculations to ensure that
-#: the number of boards allocated is enough.  This is 2 less than the maximum
-#: as there are a few boards with 2 down chips in the big machine.
-CALC_CHIPS_PER_BOARD = Machine.MAX_CHIPS_PER_48_BOARD - 2
 
 
 class SpallocJobController(MachineAllocationController):
@@ -261,7 +256,9 @@ def spalloc_allocator(
         n_boards = FecDataView.get_n_boards_required()
     else:
         n_chips = FecDataView.get_n_chips_needed()
-        n_boards_float = float(n_chips) / CALC_CHIPS_PER_BOARD
+        # reduce max chips by 2 in case you get a bad board(s)
+        chips_div = FecDataView.get_machine_version().n_chips_per_board - 2
+        n_boards_float = float(n_chips) / chips_div
         logger.info("{:.2f} Boards Required for {} chips",
                     n_boards_float, n_chips)
         # If the number of boards rounded up is less than 50% of a board
@@ -307,7 +304,7 @@ def _allocate_job_new(
     """
     logger.info(f"Requesting job with {n_boards} boards")
     with ExitStack() as stack:
-        spalloc_machine = get_config_str("Machine", "spalloc_machine")
+        spalloc_machine = get_config_str_or_none("Machine", "spalloc_machine")
         use_proxy = get_config_bool("Machine", "spalloc_use_proxy")
         client = SpallocClient(
             spalloc_server, bearer_token=bearer_token, group=group,
@@ -319,7 +316,8 @@ def _allocate_job_new(
         stack.enter_context(task)
         job.wait_until_ready()
         connections = job.get_connections()
-        ProvenanceWriter().insert_board_provenance(connections)
+        with ProvenanceWriter() as db:
+            db.insert_board_provenance(connections)
         root = connections.get((0, 0), None)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(
@@ -352,7 +350,7 @@ def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[
         'port': port,
         'owner': user
     }
-    spalloc_machine = get_config_str("Machine", "spalloc_machine")
+    spalloc_machine = get_config_str_or_none("Machine", "spalloc_machine")
 
     if spalloc_machine is not None:
         spalloc_kwargs['machine'] = spalloc_machine
