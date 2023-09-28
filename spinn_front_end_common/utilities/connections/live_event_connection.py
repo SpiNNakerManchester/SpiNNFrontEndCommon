@@ -229,6 +229,8 @@ class LiveEventConnection(DatabaseConnection):
         """
         Add a callback for the reception of time events from a vertex.
 
+        These are typically used to receive keys or atoms ids that spiked.
+
         :param str label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
         :param time_event_callback: A function to be called when events are
