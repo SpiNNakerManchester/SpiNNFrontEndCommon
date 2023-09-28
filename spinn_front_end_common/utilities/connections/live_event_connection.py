@@ -528,7 +528,7 @@ class LiveEventConnection(DatabaseConnection):
             if key in self.__key_to_atom_id_and_label:
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
                 label = self.__receive_labels[label_id]
-                callbacks = self.__no_event_callbacks[label_id]
+                callbacks = self.__no_time_event_callbacks[label_id]
                 if len(callbacks) == 0:
                     msg = f"LiveEventConnection received a packet " \
                           f"without time for {label} but has no callback." \
