@@ -78,6 +78,7 @@ class LiveEventConnection(DatabaseConnection):
         "__init_callbacks",
         "__key_to_atom_id_and_label",
         "__live_event_callbacks",
+        "__time_event_callbacks",
         "__live_packet_gather_label",
         "__pause_stop_callbacks",
         "__receive_labels",
@@ -130,6 +131,7 @@ class LiveEventConnection(DatabaseConnection):
         self._atom_id_to_key = dict()
         self.__key_to_atom_id_and_label = dict()
         self.__live_event_callbacks = list()
+        self.__time_event_callbacks = list()
         self.__start_resume_callbacks = dict()
         self.__pause_stop_callbacks = dict()
         self.__init_callbacks = dict()
@@ -137,6 +139,7 @@ class LiveEventConnection(DatabaseConnection):
         if receive_labels is not None:
             for label in receive_labels:
                 self.__live_event_callbacks.append(list())
+                self.__time_event_callbacks.append(list())
                 self.__start_resume_callbacks[label] = list()
                 self.__pause_stop_callbacks[label] = list()
                 self.__init_callbacks[label] = list()
@@ -193,24 +196,55 @@ class LiveEventConnection(DatabaseConnection):
     def add_receive_callback(self, label, live_event_callback,
                              translate_key=True):
         """
+        No longer in use!
+
+        Use add_receive_live_callback or add_receive_time_callback
+
+        Removed 7.1.0
+        """
+        raise NotImplementedError(
+            "This method has been replaced with add_receive_live_callback"
+            " and add_receive_time_callback")
+
+    def add_receive_live_callback(self, label, live_event_callback,
+                                  translate_key=True):
+        """
         Add a callback for the reception of live events from a vertex.
 
         :param str label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
         :param live_event_callback: A function to be called when events are
             received. This should take as parameters the label of the vertex,
-            the simulation timestep when the event occurred, and an
-            array-like of atom IDs.
-        :type live_event_callback: callable(str, int, list(int)) -> None
-        :param bool translate_key:
-            True if the key is to be converted to an atom ID, False if the
-            key should stay a key
+            an int atom ID or key, and an int payload which may be None
+        :type live_event_callback: callable(str, int, int or None) -> None
         """
         label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
         self.__live_event_callbacks[label_id].append(
             (live_event_callback, translate_key))
+
+    def add_receive_time_callback(self, label, time_event_callback,
+                             translate_key=True):
+        """
+        Add a callback for the reception of time events from a vertex.
+
+        :param str label: The label of the vertex to be notified about.
+            Must be one of the vertices listed in the constructor
+        :param time_event_callback: A function to be called when events are
+            received. This should take as parameters the label of the vertex,
+            the simulation timestep when the event occurred, and an
+            array-like of atom IDs or keys.
+        :type time_event_callback: callable(str, int, list(int)) -> None
+        :param bool translate_key:
+            True if the key is to be converted to an atom ID, False if the
+            key should stay a key
+        """
+        label_id = self.__receive_labels.index(label)
+        logger.info("Receive callback {} registered to label {}",
+                    time_event_callback, label)
+        self.__time_event_callbacks[label_id].append(
+            (time_event_callback, translate_key))
 
     def add_start_callback(self, label, start_callback):
         """
@@ -479,7 +513,7 @@ class LiveEventConnection(DatabaseConnection):
         for time in key_times_labels:
             for label_id in key_times_labels[time]:
                 label = self.__receive_labels[label_id]
-                for c_back, use_atom in self.__live_event_callbacks[label_id]:
+                for c_back, use_atom in self.__time_event_callbacks[label_id]:
                     if use_atom:
                         c_back(label, time, atoms_times_labels[time][label_id])
                     else:
