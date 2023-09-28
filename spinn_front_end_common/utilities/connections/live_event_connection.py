@@ -194,7 +194,7 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__init_callbacks[label].append(init_callback)
 
-    def add_receive_callback(self, label, time_event_callback,
+    def add_receive_callback(self, label, live_event_callback,
                              translate_key=True):
         """
         Add a callback for the reception of time events from a vertex.
@@ -209,20 +209,20 @@ class LiveEventConnection(DatabaseConnection):
 
         :param str label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
-        :param time_event_callback: A function to be called when events are
+        :param live_event_callback: A function to be called when events are
             received. This should take as parameters the label of the vertex,
             the simulation timestep when the event occurred, and an
             array-like of atom IDs or keys.
-        :type time_event_callback: callable(str, int, list(int)) -> None
+        :type live_event_callback: callable(str, int, list(int)) -> None
         :param bool translate_key:
             True if the key is to be converted to an atom ID, False if the
             key should stay a key
         """
         label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}",
-                    time_event_callback, label)
+                    live_event_callback, label)
         self.__time_event_callbacks[label_id].append(
-            (time_event_callback, translate_key))
+            (live_event_callback, translate_key))
 
     def add_receive_no_time_callback(
             self, label, live_event_callback, translate_key=True):
