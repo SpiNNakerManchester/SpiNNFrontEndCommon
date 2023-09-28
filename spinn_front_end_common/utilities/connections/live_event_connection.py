@@ -77,7 +77,7 @@ class LiveEventConnection(DatabaseConnection):
         "__error_keys",
         "__init_callbacks",
         "__key_to_atom_id_and_label",
-        "__live_event_callbacks",
+        "__no_time_event_callbacks",
         "__time_event_callbacks",
         "__live_packet_gather_label",
         "__pause_stop_callbacks",
@@ -130,7 +130,7 @@ class LiveEventConnection(DatabaseConnection):
         # Also used by SpynnakerPoissonControlConnection
         self._atom_id_to_key = dict()
         self.__key_to_atom_id_and_label = dict()
-        self.__live_event_callbacks = list()
+        self.__no_time_event_callbacks = list()
         self.__time_event_callbacks = list()
         self.__start_resume_callbacks = dict()
         self.__pause_stop_callbacks = dict()
@@ -138,7 +138,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__receiver_details = list()
         if receive_labels is not None:
             for label in receive_labels:
-                self.__live_event_callbacks.append(list())
+                self.__no_time_event_callbacks.append(list())
                 self.__time_event_callbacks.append(list())
                 self.__start_resume_callbacks[label] = list()
                 self.__pause_stop_callbacks[label] = list()
@@ -171,7 +171,7 @@ class LiveEventConnection(DatabaseConnection):
             self.__receive_labels = list()
         if label not in self.__receive_labels:
             self.__receive_labels.append(label)
-            self.__live_event_callbacks.append(list())
+            self.__no_time_event_callbacks.append(list())
         if label not in self.__start_resume_callbacks:
             self.__start_resume_callbacks[label] = list()
             self.__pause_stop_callbacks[label] = list()
@@ -193,43 +193,18 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__init_callbacks[label].append(init_callback)
 
-    def add_receive_callback(self, label, live_event_callback,
+    def add_receive_callback(self, label, time_event_callback,
                              translate_key=True):
-        """
-        No longer in use!
-
-        Use add_receive_live_callback or add_receive_time_callback
-
-        Removed 7.1.0
-        """
-        raise NotImplementedError(
-            "This method has been replaced with add_receive_live_callback"
-            " and add_receive_time_callback")
-
-    def add_receive_live_callback(self, label, live_event_callback,
-                                  translate_key=True):
-        """
-        Add a callback for the reception of live events from a vertex.
-
-        :param str label: The label of the vertex to be notified about.
-            Must be one of the vertices listed in the constructor
-        :param live_event_callback: A function to be called when events are
-            received. This should take as parameters the label of the vertex,
-            an int atom ID or key, and an int payload which may be None
-        :type live_event_callback: callable(str, int, int or None) -> None
-        """
-        label_id = self.__receive_labels.index(label)
-        logger.info("Receive callback {} registered to label {}",
-                    live_event_callback, label)
-        self.__live_event_callbacks[label_id].append(
-            (live_event_callback, translate_key))
-
-    def add_receive_time_callback(self, label, time_event_callback,
-                                  translate_key=True):
         """
         Add a callback for the reception of time events from a vertex.
 
         These are typically used to receive keys or atoms ids that spiked.
+
+        .. note::
+            Previously this method was also used to add no time callback
+            Ie the once that take as parameters the label of the vertex,
+            an int atom ID or key, and an int payload which may be None.
+            For those use add_receive_no_time_callback now
 
         :param str label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
@@ -247,6 +222,24 @@ class LiveEventConnection(DatabaseConnection):
                     time_event_callback, label)
         self.__time_event_callbacks[label_id].append(
             (time_event_callback, translate_key))
+
+    def add_receive_no_time_callback(
+            self, label, live_event_callback, translate_key=True):
+        """
+        Add a callback for the reception of live events from a vertex.
+
+        :param str label: The label of the vertex to be notified about.
+            Must be one of the vertices listed in the constructor
+        :param live_event_callback: A function to be called when events are
+            received. This should take as parameters the label of the vertex,
+            an int atom ID or key, and an int payload which may be None
+        :type live_event_callback: callable(str, int, int or None) -> None
+        """
+        label_id = self.__receive_labels.index(label)
+        logger.info("Receive callback {} registered to label {}",
+                    live_event_callback, label)
+        self.__no_time_event_callbacks[label_id].append(
+            (live_event_callback, translate_key))
 
     def add_start_callback(self, label, start_callback):
         """
