@@ -17,6 +17,7 @@ import struct
 from threading import Thread, Condition
 from time import sleep
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.logger_utils import warn_once
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
 from spinnman.messages.eieio import EIEIOType, AbstractEIEIOMessage
@@ -508,7 +509,13 @@ class LiveEventConnection(DatabaseConnection):
         for time in key_times_labels:
             for label_id in key_times_labels[time]:
                 label = self.__receive_labels[label_id]
-                for c_back, use_atom in self.__time_event_callbacks[label_id]:
+                callbacks = self.__time_event_callbacks[label_id]
+                if len(callbacks) == 0:
+                    msg = f"LiveEventConnection received a packet " \
+                          f"with time for {label} but has no callback. " \
+                          f"Use add_receive_callback to register one."
+                    warn_once(logger, msg)
+                for c_back, use_atom in callbacks:
                     if use_atom:
                         c_back(label, time, atoms_times_labels[time][label_id])
                     else:
@@ -521,7 +528,13 @@ class LiveEventConnection(DatabaseConnection):
             if key in self.__key_to_atom_id_and_label:
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
                 label = self.__receive_labels[label_id]
-                for c_back, use_atom in self.__live_event_callbacks[label_id]:
+                callbacks = self.__no_event_callbacks[label_id]
+                if len(callbacks) == 0:
+                    msg = f"LiveEventConnection received a packet " \
+                          f"without time for {label} but has no callback." \
+                          f" Use add_receive_no_time_callback to register one"
+                    warn_once(logger, msg)
+                for c_back, use_atom in callbacks:
                     if isinstance(element, KeyPayloadDataElement):
                         if use_atom:
                             c_back(label, atom_id, element.payload)
