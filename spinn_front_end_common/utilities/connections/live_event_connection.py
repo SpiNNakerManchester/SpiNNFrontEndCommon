@@ -225,7 +225,7 @@ class LiveEventConnection(DatabaseConnection):
             (live_event_callback, translate_key))
 
     def add_receive_time_callback(self, label, time_event_callback,
-                             translate_key=True):
+                                  translate_key=True):
         """
         Add a callback for the reception of time events from a vertex.
 
