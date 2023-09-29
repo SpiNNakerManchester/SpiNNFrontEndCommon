@@ -197,7 +197,6 @@ class ProvenanceWriter(BaseDatabase):
             """, ((x, y, ipaddress)
                   for ((x, y), ipaddress) in connections.items()))
 
-
     def insert_app_vertex(
             self, label, the_type, description, the_value):
         """
