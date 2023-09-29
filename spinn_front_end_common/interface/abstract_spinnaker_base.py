@@ -1756,9 +1756,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the checking of uncompressed table
         """
-        with FecTimer(
-                LOADING, "Validating Uncompressed routing table") as timer:
-            #if timer.skip_if_cfg_false(
+        with FecTimer("Validating Uncompressed routing table",
+                      TimerWork.REPORT):
+            # if timer.skip_if_cfg_false(
             #        "Reports", "validate_routes_uncompressed"):
             #    return
             validate_routes(self._data_writer.get_uncompressed())
