@@ -1,25 +1,24 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import sys
 import numpy
 
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
+from spinnman.model.enums import SDP_PORTS
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -28,13 +27,13 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, LegacyPartitionerAPI):
-    """ A model which will allow events to be injected into a SpiNNaker\
-        machine and converted into multicast packets.
+    """
+    A model which will allow events to be injected into a SpiNNaker
+    machine and converted into multicast packets.
     """
 
     def __init__(
-            self, n_keys, label=None, constraints=None,
-            max_atoms_per_core=sys.maxsize,
+            self, n_keys, label=None, max_atoms_per_core=sys.maxsize,
 
             # Live input parameters
             receive_port=None,
@@ -62,9 +61,6 @@ class ReverseIpTagMultiCastSource(
         :param int n_keys:
             The number of keys to be sent via this multicast source
         :param str label: The label of this vertex
-        :param constraints: Any initial constraints to this vertex
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
         :param int max_atoms_per_core:
         :param board_address: The IP address of the board on which to place
             this vertex if receiving data, either buffered or live (by
@@ -105,14 +101,14 @@ class ReverseIpTagMultiCastSource(
         :param bool reserve_reverse_ip_tag:
             Extra flag for input without a reserved port
         :param str injection_partition:
-            If not None, will enable injection and specify the partition to
+            If not `None`, will enable injection and specify the partition to
             send injected keys with
         :param splitter: the splitter object needed for this vertex
-        :type splitter: None or AbstractSplitterCommon
+        :type splitter:
+            ~pacman.model.partitioner_splitters.AbstractSplitterCommon or None
         """
         # pylint: disable=too-many-arguments
-        super().__init__(
-            label, constraints, max_atoms_per_core, splitter=splitter)
+        super().__init__(label, max_atoms_per_core, splitter=splitter)
 
         # basic items
         self._n_atoms = self.round_n_atoms(n_keys, "n_keys")
@@ -145,26 +141,26 @@ class ReverseIpTagMultiCastSource(
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
             if len(send_buffer_times) != self._n_atoms:
                 raise ConfigurationException(
-                    "The array or arrays of times {} does not have the "
-                    "expected length of {}".format(
-                        send_buffer_times, self._n_atoms))
+                    f"The array or arrays of times {send_buffer_times} does "
+                    f"not have the expected length of {self._n_atoms}")
             return numpy.array(send_buffer_times, dtype="object")
         return numpy.array(send_buffer_times)
 
     @property
-    @overrides(LegacyPartitionerAPI.n_atoms)
+    @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
         return self._n_atoms
 
     @overrides(LegacyPartitionerAPI.get_sdram_used_by_atoms)
     def get_sdram_used_by_atoms(self, vertex_slice):
         return ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-            self.__filtered_send_buffer_times(vertex_slice),
+            self._filtered_send_buffer_times(vertex_slice),
             self._is_recording, self._receive_rate, vertex_slice.n_atoms)
 
     @property
     def send_buffer_times(self):
-        """ When messages will be sent.
+        """
+        When messages will be sent.
 
         :rtype: ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(~numpy.int32)) or None
@@ -188,11 +184,11 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, sdram, label=None, constraints=None):
-        send_buffer_times = self.__filtered_send_buffer_times(vertex_slice)
+            self, vertex_slice, sdram, label=None):
+        send_buffer_times = self._filtered_send_buffer_times(vertex_slice)
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
-            label=label, constraints=constraints, app_vertex=self,
+            label=label, app_vertex=self,
             receive_port=self._receive_port,
             receive_sdp_port=self._receive_sdp_port,
             receive_tag=self._receive_tag,
@@ -209,8 +205,8 @@ class ReverseIpTagMultiCastSource(
             assert (sdram == machine_vertex.sdram_required)
         return machine_vertex
 
-    def __filtered_send_buffer_times(self, vertex_slice):
-        ids = vertex_slice.get_raster_ids(self.atoms_shape)
+    def _filtered_send_buffer_times(self, vertex_slice):
+        ids = vertex_slice.get_raster_ids()
         send_buffer_times = self._send_buffer_times
         n_buffer_times = 0
         if send_buffer_times is not None:

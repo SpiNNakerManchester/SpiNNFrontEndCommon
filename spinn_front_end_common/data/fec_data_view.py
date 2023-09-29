@@ -1,17 +1,16 @@
-# Copyright (c) 2021-2022 The University of Manchester
+# Copyright (c) 2021 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the impl`ied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import os
@@ -31,11 +30,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class _FecDataModel(object):
     """
-    Singleton data model
+    Singleton data model.
 
     This class should not be accessed directly please use the DataView and
     DataWriter classes.
-    Accessing or editing the data held here directly is NOT SUPPORTED
+    Accessing or editing the data held here directly is *not supported!*
 
     There may be other DataModel classes which sit next to this one and hold
     additional data. The DataView and DataWriter classes will combine these
@@ -48,13 +47,14 @@ class _FecDataModel(object):
 
     __slots__ = [
         # Data values cached
+        "_allocation_controller",
         "_buffer_manager",
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
         "_data_in_multicast_routing_tables",
         "_database_file_path",
         "_database_socket_addresses",
-        "_dsg_targets",
+        "_ds_database_path",
         "_executable_targets",
         "_executable_types",
         "_first_machine_time_step",
@@ -65,15 +65,19 @@ class _FecDataModel(object):
         "_ipaddress",
         "_java_caller",
         "_live_packet_recorder_params",
+        "_live_output_vertices",
         "_n_boards_required",
         "_n_chips_required",
         "_n_chips_in_graph",
         "_next_sync_signal",
+        "_next_ds_reference",
         "_none_labelled_edge_count",
         "_notification_protocol",
         "_max_run_time_steps",
         "_monitor_map",
+        "_reset_number",
         "_run_number",
+        "_run_step",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
         "_simulation_time_step_per_s",
@@ -96,7 +100,7 @@ class _FecDataModel(object):
 
     def _clear(self):
         """
-        Clears out all data
+        Clears out all data.
         """
         # Can not be cleared during hard reset as previous runs data checked
         self._database_socket_addresses = set()
@@ -104,10 +108,12 @@ class _FecDataModel(object):
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._live_packet_recorder_params = None
+        self._live_output_vertices = set()
         self._java_caller = None
         self._n_boards_required = None
         self._n_chips_required = None
         self._none_labelled_edge_count = 0
+        self._reset_number = 0
         self._run_number = None
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
@@ -120,13 +126,15 @@ class _FecDataModel(object):
 
     def _hard_reset(self):
         """
-        Clears out all data that should change after a reset and graaph change
+        Clears out all data that should change after a reset and graph change.
         """
         self._buffer_manager = None
+        self._allocation_controller = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
         self._database_file_path = None
-        self._dsg_targets = None
+        self._ds_database_path = None
+        self._next_ds_reference = 0
         self._executable_targets = None
         self._fixed_routes = None
         self._gatherer_map = None
@@ -142,10 +150,11 @@ class _FecDataModel(object):
 
     def _soft_reset(self):
         """
-        Clears timing and other data that should changed every reset
+        Clears timing and other data that should changed every reset.
         """
         self._current_run_timesteps = 0
         self._first_machine_time_step = 0
+        self._run_step = None
 
     def _clear_notification_protocol(self):
         if self._notification_protocol:
@@ -162,9 +171,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     """
     Adds the extra Methods to the View for spinn_front_end_commom level.
 
-    See UtilsDataView for a more detailed description.
+    See :py:class:`~spinn_utilities.data.UtilsDataView` for a more detailed
+    description.
 
-    This class is designed to only be used directly within none PyNN
+    This class is designed to only be used directly within non-PyNN
     repositories as all methods are available to subclasses
     """
 
@@ -181,9 +191,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         Will be zero if not yet run and not yet in the do_run_loop
 
-        Will be None if in run forever mode
+        Will be `None` if in run forever mode
 
-        :rtpye: int or None
+        :rtype: int or None
         """
         return cls.__fec_data._current_run_timesteps
 
@@ -192,27 +202,53 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         The end of this or the previous do__run loop time in ms.
 
-        Semantic sugar for current_run_timesteps * simulation_time_step_ms
+        Syntactic sugar for `current_run_timesteps * simulation_time_step_ms`
 
         Will be zero if not yet run and not yet in the do_run_loop
 
         Will be zero if in run forever mode
 
-        :rtpye: float
+        :rtype: float
         """
         if cls.__fec_data._current_run_timesteps is None:
             return 0.0
         return (cls.__fec_data._current_run_timesteps *
                 cls.get_simulation_time_step_ms())
 
+    # _allocation_controller
+    @classmethod
+    def has_allocation_controller(cls):
+        """
+        Reports if an AllocationController object has already been set.
+
+        :return: True if and only if an AllocationController has been added and
+            not reset.
+        :rtype: bool
+        """
+        return cls.__fec_data._allocation_controller is not None
+
+    @classmethod
+    def get_allocation_controller(cls):
+        """
+        Returns the allocation controller if known.
+
+        :rtype: AbstractMachineAllocationController
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the buffer manager unavailable
+        """
+        if cls.__fec_data._allocation_controller is None:
+            raise cls._exception("allocation_controller")
+
+        return cls.__fec_data._allocation_controller
+
     # _buffer_manager
     @classmethod
     def has_buffer_manager(cls):
         """
-        Reports if a BufferManager object has already been set
+        Reports if a BufferManager object has already been set.
 
-        :return: True if and only if a Buffermanager has been added and not
-         reset
+        :return:
+            True if and only if a BufferManager has been added and not reset
         :rtype: bool
         """
         return cls.__fec_data._buffer_manager is not None
@@ -220,11 +256,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_buffer_manager(cls):
         """
-        Returns the buffer manager if known
+        Returns the buffer manager if known.
 
         :rtype:
             ~spinn_front_end_common.interface.buffer_management.BufferManager
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the buffer manager unavailable
         """
         if cls.__fec_data._buffer_manager is None:
@@ -235,11 +271,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_first_machine_time_step(cls):
         """
-        The start of this or the next do_run loop time in steps
+        The start of this or the next do_run loop time in steps.
 
-        Will be None if in run forever mode
+        Will be `None` if in run forever mode
 
-        :rtpye: int or None
+        :rtype: int or None
         """
         return cls.__fec_data._first_machine_time_step
 
@@ -248,15 +284,15 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_max_run_time_steps(cls):
         """
-        Returns the calculated longest time this or a future run loop could be
+        Returns the calculated longest time this or a future run loop could be.
 
-        Mainly ued to indicate the number of timesteps the vertex can and
-        therefore should reserve memry for
+        Mainly used to indicate the number of timesteps the vertex can and
+        therefore should reserve memory for
 
         Guaranteed to be positive int if available
 
         :rtype: int
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the max run time is currently unavailable
         """
         if cls.__fec_data._max_run_time_steps is None:
@@ -267,7 +303,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def has_max_run_time_steps(cls):
         """
-        Indicates if max_run_time_steps is currently available
+        Indicates if max_run_time_steps is currently available.
 
         :rtype: bool
         """
@@ -278,7 +314,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def has_time_step(cls):
         """
-        Check if any/all of the time_step values are known
+        Check if any/all of the time_step values are known.
 
         True When all simulation/hardware_time_step methods are known
         False when none of the simulation/hardware_time_step values are known.
@@ -290,12 +326,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_simulation_time_step_us(cls):
-        """ The simulation timestep, in microseconds
+        """
+        The simulation timestep, in microseconds.
 
-        Previously know as "machine_time_step"
+        Previously known as "machine_time_step"
 
         :rtype: int
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step_us is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_us is None:
@@ -304,12 +341,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_simulation_time_step_s(cls):
-        """ The simulation timestep, in seconds
+        """
+        The simulation timestep, in seconds.
 
-        Semantic sugar for simulation_time_step() / 1,000,000.
+        Syntactic sugar for `simulation_time_step() / 1,000,000`.
 
         :rtype: float
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step_ms is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_us is None:
@@ -318,12 +356,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_simulation_time_step_ms(cls):
-        """ The simulation time step, in milliseconds
+        """
+        The simulation time step, in milliseconds.
 
-        Semantic sugar for simulation_time_step_us / 1000.
+        Syntactic sugar for `simulation_time_step_us / 1000`.
 
         :rtype: float
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step_ms is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_us is None:
@@ -332,12 +371,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_simulation_time_step_per_ms(cls):
-        """ The number of simulation time steps in a millisecond
+        """
+        The number of simulation time steps in a millisecond.
 
-        Semantic sugar for 1000 / simulation_time_step_us
+        Syntactic sugar for `1000 / simulation_time_step_us`
 
         :rtype: float
-        :raises SpiNNUtilsExceptionn:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_per_ms is None:
@@ -346,12 +386,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_simulation_time_step_per_s(cls):
-        """ The number of simulation time steps in a seconds
+        """
+        The number of simulation time steps in a seconds.
 
-        Semantic sugar for 1,000,000 / simulation_time_step_us
+        Syntactic sugar for `1,000,000 / simulation_time_step_us`
 
         :rtype: float
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_per_s is None:
@@ -360,12 +401,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_hardware_time_step_ms(cls):
-        """ The hardware timestep, in milliseconds
+        """
+        The hardware timestep, in milliseconds.
 
-        Semantic sugar for simulation_time_step_ms * time_scale_factor
+        Syntactic sugar for `simulation_time_step_ms * time_scale_factor`
 
         :rtype: float
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the hardware_time_step is currently unavailable
         """
         if cls.__fec_data._hardware_time_step_ms is None:
@@ -374,12 +416,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_hardware_time_step_us(cls):
-        """ The hardware timestep, in microseconds
+        """
+        The hardware timestep, in microseconds.
 
-        Semantic sugar for simulation_time_step_us * time_scale_factor
+        Syntactic sugar for `simulation_time_step_us * time_scale_factor`
 
         :rtype: int
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the hardware_time_step is currently unavailable
         """
         if cls.__fec_data._hardware_time_step_us is None:
@@ -391,7 +434,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_time_scale_factor(cls):
         """
-
         :rtype: int or float
         :raises SpiNNUtilsException:
             If the time_scale_factor is currently unavailable
@@ -405,10 +447,57 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def has_time_scale_factor(cls):
         """
-
         :rtype: bool
         """
         return cls.__fec_data._time_scale_factor is not None
+
+    #  reset number
+
+    @classmethod
+    def get_reset_number(cls):
+        """
+        Get the number of times a reset has happened.
+
+        Only counts the first reset after each run.
+
+        So resets that are first soft then hard are ignored.
+        Double reset calls without a run and resets before run are ignored.
+
+        Reset numbers start at zero
+
+        :rtype: int
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the run_number is currently unavailable
+        """
+        if cls.__fec_data._reset_number is None:
+            raise cls._exception("run_number")
+        return cls.__fec_data._reset_number
+
+    @classmethod
+    def get_reset_str(cls):
+        """
+        Get the number of times a reset has happened as a string.
+
+        An empty string is returned if the system has never been reset
+        (i.e., the reset number is 0)
+
+        Only counts the first reset after each run.
+
+        So resets that are first soft then hard are ignored.
+        Double reset calls without a run and resets before run are ignored.
+
+        Reset numbers start at zero
+
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the run_number is currently unavailable
+        :rtype: str
+        """
+        if cls.__fec_data._reset_number is None:
+            raise cls._exception("run_number")
+        if cls.__fec_data._reset_number:
+            return str(cls.__fec_data._reset_number)
+        else:
+            return ""
 
     #  run number
 
@@ -419,13 +508,28 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         Run numbers start at 1
 
-        :return:
+        :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the run_number is currently unavailable
         """
         if cls.__fec_data._run_number is None:
             raise cls._exception("run_number")
         return cls.__fec_data._run_number
+
+    @classmethod
+    def get_run_step(cls):
+        """
+        Get the auto pause and resume step currently running if any.
+
+        If and only if currently in an auto pause and resume loop this will
+        report the number of the step. Starting at 1
+
+        In most cases this will return `None`, including when running without
+        steps.
+
+        :rtype: None or int
+        """
+        return cls.__fec_data._run_step
 
     # Report directories
     # There are NO has or get methods for directories
@@ -436,11 +540,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def has_n_boards_required(cls):
         """
-        Reports if a user has sets the number of boards requested during setup
+        Reports if a user has sets the number of boards requested during setup.
 
         :rtype: bool
-        :raises SpiNNUtilsException:
-            If n_boards_required is not set or set to None
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If n_boards_required is not set or set to `None`
         """
         return cls.__fec_data._n_boards_required is not None
 
@@ -462,7 +566,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_n_chips_needed(cls):
         """
-        Gets the number of chips needed if set
+        Gets the number of chips needed, if set.
 
         This will be the number of chips requested by the user during setup,
         even if this is less that what the partitioner reported.
@@ -473,7 +577,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Guaranteed to be positive if set
 
         :rtype: int
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If data for n_chips_needed is not available
         """
         if cls.__fec_data._n_chips_required:
@@ -499,13 +603,15 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_timestamp_dir_path(cls):
         """
-        Returns path to existing timestamped director in the reports directory
+        Returns path to existing time-stamped directory in the reports
+        directory.
 
-        ..note: In unittest mode this returns a tempdir
-        shared by all path methods
+        .. note::
+            In unit-test mode this returns a temporary directory
+            shared by all path methods.
 
-        :rtpye: str
-        :raises SpiNNUtilsException:
+        :rtype: str
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if cls.__fec_data._timestamp_dir_path:
@@ -519,10 +625,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_data_in_multicast_key_to_chip_map(cls):
         """
-        Retreive the data_in_multicast_key_to_chip_map if known
+        Retrieve the data_in_multicast_key_to_chip_map if known.
 
         :rtype: dict
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the data_in_multicast_key_to_chip_map is currently unavailable
         """
         if cls.__fec_data._data_in_multicast_key_to_chip_map is None:
@@ -532,9 +638,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_data_in_multicast_routing_tables(cls):
         """
-        Retreive the data_in_multicast_routing_tables if known
+        Retrieve the data_in_multicast_routing_tables if known
 
-        :rtype: MulticastRoutingTables
+        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         :raises SpiNNUtilsException:
             If the data_in_multicast_routing_tables is currently unavailable
         """
@@ -545,10 +651,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_system_multicast_router_timeout_keys(cls):
         """
-        Retreive the system_multicast_router_timeout_keys if known
+        Retrieve the system_multicast_router_timeout_keys if known.
 
         :rtype: dict
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the system_multicast_router_timeout_keys is currently
             unavailable
         """
@@ -561,20 +667,20 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def has_ipaddress(cls):
         """
-        Detects if the ipaddress of the board with chip 0,0 if known
+        Detects if the IP address of the board with chip 0,0 is known.
 
-        :return:
+        :rtype: bool
         """
         return cls.__fec_data._ipaddress is not None
 
     @classmethod
     def get_ipaddress(cls):
         """
-        Gets the ipaddress of the board with chip 0,0 if it has been set
+        Gets the IP address of the board with chip 0,0 if it has been set.
 
         :rtype: str
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the ipaddress is currently unavailable
+            If the IP address is currently unavailable
         """
         if cls.__fec_data._ipaddress is None:
             if cls._is_mocked():
@@ -586,7 +692,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_fixed_routes(cls):
         """
-        Gets the fixed routes if they have been created
+        Gets the fixed routes if they have been created.
 
         :rtype: dict(tuple(int,int), ~spinn_machine.FixedRouteEntry)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -601,7 +707,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Reports if there is a Java called that can be used.
 
-        Equivellent to get_config_bool("Java", "use_java") as the writer will
+        Equivalent to `get_config_bool("Java", "use_java")` as the writer will
         have created the caller during setup
 
         The behaviour when Mocked is currently to always return False.
@@ -613,7 +719,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_java_caller(cls):
         """
-        Gets the Java_caller
+        Gets the Java_caller.
 
         :rtype: str
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -628,16 +734,17 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_json_dir_path(cls):
         """
-        Returns the path to the directory that holds all json files
+        Returns the path to the directory that holds all JSON files.
 
         This will be the path used by the last run call or to be used by
         the next run if it has not yet been called.
 
-        ..note: In unittest mode this returns a tempdir
-        shared by all path methods
+        .. note::
+            In unit-test mode this returns a temporary directory
+            shared by all path methods.
 
-        :rtpye: str
-        :raises SpiNNUtilsException:
+        :rtype: str
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if cls._is_mocked():
@@ -648,15 +755,16 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_provenance_dir_path(cls):
         """
-        Returns the path to the directory that holds all provenance files
+        Returns the path to the directory that holds all provenance files.
 
         This will be the path used by the last run call or to be used by
         the next run if it has not yet been called.
 
-        ..note: In unittest mode this returns a tempdir
-        shared by all path methods
+        .. note::
+            In unit-test mode this returns a temporary directory
+            shared by all path methods.
 
-        :rtpye: str
+        :rtype: str
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
@@ -667,15 +775,17 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_app_provenance_dir_path(cls):
         """
-        Returns the path to the directory that holds all app provenance files
+        Returns the path to the directory that holds all application provenance
+        files.
 
         This will be the path used by the last run call or to be used by
         the next run if it has not yet been called.
 
-        ..note: In unittest mode this returns a tempdir
-        shared by all path methods
+        .. note::
+            In unit-test mode this returns a temporary directory
+            shared by all path methods.
 
-        :rtpye: str
+        :rtype: str
         :raises ~spinn_utilities.exceptions.SimulatorNotSetupException:
             If the simulator has not been setup
         """
@@ -688,15 +798,16 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_system_provenance_dir_path(cls):
         """
-        Returns the path to the directory that holds all provenance files
+        Returns the path to the directory that holds system provenance files.
 
         This will be the path used by the last run call or to be used by
         the next run if it has not yet been called.
 
-        ..note: In unittest mode this returns a tempdir
-        shared by all path methods
+        .. note::
+            In unit-test mode this returns a temporary directory
+            shared by all path methods.
 
-        :rtpye: str
+        :rtype: str
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
@@ -716,7 +827,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             thrown if this fails.
         :return: The fully qualified name of the child folder.
         :rtype: str
-        :raises OSError: if the directory existed ahead of time and creation
+        :raises OSError:
+            If the directory existed ahead of time and creation
             was required by the user
         """
         child = os.path.join(parent, child_name)
@@ -731,9 +843,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_next_none_labelled_edge_number(cls):
         """
-        Returns an unused number for a none_labelled_edge
+        Returns an unused number for labelling an unlabelled edge.
 
-        :rtpye int:
+        :rtype: int
         """
         cls.__fec_data._none_labelled_edge_count += 1
         return cls.__fec_data._none_labelled_edge_count
@@ -741,9 +853,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_next_sync_signal(cls):
         """
-        Returns alteratively Signal.SYNC0 and Signal.SYNC1
+        Returns alternately Signal.SYNC0 and Signal.SYNC1.
 
-        :rtpye  ~spinnman.messages.scp.enums.signal.Signal:
+        :rtype: ~spinnman.messages.scp.enums.Signal
         """
         if cls.__fec_data._next_sync_signal == Signal.SYNC0:
             cls.__fec_data._next_sync_signal = Signal.SYNC1
@@ -755,10 +867,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_executable_types(cls):
         """
-        Gets the _executable_types if they have been created
+        Gets the _executable_types if they have been created.
 
         :rtype: dict(
-            ~spinn_front_end_common.utilities.utility_objs.ExecutableType,
+            ~spinnman.model.enum.ExecutableType,
             ~spinn_machine.CoreSubsets)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the executable_types is currently unavailable
@@ -770,21 +882,22 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def has_live_packet_recorder_params(cls):
         """
-        Reports if there are live_packet_recorder_params
+        Reports if there are live_packet_recorder_params.
 
         If True the live_packet_recorder_params not be empty
 
-        :rtype bool
+        :rtype: bool
         """
         return cls.__fec_data._live_packet_recorder_params is not None
 
     @classmethod
     def get_live_packet_recorder_params(cls):
         """
-        Mapping of live_packet_gatherer_params to a list of tuples\
-        (vertex and list of ids))
+        Mapping of live_packet_gatherer_params to a list of tuples
+        (vertex and list of ids)).
 
-        :rtype: dict(live_packet_gatherer_params, (vertex, list(str))
+        :rtype: dict(LivePacketGatherParameters,
+            tuple(~pacman.model.graphs.AbstractVertex, list(str))
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the _live_packet_recorder_params is currently unavailable
         """
@@ -797,14 +910,20 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def add_live_packet_gatherer_parameters(
             cls, live_packet_gatherer_params, vertex_to_record_from,
             partition_ids):
-        """ Adds parameters for a new LPG if needed, or adds to the tracker \
-            for parameters.
+        """
+        Adds parameters for a new LPG if needed, or adds to the tracker
+        for parameters.
 
-            Note If the Application Graph is used the vertex must be an
-            Application Vertex if not it must be a MachineVertex
+        .. note::
+            If the
+            :py:class:`~pacman.model.graphs.application.ApplicationGraph`
+            is used, the vertex must be an
+            :py:class:`~pacman.model.graphs.application.ApplicationVertex`.
+            If not, it must be a
+            :py:class:`~pacman.model.graphs.machine.MachineVertex`.
 
         :param LivePacketGatherParameters live_packet_gatherer_params:
-            params to look for a LPG
+            parameters for an LPG to look for or create
         :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
             the vertex that needs to send to a given LPG
         :param iterable(str) partition_ids:
@@ -830,8 +949,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_database_file_path(cls):
         """
-        Will return the database_file_path if set or None if not set
-        or set to None
+        Will return the database_file_path if set or `None` if not set
+        or set to `None`
 
         :rtype: str or None
         """
@@ -840,9 +959,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_executable_targets(cls):
         """
-        binaries to be executed.
+        Binaries to be executed.
 
-        :rtype: ExecutableTargets
+        :rtype: ~spinnman.model.ExecutableTargets
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the executable_targets is currently unavailable
         """
@@ -851,21 +970,24 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._executable_targets
 
     @classmethod
-    def get_dsg_targets(cls):
-        """ data Spec targets database
-
-        :rtype: DsSqlliteDatabase
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the dsg_targets is currently unavailable
+    def get_ds_database_path(cls):
         """
-        if cls.__fec_data._dsg_targets is None:
-            raise cls._exception("dsg_targets")
-        return cls.__fec_data._dsg_targets
+        Gets the path for the Data Spec database.
+
+        :rtype: str
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the ds_database is currently unavailable
+        """
+        if cls.__fec_data._ds_database_path is None:
+            if cls._is_mocked():
+                return os.path.join(cls._temporary_dir_path(), "ds.sqlite3")
+            raise cls._exception("_ds_database+path")
+        return cls.__fec_data._ds_database_path
 
     @classmethod
     def has_monitors(cls):
         """
-        Detect is ExtraMonitorSupportMachineVertex(s) have been created
+        Detect is ExtraMonitorSupportMachineVertex(s) have been created.
 
         :rtype: bool
         """
@@ -873,12 +995,15 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_monitor_by_xy(cls, x, y):
-        """ ExtraMonitorSupportMachineVertex for core x, y
+        """
+        The ExtraMonitorSupportMachineVertex for chip (x,y).
 
+        :param int x: X coordinate of chip
+        :param int y: Y coordinate of chip
         :rtype: ExtraMonitorSupportMachineVertex
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the monitors are currently unavailable
-        :raises KeyError: If core x,y does not have a monitor
+        :raises KeyError: If chip (x,y) does not have a monitor
         """
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
@@ -888,9 +1013,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_monitor_items(cls):
         """
-        Iterates over the (X,y) and ExtraMonitorSupportMachineVertex
+        Iterates over the (x,y) and ExtraMonitorSupportMachineVertex.
 
-        get_n_monitors returns the number of items this iterable will provide
+        get_n_monitors returns the number of items this iterable will provide.
 
         :rtype: iterable(tuple(tuple(int,int),
             ExtraMonitorSupportMachineVertex))
@@ -904,7 +1029,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_n_monitors(cls):
         """
-        Number of ExtraMonitorSupportMachineVertexs
+        Number of ExtraMonitorSupportMachineVertexs.
 
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -917,7 +1042,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_monitors(cls):
         """
-        Iterates over the ExtraMonitorSupportMachineVertex(s)
+        Iterates over the ExtraMonitorSupportMachineVertex(s).
 
         :rtype: iterable(ExtraMonitorSupportMachineVertex)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -929,12 +1054,15 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_gatherer_by_xy(cls, x, y):
-        """ DataSpeedUpPacketGatherMachineVertex for core x, y
+        """
+        The DataSpeedUpPacketGatherMachineVertex for chip (x,y).
 
+        :param int x: X coordinate of chip
+        :param int y: Y coordinate of chip
         :rtype: DataSpeedUpPacketGatherMachineVertex
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the gatherers are currently unavailable
-        :raises KeyError: If core x,y does not have a monitor
+        :raises KeyError: If chip (x,y) does not have a monitor
         """
         if cls.__fec_data._gatherer_map is None:
             raise cls._exception("gatherer_map")
@@ -944,7 +1072,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_gather_items(cls):
         """
-        Iterates over the (X,y) and  DataSpeedUpPacketGatherMachineVertex
+        Iterates over the (x,y) and DataSpeedUpPacketGatherMachineVertex.
 
         get_n_gathers returns the number of items this iterable will provide
 
@@ -960,7 +1088,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_n_gathers(cls):
         """
-        Number of DataSpeedUpPacketGatherMachineVertex(s)
+        Number of DataSpeedUpPacketGatherMachineVertex(s).
 
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -973,7 +1101,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_gathers(cls):
         """
-        Iterates over the DataSpeedUpPacketGatherMachineVertex(s)
+        Iterates over the DataSpeedUpPacketGatherMachineVertex(s).
 
         :rtype: iterable(DataSpeedUpPacketGatherMachineVertex)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -986,7 +1114,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_database_socket_addresses(cls):
         """
-        Iterates over the registered database_socket_addresses
+        Iterates over the registered database_socket_addresses.
 
         :rtype: iterable(~spinn_utilities.socket_address.SocketAddress)
         """
@@ -995,7 +1123,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_n_database_socket_addresses(cls):
         """
-        Number of registered database_socket_addresses
+        Number of registered database_socket_addresses.
 
         :rtype: int
         """
@@ -1004,9 +1132,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def add_database_socket_address(cls, database_socket_address):
         """
-        Adds a socket address to the list of known addresses
+        Adds a socket address to the list of known addresses.
 
-        :param SocketAddress database_socket_address:
+        :param database_socket_address:
+        :type database_socket_address:
+            ~spinn_utilities.socket_address.SocketAddress
         :raises TypeError: if database_socket_address is not a SocketAddress
         """
         if not isinstance(database_socket_address, SocketAddress):
@@ -1016,11 +1146,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def add_database_socket_addresses(cls, database_socket_addresses):
         """
-        Adds all socket addresses to the list of known addresses
+        Adds all socket addresses to the list of known addresses.
 
-        :param iterable(SocketAddress) database_socket_addresses:
+        :param database_socket_addresses: The addresses to add
+        :type database_socket_addresses:
+            iterable(~spinn_utilities.socket_address.SocketAddress)
         :raises TypeError:
-           if database_socket_address is not a iterable(SocketAddress)
+           if database_socket_address is not a iterable of `SocketAddress`
         """
         if database_socket_addresses is None:
             return
@@ -1030,7 +1162,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_notification_protocol(cls):
         """
-        binaries to be executed.
+        The notification protocol handler.
 
         :rtype: NotificationProtocol
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -1039,3 +1171,41 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._notification_protocol is None:
             raise cls._exception("notification_protocol")
         return cls.__fec_data._notification_protocol
+
+    @classmethod
+    def add_live_output_vertex(cls, vertex, partition_id):
+        """
+        Add a vertex that is to be output live, and so wants its atom IDs
+        recorded in the database.
+
+        :param ~pacman.model.graphs.application.ApplicationVertex vertex:
+            The vertex to add
+        :param str partition_id: The partition to get the IDs of
+        """
+        cls.__fec_data._live_output_vertices.add((vertex, partition_id))
+
+    @classmethod
+    def iterate_live_output_vertices(cls):
+        """
+        Get an iterator over the live output vertices and partition IDs.
+
+        :rtype:
+            iterable(tuple(~pacman.model.graphs.application.ApplicationVertex,
+            str))
+        """
+        return iter(cls.__fec_data._live_output_vertices)
+
+    @classmethod
+    def get_next_ds_references(cls, number):
+        """
+        Get a a list of unigue ds references
+
+        These will be Unigue since the last hard reset
+
+        :param number: number of values in the list
+        :rtype: list(inrt)
+        """
+        references = range(cls.__fec_data._next_ds_reference,
+                           cls.__fec_data._next_ds_reference+number)
+        cls.__fec_data._next_ds_reference += number
+        return list(references)

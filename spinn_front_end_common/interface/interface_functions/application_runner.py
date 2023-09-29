@@ -1,25 +1,24 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import time
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
+from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 
@@ -29,13 +28,14 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def application_runner(runtime, time_threshold, run_until_complete):
-    """ Ensures all cores are initialised correctly, ran, and completed\
-        successfully.
+    """
+    Ensures all cores are initialised correctly, ran, and completed
+    successfully.
 
-        :param int runtime:
-        :param int time_threshold:
-        :param bool run_until_complete:
-        :raises ConfigurationException:
+    :param int runtime:
+    :param int time_threshold:
+    :param bool run_until_complete:
+    :raises ConfigurationException:
     """
     runner = _ApplicationRunner()
     # pylint: disable=protected-access
@@ -43,8 +43,9 @@ def application_runner(runtime, time_threshold, run_until_complete):
 
 
 class _ApplicationRunner(object):
-    """ Ensures all cores are initialised correctly, ran, and completed\
-        successfully.
+    """
+    Ensures all cores are initialised correctly, ran, and completed
+    successfully.
     """
 
     __slots__ = ["__txrx", "__app_id"]
@@ -99,12 +100,8 @@ class _ApplicationRunner(object):
             logger.info("Application is set to run forever; exiting")
         else:
             # Wait for the application to finish
-            try:
-                self._run_wait(
-                    run_until_complete, runtime, time_threshold)
-            finally:
-                # Stop the buffer manager after run
-                buffer_manager.stop()
+            self._run_wait(
+                run_until_complete, runtime, time_threshold)
 
             # Send stop notification to external applications
             notification_interface.send_stop_pause_notification()
@@ -139,9 +136,10 @@ class _ApplicationRunner(object):
                 cores, self.__app_id, ex_type.start_state, timeout=timeout)
 
     def _send_sync_signal(self):
-        """ Let apps that use the simulation interface or sync signals \
-            commence running their main processing loops. This is done with \
-            a very fast synchronisation barrier and a signal.
+        """
+        Let apps that use the simulation interface or sync signals commence
+        running their main processing loops. This is done with a very fast
+        synchronisation barrier and a signal.
         """
         executable_types = FecDataView.get_executable_types()
         if (ExecutableType.USES_SIMULATION_INTERFACE in executable_types
@@ -162,8 +160,9 @@ class _ApplicationRunner(object):
                 cores, self.__app_id, ex_type.end_state, timeout=timeout)
 
     def _determine_simulation_sync_signals(self):
-        """ Determines the start states, and creates core subsets of the\
-            states for further checks.
+        """
+        Determines the start states, and creates core subsets of the
+        states for further checks.
 
         :return: the sync signal
         :rtype: ~.Signal

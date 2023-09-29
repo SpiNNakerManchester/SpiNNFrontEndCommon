@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
@@ -24,7 +23,8 @@ _BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = BYTES_PER_WORD
 
 
 def get_profile_region_size(n_samples):
-    """ Get the size of the region of the profile data.
+    """
+    Get the size of the region of the profile data.
 
     :param int n_samples: number of different samples to record
     :return: the size in bytes used by the profile region
@@ -35,13 +35,13 @@ def get_profile_region_size(n_samples):
 
 
 def reserve_profile_region(spec, region, n_samples):
-    """ Reserves the profile region for recording the profile data.
+    """
+    Reserves the profile region for recording the profile data.
 
     :param ~data_specification.DataSpecificationGenerator spec:
         the DSG specification writer
     :param int region: region ID for the profile data
     :param int n_samples: number of elements being sampled
-    :rtype: None
     """
     size = get_profile_region_size(n_samples)
     spec.reserve_memory_region(
@@ -49,20 +49,21 @@ def reserve_profile_region(spec, region, n_samples):
 
 
 def write_profile_region_data(spec, region, n_samples):
-    """ Writes the profile region data.
+    """
+    Writes the profile region data.
 
     :param ~data_specification.DataSpecificationGenerator spec:
         the DSG specification writer
     :param int region: region ID for the profile data
     :param int n_samples: number of elements being sampled
-    :rtype: None
     """
     spec.switch_write_focus(region)
     spec.write_value(n_samples)
 
 
 def get_profiling_data(profile_region, tag_labels, placement):
-    """ Utility function to get profile data from a profile region.
+    """
+    Utility function to get profile data from a profile region.
 
     :param int profile_region: DSG region to get profiling data out of SDRAM
     :param list(str) tag_labels: labels for the profiling data

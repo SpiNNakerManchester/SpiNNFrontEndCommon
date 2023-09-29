@@ -1,20 +1,20 @@
-# Copyright (c) 2017-2022 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from enum import IntEnum
 from spinn_utilities.overrides import overrides
+from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
@@ -28,15 +28,14 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType)
 
 
 class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification):
-    """ Machine vertex for injecting packets at particular times or in \
-        response to particular events into a SpiNNaker application.
+    """
+    Machine vertex for injecting packets at particular times or in
+    response to particular events into a SpiNNaker application.
     """
     # Regions for populations
     class DATA_REGIONS(IntEnum):
@@ -67,21 +66,12 @@ class CommandSenderMachineVertex(
     # all commands will use this mask
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
-    _NOT_GOT_KEY_ERROR_MESSAGE = (
-        "The command sender {} has requested key {} for outgoing "
-        "partition {}, but the keys allocated to it ({}) do not match. this "
-        "will cause errors in the external devices support and therefore "
-        "needs fixing")
-
-    def __init__(self, label, constraints, app_vertex=None):
+    def __init__(self, label, app_vertex=None):
         """
         :param str label: The label of this vertex
-        :param constraints: Any initial constraints to this vertex
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
         :param CommandSender app_vertex:
         """
-        super().__init__(label, constraints, app_vertex)
+        super().__init__(label, app_vertex)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()
@@ -94,7 +84,8 @@ class CommandSenderMachineVertex(
     def add_commands(
             self, start_resume_commands, pause_stop_commands,
             timed_commands, vertex_to_send_to):
-        """ Add commands to be sent down a given edge
+        """
+        Add commands to be sent down a given edge.
 
         :param iterable(MultiCastCommand) start_resume_commands:
             The commands to send when the simulation starts or resumes from
@@ -126,17 +117,17 @@ class CommandSenderMachineVertex(
         # create mapping between keys and partitions via partition constraint
         for key in command_keys:
             if key not in self._keys_to_partition_id:
-                partition_id = "COMMANDS{}".format(
-                    self._edge_partition_id_counter)
+                partition_id = f"COMMANDS{self._edge_partition_id_counter}"
                 self._keys_to_partition_id[key] = partition_id
                 self._partition_id_keys[partition_id] = key
                 self._edge_partition_id_counter += 1
 
     def get_fixed_key_and_mask(self, partition_id):
-        """ Get the key and mask for the given partition
+        """
+        Get the key and mask for the given partition.
 
         :param str partition_id: The partition to get the key for
-        :rtype: BaseKeyAndMask
+        :rtype: ~pacman.model.routing_info.BaseKeyAndMask
         """
         return BaseKeyAndMask(
             self._partition_id_keys[partition_id], self._DEFAULT_COMMAND_MASK)
@@ -167,26 +158,24 @@ class CommandSenderMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-        """
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-            the routing infos
-        """
         routing_infos = FecDataView.get_routing_infos()
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
                 self.app_vertex, self._keys_to_partition_id[mc_key])
             if allocated_mc_key != mc_key:
                 raise ConfigurationException(
-                    self._NOT_GOT_KEY_ERROR_MESSAGE.format(
-                        self._label, mc_key,
-                        self._keys_to_partition_id[mc_key],
-                        allocated_mc_key))
+                    f"The command sender {self._label} has requested key "
+                    f"{mc_key} for outgoing partition "
+                    f"{self._keys_to_partition_id[mc_key]}, but the keys "
+                    f"allocated to it ({allocated_mc_key}) do not match. This "
+                    "will cause errors in the external devices support and "
+                    "therefore needs fixing")
 
         timed_commands_size = self.get_timed_commands_bytes()
-        start_resume_commands_size = \
-            self.get_n_command_bytes(self._commands_at_start_resume)
-        pause_stop_commands_size = \
-            self.get_n_command_bytes(self._commands_at_pause_stop)
+        start_resume_commands_size = self.get_n_command_bytes(
+            self._commands_at_start_resume)
+        pause_stop_commands_size = self.get_n_command_bytes(
+            self._commands_at_pause_stop)
 
         # reverse memory regions
         self._reserve_memory_regions(
@@ -257,7 +246,8 @@ class CommandSenderMachineVertex(
     def _reserve_memory_regions(
             self, spec, time_command_size, start_command_size,
             end_command_size):
-        """ Reserve SDRAM space for memory areas:
+        """
+        Reserve SDRAM space for memory areas:
 
         1. Area for general system information
         2. Area for timed commands
@@ -320,8 +310,9 @@ class CommandSenderMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     def get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
-        """ Construct edges from this vertex to the vertices that this vertex\
-            knows how to target (and has keys allocated for).
+        """
+        Construct edges from this vertex to the vertices that this vertex
+        knows how to target (and has keys allocated for).
 
         .. note::
             Do not call this directly from outside either a
@@ -330,10 +321,12 @@ class CommandSenderMachineVertex(
 
         :param pre_vertex:
         :type pre_vertex: CommandSender or CommandSenderMachineVertex
-        :param type vertex_type: subclass of :py:class:`~.AbstractVertex`
-        :param callable edge_type: subclass of :py:class:`~.AbstractEdge`
+        :param type vertex_type:
+            subclass of :py:class:`~pacman.model.graphs.AbstractVertex`
+        :param type edge_type:
+            subclass of :py:class:`~pacman.model.graphs.AbstractEdge`
         :return: edges, partition IDs
-        :rtype: tuple(list(~.AbstractEdge), list(str))
+        :rtype: tuple(list(~pacman.model.graphs.AbstractEdge), list(str))
         """
         edges = list()
         partition_ids = list()
@@ -349,8 +342,9 @@ class CommandSenderMachineVertex(
         return edges, partition_ids
 
     def edges_and_partitions(self):
-        """ Construct machine edges from this vertex to the machine vertices\
-            that this vertex knows how to target (and has keys allocated for).
+        """
+        Construct machine edges from this vertex to the machine vertices
+        that this vertex knows how to target (and has keys allocated for).
 
         :return: edges, partition IDs
         :rtype:

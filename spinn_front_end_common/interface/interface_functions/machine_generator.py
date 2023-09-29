@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import re
 
@@ -47,7 +46,8 @@ POWER_CYCLE_FAILURE_WARNING = (
 def machine_generator(
         bmp_details, board_version, auto_detect_bmp,
         scamp_connection_data, reset_machine_on_start_up):
-    """ Makes a transceiver and a machine object.
+    """
+    Makes a transceiver and a machine object.
 
     :param str bmp_details: the details of the BMP connections
     :param int board_version:
@@ -56,15 +56,25 @@ def machine_generator(
     :param bool auto_detect_bmp:
         Whether the BMP should be automatically determined
     :param scamp_connection_data:
-        Job.connection dict,a String SC&MP connection data or None
+        Job.connection dict, a String SC&MP connection data or `None`
     :type scamp_connection_data:
         dict((int,int), str) or None
     :param bool reset_machine_on_start_up:
+    :param MachineAllocationController allocation_controller:
+        The allocation controller; in some cases, we delegate the creation of
+        the transceiver to it.
     :return: Transceiver, and description of machine it is connected to
     :rtype: tuple(~spinn_machine.Machine,
         ~spinnman.transceiver.Transceiver)
     """
     # pylint: disable=too-many-arguments
+    if FecDataView.has_allocation_controller():
+        # If there is an allocation controller and it wants to make a
+        # transceiver for us, we let it do so; transceivers obtained that way
+        # are already fully configured
+        txrx = FecDataView.get_allocation_controller().create_transceiver()
+        if txrx:
+            return txrx.get_machine_details(), txrx
 
     txrx = create_transceiver_from_hostname(
         hostname=FecDataView.get_ipaddress(),
@@ -94,26 +104,18 @@ def machine_generator(
     return txrx.get_machine_details(), txrx
 
 
-def _parse_bmp_cabinet_and_frame(bmp_cabinet_and_frame):
+def _parse_bmp_cabinet_and_frame(bmp_str):
     """
-    :param str bmp_cabinet_and_frame:
-    :rtype: tuple(int or str, int or str, str, str or None)
+    :param str bmp_str:
+    :rtype: tuple(str, str or None)
     """
-    split_string = bmp_cabinet_and_frame.split(";", 2)
-    if len(split_string) == 1:
-        host = split_string[0].split(",")
-        if len(host) == 1:
-            return 0, 0, split_string[0], None
-        return 0, 0, host[0], host[1]
-    if len(split_string) == 2:
-        host = split_string[1].split(",")
-        if len(host) == 1:
-            return 0, split_string[0], host[0], None
-        return 0, split_string[0], host[0], host[1]
-    host = split_string[2].split(",")
+    if ";" in bmp_str:
+        raise NotImplementedError(
+            "cfg bmp_names no longer supports cabinet and frame")
+    host = bmp_str.split(",")
     if len(host) == 1:
-        return split_string[0], split_string[1], host[0], None
-    return split_string[0], split_string[1], host[0], host[1]
+        return bmp_str, None
+    return host[0], host[1]
 
 
 def _parse_bmp_boards(bmp_boards):
@@ -132,33 +134,36 @@ def _parse_bmp_boards(bmp_boards):
 
 
 def _parse_bmp_connection(bmp_detail):
-    """ Parses one item of BMP connection data. Maximal format:\
-        `cabinet;frame;host,port/boards`
+    """
+    Parses one item of BMP connection data. Maximal format:
+    `cabinet;frame;host,port/boards`
 
-    All parts except host can be omitted. Boards can be a \
+    All parts except host can be omitted. Boards can be a
     hyphen-separated range or a comma-separated list.
 
     :param str bmp_detail:
     :rtype: ~.BMPConnectionData
     """
     pieces = bmp_detail.split("/")
-    (cabinet, frame, hostname, port_num) = \
-        _parse_bmp_cabinet_and_frame(pieces[0])
+    (hostname, port_num) = _parse_bmp_cabinet_and_frame(pieces[0])
     # if there is no split, then assume its one board, located at 0
     boards = [0] if len(pieces) == 1 else _parse_bmp_boards(pieces[1])
     port_num = None if port_num is None else int(port_num)
-    return BMPConnectionData(cabinet, frame, hostname, boards, port_num)
+    return BMPConnectionData(hostname, boards, port_num)
 
 
 def _parse_bmp_details(bmp_string):
-    """ Take a BMP line (a colon-separated list) and split it into the\
-        BMP connection data.
+    """
+    Take a BMP line (a colon-separated list) and split it into the
+    BMP connection data.
 
     :param str bmp_string: the BMP string to be converted
     :return: the BMP connection data
-    :rtype: list(~.BMPConnectionData) or None
+    :rtype: ~.BMPConnectionData or None
     """
     if bmp_string is None or bmp_string == "None":
         return None
-    return [_parse_bmp_connection(bmp_connection)
-            for bmp_connection in bmp_string.split(":")]
+    if ":" in bmp_string:
+        raise NotImplementedError(
+            "bmp_names can no longer contain multiple bmps")
+    return _parse_bmp_connection(bmp_string)

@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 from spinnman.model import ExecutableTargets
@@ -30,7 +29,7 @@ def graph_binary_gatherer():
     """
     Extracts binaries to be executed.
 
-    :rtype: ExecutableTargets
+    :rtype: ~spinnman.model.ExecutableTargets
     """
     gatherer = _GraphBinaryGatherer()
     # pylint: disable=protected-access
@@ -38,7 +37,8 @@ def graph_binary_gatherer():
 
 
 class _GraphBinaryGatherer(object):
-    """ Extracts binaries to be executed.
+    """
+    Extracts binaries to be executed.
     """
 
     __slots__ = ["_exe_targets"]
@@ -49,9 +49,8 @@ class _GraphBinaryGatherer(object):
     def _run(self):
         """
         :param ~pacman.model.placements.Placements placements:
-        :rtype: ExecutableTargets
+        :rtype: ~spinnman.model.ExecutableTargets
         """
-
         progress = ProgressBar(
             FecDataView.get_n_placements(), "Finding binaries")
         for placement in progress.over(FecDataView.iterate_placemements()):
@@ -61,18 +60,17 @@ class _GraphBinaryGatherer(object):
 
     def __get_binary(self, placement):
         """
-        :param ~.Placement placement:
-        :param ~.AbstractVertex vertex:
+        :param ~pacman.model.placements.Placement placement:
+        :param ~pacman.model.graphs.AbstractVertex vertex:
         """
         # if the vertex cannot be executed, ignore it
         vertex = placement.vertex
         if not isinstance(vertex, AbstractHasAssociatedBinary):
             if not isinstance(vertex, AbstractVirtual):
-                msg = (
+                logger.error(
                     "Vertex {} does not implement either "
                     "AbstractHasAssociatedBinary or AbstractVirtual. So it is "
-                    "unclear if it should or should not have a binary")
-                logger.error(msg.format(vertex), vertex)
+                    "unclear if it should or should not have a binary", vertex)
             return
 
         # Get name of binary from vertex

@@ -1,3 +1,4 @@
+[![PyPi version](https://img.shields.io/pypi/v/SpiNNFrontEndCommon.svg?style=flat)](https://pypi.org/project/SpiNNFrontEndCommon/)
 [![Python Build Status](https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/workflows/Python%20Actions/badge.svg?branch=master)](https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/actions?query=workflow%3A%22Python+Actions%22+branch%3Amaster)
 [![C Build Status](https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/workflows/C%20Actions/badge.svg?branch=master)](https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/actions?query=workflow%3A%22C+Actions%22+branch%3Amaster)
 [![Documentation Status](https://readthedocs.org/projects/spinnfrontendcommon/badge/?version=latest)](https://spinnfrontendcommon.readthedocs.io/en/latest/?badge=latest)
@@ -15,7 +16,6 @@ In addition to a standard Python installation, this package depends on:
     numpy
     SpiNNUtilities
     SpiNNMachine
-    DataSpecification
     PACMAN
     SpiNNMan
     spalloc
@@ -23,7 +23,7 @@ In addition to a standard Python installation, this package depends on:
 These dependencies can be installed using `pip`:
 
     pip install numpy
-    pip install SpiNNUtilities SpiNNMachine DataSpecification PACMAN SpiNNMan spalloc
+    pip install SpiNNUtilities SpiNNMachine PACMAN SpiNNMan spalloc
 
 If you want to use the `spinnaker_router_provenance_mapper` command line tool
 to visualise the traffic on SpiNNaker boards caused by your simulations, you
@@ -56,8 +56,8 @@ deactivated.
 
 Documentation
 =============
-[SpiNNFrontEndCommon Python documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/python/)
+[SpiNNFrontEndCommon python documentation](https://spinnfrontendcommon.readthedocs.io)
 <br>
 [SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
 
-[Combined PyNN8 python documentation](http://spinnaker8manchester.readthedocs.io)
+[Combined python documentation](http://spinnakermanchester.readthedocs.io)

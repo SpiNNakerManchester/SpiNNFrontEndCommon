@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import numpy
@@ -31,7 +30,8 @@ _DURATION = 1
 
 
 class ProfileData(object):
-    """ A container for profile data
+    """
+    A container for profile data.
     """
 
     START_TIME = _START_TIME
@@ -57,7 +57,8 @@ class ProfileData(object):
         self._max_time = None
 
     def add_data(self, data):
-        """ Add profiling data read from the profile section
+        """
+        Add profiling data read from the profile section.
 
         :param bytearray data:
             Data read from the profile section on the machine
@@ -80,7 +81,7 @@ class ProfileData(object):
         # Convert count-down times to count up times from 1st sample
         sample_times_ms = numpy.multiply(
             numpy.subtract(sample_times[0], sample_times),
-            _MS_SCALE, dtype=numpy.float)
+            _MS_SCALE, dtype=float)
 
         # Slice tags and times into entry and exits
         entry_tags = sample_tags[sample_entry_indices]
@@ -139,15 +140,17 @@ class ProfileData(object):
 
     @property
     def tags(self):
-        """ The tags recorded as labels
+        """
+        The tags recorded as labels.
 
         :rtype: list(str)
         """
         return self._tags.keys()
 
     def get_mean_ms(self, tag):
-        """ Get the mean time in milliseconds spent on operations with the
-            given tag
+        """
+        Get the mean time in milliseconds spent on operations with the
+        given tag.
 
         :param str tag: The tag to get the mean time for
         :rtype: float
@@ -155,7 +158,8 @@ class ProfileData(object):
         return numpy.average(self._tags[tag][_DURATION])
 
     def get_n_calls(self, tag):
-        """ Get the number of times the given tag was recorded
+        """
+        Get the number of times the given tag was recorded.
 
         :param str tag: The tag to get the number of calls of
         :rtype: int
@@ -163,8 +167,8 @@ class ProfileData(object):
         return self._tags[tag][_DURATION].size
 
     def get_mean_n_calls_per_ts(self, tag):
-        """ Get the mean number of times the given tag was recorded per\
-            timestep
+        """
+        Get the mean number of times the given tag was recorded per timestep.
 
         :param str tag: The tag to get the data for
         :rtype: float
@@ -178,8 +182,9 @@ class ProfileData(object):
             self._tags[tag][_START_TIME], bins)[0])
 
     def get_mean_ms_per_ts(self, tag):
-        """ Get the mean time in milliseconds spent on operations with the\
-            given tag per timestep
+        """
+        Get the mean time in milliseconds spent on operations with the
+        given tag per timestep.
 
         :param str tag: The tag to get the data for
         :rtype: float

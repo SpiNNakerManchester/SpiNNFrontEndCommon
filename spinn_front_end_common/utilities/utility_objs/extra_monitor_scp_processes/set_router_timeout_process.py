@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
@@ -20,8 +19,9 @@ from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
 
 
 class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
-    """ How to send messages to set router timeouts. These messages need to be\
-        sent to cores running the extra monitor binary.
+    """
+    How to send messages to set router timeouts. These messages need to be
+    sent to cores running the extra monitor binary.
 
     .. note::
         SCAMP sets wait2 to zero by default!
@@ -32,8 +32,9 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
     """
 
     def set_wait1_timeout(self, mantissa, exponent, core_subsets):
-        """ The wait1 timeout is the time from when a packet is received to\
-            when emergency routing becomes enabled.
+        """
+        The wait1 timeout is the time from when a packet is received to
+        when emergency routing becomes enabled.
 
         :param int mantissa: Timeout mantissa (0 to 15)
         :param int exponent: Timeout exponent (0 to 15)
@@ -46,8 +47,9 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
                     core_subset, processor_id, mantissa, exponent, wait=1)
 
     def set_wait2_timeout(self, mantissa, exponent, core_subsets):
-        """ The wait2 timeout is the time from when a packet has emergency\
-            routing enabled for it to when it is dropped.
+        """
+        The wait2 timeout is the time from when a packet has emergency
+        routing enabled for it to when it is dropped.
 
         :param int mantissa: Timeout mantissa (0 to 15)
         :param int exponent: Timeout exponent (0 to 15)
@@ -60,9 +62,10 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
                     core_subset, processor_id, mantissa, exponent, wait=2)
 
     def _set_timeout(self, core, processor_id, mantissa, exponent, wait):
-        """ Set a timeout for a router controlled by an extra monitor on a\
-            core. This is not a parallelised operation in order to aid\
-            debugging when it fails.
+        """
+        Set a timeout for a router controlled by an extra monitor on a core.
+        This is not a parallelised operation in order to aid debugging when
+        it fails.
 
         :param ~spinn_machine.CoreSubset core:
         :param int processor_id:

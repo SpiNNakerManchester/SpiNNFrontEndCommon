@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import os.path
@@ -25,9 +24,8 @@ _FILENAME = "network_specification.rpt"
 
 
 def network_specification():
-    """ Generate report on the user's network specification.
-
-    :rtype: None
+    """
+    Generate report on the user's network specification.
     """
     filename = os.path.join(FecDataView.get_run_dir_path(), _FILENAME)
     try:
@@ -43,30 +41,27 @@ def network_specification():
 def _write_report(f, vertex):
     """
     :param ~io.FileIO f:
-    :param vertex:
-    :type vertex: ApplicationVertex
+    :param ~pacman.model.graphs.application.ApplicationVertex vertex:
     """
     if isinstance(vertex, ApplicationVertex):
-        f.write("Vertex {}, size: {}, model: {}, max_atoms{}\n".format(
-            vertex.label, vertex.n_atoms, vertex.__class__.__name__,
-            vertex.get_max_atoms_per_core()))
+        f.write(
+            f"Vertex {vertex.label}, size: {vertex.n_atoms}, "
+            f"model: {vertex.__class__.__name__}, "
+            f"max_atoms: {vertex.get_max_atoms_per_core()}\n")
     else:
-        f.write("Vertex {}, model: {}\n".format(
-            vertex.label, vertex.__class__.__name__))
+        f.write(f"Vertex {vertex.label}, model: {vertex.__class__.__name__}\n")
 
-    f.write("    Constraints:\n")
-    for constraint in vertex.constraints:
-        f.write("        {}\n".format(
-            str(constraint)))
+    if vertex.get_fixed_location():
+        f.write(f"    Fixed at:{vertex.get_fixed_location()}\n")
 
     f.write("    Outgoing Edge Partitions:\n")
     for partition in \
             FecDataView.get_outgoing_edge_partitions_starting_at_vertex(
                 vertex):
-        f.write("    Partition {}:\n".format(
-            partition.identifier))
+        f.write(f"    Partition {partition.identifier}:\n")
         for edge in partition.edges:
-            f.write("        Edge: {}, From {} to {}, model: {}\n".format(
-                edge.label, edge.pre_vertex.label,
-                edge.post_vertex.label, edge.__class__.__name__))
+            f.write(
+                f"        Edge: {edge.label}, "
+                f"From {edge.pre_vertex.label} to {edge.post_vertex.label}, "
+                f"model: {edge.__class__.__name__}\n")
     f.write("\n")

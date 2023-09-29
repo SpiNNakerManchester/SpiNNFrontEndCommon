@@ -1,25 +1,23 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
@@ -29,18 +27,18 @@ _APP_READY_TIMEOUT = 10.0
 
 
 def load_app_images():
-    """ Go through the executable targets and load each binary to everywhere\
-         and then send a start request to the cores that actually use it.
-
+    """
+    Go through the executable targets and load each binary to everywhere
+    and then send a start request to the cores that actually use it.
     """
     __load_images(lambda ty: ty is not ExecutableType.SYSTEM,
                   "Loading executables onto the machine")
 
 
 def load_sys_images():
-    """ Go through the executable targets and load each binary to everywhere\
-         and then send a start request to the cores that actually use it.
-
+    """
+    Go through the executable targets and load each binary to everywhere
+    and then send a start request to the cores that actually use it.
     """
     __load_images(lambda ty: ty is ExecutableType.SYSTEM,
                   "Loading system executables onto the machine")
@@ -54,13 +52,13 @@ def load_sys_images():
         raise e
 
 
-def __load_images(filt, label):
+def __load_images(filter_predicate, label):
     """
-    :param callable(ExecutableType,bool) filt:
+    :param callable(ExecutableType,bool) filter_predicate:
     :param str label
     """
     # Compute what work is to be done here
-    binaries, cores = filter_targets(filt)
+    binaries, cores = filter_targets(filter_predicate)
 
     try:
         # ISSUE: Loading order may be non-constant on older Python
@@ -81,17 +79,16 @@ def __load_images(filt, label):
         raise e
 
 
-def filter_targets(filt):
+def filter_targets(filter_predicate):
     """
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-    :param callable(ExecutableType,bool) filt:
-    :rtype: tuple(list(str), ExecutableTargets)
+    :param callable(ExecutableType,bool) filter_predicate:
+    :rtype: tuple(list(str), ~spinnman.model.ExecutableTargets)
     """
     binaries = []
     cores = ExecutableTargets()
     targets = FecDataView.get_executable_targets()
     for exe_type in targets.executable_types_in_binary_set():
-        if filt(exe_type):
+        if filter_predicate(exe_type):
             for aplx in targets.get_binaries_of_executable_type(exe_type):
                 binaries.append(aplx)
                 cores.add_subsets(

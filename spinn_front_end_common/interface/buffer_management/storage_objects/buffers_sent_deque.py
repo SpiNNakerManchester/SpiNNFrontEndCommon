@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from collections import deque
 from threading import Lock
@@ -28,7 +27,8 @@ _N_SEQUENCES = 256
 
 
 class BuffersSentDeque(object):
-    """ A tracker of buffers sent / to send for a region
+    """
+    A tracker of buffers sent / to send for a region
     """
 
     __slots__ = [
@@ -72,30 +72,34 @@ class BuffersSentDeque(object):
 
     @property
     def is_full(self):
-        """ Determine if the number of messages sent is at the limit for the\
-            sequencing system.
+        """
+        Whether the number of messages sent is at the limit for the
+        sequencing system.
 
         :rtype: bool
         """
         return len(self._buffers_sent) >= self._n_sequences_per_transmission
 
     def is_empty(self):
-        """ Determine if there are no messages.
+        """
+        Determine if there are no messages.
 
         :rtype: int
         """
         return len(self._buffers_sent) == 0
 
     def send_stop_message(self):
-        """ Send a message to indicate the end of all the messages.
+        """
+        Send a message to indicate the end of all the messages.
         """
         if not self._sent_stop_message:
             self._sent_stop_message = True
             self.add_message_to_send(EventStopRequest())
 
     def add_message_to_send(self, message):
-        """ Add a message to send.  The message is converted to a sequenced\
-            message.
+        """
+        Add a message to send.  The message is converted to a sequenced
+        message.
 
         :param message: The message to be added
         :type message:
@@ -118,7 +122,8 @@ class BuffersSentDeque(object):
 
     @property
     def messages(self):
-        """ The messages that have been added to the set.
+        """
+        The messages that have been added to the set.
 
         :rtype:
             iterable(~spinnman.messages.eieio.command_messages.HostSendSequencedData)
@@ -126,12 +131,13 @@ class BuffersSentDeque(object):
         return self._buffers_sent
 
     def update_last_received_sequence_number(self, last_received_sequence_no):
-        """ Updates the last received sequence number.  If the sequence number\
-            is within the valid window, packets before the sequence number\
-            within the window are removed, and the last received sequence\
-            number is updated, thus moving the window for the next call.  If\
-            the sequence number is not within the valid window, it is assumed\
-            to be invalid and so is ignored.
+        """
+        Updates the last received sequence number.  If the sequence number is
+        within the valid window, packets before the sequence number within the
+        window are removed, and the last received sequence number is updated,
+        thus moving the window for the next call.  If the sequence number is
+        not within the valid window, it is assumed to be invalid and so is
+        ignored.
 
         :param int last_received_sequence_no: The new sequence number
         :return: True if update went ahead, False if it was ignored
@@ -169,8 +175,9 @@ class BuffersSentDeque(object):
         return False
 
     def _remove_messages(self):
-        """ Remove messages that are no longer relevant, based on the last\
-            sequence number received.
+        """
+        Remove messages that are no longer relevant, based on the last
+        sequence number received.
         """
         min_sequence = (self._last_received_sequence_number -
                         self._n_sequences_per_transmission)

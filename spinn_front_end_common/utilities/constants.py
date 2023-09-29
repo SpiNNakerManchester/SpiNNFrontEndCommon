@@ -1,20 +1,19 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2014 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from enum import Enum
-from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
+import numpy
 
 # conversion from words to bytes
 BYTES_PER_WORD = 4
@@ -52,6 +51,31 @@ DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * BYTES_PER_KB
 #: The number of bytes used by SARK per memory allocation
 SARK_PER_MALLOC_SDRAM_USAGE = 2 * BYTES_PER_WORD
 
+#: Application data magic number.
+APPDATA_MAGIC_NUM = 0xAD130AD6
+
+#: Version of the file produced by the DSE.
+DSE_VERSION = 0x00010000
+
+#: Maximum number of memory regions in DSG virtual machine.
+MAX_MEM_REGIONS = 32
+
+#: Size of header of data spec pointer table produced by DSE, in bytes.
+#: Note that the header consists of 2 uint32_t variables
+#: (magic_number, version)
+APP_PTR_TABLE_HEADER_BYTE_SIZE = 2 * BYTES_PER_WORD
+#: Size of a region description in the pointer table.
+#: Note that the description consists of a pointer and 2 uint32_t variables:
+#: (pointer, checksum, n_words)
+APP_PTR_TABLE_REGION_BYTE_SIZE = 3 * BYTES_PER_WORD
+#: Size of data spec pointer table produced by DSE, in bytes.
+APP_PTR_TABLE_BYTE_SIZE = (
+    APP_PTR_TABLE_HEADER_BYTE_SIZE +
+    (MAX_MEM_REGIONS * APP_PTR_TABLE_REGION_BYTE_SIZE))
+
+TABLE_TYPE = numpy.dtype(
+    [("pointer", "<u4"), ("checksum", "<u4"), ("n_words", "<u4")])
+
 #: The number of words in the AbstractDataSpecable basic setup information.
 #: This is the amount required by the pointer table plus a SARK allocation.
 DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = (
@@ -79,37 +103,15 @@ MAX_DATABASE_PATH_LENGTH = 50000
 DSE_DATA_STRUCT_SIZE = 4 * BYTES_PER_WORD
 
 
-class SDP_RUNNING_MESSAGE_CODES(Enum):
-    SDP_STOP_ID_CODE = 6
-    SDP_NEW_RUNTIME_ID_CODE = 7
-    SDP_UPDATE_PROVENCE_REGION_AND_EXIT = 8
-    SDP_CLEAR_IOBUF_CODE = 9
-
-
-class SDP_PORTS(Enum):
-    """SDP port handling output buffering data streaming"""
-
-    # command port for the buffered in functionality
-    INPUT_BUFFERING_SDP_PORT = 1
-    # command port for the buffered out functionality
-    OUTPUT_BUFFERING_SDP_PORT = 2
-    # command port for resetting runtime etc
-    RUNNING_COMMAND_SDP_PORT = 3
-    # extra monitor core reinjection functionality
-    EXTRA_MONITOR_CORE_REINJECTION = 4
-    # extra monitor core data transfer functionality
-    EXTRA_MONITOR_CORE_DATA_SPEED_UP = 5
-    # extra monitor core data in speed up functionality
-    EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP = 6
-
-
 # output buffering operations
 class BUFFERING_OPERATIONS(Enum):
-    """A listing of what SpiNNaker specific EIEIO commands there are."""
+    """
+    A listing of what SpiNNaker specific EIEIO commands there are.
+    """
 
-    # Database handshake with external program
+    #: Database handshake with external program
     BUFFER_READ = 0
-    # Host confirming data being read form SpiNNaker memory
+    #: Host confirming data being read form SpiNNaker memory
     BUFFER_WRITE = 1
 
 

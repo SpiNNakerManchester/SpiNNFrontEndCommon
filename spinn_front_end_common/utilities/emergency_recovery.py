@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2020 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import logging
 
 from spinn_utilities.log import FormatAdapter
@@ -35,11 +34,12 @@ def _emergency_state_check():
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
         if rte_count or watchdog_count:
-            states = txrx.get_cores_in_state(
-                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
-            logger.warning("unexpected core states (rte={}, wdog={})".format(
-                rte_count, watchdog_count))
-            logger.warning(txrx.get_core_status_string(states))
+            states = txrx.get_cpu_infos(
+                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG], True)
+            logger.warning(
+                "unexpected core states (rte={}, wdog={})",
+                rte_count, watchdog_count)
+            logger.warning(states.get_status_string())
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
@@ -57,19 +57,20 @@ def _emergency_state_check():
                 except Exception:
                     errors.append((chip.x, chip.y, p))
         if len(infos):
-            logger.warning(txrx.get_core_status_string(infos))
-        if len(len(errors) > 10):
-            logger.warning("Could not read information from {} cores".format(
-                len(errors)))
+            logger.warning(infos.get_status_string())
+        if len(errors) > 10:
+            logger.warning(
+                "Could not read information from {} cores", len(errors))
         else:
-            logger.warning("Could not read information from cores {}".format(
-                errors))
+            logger.warning(
+                "Could not read information from cores {}", errors)
 
 
 def _emergency_iobuf_extract(executable_targets=None):
     """
-    :param executable_targets: The specific targets to extract of None for all
-    :type executable_targets: ExecutableTargets  or None
+    :param executable_targets:
+        The specific targets to extract, or `None` for all
+    :type executable_targets: ExecutableTargets or None
     """
     # pylint: disable=protected-access
     extractor = IOBufExtractor(
@@ -79,9 +80,9 @@ def _emergency_iobuf_extract(executable_targets=None):
 
 
 def emergency_recover_state_from_failure(vertex, placement):
-    """ Used to get at least *some* information out of a core when something\
-        goes badly wrong. Not a replacement for what abstract spinnaker base\
-        does.
+    """
+    Used to get at least *some* information out of a core when something
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param AbstractHasAssociatedBinary vertex:
@@ -100,9 +101,9 @@ def emergency_recover_state_from_failure(vertex, placement):
 
 
 def emergency_recover_states_from_failure():
-    """ Used to get at least *some* information out of a core when something\
-        goes badly wrong. Not a replacement for what abstract spinnaker base\
-        does.
+    """
+    Used to get at least *some* information out of a core when something
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
     :param ~spinnman.model.ExecutableTargets executable_targets:
         The what/where mapping

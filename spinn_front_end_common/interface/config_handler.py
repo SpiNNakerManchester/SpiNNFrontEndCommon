@@ -1,27 +1,27 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from configparser import NoOptionError
 import logging
 import os
 import shutil
+import traceback
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
     get_config_str, get_config_str_list, set_config)
+from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
@@ -43,8 +43,9 @@ _REPORT_DISABLE_OPTS = frozenset([
 
 
 class ConfigHandler(object):
-    """ Superclass of AbstractSpinnakerBase that handles function only \
-        dependent of the config and the order its methods are called.
+    """
+    Superclass of AbstractSpinnakerBase that handles function only
+    dependent of the configuration and the order its methods are called.
     """
 
     __slots__ = [
@@ -65,18 +66,16 @@ class ConfigHandler(object):
             self._data_writer = data_writer_cls.setup()
         else:
             self._data_writer = FecDataWriter.setup()
+        logger.set_log_store(LogStoreDB())
 
         # set up machine targeted data
         self._debug_configs()
         self._previous_handler()
 
-        # Pass max_machine_cores to Machine so if effects everything!
-        max_machine_core = get_config_int("Machine", "max_machine_core")
-        if max_machine_core is not None:
-            Machine.set_max_cores_per_chip(max_machine_core)
-
     def _debug_configs(self):
-        """ Adjust and checks config based on mode and reports_enabled
+        """
+        Adjusts and checks the configuration based on mode and
+        `reports_enabled`.
 
         :raises ConfigurationException:
         """
@@ -121,13 +120,12 @@ class ConfigHandler(object):
             "See https://spinnakermanchester.github.io/common_pages/"
             "Algorithms.html.")
 
-    def _adjust_config(self, runtime,):
-        """ Adjust and checks config based on runtime
+    def _adjust_config(self, runtime):
+        """
+        Adjust and checks the configuration based on runtime
 
         :param runtime:
         :type runtime: int or bool
-        :param frozenset(str) debug_enable_opts:
-        :param frozenset(str) report_disable_opts:
         :raises ConfigurationException:
         """
         if runtime is None:
@@ -198,11 +196,9 @@ class ConfigHandler(object):
         _, timestamp = os.path.split(timestamp_dir_path)
         with open(time_of_run_file_name, "w", encoding="utf-8") as f:
             f.writelines(timestamp)
-
-        if get_config_bool("Logging", "warnings_at_end_to_file"):
-            log_report_file = os.path.join(
-                self._data_writer.get_run_dir_path(), WARNING_LOGS_FILENAME)
-            logger.set_report_File(log_report_file)
+            f.write("\n")
+            f.write("Traceback of setup call:\n")
+            traceback.print_stack(file=f)
 
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(
@@ -211,15 +207,15 @@ class ConfigHandler(object):
             f.writelines("file_name")
 
     def write_finished_file(self):
-        """ Write a finished file that allows file removal to only remove
-            folders that are finished.
-            :rtype: None
+        """
+        Write a finished file that allows file removal to only remove
+        folders that are finished.
         """
         self.__write_named_file(FINISHED_FILENAME)
 
     def write_errored_file(self):
-        """ Writes a errored file that allows file removal to only remove \
-            folders that are errored if requested to do so
-        :rtype:
+        """
+        Writes an ``errored`` file that allows file removal to only remove
+        folders that have errors if requested to do so
         """
         self.__write_named_file(ERRORED_FILENAME)

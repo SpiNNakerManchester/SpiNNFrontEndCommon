@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import struct
 import logging
@@ -19,10 +18,9 @@ from time import sleep
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import (
+    CPUState, SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -38,7 +36,8 @@ def chip_provenance_updater(all_core_subsets):
 
 
 class _ChipProvenanceUpdater(object):
-    """ Forces all cores to generate provenance data, and then exit.
+    """
+    Forces all cores to generate provenance data, and then exit.
     """
 
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
@@ -62,19 +61,20 @@ class _ChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        error_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.WATCHDOG)
-        idle_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.IDLE)
+        cpu_infos = self.__txrx.get_cpu_infos(
+            self.__all_cores,
+            [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG, CPUState.IDLE],
+            True)
+        error_cores = cpu_infos.infos_for_state(CPUState.RUN_TIME_EXCEPTION)
+        watchdog_cores = cpu_infos.infos_for_state(CPUState.WATCHDOG)
+        idle_cores = cpu_infos.infos_for_state(CPUState.IDLE)
 
         if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(
-                "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
-                " idle cores {}".format(
-                    error_cores.values(), watchdog_cores.values(),
-                    idle_cores.values()))
+                "Some cores have crashed. "
+                f"RTE cores {error_cores.values()}, "
+                f"watch-dogged cores {watchdog_cores.values()}, "
+                f"idle cores {idle_cores.values()}")
 
         # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating
@@ -94,8 +94,8 @@ class _ChipProvenanceUpdater(object):
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:
             attempts += 1
-            unsuccessful_cores = self.__txrx.get_cores_not_in_state(
-                self.__all_cores, CPUState.FINISHED)
+            unsuccessful_cores = self.__txrx.get_cpu_infos(
+                self.__all_cores, CPUState.FINISHED, False)
 
             for (x, y, p) in unsuccessful_cores.keys():
                 self._send_chip_update_provenance_and_exit(x, y, p)

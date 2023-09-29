@@ -1,21 +1,19 @@
 # Copyright (c) 2022 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from spinn_utilities.config_holder import set_config
 from spinn_machine.tags.iptag import IPTag
-from pacman.model.graphs.application import (
-    ApplicationVertex, ApplicationEdge)
+from pacman.model.graphs.application import ApplicationVertex, ApplicationEdge
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.placements import Placements, Placement
@@ -23,8 +21,7 @@ from pacman.model.routing_info import (
     RoutingInfo, MachineVertexRoutingInfo, AppVertexRoutingInfo)
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.tags.tags import Tags
-from pacman.model.partitioner_splitters.abstract_splitters import (
-    AbstractSplitterCommon)
+from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.graphs.common.slice import Slice
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
@@ -47,7 +44,7 @@ class TestSplitter(AbstractSplitterCommon):
         pass
 
     def get_out_going_vertices(self, partition_id):
-        return self._governed_app_vertex.machine_vertices
+        return self.governed_app_vertex.machine_vertices
 
     def get_in_coming_vertices(self, partition_id):
         pass
@@ -84,12 +81,12 @@ def _add_rinfo(
         app_vertex, partition_id, routing_info, base_key, app_mask, mac_mask,
         m_vertex_shift):
     routing_info.add_routing_info(AppVertexRoutingInfo(
-        [BaseKeyAndMask(base_key, app_mask)], partition_id, app_vertex,
+        BaseKeyAndMask(base_key, app_mask), partition_id, app_vertex,
         mac_mask, 1, 1))
     for i, m_vertex in enumerate(app_vertex.machine_vertices):
         routing_info.add_routing_info(MachineVertexRoutingInfo(
-            [BaseKeyAndMask(
-                base_key | i << m_vertex_shift, app_mask | mac_mask)],
+            BaseKeyAndMask(
+                base_key | i << m_vertex_shift, app_mask | mac_mask),
             partition_id, m_vertex, i))
 
 
@@ -107,6 +104,7 @@ def _place_vertices(app_vertex, placements, chips):
 
 def test_database_interface():
     unittest_setup()
+    set_config("Machine", "version", 5)
     set_config("Database", "create_database", "True")
     set_config("Database", "create_routing_info_to_neuron_id_mapping", "True")
 
@@ -151,16 +149,19 @@ def test_database_interface():
     db_path = database_interface(1000)
     print(db_path)
 
-    reader = DatabaseReader(db_path)
-    assert reader.get_ip_address(0, 0) == writer.get_chip_at(0, 0).ip_address
-    assert all(db_p == placements.get_placement_of_vertex(m_vertex).location
-               for db_p, m_vertex in zip(
-                   reader.get_placements(app_vertex_1.label),
-                   app_vertex_1.machine_vertices))
-    assert reader.get_configuration_parameter_value("runtime") == 1000
-    assert (
-        reader.get_live_output_details(
-            app_vertex_1.label, lpg_vertex.label) ==
-        (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address, tag.tag))
-    assert reader.get_atom_id_to_key_mapping(app_vertex_1.label)
-    assert reader.get_key_to_atom_id_mapping(app_vertex_1.label)
+    with DatabaseReader(db_path) as reader:
+        assert (reader.get_ip_address(0, 0) ==
+                writer.get_chip_at(0, 0).ip_address)
+        assert all(db_p ==
+                   placements.get_placement_of_vertex(m_vertex).location
+                   for db_p, m_vertex in zip(
+                       reader.get_placements(app_vertex_1.label),
+                       app_vertex_1.machine_vertices))
+        assert reader.get_configuration_parameter_value("runtime") == 1000
+        assert (
+            reader.get_live_output_details(
+                app_vertex_1.label, lpg_vertex.label) ==
+            (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address,
+             tag.tag, tag.destination_x, tag.destination_y))
+        assert reader.get_atom_id_to_key_mapping(app_vertex_1.label)
+        assert reader.get_key_to_atom_id_mapping(app_vertex_1.label)

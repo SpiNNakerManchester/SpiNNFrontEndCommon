@@ -1,17 +1,16 @@
--- Copyright (c) 2017-2019 The University of Manchester
+-- Copyright (c) 2017 The University of Manchester
 --
--- This program is free software: you can redistribute it and/or modify
--- it under the terms of the GNU General Public License as published by
--- the Free Software Foundation, either version 3 of the License, or
--- (at your option) any later version.
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
 --
--- This program is distributed in the hope that it will be useful,
--- but WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--- GNU General Public License for more details.
+--     https://www.apache.org/licenses/LICENSE-2.0
 --
--- You should have received a copy of the GNU General Public License
--- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 
 -- We want foreign key enforcement; it should be default on, but it isn't for
 -- messy historical reasons.
@@ -21,6 +20,13 @@ CREATE TABLE IF NOT EXISTS configuration_parameters(
     parameter_id TEXT,
     value REAL,
     PRIMARY KEY (parameter_id));
+
+-- Information about how to access the connection proxying
+-- WARNING! May include credentials
+CREATE TABLE IF NOT EXISTS proxy_configuration(
+    kind TEXT NOT NULL,
+    name TEXT NOT NULL,
+    value TEXT NOT NULL);
 
 CREATE TABLE IF NOT EXISTS Machine_layout(
     machine_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -124,16 +130,20 @@ CREATE VIEW IF NOT EXISTS app_output_tag_view AS SELECT
     IP_tags.board_address AS board_address,
     IP_tags.tag AS tag,
     pre_app_vertices.vertex_label AS pre_vertex_label,
-    post_lpg_vertices.label AS post_vertex_label
+    lpg_vertices.label AS post_vertex_label,
+    lpg_placements.chip_x AS chip_x,
+    lpg_placements.chip_y AS chip_y
 FROM m_vertex_to_lpg_vertex
     JOIN IP_Tags
         ON m_vertex_to_lpg_vertex.post_vertex_id = IP_tags.vertex_id
-    JOIN Machine_vertices as post_lpg_vertices
-        ON m_vertex_to_lpg_vertex.post_vertex_id = post_lpg_vertices.vertex_id
+    JOIN Machine_vertices AS lpg_vertices
+        ON m_vertex_to_lpg_vertex.post_vertex_id = lpg_vertices.vertex_id
     JOIN graph_mapper_vertex AS pre_mapper
         ON m_vertex_to_lpg_vertex.pre_vertex_id = pre_mapper.machine_vertex_id
     JOIN Application_vertices AS pre_app_vertices
-        ON pre_mapper.application_vertex_id = pre_app_vertices.vertex_id;
+        ON pre_mapper.application_vertex_id = pre_app_vertices.vertex_id
+    JOIN Placements AS lpg_placements
+        ON lpg_placements.vertex_id = lpg_vertices.vertex_id;
 
 CREATE VIEW IF NOT EXISTS application_vertex_placements AS SELECT
     Placements.chip_x AS x,

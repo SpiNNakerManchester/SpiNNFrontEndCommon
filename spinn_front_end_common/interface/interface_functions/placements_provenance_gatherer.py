@@ -1,36 +1,35 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import traceback
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
+    AbstractProvidesProvenanceDataFromMachine)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def placements_provenance_gatherer(n_placements, placements):
-    """ Gets provenance information from placements
+    """
+    Gets provenance information from placements.
 
     :param int n_placements: Number of placements to gather
-    :param iterator(Placement) placements:
+    :param iterator(~pacman.model.placements.Placement) placements:
         The placements of the vertices to gather data form.
-        May not be all placements so dont use View
-    :return:
+        May not be all placements so don't use View
     """
     errors = list()
 
@@ -56,9 +55,6 @@ def _add_placement_provenance(placement, errors):
         # get data
         try:
             placement.vertex.get_provenance_data_from_machine(placement)
-            with ProvenanceWriter() as db:
-                db.add_core_name(placement.x, placement.y, placement.p,
-                                 placement.vertex.label)
 
         except Exception:  # pylint: disable=broad-except
             errors.append(traceback.format_exc())

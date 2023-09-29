@@ -1,90 +1,99 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+preferred-citation:
+  type: article
+  doi: 10.3389/fnins.2019.00231
+  issn: 1662-453X
+  url: https://www.frontiersin.org/articles/10.3389/fnins.2019.00231
+  title: "SpiNNTools: The Execution Engine for the SpiNNaker Platform"
+  journal: Frontiers in Neuroscience
+  volume: 13
+  year: 2019
+  month: 3
+  abstract: SpiNNaker is a massively parallel distributed architecture primarily focused on real time simulation of spiking neural networks. The largest realization of the architecture consists of one million general purpose processors, making it the largest neuromorphic computing platform in the world at the present time. Utilizing these processors efficiently requires expert knowledge of the architecture to generate executable code and to harness the potential of the unique inter-processor communications infra-structure that lies at the heart of the SpiNNaker architecture. This work introduces a software suite called SpiNNTools that can map a computational problem described as a graph into the required set of executables, application data and routing information necessary for simulation on this novel machine. The SpiNNaker architecture is highly scalable, giving rise to unique challenges in mapping the problem to the machines resources, loading the generated files to the machine and subsequently retrieving the results of simulation. In this paper we describe these challenges in detail and the solutions implemented.
+  authors:
+  - given-names: Andrew
+    family-names: Rowley
+    affiliation: University Of Manchester
+    email: Andrew.Rowley@manchester.ac.uk
+    orcid: https://orcid.org/0000-0002-2646-8520
+    website: https://www.researchgate.net/profile/Andrew_Rowley2
+  - given-names: Christian Y.
+    family-names: Brenninkmeijer
+    affiliation: University Of Manchester
+    email: christian.brenninkmeijer@manchester.ac.uk
+    orcid: https://orcid.org/0000-0002-2937-7819
+    website: https://www.researchgate.net/profile/Christian_Brenninkmeijer
+  - given-names: Simon
+    family-names: Davidson
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0001-5385-442X
+    website: https://research.manchester.ac.uk/en/persons/simon.davidson
+  - given-names: Donal
+    family-names: Fellows
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-9091-5938
+    website: https://www.researchgate.net/profile/Donal-Fellows
+  - given-names: Andrew
+    family-names: Gait
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0001-9349-1096
+    website: https://personalpages.manchester.ac.uk/staff/andrew.gait/
+  - given-names: David R.
+    family-names: Lester
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-7267-291X
+  - given-names: Luis A.
+    family-names: Plana
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-6113-3929
+    website: https://research.manchester.ac.uk/en/persons/luis.plana
+  - given-names: Oliver
+    family-names: Rhodes
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0003-1728-2828
+    website: https://research.manchester.ac.uk/en/persons/oliver.rhodes
+  - given-names: Alan B.
+    family-names: Stokes
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-6110-1484
+  - given-names: Steve B.
+    family-names: Furber
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-6524-3367
+    website: https://research.manchester.ac.uk/en/persons/steve.furber
+
+title: The Common code for supporting all front ends on mapping applications to run
 authors:
-- affiliation: University Of Manchester
-  email: alan.stokes-2@manchester.ac.uk
-  family-names: Stokes
-  given-names: Alan
-  orcid: https://orcid.org/0000-0002-6110-1484
-  website: http://www.cs.man.ac.uk/~stokesa6/
-- affiliation: University Of Manchester
-  email: Andrew.Rowley@manchester.ac.uk
-  family-names: Rowley
-  given-names: Andrew
-  orcid: https://orcid.org/0000-0002-2646-8520
-  website: https://www.researchgate.net/profile/Andrew_Rowley2
-- affiliation: University Of Manchester
-  email: Andrew.Gait@manchester.ac.uk
-  family-names: Gait
-  given-names: Andrew
-  orcid: http://orcid.org/0000-0001-9349-1096
-  website: https://personalpages.manchester.ac.uk/staff/Andrew.Gait/
-- affiliation: University Of Manchester
-  email: christian.brenninkmeijer@manchester.ac.uk
-  family-names: Brenninkmeijer
-  given-names: Christian Y.
-  orcid: https://orcid.org/0000-0002-2937-7819
-  website: https://www.researchgate.net/profile/Christian_Brenninkmeijer
-- affiliation: University Of Manchester
-  email: donal.k.fellows@manchester.ac.uk
-  family-names: Fellows
-  given-names: Donal
-  orcid: https://orcid.org/0000-0002-9091-5938
-  website: http://www.cs.manchester.ac.uk/about-us/staff/profile/?ea=donal.k.fellows
-- affiliation: University Of Manchester
-  email: david.r.lester@manchester.ac.uk
-  family-names: Lester
-  given-names: David
-  orcid: https://orcid.org/0000-0002-7267-291X
-  website: http://apt.cs.manchester.ac.uk/people/dlester/
-- affiliation: University Of Sussex
-  email: J.C.Knight@sussex.ac.uk
-  family-names: Knight
-  given-names: James
-  website: http://www.sussex.ac.uk/profiles/415734
-- affiliation: University Of Manchester
-  email: oliver.rhodes@manchester.ac.uk
-  family-names: Rhodes
-  given-names: Oliver
-  orcid: https://orcid.org/0000-0003-1728-2828
-  website: http://apt.cs.manchester.ac.uk/people/orhodes/
-- affiliation: University Of Manchester
-  email: paul.gafton@gmail.com
-  family-names: Gafton
-  given-names: Paul
-  website: https://manchester.academia.edu/PaulGafton
-- affiliation: University Of Manchester
-  email: sergio.davies@gmail.com
-  family-names: Davies
-  given-names: Sergio
-  orcid: https://orcid.org/0000-0001-5330-5527
-  website: http://apt.cs.manchester.ac.uk/people/daviess/
-cff-version: 1.0.3
+    - name: SpiNNaker Software Team
+      alias: For a list of contributors see https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/graphs/contributors or for a combined list see https://spinnakermanchester.github.io/latest/LicenseAgreement.html#contributors
+      address: University of Manchester, Oxford Road
+      city: Manchester
+      country: GB
+      email: spinnakerusers@googlegroups.com
+      post-code: M13 9PL
+      website: https://apt.cs.manchester.ac.uk/projects/SpiNNaker/
+url: https://spinnakermanchester.github.io/
 contact:
 - address: University of Manchester, Oxford Road
   city: Manchester
   country: GB
+  email: spinnakerusers@googlegroups.com
   name: SpiNNaker Software Team
   post-code: M13 9PL
-date-released:
-email: spinnakerusers@googlegroups.com
-identifier:
-message: If you use this software, please cite it as below.
+license: Apache-2.0
 repository: https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon
-title: The Common code for supporting all front ends on mapping applications to run
-  on SpiNNaker machines
-url: http://spinnakermanchester.github.io/
-version:

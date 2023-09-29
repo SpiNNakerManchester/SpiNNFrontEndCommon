@@ -1,18 +1,17 @@
 /*
- * Copyright (c) 2017-2019 The University of Manchester
+ * Copyright (c) 2017 The University of Manchester
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /**
@@ -51,6 +50,9 @@ static uint32_t routes_frequency[MAX_NUM_ROUTES] = {0};
 //! Count of unique routes (as opposed to routes with just different key_masks).
 static uint32_t routes_count;
 
+//! Space for caching routes while going through them
+static entry_t route_cache[2][MAX_NUM_ROUTES];
+
 //! \brief Merges a single pair of route entries.
 //! \param[in] entry1: The first route to merge.
 //! \param[in] entry2: The second route to merge.
@@ -74,6 +76,30 @@ static inline void _entry(const entry_t* entry, int index) {
     e_ptr->source = entry->source;
 }
 
+static inline int transfer_next(int start_index, int n_items, uint32_t cache) {
+    if (n_items == 0) {
+        return 0;
+    }
+    uint32_t next_items = n_items;
+    if (n_items > MAX_NUM_ROUTES) {
+        next_items = MAX_NUM_ROUTES;
+    }
+    routing_table_get_entries(start_index, next_items, route_cache[cache]);
+    return next_items;
+}
+
+//! \brief Cancel any outstanding DMA transfers
+static inline void cancel_dmas(void) {
+    dma[DMA_CTRL] = 0x3F;
+    while (dma[DMA_STAT] & 0x1) {
+        continue;
+    }
+    dma[DMA_CTRL] = 0xD;
+    while (dma[DMA_CTRL] & 0xD) {
+        continue;
+    }
+}
+
 //! \brief Finds if two routes can be merged.
 //! \details If they are merged, the entry at the index of left is also
 //!     replaced with the merged route.
@@ -81,18 +107,53 @@ static inline void _entry(const entry_t* entry, int index) {
 //! \param[in] index: The index of the second route to consider.
 //! \return True if the entries were merged
 static inline bool find_merge(int left, int index) {
+    cancel_dmas();
     const entry_t *entry1 = routing_table_get_entry(left);
     const entry_t *entry2 = routing_table_get_entry(index);
     const entry_t merged = merge(entry1, entry2);
 
-    for (int check = remaining_index;
-            check < routing_table_get_n_entries();
-            check++) {
-        const entry_t *check_entry =
-                routing_table_get_entry(check);
-        if (key_mask_intersect(check_entry->key_mask, merged.key_mask)) {
-            return false;
+    uint32_t size = routing_table_get_n_entries();
+    uint32_t items_to_go = size - remaining_index;
+    uint32_t next_n_items = transfer_next(remaining_index, items_to_go, 0);
+    uint32_t next_items_to_go = items_to_go - next_n_items;
+    uint32_t next_start = remaining_index + next_n_items;
+    bool dma_in_progress = true;
+    uint32_t read_cache = 0;
+    uint32_t write_cache = 1;
+    while (items_to_go > 0) {
+
+        // Finish any outstanding transfer
+        if (dma_in_progress) {
+            routing_table_wait_for_last_transfer();
+            dma_in_progress = false;
         }
+
+        // Get the details of the last transfer done
+        uint32_t n_items = next_n_items;
+        uint32_t cache = read_cache;
+
+        // Start the next transfer if needed
+        if (next_items_to_go > 0) {
+            next_n_items = transfer_next(next_start, next_items_to_go, write_cache);
+            next_items_to_go -= next_n_items;
+            next_start += next_n_items;
+            dma_in_progress = true;
+            write_cache = (write_cache + 1) & 0x1;
+            read_cache = (read_cache + 1) & 0x1;
+        }
+
+        // Check the items now available
+        entry_t *entries = route_cache[cache];
+        for (uint32_t i = 0; i < n_items; i++) {
+            if (key_mask_intersect(entries[i].key_mask, merged.key_mask)) {
+                if (dma_in_progress) {
+                    routing_table_wait_for_last_transfer();
+                }
+                return false;
+            }
+        }
+
+        items_to_go = next_items_to_go;
     }
     routing_table_put_entry(&merged, left);
     return true;
@@ -118,45 +179,6 @@ static inline void compress_by_route(int left, int right) {
     }
     if (left == right) {
         routing_table_copy_entry(write_index++, left);
-    }
-}
-
-//! \brief Compare routes based on their index
-//! \param[in] route_a: The first route
-//! \param[in] route_b: The second route
-//! \return Ordering term (-1, 0, 1)
-static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
-    if (route_a == route_b) {
-        return 0;
-    }
-    for (uint i = 0; i < routes_count; i++) {
-        if (routes[i] == route_a) {
-            return -1;
-        }
-        if (routes[i] == route_b) {
-            return 1;
-        }
-    }
-    log_error("Routes not found %u %u", route_a, route_b);
-    // set the failed flag and exit
-    malloc_extras_terminate(EXIT_FAIL);
-
-    return 0;
-}
-
-//! \brief Implementation of insertion sort for routes based on route
-//!     information
-//! \param[in] table_size: The size of the routing table
-static void sort_table(uint32_t table_size) {
-    uint32_t i, j;
-
-    for (i = 1; i < table_size; i++) {
-        entry_t tmp = *routing_table_get_entry(i);
-        for (j = i; j > 0 && compare_routes(
-                routing_table_get_entry(j - 1)->route, tmp.route) > 0; j--) {
-            routing_table_put_entry(routing_table_get_entry(j - 1), j);
-        }
-        routing_table_put_entry(&tmp, j);
     }
 }
 
@@ -207,6 +229,103 @@ static inline bool update_frequency(int index) {
     return true;
 }
 
+static inline uint32_t find_route_index(uint32_t route) {
+    for (uint32_t i = 0; i < routes_count; i++) {
+        if (route == routes[i]) {
+            return i;
+        }
+    }
+    log_error("Route 0x%08x not found!", route);
+    for (uint32_t i = 0; i < routes_count; i++) {
+        log_error("Route %u = 0x%08x", i, routes[i]);
+    }
+    rt_error(RTE_SWERR);
+    return 0xFFFFFFFF;
+}
+
+//! \brief Implementation of insertion sort for routes based on route
+//!     information
+//! \param[in] table_size: The size of the routing table
+void sort_table(void) {
+    if (routes_count == 0) {
+        return;
+    }
+
+    // Set up a pointer for each of the routes
+    uint16_t route_offset[routes_count];
+    uint16_t route_end[routes_count];
+    uint32_t offset = 0;
+    for (uint32_t i = 0; i < routes_count; i++) {
+        route_offset[i] = offset;
+        offset += routes_frequency[i];
+        route_end[i] = offset - 1;
+    }
+
+    // Go through and move things into position
+    uint32_t pos = 0;
+    uint32_t pos_index = 0;
+    uint32_t next_index_offset = routes_frequency[0];
+    uint32_t n_entries = routing_table_get_n_entries();
+    while (pos < n_entries) {
+        // Get the entry
+        entry_t entry = *routing_table_get_entry(pos);
+
+        // Where does the route need to go
+        uint32_t route_index = find_route_index(entry.route);
+
+        // Where are we reading from?
+        uint32_t read_index = pos_index;
+
+        // If we are in the right region
+        bool skip = false;
+        if (route_index == read_index) {
+            // If we already put this item here, don't move it
+            if (pos < route_offset[route_index]) {
+                skip = true;
+            }
+        }
+
+        // Keep swapping things until they are in the right place
+        while (!skip) {
+
+            // Find the place to put the route in its group
+            uint32_t new_pos = route_offset[route_index];
+            if (new_pos >= n_entries) {
+                log_error("New table position %u out of range!", new_pos);
+                rt_error(RTE_SWERR);
+            }
+
+            if (new_pos > route_end[route_index]) {
+                log_error("New table position %u of region %u is out of range!",
+                        new_pos, route_index);
+                rt_error(RTE_SWERR);
+            }
+            route_offset[route_index] += 1;
+
+            // Swap out the existing entry with the new one
+            entry_t old_entry = *routing_table_get_entry(new_pos);
+            routing_table_put_entry(&entry, new_pos);
+
+            // We can quit because we should have moved this one
+            if (new_pos <= pos) {
+                break;
+            }
+            entry = old_entry;
+            read_index = route_index;
+
+            // Find the index of the item we swapped out so it can be swapped next
+            route_index = find_route_index(entry.route);
+        }
+
+        // Where are we next
+        pos++;
+        if (pos == next_index_offset) {
+            pos_index += 1;
+            next_index_offset += routes_frequency[pos_index];
+        }
+    }
+}
+
 //! \brief Implementation of minimise()
 //! \param[in] target_length: ignored
 //! \param[out] failed_by_malloc: Never changed but required by api
@@ -216,7 +335,7 @@ static inline bool update_frequency(int index) {
 bool minimise_run(int target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     use(failed_by_malloc);
-	use(target_length);
+    use(target_length);
 
     // Verify constant used to build arrays is correct
     if (MAX_NUM_ROUTES != rtr_alloc_max()){
@@ -251,7 +370,12 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     }
 
     log_debug("do sort_table by route %u", table_size);
-    sort_table(table_size);
+    tc[T2_LOAD] = 0xFFFFFFFF;
+    tc[T2_CONTROL] = 0x83;
+    sort_table();
+    uint32_t duration = 0xFFFFFFFF - tc[T2_COUNT];
+    tc[T2_CONTROL] = 0;
+    log_info("Sorting table took %u clock cycles", duration);
     if (*stop_compressing) {
         log_info("Stopping before compression as asked to stop");
         return false;
@@ -272,7 +396,12 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         }
         remaining_index = right + 1;
         log_debug("compress %u %u", left, right);
+        tc[T2_LOAD] = 0xFFFFFFFF;
+        tc[T2_CONTROL] = 0x83;
         compress_by_route(left, right);
+        duration = 0xFFFFFFFF - tc[T2_COUNT];
+        tc[T2_CONTROL] = 0;
+        log_info("Compressing %u routes took %u", right - left + 1, duration);
         if (write_index > rtr_alloc_max()){
             if (standalone()) {
                 log_error("Compression not possible as already found %d "

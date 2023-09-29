@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2022 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import math
@@ -22,6 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
+from spinnman.model.enums import ExecutableType, SDP_PORTS
 from pacman.model.resources import ReverseIPtagResource, VariableSDRAM
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
@@ -39,7 +39,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
         BufferedSendingRegion)
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
@@ -51,7 +51,6 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.buffer_management.recording_utilities \
     import (get_recording_header_array, get_recording_header_size,
             get_recording_data_constant_size)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -61,6 +60,8 @@ _TWO_SHORTS = struct.Struct("<HH")
 
 # The microseconds per timestep will be divided by this for the max offset
 _MAX_OFFSET_DENOMINATOR = 10
+# The max offset modulo to stop spikes in simple cases moving to the next ts
+_MAX_OFFSET_MODULO = 1000
 
 
 class ReverseIPTagMulticastSourceMachineVertex(
@@ -68,8 +69,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
         ProvidesProvenanceDataFromMachineImpl,
         SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost):
-    """ A model which allows events to be injected into SpiNNaker and\
-        converted in to multicast packets.
+    """
+    A model which allows events to be injected into SpiNNaker and
+    converted in to multicast packets.
 
     :param str label: The label of this vertex
     :param vertex_slice:
@@ -78,10 +80,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
     :param app_vertex:
         The associated application vertex
     :type app_vertex: ReverseIpTagMultiCastSource or None
-    :param int n_keys: The number of keys to be sent via this mulitcast source
-        (can't be None if vertex_slice is also None)
-    :param iterable(~pacman.model.constraints.AbstractConstraint) constraints:
-        Any initial constraints to this vertex
+    :param int n_keys: The number of keys to be sent via this multicast source
+        (can't be `None` if vertex_slice is also `None`)
     :param str board_address:
         The IP address of the board on which to place this vertex if receiving
         data, either buffered or live (by default, any board is chosen)
@@ -114,11 +114,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         to be sent
     :param bool reserve_reverse_ip_tag:
         True if the source should set up a tag through which it can receive
-        packets; if port is set to None this can be used to enable the
+        packets; if port is set to `None` this can be used to enable the
         reception of packets on a randomly assigned port, which can be read
         from the database
     :param str injection_partition:
-        If not None, will enable injection and specify the partition to send
+        If not `None`, will enable injection and specify the partition to send
         injected keys with
     """
 
@@ -152,7 +152,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=None,
             app_vertex=None,
             n_keys=None,
-            constraints=None,
 
             # Live input parameters
             receive_port=None,
@@ -182,11 +181,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         if (send_buffer_partition_id is not None and
                 injection_partition_id is not None):
-            raise Exception(
+            raise ValueError(
                 "Can't specify both send_buffer_partition_id and"
                 " injection_partition_id")
 
-        super().__init__(label, constraints, app_vertex, vertex_slice)
+        super().__init__(label, app_vertex, vertex_slice)
 
         self._reverse_iptags = []
         self._n_keys = vertex_slice.n_atoms
@@ -275,7 +274,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @classmethod
     def _send_buffer_sdram_per_timestep(cls, send_buffer_times, n_keys):
-        """ Determine the amount of SDRAM required per timestep.
+        """
+        Determine the amount of SDRAM required per timestep.
 
         :param send_buffer_times:
         :type send_buffer_times:
@@ -330,9 +330,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Working with a list of lists so check length
             if len(send_buffer_times) != self._n_keys:
                 raise ConfigurationException(
-                    "The array or arrays of times {} does not have the "
-                    "expected length of {}".format(
-                        send_buffer_times, self._n_keys))
+                    f"The array or arrays of times {send_buffer_times} does "
+                    f"not have the expected length of {self._n_keys}")
 
         self._send_buffer = BufferedSendingRegion()
         self._send_buffer_times = send_buffer_times
@@ -415,7 +414,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @staticmethod
     def _n_regions_to_allocate(send_buffering, recording):
-        """ Get the number of regions that will be allocated
+        """
+        Get the number of regions that will be allocated
 
         :param bool send_buffering:
         :param bool recording:
@@ -423,13 +423,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         if recording and send_buffering:
             return 5
-        elif recording or send_buffering:
+        if recording or send_buffering:
             return 4
         return 3
 
     @property
     def send_buffer_times(self):
-        """ When events will be sent.
+        """
+        When events will be sent.
 
         :rtype:
             ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
@@ -447,23 +448,19 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._install_send_buffer(send_buffer_times)
 
     @staticmethod
-    def _is_in_range(
-            time_stamp_in_ticks,
-            first_machine_time_step, n_machine_time_steps):
+    def _is_in_range(step, first_step, end_step):
         """
-        :param int time_stamp_in_ticks:
-        :param int first_machine_time_step:
-        :param n_machine_time_steps:
+        :param int step: The time step to check
+        :param int first_step: The smallest support step
+        :param int end_step: The step after the end
         :type n_machine_time_steps: int or None
         """
-        return (n_machine_time_steps is None) or (
-            first_machine_time_step <= time_stamp_in_ticks <
-            n_machine_time_steps)
+        return end_step is None or (first_step <= step < end_step)
 
     def _fill_send_buffer(self):
-        """ Fill the send buffer with keys to send.
-
-       """
+        """
+        Fill the send buffer with keys to send.
+        """
         first_machine_time_step = FecDataView.get_first_machine_time_step()
         run_until_timesteps = FecDataView.get_current_run_timesteps()
         if (self._first_machine_time_step == first_machine_time_step and
@@ -481,37 +478,44 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 len(self._send_buffer_times)):
             if hasattr(self._send_buffer_times[0], "__len__"):
                 # Works with a list-of-lists
-                self.__fill_send_buffer_2d(
-                    key_to_send, first_machine_time_step, run_until_timesteps)
+                self._fill_send_buffer_2d(key_to_send)
             else:
                 # Work with a single list
-                self.__fill_send_buffer_1d(
-                    key_to_send, first_machine_time_step, run_until_timesteps)
+                self._fill_send_buffer_1d(key_to_send)
 
-    def __fill_send_buffer_2d(
-            self, key_base, first_time_step, n_time_steps):
+    def _fill_send_buffer_2d(self, key_base):
         """
-        :param int key_base:
-        :param int first_time_step:
-        :param int n_time_steps:
-        """
-        keys = get_field_based_keys(key_base, self._vertex_slice)
-        for key in range(self._n_keys):
-            for tick in sorted(self._send_buffer_times[key]):
-                if self._is_in_range(tick, first_time_step, n_time_steps):
-                    self._send_buffer.add_key(tick, keys[key])
+        Add the keys with different times for each atom.
+        Can be overridden to override keys.
 
-    def __fill_send_buffer_1d(
-            self, key_base, first_time_step, n_time_steps):
+        :param int key_base: The base key to use
         """
-        :param int key_base:
-        :param int first_time_step:
-        :param int n_time_steps:
-        """
+        first_time_step = FecDataView.get_first_machine_time_step()
+        end_time_step = FecDataView.get_current_run_timesteps()
+        if first_time_step == end_time_step:
+            return
         keys = get_field_based_keys(key_base, self._vertex_slice)
-        key_list = [keys[key] for key in range(self._n_keys)]
+        for atom in range(self._vertex_slice.n_atoms):
+            for tick in sorted(self._send_buffer_times[atom]):
+                if self._is_in_range(tick, first_time_step, end_time_step):
+                    self._send_buffer.add_key(tick, keys[atom])
+
+    def _fill_send_buffer_1d(self, key_base):
+        """
+        Add the keys from the given vertex slice within the given time
+        range into the given send buffer, with the same times for each
+        atom.  Can be overridden to override keys.
+
+        :param int key_base: The base key to use
+        """
+        first_time_step = FecDataView.get_first_machine_time_step()
+        end_time_step = FecDataView.get_current_run_timesteps()
+        if first_time_step == end_time_step:
+            return
+        keys = get_field_based_keys(key_base, self._vertex_slice)
+        key_list = [keys[atom] for atom in range(self._vertex_slice.n_atoms)]
         for tick in sorted(self._send_buffer_times):
-            if self._is_in_range(tick, first_time_step, n_time_steps):
+            if self._is_in_range(tick, first_time_step, end_time_step):
                 self._send_buffer.add_keys(tick, key_list)
 
     @staticmethod
@@ -537,7 +541,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return mask
 
     def enable_recording(self, new_state=True):
-        """ Enable recording of the keys sent.
+        """
+        Enable recording of the keys sent.
 
         :param bool new_state:
         """
@@ -571,12 +576,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
             if self._send_buffer_size:
                 spec.reserve_memory_region(
                     region=self._REGIONS.SEND_BUFFER,
-                    size=self._send_buffer_size, label="SEND_BUFFER",
-                    empty=True)
+                    size=self._send_buffer_size, label="SEND_BUFFER")
 
         self.reserve_provenance_data_region(spec)
 
-    def _update_virtual_key(self):
+    def update_virtual_key(self):
         routing_info = FecDataView.get_routing_infos()
         if self._virtual_key is None:
             rinfo = None
@@ -589,8 +593,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
             # if no edge leaving this vertex, no key needed
             if rinfo is not None:
-                self._virtual_key = rinfo.first_key
-                self._mask = rinfo.first_mask
+                self._virtual_key = rinfo.key
+                self._mask = rinfo.mask
 
         if self._virtual_key is not None and self._prefix is None:
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
@@ -650,18 +654,17 @@ class ReverseIPTagMulticastSourceMachineVertex(
         max_offset = (FecDataView.get_hardware_time_step_us() // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
-            (int(math.ceil(max_offset / self._n_vertices)) *
-             ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
-            int(math.ceil(max_offset)))
+            ((int(math.ceil(max_offset / self._n_vertices)) *
+              ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
+             int(math.ceil(max_offset))) % _MAX_OFFSET_MODULO)
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={"routing_info"})
     def generate_data_specification(
-            self, spec, placement,  # @UnusedVariable
-            ):
-        self._update_virtual_key()
+            self, spec, placement):  # @UnusedVariable
+        self.update_virtual_key()
 
         # Reserve regions
         self._reserve_regions(spec)
@@ -696,12 +699,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    @property
-    def virtual_key(self):
+    def get_virtual_key(self):
         """
+        Updates and returns the virtual key. `None` is give a zero value
+
         :rtype: int or None
         """
-        return self._virtual_key
+        self.update_virtual_key()
+        if self._virtual_key:
+            return self._virtual_key
+        return 0
 
     @property
     def mask(self):

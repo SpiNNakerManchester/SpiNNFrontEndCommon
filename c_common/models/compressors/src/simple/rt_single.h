@@ -1,22 +1,22 @@
 /*
- * Copyright (c) 2017-2019 The University of Manchester
+ * Copyright (c) 2017 The University of Manchester
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <stdbool.h>
 #include <spin1_api.h>
+#include <spin1_api_params.h>
 #include <debug.h>
 #include <malloc_extras.h>
 #include "../common/routing_table.h"
@@ -68,6 +68,16 @@
 //!
 //! This is common across all the functions in this file.
 table_t *table;
+
+//! DMA read flags
+static const uint32_t DMA_READ_FLAGS =
+        DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19;
+
+//! Value of the masked DMA status register when transfer is complete
+#define DMA_COMPLETE 0x400
+
+//! Mask to apply to the DMA status register to check for completion
+#define DMA_CHECK_MASK 0x401
 
 //! \brief The header of the routing table information in the input data block.
 //!
@@ -170,6 +180,37 @@ void cleanup_and_exit(header_t *header) {
 
     log_info("completed router compressor");
     malloc_extras_terminate(EXITED_CLEANLY);
+}
+
+//! \brief Gets a pointer to several entries
+//! \param[in] start_entry: The first entry to get
+//! \param[in] n_entries: The number of entries to get
+//! \param[out] output: Where to put the entries read - must have enough space!
+//! \return: Whether the entries are available now, or should be waited for
+bool routing_table_get_entries(uint32_t start_entry, uint32_t n_entries,
+        entry_t *output) {
+    uint32_t length = n_entries * sizeof(entry_t);
+    uint32_t desc = DMA_READ_FLAGS | length;
+    dma[DMA_ADRS] = (uint32_t) &table->entries[start_entry];
+    dma[DMA_ADRT] = (uint32_t) output;
+    dma[DMA_DESC] = desc;
+    return false;
+}
+
+
+//! \brief Is there a DMA currently running?
+//! \return True if there is something transferring now.
+static inline bool dma_done(void) {
+    return (dma[DMA_STAT] & DMA_CHECK_MASK) == DMA_COMPLETE;
+}
+
+//! \brief Waits for the last transfer from routing_table_get_entries to complete
+//! \details Returns immediately if the last transfer is already done
+void routing_table_wait_for_last_transfer(void) {
+    while (!dma_done()) {
+        continue;
+    }
+    dma[DMA_CTRL] = 0x8;
 }
 
 #endif //__RT_SINGLE_H__

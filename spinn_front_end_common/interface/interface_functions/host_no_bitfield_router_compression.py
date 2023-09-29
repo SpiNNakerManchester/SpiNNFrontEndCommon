@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import struct
@@ -20,12 +19,11 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets, Router
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     get_defaultable_source_id)
 from spinn_front_end_common.utilities.constants import COMPRESSOR_SDRAM_TAG
@@ -36,7 +34,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def pair_compression():
-    """ Load routing tables and compress then using the Pair Algorithm.
+    """
+    Load routing tables and compress then using the Pair Algorithm.
 
     See ``pacman/operations/router_compressors/pair_compressor.py`` which is
     the exact same algorithm implemented in Python.
@@ -53,7 +52,8 @@ def pair_compression():
 
 
 def ordered_covering_compression():
-    """ Load routing tables and compress then using the unordered Algorithm.
+    """
+    Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as
     :py:func:`mundy_on_chip_router_compression`, except this one is still
@@ -72,8 +72,9 @@ def ordered_covering_compression():
 
 
 class Compression(object):
-    """ Compression algorithm implementation that uses a on-chip router\
-        compressor in order to parallelise.
+    """
+    Compression algorithm implementation that uses a on-chip router
+    compressor in order to parallelise.
     """
 
     __slots__ = [
@@ -107,7 +108,8 @@ class Compression(object):
         self.__result_register = result_register
 
     def compress(self):
-        """ Apply the on-machine compression algorithm.
+        """
+        Apply the on-machine compression algorithm.
 
         :raises SpinnFrontEndException: If compression fails
         """
@@ -140,7 +142,7 @@ class Compression(object):
             [self._binary_path], progress_bar)
         if self.__failures:
             raise SpinnFrontEndException(
-                "The router compressor failed on {}".format(self.__failures))
+                f"The router compressor failed on {self.__failures}")
 
     def _load_routing_table(self, table):
         """
@@ -159,11 +161,11 @@ class Compression(object):
         transceiver.write_memory(table.x, table.y, base_address, data)
 
     def _check_for_success(self, executable_targets):
-        """ Goes through the cores checking for cores that have failed to\
-            compress the routing tables to the level where they fit into the\
-            router
+        """
+        Goes through the cores checking for cores that have failed to compress
+        the routing tables to the level where they fit into the router.
 
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         """
         transceiver = FecDataView.get_transceiver()
         for core_subset in executable_targets.all_core_subsets:
@@ -171,32 +173,24 @@ class Compression(object):
             y = core_subset.y
             for p in core_subset.processor_ids:
                 # Read the result from specified register
-                if self.__result_register == 0:
-                    result = transceiver.read_user_0(x, y, p)
-                elif self.__result_register == 1:
-                    result = transceiver.read_user_1(x, y, p)
-                elif self.__result_register == 2:
-                    result = transceiver.read_user_2(x, y, p)
-                else:
-                    raise Exception("Incorrect register")
+                result = transceiver.read_user(x, y, p, self.__result_register)
                 # The result is 0 if success, otherwise failure
                 if result != 0:
                     self.__failures.append((x, y))
         return len(self.__failures) == 0
 
     def _load_executables(self):
-        """ Plans the loading of the router compressor onto the chips.
+        """
+        Plans the loading of the router compressor onto the chips.
 
         :return:
             the executable targets that represent all cores/chips which have
             active routing tables
-        :rtype: ExecutableTargets
+        :rtype: ~spinnman.model.ExecutableTargets
         """
-
         # build core subsets
         core_subsets = CoreSubsets()
         for routing_table in self._routing_tables:
-
             # get the first none monitor core
             chip = FecDataView.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()
@@ -213,15 +207,15 @@ class Compression(object):
         return executable_targets
 
     def _build_data(self, table):
-        """ Convert the router table into the data needed by the router\
-            compressor C code.
+        """
+        Convert the router table into the data needed by the router
+        compressor C code.
 
-        :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
-            the pacman router table instance
+        :param table: the PACMAN router table instance
+        :type table: ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :return: The byte array of data
         :rtype: bytearray
         """
-
         # write header data of the app ID to load the data, if to store
         # results in SDRAM and the router table entries
 

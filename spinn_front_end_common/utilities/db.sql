@@ -1,27 +1,78 @@
--- Copyright (c) 2018-2019 The University of Manchester
+-- Copyright (c) 2018 The University of Manchester
 --
--- This program is free software: you can redistribute it and/or modify
--- it under the terms of the GNU General Public License as published by
--- the Free Software Foundation, either version 3 of the License, or
--- (at your option) any later version.
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
 --
--- This program is distributed in the hope that it will be useful,
--- but WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--- GNU General Public License for more details.
+--     https://www.apache.org/licenses/LICENSE-2.0
 --
--- You should have received a copy of the GNU General Public License
--- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 
 -- https://www.sqlite.org/pragma.html#pragma_synchronous
 PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values for versions
-CREATE TABLE IF NOT EXISTS version_provenance(
-    version_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    description STRING NOT NULL,
-    the_value STRING NOT NULL);
+-- A table describing the cores.
+CREATE TABLE IF NOT EXISTS core(
+    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	x INTEGER NOT NULL,
+	y INTEGER NOT NULL,
+	processor INTEGER NOT NULL,
+	core_name STRING);
+-- Every processor has a unique ID
+CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
+	x ASC, y ASC, processor ASC);
+
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing recording regions.
+CREATE TABLE IF NOT EXISTS region(
+	region_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	core_id INTEGER NOT NULL
+		REFERENCES core(core_id) ON DELETE RESTRICT,
+	local_region_index INTEGER NOT NULL,
+	address INTEGER,
+	content BLOB NOT NULL DEFAULT '',
+	content_len INTEGER DEFAULT 0,
+	fetches INTEGER NOT NULL DEFAULT 0,
+	append_time INTEGER);
+-- Every recording region has a unique vertex and index
+CREATE UNIQUE INDEX IF NOT EXISTS regionSanity ON region(
+	core_id ASC, local_region_index ASC);
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table containing the data which doesn't fit in the content column of the
+-- region table; care must be taken with this to not exceed 1GB! We actually
+-- store one per auto-pause-resume cycle as that is more efficient.
+CREATE TABLE IF NOT EXISTS region_extra(
+	extra_id INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+	region_id INTEGER NOT NULL
+		REFERENCES region(region_id) ON DELETE RESTRICT,
+	content BLOB NOT NULL DEFAULT '',
+	content_len INTEGER DEFAULT 0);
+
+CREATE VIEW IF NOT EXISTS region_view AS
+	SELECT core_id, region_id, x, y, processor, local_region_index, address,
+		content, content_len, fetches, append_time,
+		(fetches > 1) AS have_extra
+FROM core NATURAL JOIN region;
+
+CREATE VIEW IF NOT EXISTS extra_view AS
+    SELECT core_id, region_id, extra_id, x, y, processor, local_region_index,
+    	address, append_time, region_extra.content AS content,
+    	region_extra.content_len AS content_len
+FROM core NATURAL JOIN region NATURAL JOIN region_extra;
+
+-- Information about how to access the connection proxying
+-- WARNING! May include credentials
+CREATE TABLE IF NOT EXISTS proxy_configuration(
+    kind TEXT NOT NULL,
+    name TEXT NOT NULL,
+    value TEXT NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for power provenance
@@ -31,39 +82,6 @@ CREATE TABLE IF NOT EXISTS power_provenance(
     description STRING NOT NULL,
     the_value FLOAT NOT NULL);
 
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values for algorithm timings
-CREATE TABLE IF NOT EXISTS timer_provenance(
-    timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category STRING NOT NULL,
-    algorithm STRING NOT NULL,
-    the_value INTEGER NOT NULL,
-    n_run INTEGER NOT NULL,
-    n_loop INTEGER,
-    skip_reason STRING);
-
-CREATE VIEW IF NOT EXISTS timer_view AS
-    SELECT category, algorithm, the_value, n_run, n_loop
-    FROM timer_provenance
-    WHERE skip_reason is NULL
-    ORDER BY timer_id;
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values for category timings
-CREATE TABLE IF NOT EXISTS category_timer_provenance(
-    timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category STRING NOT NULL,
-    the_value INTEGER NOT NULL,
-    n_run INTEGER,
-    n_loop INTEGER);
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values for uncategorised general provenance
-CREATE TABLE IF NOT EXISTS other_provenance(
-    other_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category STRING NOT NULL,
-    description STRING NOT NULL,
-    the_value STRING NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for data speed up packet gathers
@@ -149,28 +167,17 @@ CREATE VIEW IF NOT EXISTS router_summary_view AS
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for each core
 CREATE TABLE IF NOT EXISTS core_provenance(
-    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    x INTEGER NOT NULL,
-    y INTEGER NOT NULL,
-    p INTEGER NOT NULL,
+    cp_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	core_id INTEGER NOT NULL
+		REFERENCES core(core_id) ON DELETE RESTRICT,
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
 
--- A table holding the mapping from vertex name to core x, y, p
-CREATE TABLE IF NOT EXISTS core_mapping(
-    core_name STRING NOT NULL,
-    x INTEGER,
-    y INTEGER,
-    p INTEGER);
-
--- Every core has a unique x,y,p location.
-CREATE UNIQUE INDEX IF NOT EXISTS core_sanity ON core_mapping(
-	x ASC, y ASC, p ASC);
 
 -- Create a view combining core name and data
 CREATE VIEW IF NOT EXISTS core_provenance_view AS
-    SELECT core_name, x, y, p, description, the_value
-    FROM core_provenance NATURAL JOIN core_mapping;
+    SELECT core_name, x, y, processor as p, description, the_value
+    FROM core_provenance NATURAL JOIN core;
 
 -- Compute some basic statistics per core over the provenance
 CREATE VIEW IF NOT EXISTS core_stats_view AS

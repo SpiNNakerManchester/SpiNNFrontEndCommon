@@ -1,37 +1,33 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import struct
 import time
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.messages.scp.enums import Signal
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableFailedToStopException)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 _ONE_WORD = struct.Struct("<I")
 
 
 def application_finisher():
-    """ Handles finishing the running of an application, collecting the\
-        status of the cores that the application was running on.
+    """
+    Handles finishing the running of an application, collecting the
+    status of the cores that the application was running on.
 
     :raises ExecutableFailedToStopException:
     """
@@ -62,45 +58,25 @@ def application_finisher():
 
         if processors_rte > 0 or processors_watchdogged > 0:
             raise ExecutableFailedToStopException(
-                "{} of {} processors went into an error state when"
-                " shutting down".format(
-                    processors_rte + processors_watchdogged,
-                    total_processors))
+                f"{processors_rte + processors_watchdogged} of "
+                f"{total_processors} processors went into an error state "
+                "when shutting down")
 
-        successful_cores_finished = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.FINISHED)
+        successful_cores_finished = txrx.get_cpu_infos(
+            all_core_subsets, CPUState.FINISHED, True)
+
+        txrx.send_signal(app_id, Signal.SYNC0)
+        txrx.send_signal(app_id, Signal.SYNC1)
 
         for core_subset in all_core_subsets:
             for processor in core_subset.processor_ids:
                 if not successful_cores_finished.is_core(
                         core_subset.x, core_subset.y, processor):
-                    _update_provenance_and_exit(
-                        txrx, app_id, processor, core_subset)
+                    txrx.update_provenance_and_exit(
+                        core_subset.x, core_subset.y, processor)
         time.sleep(0.5)
 
         processors_finished = txrx.get_core_state_count(
             app_id, CPUState.FINISHED)
 
     progress.end()
-
-
-def _update_provenance_and_exit(txrx, app_id, processor, core_subset):
-    """
-    :param ~spinnman.transceiver.Transceiver txrx:
-    :param int processor:
-    :param ~.CoreSubset core_subset:
-    """
-    byte_data = _ONE_WORD.pack(
-        SDP_RUNNING_MESSAGE_CODES
-        .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
-    # Send these signals to make sure the application isn't stuck
-    txrx.send_signal(app_id, Signal.SYNC0)
-    txrx.send_signal(app_id, Signal.SYNC1)
-    txrx.send_sdp_message(SDPMessage(
-        sdp_header=SDPHeader(
-            flags=SDPFlag.REPLY_NOT_EXPECTED,
-            destination_port=SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
-            destination_cpu=processor,
-            destination_chip_x=core_subset.x,
-            destination_chip_y=core_subset.y),
-        data=byte_data))

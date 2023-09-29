@@ -1,17 +1,16 @@
-# Copyright (c) 2020-2021 The University of Manchester
+# Copyright (c) 2020 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import logging
 
 from spinn_utilities.log import FormatAdapter
@@ -20,17 +19,15 @@ from pacman.model.partitioner_splitters import (
     SplitterOneAppOneMachine, SplitterFixedLegacy)
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
-from spinn_front_end_common.utility_models import (
-    ReverseIpTagMultiCastSource)
+from spinn_front_end_common.utility_models import ReverseIpTagMultiCastSource
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def splitter_selector():
-    """ basic selector which puts the legacy splitter object on\
-        everything without a splitter object
-
-    :rtype: None
+    """
+    Basic selector which puts the legacy splitter object on
+    everything without a splitter object.
     """
     for app_vertex in PacmanDataView.iterate_vertices():
         if app_vertex.splitter is None:
@@ -38,14 +35,14 @@ def splitter_selector():
 
 
 def vertex_selector(app_vertex):
-    """ main point for selecting a splitter object for a given app vertex.
+    """
+    Main point for selecting a splitter object for a given app vertex.
 
-    Will assume the SplitterSliceLegacy if no heuristic is known for the
+    Will assume the SplitterFixedLegacy if no heuristic is known for the
     app vertex.
 
     :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
         app vertex to give a splitter object to
-    :rtype: None
     """
     if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
         app_vertex.splitter = SplitterOneAppOneMachine()

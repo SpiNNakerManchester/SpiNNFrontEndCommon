@@ -1,39 +1,38 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import struct
-from threading import Thread
+from threading import Thread, Condition
+from time import sleep
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
-from spinnman.messages.eieio import EIEIOType
+from spinnman.messages.eieio import EIEIOType, AbstractEIEIOMessage
 from spinnman.connections import ConnectionListener
-from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinn_front_end_common.utilities.constants import NOTIFY_PORT
-from spinn_front_end_common.utilities.database import DatabaseConnection
+from spinnman.connections.udp_packet_connections import (
+    EIEIOConnection, UDPConnection)
 from spinnman.messages.sdp.sdp_flag import SDPFlag
-from spinnman.connections.udp_packet_connections.utils import (
-    update_sdp_header_for_udp_send)
-from spinnman.messages.scp.impl.iptag_set import IPTagSet
-from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.constants import SCP_SCAMP_PORT
-from spinnman.utilities.utility_functions import send_port_trigger_message
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.connections.udp_packet_connections import UDPConnection
+from spinnman.utilities.utility_functions import reprogram_tag_to_listener
+from spinnman.messages.eieio import (
+    read_eieio_command_message, read_eieio_data_message)
+from spinn_front_end_common.utilities.constants import NOTIFY_PORT
+from spinn_front_end_common.utilities.database import DatabaseConnection
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -46,12 +45,32 @@ _MAX_HALF_KEYS_PER_PACKET = 127
 # The maximum number of 32-bit keys with payloads that will fit in a packet
 _MAX_FULL_KEYS_PAYLOADS_PER_PACKET = 31
 
-_TWO_SKIP = struct.Struct("<2x")
+# Decoding of a single short value
+_ONE_SHORT = struct.Struct("<H")
+
+# The size of a RAW SCP OK response (includes 2 bytes of padding)
+_SCP_OK_SIZE = 18
+
+# The byte of the RAW SCP packet that contains the flags
+_SCP_FLAGS_BYTE = 2
+
+# The byte of the RAW SCP packet that contains the destination cpu
+_SCP_DEST_CPU_BYTE = 4
+
+# The expected flags from a RAW SCP packet in response
+_SCP_RESPONSE_FLAGS = 7
+
+# The expected destination cpu from a RAW SCP packet in repsonse
+_SCP_RESPONSE_DEST = 0xFF
 
 
 class LiveEventConnection(DatabaseConnection):
-    """ A connection for receiving and sending live events from and to\
-        SpiNNaker
+    """
+    A connection for receiving and sending live events from and to SpiNNaker.
+
+    .. note::
+        This class is intended to be potentially usable from another
+        process than the one that the simulator is present in.
     """
     __slots__ = [
         "_atom_id_to_key",
@@ -67,7 +86,14 @@ class LiveEventConnection(DatabaseConnection):
         "__send_address_details",
         "__send_labels",
         "__sender_connection",
-        "__start_resume_callbacks"]
+        "__start_resume_callbacks",
+        "__simulator",
+        "__spalloc_job",
+        "__receiver_details",
+        "__is_running",
+        "__expect_scp_response",
+        "__expect_scp_response_lock",
+        "__scp_response_received"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT):
@@ -107,6 +133,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__start_resume_callbacks = dict()
         self.__pause_stop_callbacks = dict()
         self.__init_callbacks = dict()
+        self.__receiver_details = list()
         if receive_labels is not None:
             for label in receive_labels:
                 self.__live_event_callbacks.append(list())
@@ -121,6 +148,10 @@ class LiveEventConnection(DatabaseConnection):
         self.__receiver_listener = None
         self.__receiver_connection = None
         self.__error_keys = set()
+        self.__is_running = False
+        self.__expect_scp_response = False
+        self.__expect_scp_response_lock = Condition()
+        self.__scp_response_received = None
 
     def add_send_label(self, label):
         if self.__send_labels is None:
@@ -144,7 +175,8 @@ class LiveEventConnection(DatabaseConnection):
             self.__init_callbacks[label] = list()
 
     def add_init_callback(self, label, init_callback):
-        """ Add a callback to be called to initialise a vertex
+        """
+        Add a callback to be called to initialise a vertex.
 
         :param str label:
             The label of the vertex to be notified about. Must be one of the
@@ -160,7 +192,8 @@ class LiveEventConnection(DatabaseConnection):
 
     def add_receive_callback(self, label, live_event_callback,
                              translate_key=True):
-        """ Add a callback for the reception of live events from a vertex
+        """
+        Add a callback for the reception of live events from a vertex.
 
         :param str label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
@@ -174,13 +207,14 @@ class LiveEventConnection(DatabaseConnection):
             key should stay a key
         """
         label_id = self.__receive_labels.index(label)
-        logger.info("Receive callback {} registered to label {}".format(
-            live_event_callback, label))
+        logger.info("Receive callback {} registered to label {}",
+                    live_event_callback, label)
         self.__live_event_callbacks[label_id].append(
             (live_event_callback, translate_key))
 
     def add_start_callback(self, label, start_callback):
-        """ Add a callback for the start of the simulation
+        """
+        Add a callback for the start of the simulation.
 
         :param start_callback: A function to be called when the start
             message has been received. This function should take the label of
@@ -197,7 +231,8 @@ class LiveEventConnection(DatabaseConnection):
         self.add_start_resume_callback(label, start_callback)
 
     def add_start_resume_callback(self, label, start_resume_callback):
-        """ Add a callback for the start and resume state of the simulation
+        """
+        Add a callback for the start and resume state of the simulation.
 
         :param str label: the label of the function to be sent
         :param start_resume_callback: A function to be called when the start
@@ -205,12 +240,12 @@ class LiveEventConnection(DatabaseConnection):
             the label of the referenced vertex, and an instance of this
             class, which can be used to send events.
         :type start_resume_callback: callable(str, LiveEventConnection) -> None
-        :rtype: None
         """
         self.__start_resume_callbacks[label].append(start_resume_callback)
 
     def add_pause_stop_callback(self, label, pause_stop_callback):
-        """ Add a callback for the pause and stop state of the simulation
+        """
+        Add a callback for the pause and stop state of the simulation.
 
         :param str label: the label of the function to be sent
         :param pause_stop_callback: A function to be called when the pause
@@ -218,7 +253,6 @@ class LiveEventConnection(DatabaseConnection):
             label of the referenced  vertex, and an instance of this class,
             which can be used to send events.
         :type pause_stop_callback: callable(str, LiveEventConnection) -> None
-        :rtype: None
         """
         self.__pause_stop_callbacks[label].append(pause_stop_callback)
 
@@ -251,7 +285,11 @@ class LiveEventConnection(DatabaseConnection):
         :param dict(str,int) vertex_sizes:
         """
         if self.__sender_connection is None:
-            self.__sender_connection = UDPConnection()
+            job = db.get_job()
+            if job:
+                self.__sender_connection = job.open_eieio_listener_connection()
+            else:
+                self.__sender_connection = EIEIOConnection()
         for label in self.__send_labels:
             self.__send_address_details[label] = self.__get_live_input_details(
                 db, label)
@@ -266,19 +304,20 @@ class LiveEventConnection(DatabaseConnection):
         """
         # Set up a single connection for receive
         if self.__receiver_connection is None:
-            self.__receiver_connection = EIEIOConnection()
+            job = db.get_job()
+            if job:
+                self.__receiver_connection = job.open_udp_listener_connection()
+            else:
+                self.__receiver_connection = UDPConnection()
         receivers = set()
         for label_id, label in enumerate(self.__receive_labels):
-            _, port, board_address, tag = self.__get_live_output_details(
+            _, port, board_address, tag, x, y = self.__get_live_output_details(
                 db, label)
 
             # Update the tag if not already done
             if (board_address, port, tag) not in receivers:
-                self.__update_tag(
-                    self.__receiver_connection, board_address, tag)
                 receivers.add((board_address, port, tag))
-                send_port_trigger_message(
-                    self.__receiver_connection, board_address)
+                self.__receiver_details.append((x, y, tag, board_address))
 
             logger.info(
                 "Listening for traffic from {} on board {} on {}:{}",
@@ -299,6 +338,7 @@ class LiveEventConnection(DatabaseConnection):
                 self.__receiver_connection)
             self.__receiver_listener.add_callback(self.__do_receive_packet)
             self.__receiver_listener.start()
+            self.__send_tag_messages_now()
 
     def __get_live_input_details(self, db_reader, send_label):
         """
@@ -312,44 +352,16 @@ class LiveEventConnection(DatabaseConnection):
         return x, y, p, ip_address
 
     def __get_live_output_details(self, db_reader, receive_label):
-        host, port, strip_sdp, board_address, tag = \
+        host, port, strip_sdp, board_address, tag, chip_x, chip_y = \
             db_reader.get_live_output_details(
                 receive_label, self.__live_packet_gather_label)
         if host is None:
-            raise Exception(
-                "no live output tag found for {} in app graph".format(
-                    receive_label))
+            raise ConfigurationException(
+                f"no live output tag found for {receive_label} in app graph")
         if not strip_sdp:
-            raise Exception("Currently, only IP tags which strip the SDP "
-                            "headers are supported")
-        return host, port, board_address, tag
-
-    def __update_tag(self, connection, board_address, tag):
-        # Update an IP Tag with the sender's address and port
-        # This avoids issues with NAT firewalls
-        logger.debug("Updating tag for {}".format(board_address))
-        request = IPTagSet(
-            0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
-        request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
-        update_sdp_header_for_udp_send(request.sdp_header, 0, 0)
-        data = _TWO_SKIP.pack() + request.bytestring
-        sent = False
-        tries_to_go = 3
-        while not sent:
-            try:
-                connection.send_to(data, (board_address, SCP_SCAMP_PORT))
-                response_data = connection.receive(1.0)
-                request.get_scp_response().read_bytestring(
-                    response_data, _TWO_SKIP.size)
-                sent = True
-            except SpinnmanTimeoutException as e:
-                if not tries_to_go:
-                    logger.info("No more tries - Error!")
-                    raise e
-
-                logger.info("Timeout, retrying")
-                tries_to_go -= 1
-        logger.debug("Done updating tag for {}".format(board_address))
+            raise receive_label("Currently, only IP tags which strip the SDP "
+                                "headers are supported")
+        return host, port, board_address, tag, chip_x, chip_y
 
     def __handle_possible_rerun_state(self):
         # reset from possible previous calls
@@ -366,28 +378,81 @@ class LiveEventConnection(DatabaseConnection):
     def __launch_thread(self, kind, label, callback):
         thread = Thread(
             target=callback, args=(label, self),
-            name="{} callback thread for live_event_connection {}:{}".format(
-                kind, self._local_port, self._local_ip_address))
+            name=(f"{kind} callback thread for live_event_connection "
+                  f"{self._local_port}:{self._local_ip_address}"))
         thread.start()
 
     def __do_start_resume(self):
         for label, callbacks in self.__start_resume_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
+        if not self.__is_running:
+            self.__is_running = True
+            thread = Thread(target=self.__send_tag_messages_thread)
+            thread.start()
 
     def __do_stop_pause(self):
+        self.__is_running = False
         for label, callbacks in self.__pause_stop_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
 
-    def __do_receive_packet(self, packet):
-        # pylint: disable=broad-except
+    def __send_tag_messages_thread(self):
+        if self.__receiver_connection is None:
+            return
+        while self.__is_running:
+            sleep(10.0)
+            if self.__is_running:
+                self.__send_tag_messages_now()
+
+    def __send_tag_messages_now(self):
+        indirect = hasattr(self.__receiver_connection, "update_tag")
+        for (x, y, tag, board_address) in self.__receiver_details:
+            with self.__expect_scp_response_lock:
+                self.__scp_response_received = None
+                self.__expect_scp_response = True
+                if indirect:
+                    self.__receiver_connection.update_tag(
+                        x, y, tag, do_receive=False)
+                    # No port trigger necessary; proxied already
+                else:
+                    reprogram_tag_to_listener(
+                        self.__receiver_connection, x, y, board_address,
+                        tag, read_response=False)
+                while self.__scp_response_received is None:
+                    self.__expect_scp_response_lock.wait(timeout=1.0)
+
+    def __handle_scp_packet(self, data):
+        with self.__expect_scp_response_lock:
+
+            # SCP unexpected
+            if not self.__expect_scp_response:
+                return False
+
+            if (len(data) == _SCP_OK_SIZE and
+                    data[_SCP_FLAGS_BYTE] == _SCP_RESPONSE_FLAGS and
+                    data[_SCP_DEST_CPU_BYTE] == _SCP_RESPONSE_DEST):
+                self.__scp_response_received = data
+                self.__expect_scp_response = False
+                return True
+            return False
+
+    def __do_receive_packet(self, data):
+        if self.__handle_scp_packet(data):
+            return
+
         logger.debug("Received packet")
         try:
+            header = _ONE_SHORT.unpack_from(data)[0]
+            if header & 0xC000 == 0x4000:
+                return read_eieio_command_message(data, 0)
+            packet = read_eieio_data_message(data, 0)
             if packet.eieio_header.is_time:
                 self.__handle_time_packet(packet)
             else:
                 self.__handle_no_time_packet(packet)
+
+        # pylint: disable=broad-except
         except Exception:
             logger.warning("problem handling received packet", exc_info=True)
 
@@ -444,10 +509,11 @@ class LiveEventConnection(DatabaseConnection):
     def __handle_unknown_key(self, key):
         if key not in self.__error_keys:
             self.__error_keys.add(key)
-            logger.warning("Received unexpected key {}".format(key))
+            logger.warning("Received unexpected key {}", key)
 
     def send_event(self, label, atom_id, send_full_keys=False):
-        """ Send an event from a single atom
+        """
+        Send an event from a single atom.
 
         :param str label:
             The label of the vertex from which the event will originate
@@ -460,7 +526,8 @@ class LiveEventConnection(DatabaseConnection):
         self.send_events(label, [atom_id], send_full_keys)
 
     def send_events(self, label, atom_ids, send_full_keys=False):
-        """ Send a number of events
+        """
+        Send a number of events.
 
         :param str label:
             The label of the vertex from which the events will originate
@@ -489,12 +556,11 @@ class LiveEventConnection(DatabaseConnection):
                 pos += 1
                 events_in_packet += 1
 
-            self.__sender_connection.send_to(
-                self.__get_sdp_data(message, x, y, p),
-                (ip_address, SCP_SCAMP_PORT))
+            self._send(message, x, y, p, ip_address)
 
     def send_event_with_payload(self, label, atom_id, payload):
-        """ Send an event with a payload from a single atom
+        """
+        Send an event with a payload from a single atom.
 
         :param str label:
             The label of the vertex from which the event will originate
@@ -504,7 +570,8 @@ class LiveEventConnection(DatabaseConnection):
         self.send_events_with_payloads(label, [(atom_id, payload)])
 
     def send_events_with_payloads(self, label, atom_ids_and_payloads):
-        """ Send a number of events with payloads
+        """
+        Send a number of events with payloads.
 
         :param str label:
             The label of the vertex from which the events will originate
@@ -525,13 +592,12 @@ class LiveEventConnection(DatabaseConnection):
                 pos += 1
                 events += 1
 
-            self.__sender_connection.send_to(
-                self.__get_sdp_data(message, x, y, p),
-                (ip_address, SCP_SCAMP_PORT))
+            self._send(message, x, y, p, ip_address)
 
     def send_eieio_message(self, message, label):
-        """ Send an EIEIO message (using one-way the live input) to the \
-            vertex with the given label.
+        """
+        Send an EIEIO message (using one-way the live input) to the
+        vertex with the given label.
 
         :param ~spinnman.messages.eieio.AbstractEIEIOMessage message:
             The EIEIO message to send
@@ -541,16 +607,20 @@ class LiveEventConnection(DatabaseConnection):
         if target is None:
             return
         x, y, p, ip_address = target
-        self.__sender_connection.send_to(
-            self.__get_sdp_data(message, x, y, p),
-            (ip_address, SCP_SCAMP_PORT))
+        self._send(message, x, y, p, ip_address)
 
-    def close(self):
-        self.__handle_possible_rerun_state()
-        super().close()
+    def _send(self, message: AbstractEIEIOMessage, x, y, p, ip_address):
+        """
+        Send an EIEIO message to a particular core.
 
-    @staticmethod
-    def __get_sdp_data(message, x, y, p):
+        :param ~spinnman.messages.eieio.AbstractEIEIOMessage message:
+            The EIEIO message to send
+        :param int x: Destination chip X coordinate
+        :param int y: Destination chip Y coordinate
+        :param int p: Destination core number
+        :param str ip_address:
+            What Ethernet-enabled chip to send via (or rather its IP address)
+        """
         # Create an SDP message - no reply so source is unimportant
         # SDP port can be anything except 0 as the target doesn't care
         sdp_message = SDPMessage(
@@ -561,4 +631,12 @@ class LiveEventConnection(DatabaseConnection):
                 source_port=0, source_cpu=0,
                 source_chip_x=0, source_chip_y=0),
             data=message.bytestring)
-        return _TWO_SKIP.pack() + sdp_message.bytestring
+        self.__sender_connection.send_to(
+            # Prefix padding: two empty bytes
+            b'\0\0' + sdp_message.bytestring,
+            (ip_address, SCP_SCAMP_PORT))
+
+    def close(self):
+        self.__is_running = False
+        self.__handle_possible_rerun_state()
+        super().close()

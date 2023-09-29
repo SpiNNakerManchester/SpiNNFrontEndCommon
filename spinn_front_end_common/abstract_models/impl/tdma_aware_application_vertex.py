@@ -1,17 +1,16 @@
-# Copyright (c) 2020-2021 The University of Manchester
+# Copyright (c) 2020 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
@@ -19,8 +18,9 @@ from spinn_utilities.abstract_base import abstractmethod
 
 
 class TDMAAwareApplicationVertex(ApplicationVertex):
-    """ An application vertex that contains the code for using TDMA to spread\
-        packet transmission to try to avoid overloading any SpiNNaker routers.
+    """
+    An application vertex that contains the code for using TDMA to spread
+    packet transmission to try to avoid overloading any SpiNNaker routers.
     """
 
     __slots__ = (
@@ -36,23 +36,16 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     _TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
 
-    def __init__(self, label, constraints, max_atoms_per_core, splitter=None):
+    def __init__(self, label, max_atoms_per_core, splitter=None):
         """
         :param label: The name of the vertex.
         :type label: str or None
-        :param constraints: The initial constraints of the vertex.
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint) or None
         :param int max_atoms_per_core: The max number of atoms that can be
             placed on a core, used in partitioning.
         :type splitter:
-            ~pacman.model.partitioner_interfaces.AbstractSplitterCommon
-            or None
-        :raise PacmanInvalidParameterException:
-            If one of the constraints is not valid
+            ~pacman.model.partitioner_splitters.AbstractSplitterCommon or None
         """
-        super().__init__(
-            label, constraints, max_atoms_per_core, splitter=splitter)
+        super().__init__(label, max_atoms_per_core, splitter=splitter)
         self.__clocks_between_cores = None
         self.__n_slots = None
         self.__clocks_between_spikes = None
@@ -61,24 +54,27 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         self.__clocks_per_cycle = None
 
     def set_initial_offset(self, new_value):
-        """ Sets the initial offset
+        """
+        Sets the initial offset.
 
         :param int new_value: the new initial offset, in clock ticks
         """
         self.__initial_offset = new_value
 
     def get_n_phases(self):
-        """ Compute the number of phases needed for this application vertex. \
-            This is the maximum number of packets any machine vertex created \
-            by this application vertex can send in one simulation time step,
-            which defaults to the number of atoms in the graph.
+        """
+        Compute the number of phases needed for this application vertex.
+        This is the maximum number of packets any machine vertex created
+        by this application vertex can send in one simulation time step,
+        which defaults to the number of atoms in the graph.
 
         :rtype: int
         """
         return self.n_atoms
 
     def generate_tdma_data_specification_data(self, vertex_index):
-        """ Generates the TDMA configuration data needed for the data spec
+        """
+        Generates the TDMA configuration data needed for the data spec.
 
         :param int vertex_index: the machine vertex index in the pop
         :return: array of data to write.
@@ -95,7 +91,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     @property
     def tdma_sdram_size_in_bytes(self):
-        """ The number of bytes needed by the TDMA data
+        """
+        The number of bytes needed by the TDMA data.
 
         :rtype: int
         """
@@ -104,7 +101,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
     def set_other_timings(
             self, clocks_between_cores, n_slots, clocks_between_spikes,
             n_phases, clocks_per_cycle):
-        """ Sets the other timings needed for the TDMA.
+        """
+        Sets the other timings needed for the TDMA.
 
         :param int clocks_between_cores: clock cycles between cores
         :param int n_slots: the number of slots
@@ -121,8 +119,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     @abstractmethod
     def get_n_cores(self):
-        """ Get the number of cores this application vertex is using in \
-            the TDMA.
+        """
+        Get the number of cores this application vertex is using in the TDMA.
 
         :return: the number of cores to use in the TDMA
         :rtype: int
@@ -130,7 +128,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     def get_tdma_provenance_item(
             self,  x, y, p, desc_label, tdma_slots_missed):
-        """ Get the provenance item used for the TDMA provenance
+        """
+        Get the provenance item used for the TDMA provenance.
 
         :param int x: x coordinate of the chip where this core
         :param int y: y coordinate of the core where this core

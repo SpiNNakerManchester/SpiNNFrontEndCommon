@@ -1,124 +1,67 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import os
-import numpy
-from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import SDRAM
-from data_specification import DataSpecificationExecutor
-from data_specification.constants import MAX_MEM_REGIONS
-from spinn_front_end_common.utilities.helpful_functions import (
-    get_region_base_address_offset)
-from spinn_front_end_common.utilities.utility_calls import (
-    get_data_spec_and_file_writer_filename)
+from spinn_front_end_common.interface.ds import (
+    DsSqlliteDatabase, DataSpecificationReloader)
+from spinn_front_end_common.utilities.utility_calls import get_report_writer
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.helpful_functions import (
-    generate_unique_folder_name)
 
 
-def dsg_region_reloader():
-    reloader = _DSGRegionReloader()
-    # pylint: disable=protected-access
-    reloader._run()
-
-
-class _DSGRegionReloader(object):
-    """ Regenerates and reloads the data specifications.
+def reload_dsg_regions():
     """
-    __slots__ = ["_txrx", "_data_dir"]
-
-    def __init__(self):
-        self._txrx = FecDataView.get_transceiver()
-        self._data_dir = None
-
-    def _run(self):
-        """
-        """
-
-        # build file paths for reloaded stuff
-        run_dir_path = FecDataView.get_run_dir_path()
-        self._data_dir = generate_unique_folder_name(
-            run_dir_path, "reloaded_data_regions", "")
-        if not os.path.exists(self._data_dir):
-            os.makedirs(self._data_dir)
-
-        report_dir = None
-        if get_config_bool("Reports", "write_text_specs"):
-            report_dir = generate_unique_folder_name(
-                run_dir_path, "reloaded_data_regions", "")
-            if not os.path.exists(report_dir):
-                os.makedirs(report_dir)
-
-        progress = ProgressBar(
-            FecDataView.get_n_placements(), "Reloading data")
+    Reloads DSG regions where needed.
+    """
+    progress = ProgressBar(
+        FecDataView.get_n_placements(), "Reloading data")
+    with DsSqlliteDatabase() as ds_database:
         for placement in progress.over(FecDataView.iterate_placemements()):
             # Generate the data spec for the placement if needed
-            self._regenerate_data_spec_for_vertices(placement)
+            regenerate_data_spec(placement, ds_database)
 
-        # App data directory can be removed as should be empty
-        os.rmdir(self._data_dir)
 
-    def _regenerate_data_spec_for_vertices(self, placement):
-        """
-        :param ~.Placement placement:
-        """
-        vertex = placement.vertex
+def regenerate_data_spec(placement, ds_database):
+    """
+    Regenerate a data specification for a placement.
 
-        # If the vertex doesn't regenerate, skip
-        if not isinstance(vertex, AbstractRewritesDataSpecification):
-            return
+    :param ~.Placement placement: The placement to regenerate
+    :param ds_database: The database to use for reload
+    :type ds_database: ~spinn_front_end_common.interface.ds.DsSqlliteDatabas db
+    :return: Whether the data was regenerated or not
+    :rtype: bool
+    """
+    vertex = placement.vertex
 
-        # If the vertex doesn't require regeneration, skip
-        if not vertex.reload_required():
-            return
+    # If the vertex doesn't regenerate, skip
+    if not isinstance(vertex, AbstractRewritesDataSpecification):
+        return False
 
-        # build the writers for the reports and data
-        spec_file, spec = get_data_spec_and_file_writer_filename(
-            placement.x, placement.y, placement.p, self._data_dir)
+    # If the vertex doesn't require regeneration, skip
+    if not vertex.reload_required():
+        return False
 
-        # Execute the regeneration
-        vertex.regenerate_data_specification(spec, placement)
+    report_writer = get_report_writer(
+        placement.x, placement.y, placement.p, True)
 
-        # execute the spec
-        with open(spec_file, "rb") as spec_reader:
-            data_spec_executor = DataSpecificationExecutor(
-                spec_reader, SDRAM.max_sdram_found)
-            data_spec_executor.execute()
-        try:
-            os.remove(spec_file)
-        except Exception:  # pylint: disable=broad-except
-            # Ignore the deletion of files as non-critical
-            pass
+    # build the file writer for the spec
+    reloader = DataSpecificationReloader(
+        placement.x, placement.y, placement.p, ds_database, report_writer)
 
-        # Read the region table for the placement
-        regions_base_address = self._txrx.get_cpu_information_from_core(
-            placement.x, placement.y, placement.p).user[0]
-        start_region = get_region_base_address_offset(regions_base_address, 0)
-        table_size = get_region_base_address_offset(
-            regions_base_address, MAX_MEM_REGIONS) - start_region
-        ptr_table = numpy.frombuffer(self._txrx.read_memory(
-                placement.x, placement.y, start_region, table_size),
-            dtype=DataSpecificationExecutor.TABLE_TYPE)
+    # Execute the regeneration
+    vertex.regenerate_data_specification(reloader, placement)
 
-        # Write the regions to the machine
-        for i, region in enumerate(data_spec_executor.dsef.mem_regions):
-            if region is not None and not region.unfilled:
-                self._txrx.write_memory(
-                    placement.x, placement.y, ptr_table[i]["pointer"],
-                    region.region_data[:region.max_write_pointer])
-        vertex.set_reload_required(False)
+    vertex.set_reload_required(False)
+    return True

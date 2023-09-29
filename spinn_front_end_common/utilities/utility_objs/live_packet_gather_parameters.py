@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -24,8 +23,9 @@ TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
 
 class LivePacketGatherParameters(object):
-    """ Parameter holder for LPGs so that they can be instantiated at a\
-        later date.
+    """
+    Parameter holder for :py:class:`LivePacketGather`\\ers so that they can be
+    instantiated at a later date.
     """
 
     __slots__ = [
@@ -33,7 +33,7 @@ class LivePacketGatherParameters(object):
         "_key_prefix", "_prefix_type", "_message_type", "_right_shift",
         "_payload_as_time_stamps", "_use_payload_prefix", "_payload_prefix",
         "_payload_right_shift", "_n_packets_per_time_step", "_label",
-        "_translate_keys"
+        "_received_key_mask", "_translate_keys", "_translated_key_right_shift"
     ]
 
     def __init__(
@@ -43,7 +43,8 @@ class LivePacketGatherParameters(object):
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, label=None,
-            translate_keys=False):
+            received_key_mask=0xFFFFFFFF,
+            translate_keys=False, translated_key_right_shift=0):
         """
         :raises ConfigurationException:
             If the parameters passed are known to be an invalid combination.
@@ -83,75 +84,178 @@ class LivePacketGatherParameters(object):
         self._payload_right_shift = payload_right_shift
         self._n_packets_per_time_step = number_of_packets_sent_per_time_step
         self._label = label
+        self._received_key_mask = received_key_mask
         self._translate_keys = translate_keys
+        self._translated_key_right_shift = translated_key_right_shift
 
     @property
     def port(self):
+        """
+        Where to send data from SpiNNaker:
+        the port of the listening UDP socket.
+
+        :rtype: int
+        """
         return self._port
 
     @property
     def hostname(self):
+        """
+        Where to send data from SpiNNaker: the host name of the listening UDP
+        socket.
+
+        :rtype: bool
+        """
         return self._hostname
 
     @property
     def tag(self):
+        """
+        A fixed tag ID to assign, or `None` if any tag is OK
+
+        :rtype: int or None
+        """
         return self._tag
 
     @property
     def strip_sdp(self):
+        """
+        Whether to remove SDP headers from the messages before sending.
+
+        :rtype: bool
+        """
         return self._strip_sdp
 
     @property
     def use_prefix(self):
+        """
+        Whether to use EIEIO prefix compaction on keys.
+
+        :rtype: bool
+        """
         return self._use_prefix
 
     @property
     def key_prefix(self):
+        """
+        The EIEIO key prefix to remove from messages.
+
+        :rtype: int
+        """
         return self._key_prefix
 
     @property
     def prefix_type(self):
+        """
+        The type of prefix.
+
+        :rtype: ~spinnman.messages.eieio.EIEIOPrefix
+        """
         return self._prefix_type
 
     @property
     def message_type(self):
+        """
+        The type of messages to send.
+
+        :rtype: ~spinnman.messages.eieio.EIEIOType
+        """
         return self._message_type
 
     @property
     def right_shift(self):
+        """
+        Shift to apply to keys.
+
+        :rtype: int
+        """
         return self._right_shift
 
     @property
     def payload_as_time_stamps(self):
+        """
+        Whether the payloads are timestamps.
+
+        :rtype: bool
+        """
         return self._payload_as_time_stamps
 
     @property
     def use_payload_prefix(self):
+        """
+        Whether to use prefix compaction for payloads.
+
+        :rtype: bool
+        """
         return self._use_payload_prefix
 
     @property
     def payload_prefix(self):
+        """
+        The payload prefix to remove if applying compaction.
+
+        :rtype: int
+        """
         return self._payload_prefix
 
     @property
     def payload_right_shift(self):
+        """
+        Shift to apply to payloads.
+
+        :rtype: int
+        """
         return self._payload_right_shift
 
     @property
     def number_of_packets_sent_per_time_step(self):
+        """
+        The maximum number of packets to send in a timestep.
+
+        :rtype: int
+        """
         return self._n_packets_per_time_step
 
     @property
     def label(self):
+        """
+        A label.
+
+        :rtype: str
+        """
         return self._label
 
     @property
+    def received_key_mask(self):
+        """
+        A mask to select which keys are dispatched.
+
+        :rtype: int
+        """
+        return self._received_key_mask
+
+    @property
     def translate_keys(self):
+        """
+        Whether to apply translation to keys.
+
+        :rtype: bool
+        """
         return self._translate_keys
 
+    @property
+    def translated_key_right_shift(self):
+        """
+        Shift to apply in key translation.
+
+        :rtype: int
+        """
+        return self._translated_key_right_shift
+
     def get_iptag_resource(self):
-        """ Get a description of the IPtag that the LPG for these parameters \
-            will require.
+        """
+        Get a description of the :py:class:`~spinn_machine.tags.IPTag`
+        that the LPG for these parameters will require.
 
         :rtype: ~pacman.model.resources.IPtagResource
         """
@@ -178,7 +282,10 @@ class LivePacketGatherParameters(object):
                 self._n_packets_per_time_step ==
                 other.number_of_packets_sent_per_time_step and
                 self._label == other.label and
-                self._translate_keys == other.translate_keys)
+                self._received_key_mask == other.received_key_mask and
+                self._translate_keys == other.translate_keys and
+                self._translated_key_right_shift ==
+                other.translated_key_right_shift)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -190,5 +297,6 @@ class LivePacketGatherParameters(object):
             self._right_shift, self._payload_as_time_stamps,
             self._use_payload_prefix, self._payload_prefix,
             self._payload_right_shift, self._n_packets_per_time_step,
-            self._label, self._translate_keys)
+            self._label, self._received_key_mask, self._translate_keys,
+            self._translated_key_right_shift)
         return hash(data)

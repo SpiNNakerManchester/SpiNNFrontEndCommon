@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import requests
@@ -44,11 +43,11 @@ class _HBPJobController(MachineAllocationController):
         :param str url:
         :param str machine_name:
         """
-        self._extend_lease_url = "{}/extendLease".format(url)
-        self._check_lease_url = "{}/checkLease".format(url)
+        self._extend_lease_url = f"{url}/extendLease"
+        self._check_lease_url = f"{url}/checkLease"
         self._release_machine_url = url
-        self._set_power_url = "{}/power".format(url)
-        self._where_is_url = "{}/chipCoordinates".format(url)
+        self._set_power_url = f"{url}/power"
+        self._where_is_url = f"{url}/chipCoordinates"
         self._machine_name = machine_name
         self._power_on = True
         # Lower the level of requests to WARNING to avoid extra messages
@@ -58,29 +57,29 @@ class _HBPJobController(MachineAllocationController):
     @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
         r = requests.get(self._extend_lease_url, params={
-            "runTime": new_total_run_time})
+            "runTime": new_total_run_time}, timeout=10)
         r.raise_for_status()
 
     def _check_lease(self, wait_time):
         r = requests.get(self._check_lease_url, params={
-            "waitTime": wait_time})
+            "waitTime": wait_time}, timeout=10 + wait_time)
         r.raise_for_status()
         return r.json()
 
     def _release(self, machine_name):
         r = requests.delete(self._release_machine_url, params={
-            "machineName": machine_name})
+            "machineName": machine_name}, timeout=10)
         r.raise_for_status()
 
     def _set_power(self, machine_name, power_on):
         r = requests.put(self._set_power_url, params={
-            "machineName": machine_name, "on": bool(power_on)})
+            "machineName": machine_name, "on": bool(power_on)}, timeout=10)
         r.raise_for_status()
 
     def _where_is(self, machine_name, chip_x, chip_y):
         r = requests.get(self._where_is_url, params={
             "machineName": machine_name, "chipX": chip_x,
-            "chipY": chip_y})
+            "chipY": chip_y}, timeout=10)
         r.raise_for_status()
         return r.json()
 
@@ -111,8 +110,9 @@ class _HBPJobController(MachineAllocationController):
 
 
 def hbp_allocator(total_run_time):
-    """ Request a machine from the HBP remote access server that will fit\
-        a number of chips.
+    """
+    Request a machine from the HBP remote access server that will fit
+    a number of chips.
 
     :param int total_run_time: The total run time to request
     :return: machine name, machine version, BMP details (if any),
@@ -149,11 +149,11 @@ def _get_machine(url, total_run_time):
     if FecDataView.has_n_boards_required():
         get_machine_request = requests.get(
             url, params={"nBoards": FecDataView.get_n_boards_required(),
-                         "runTime": total_run_time})
+                         "runTime": total_run_time}, timeout=30)
     elif FecDataView.has_n_chips_needed():
         get_machine_request = requests.get(
             url, params={"nChips": FecDataView.get_n_chips_needed(),
-                         "runTime": total_run_time})
+                         "runTime": total_run_time}, timeout=30)
     else:
         raise PacmanConfigurationException(
             "At least one of n_chips or n_boards must be provided")

@@ -1,27 +1,27 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
-from concurrent.futures import ThreadPoolExecutor, wait
+from concurrent.futures import ThreadPoolExecutor, wait  # @UnresolvedImport
 from spinn_utilities.abstract_context_manager import AbstractContextManager
-from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
-    DatabaseConfirmation, NotificationProtocolPauseStop,
+    NotificationProtocolDatabaseLocation, NotificationProtocolPauseStop,
     NotificationProtocolStartResume)
+from spinnman.exceptions import SpinnmanTimeoutException
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MAX_DATABASE_PATH_LENGTH)
@@ -31,13 +31,19 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class NotificationProtocol(AbstractContextManager):
-    """ The protocol which hand shakes with external devices about the\
-        database and starting execution
+    """
+    The protocol which hand shakes with external devices about the
+    database and starting execution.
+
+    The messages sent by this are received by instances of
+    :py:class:`DatabaseConnection` (and its subclasses). They are not routed
+    via SpiNNaker.
     """
     __slots__ = [
         "__database_message_connections",
         "__sent_visualisation_confirmation",
         "__wait_for_read_confirmation",
+        "__wait_for_read_timeout",
         "__wait_futures",
         "__wait_pool"]
 
@@ -46,34 +52,42 @@ class NotificationProtocol(AbstractContextManager):
         # has been read before starting the simulation
         self.__wait_for_read_confirmation = get_config_bool(
             "Database", "wait_on_confirmation")
+        self.__wait_for_read_timeout = get_config_int(
+            "Database", "wait_on_confirmation_timeout")
         self.__wait_pool = ThreadPoolExecutor(max_workers=1)
         self.__wait_futures = list()
         self.__sent_visualisation_confirmation = False
-        self.__database_message_connections = list()
-        for socket_address in FecDataView.iterate_database_socket_addresses():
-            self.__database_message_connections.append(EIEIOConnection(
+        # These connections are not used to talk to SpiNNaker boards
+        # but rather to code running on the current host computer
+        self.__database_message_connections = [
+            EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,
-                remote_port=socket_address.notify_port_no))
+                remote_port=socket_address.notify_port_no)
+            for socket_address in
+            FecDataView.iterate_database_socket_addresses()]
 
     def wait_for_confirmation(self):
-        """ If asked to wait for confirmation, waits for all external systems\
-            to confirm that they are configured and have read the database
-
-        :rtype: None
+        """
+        If asked to wait for confirmation, waits for all external systems
+        to confirm that they are configured and have read the database.
         """
         if self.__wait_for_read_confirmation:
             logger.info("** Awaiting for a response from an external source "
                         "to state its ready for the simulation to start **")
-            wait(self.__wait_futures)
+            results = wait(self.__wait_futures,
+                           timeout=self.__wait_for_read_timeout)
+            if results.not_done:
+                raise SpinnmanTimeoutException(
+                    f"waiting for external sources: {results.not_done}",
+                    self.__wait_for_read_timeout)
         self.__wait_futures = list()
 
     def send_start_resume_notification(self):
-        """ Either waits till all sources have confirmed read the database\
-            and are configured, and/or just sends the start notification\
-            (when the system is executing)
-
-        :rtype: None
+        """
+        Either waits till all sources have confirmed read the database
+        and are configured, and/or just sends the start notification
+        (when the system is executing).
         """
         logger.info("** Sending start / resume message to external sources "
                     "to state the simulation has started or resumed. **")
@@ -90,10 +104,9 @@ class NotificationProtocol(AbstractContextManager):
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
     def send_stop_pause_notification(self):
-        """ Sends the pause / stop notifications when the script has either\
-            finished or paused
-
-        :rtype: None
+        """
+        Sends the pause / stop notifications when the script has either
+        finished or paused.
         """
         logger.info("** Sending pause / stop message to external sources "
                     "to state the simulation has been paused or stopped. **")
@@ -109,20 +122,20 @@ class NotificationProtocol(AbstractContextManager):
 
     # noinspection PyPep8
     def send_read_notification(self):
-        """ Sends notifications to all devices which have expressed an\
-            interest in when the database has been written
-
-        :param str database_path: the path to the database file
         """
-        notification_thread = self.__wait_pool.submit(
+        Sends notifications to all devices which have expressed an
+        interest in when the database has been written
+        """
+        notification_task = self.__wait_pool.submit(
             self._send_read_notification)
         if self.__wait_for_read_confirmation:
-            self.__wait_futures.append(notification_thread)
+            self.__wait_futures.append(notification_task)
 
     def _send_read_notification(self):
-        """ Sends notifications to a list of socket addresses that the\
-            database has been written. Message also includes the path to the\
-            database
+        """
+        Sends notifications to a list of socket addresses that the
+        database has been written. Message also includes the path to the
+        database
 
         :param str database_path: the path to the database
         """
@@ -143,7 +156,7 @@ class NotificationProtocol(AbstractContextManager):
                 "via the command packet, please set the file path manually "
                 "and set the .cfg parameter [Database] send_file_path to "
                 "False")
-        message = DatabaseConfirmation(database_path)
+        message = NotificationProtocolDatabaseLocation(database_path)
 
         # Send command and wait for response
         logger.info(
@@ -163,31 +176,35 @@ class NotificationProtocol(AbstractContextManager):
         self.__sent_visualisation_confirmation = True
 
         # if the system needs to wait, try receiving a packet back
-        for c in self.__database_message_connections:
-            try:
-                if self.__wait_for_read_confirmation:
+        if self.__wait_for_read_confirmation:
+            for c in self.__database_message_connections:
+                try:
                     c.receive_eieio_message()
                     logger.info(
                         "** Confirmation from {}:{} received, continuing **",
                         c.remote_ip_address, c.remote_port)
-            except Exception:  # pylint: disable=broad-except
-                logger.warning(
-                    "*** Failed to receive notification from external "
-                    "application on {}:{} about the database ***",
-                    c.remote_ip_address, c.remote_port, exc_info=True)
+                except Exception:  # pylint: disable=broad-except
+                    logger.warning(
+                        "*** Failed to receive notification from external "
+                        "application on {}:{} about the database ***",
+                        c.remote_ip_address, c.remote_port, exc_info=True)
 
     @property
     def sent_visualisation_confirmation(self):
-        """ Whether the external application has actually been notified yet.
+        """
+        Whether the external application has actually been notified yet.
 
         :rtype: bool
         """
         return self.__sent_visualisation_confirmation
 
     def close(self):
-        """ Closes the thread pool
+        """
+        Closes the thread pool and the connections.
         """
         if self.__wait_pool:
             self.__wait_pool.shutdown()
             self.__wait_futures = list()
             self.__wait_pool = None
+        for c in self.__database_message_connections:
+            c.close()

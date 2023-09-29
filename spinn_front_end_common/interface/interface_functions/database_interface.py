@@ -1,22 +1,23 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
-from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import (
+    get_config_bool, get_config_bool_or_none)
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.database import DatabaseWriter
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
@@ -27,13 +28,14 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def database_interface(runtime):
     """
-    :param ~pacman.model.tags.Tags tags:
-    :return: Database interface, where the database is located
-    :rtype: tuple(DatabaseInterface, str)
+    :param int runtime:
+    :return: where the database is located
+    :rtype: str
     """
     # pylint: disable=too-many-arguments
     needs_db = DatabaseWriter.auto_detect_database()
-    user_create_database = get_config_bool("Database", "create_database")
+    user_create_database = get_config_bool_or_none(
+        "Database", "create_database")
     if user_create_database is not None:
         if user_create_database != needs_db:
             logger.warning(f"Database creating changed to "
@@ -50,16 +52,15 @@ def database_interface(runtime):
     return None
 
 
-def _write_to_db(
-        writer, runtime):
+def _write_to_db(writer, runtime):
     """
+    :param DatabaseWriter writer:
     :param int runtime:
     """
-    # pylint: disable=too-many-arguments
-
     with writer as w, ProgressBar(
             6, "Creating graph description database") as p:
         w.add_system_params(runtime)
+        w.add_proxy_configuration()
         p.update()
         w.add_machine_objects()
         p.update()
@@ -73,11 +74,20 @@ def _write_to_db(
 
         if get_config_bool(
                 "Database", "create_routing_info_to_neuron_id_mapping"):
-            machine_vertices = [
+            machine_vertices = {
                 (vertex, vertex.injection_partition_id)
                 for vertex in FecDataView.iterate_machine_vertices()
                 if isinstance(vertex, AbstractSupportsDatabaseInjection)
-                and vertex.is_in_injection_mode]
-            machine_vertices.extend(lpg_source_machine_vertices)
+                and vertex.is_in_injection_mode}
+            machine_vertices.update(lpg_source_machine_vertices)
+            live_vertices = FecDataView.iterate_live_output_vertices()
+            for vertex, part_id in live_vertices:
+                if isinstance(vertex, ApplicationVertex):
+                    machine_vertices.update(
+                        (m_vertex, part_id)
+                        for m_vertex in vertex.splitter.get_out_going_vertices(
+                            part_id))
+                else:
+                    machine_vertices.add((vertex, part_id))
             w.create_atom_to_event_id_mapping(machine_vertices)
         p.update()

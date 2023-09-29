@@ -1,17 +1,16 @@
 # Copyright (c) 2021 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 import unittest
@@ -25,13 +24,13 @@ from spinn_utilities.exceptions import (
 from spinnman.messages.scp.enums.signal import Signal
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.model import ExecutableTargets
+from pacman.model.placements import Placements
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman_test_objects import SimpleTestVertex
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
@@ -76,6 +75,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_buffer_manager()
         self.assertFalse(FecDataView.has_buffer_manager())
+        writer.set_placements(Placements())
         bm = BufferManager()
         writer.set_buffer_manager(bm)
         self.assertEqual(bm, FecDataView.get_buffer_manager())
@@ -211,8 +211,8 @@ class TestSimulatorData(unittest.TestCase):
         self.assertFalse(view.has_time_step())
 
     def test_directories_normal(self):
-        FecDataWriter.setup()
-        report_dir = FecDataView.get_report_dir_path()
+        writer = FecDataWriter.setup()
+        report_dir = writer.get_report_dir_path()
         self.assertTrue(os.path.exists(report_dir))
 
         timestramp_dir = FecDataView.get_timestamp_dir_path()
@@ -245,6 +245,8 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
+        self.assertEqual(0, writer.get_reset_number())
+        self.assertEqual("", writer.get_reset_str())
         writer.start_run()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
@@ -257,7 +259,10 @@ class TestSimulatorData(unittest.TestCase):
         writer.finish_run()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
+        self.assertEqual(0, writer.get_reset_number())
         writer.hard_reset()
+        self.assertEqual(1, writer.get_reset_number())
+        self.assertEqual("1", writer.get_reset_str())
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_3", run_dir)
         writer.start_run()
@@ -286,7 +291,7 @@ class TestSimulatorData(unittest.TestCase):
         # VERY UGLY HACK DO NOT COPY!!!!!!!!!!!!
         _UtilsDataModel()._data_status = DataStatus.NOT_SETUP
         with self.assertRaises(NotSetupException):
-            FecDataView.get_report_dir_path()
+            writer.get_report_dir_path()
         with self.assertRaises(NotSetupException):
             FecDataView.get_timestamp_dir_path()
         with self.assertRaises(NotSetupException):
@@ -319,11 +324,14 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
+        self.assertEqual(0, writer.get_reset_number())
         writer.soft_reset()
+        self.assertEqual(1, writer.get_reset_number())
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.hard_reset()
+        self.assertEqual(1, writer.get_reset_number())
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path changed by hard reset
         self.assertIn("run_3", FecDataView.get_run_dir_path())
@@ -380,22 +388,22 @@ class TestSimulatorData(unittest.TestCase):
         # required higher than in graph
         writer.set_n_required(None, 20)
         self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEquals(20, FecDataView.get_n_chips_needed())
+        self.assertEqual(20, FecDataView.get_n_chips_needed())
         writer.set_n_chips_in_graph(15)
         self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEquals(20, FecDataView.get_n_chips_needed())
+        self.assertEqual(20, FecDataView.get_n_chips_needed())
 
         # required higher than in graph
         writer.set_n_chips_in_graph(25)
         self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEquals(20, FecDataView.get_n_chips_needed())
+        self.assertEqual(20, FecDataView.get_n_chips_needed())
 
         # reset does not remove required
         writer.start_run()
         writer.finish_run()
         writer.hard_reset()
         self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEquals(20, FecDataView.get_n_chips_needed())
+        self.assertEqual(20, FecDataView.get_n_chips_needed())
 
         writer = FecDataWriter.setup()
         self.assertFalse(FecDataView.has_n_boards_required())
@@ -403,7 +411,7 @@ class TestSimulatorData(unittest.TestCase):
 
         # in graph only
         writer.set_n_chips_in_graph(25)
-        self.assertEquals(25, FecDataView.get_n_chips_needed())
+        self.assertEqual(25, FecDataView.get_n_chips_needed())
 
         # reset clears in graph
         writer.start_run()
@@ -414,19 +422,19 @@ class TestSimulatorData(unittest.TestCase):
         # N boards
         writer = FecDataWriter.setup()
         writer.set_n_required(5, None)
-        self.assertEquals(5, FecDataView.get_n_boards_required())
+        self.assertEqual(5, FecDataView.get_n_boards_required())
         self.assertFalse(FecDataView.has_n_chips_needed())
 
         # boards does not hide in graph
         writer.set_n_chips_in_graph(40)
-        self.assertEquals(5, FecDataView.get_n_boards_required())
-        self.assertEquals(40, FecDataView.get_n_chips_needed())
+        self.assertEqual(5, FecDataView.get_n_boards_required())
+        self.assertEqual(40, FecDataView.get_n_chips_needed())
 
         # reset does not clear required
         writer.start_run()
         writer.finish_run()
         writer.hard_reset()
-        self.assertEquals(5, FecDataView.get_n_boards_required())
+        self.assertEqual(5, FecDataView.get_n_boards_required())
         self.assertFalse(FecDataView.has_n_chips_needed())
 
         # two Nones fine
@@ -564,16 +572,6 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_executable_targets([])
 
-    def test_dsg_target(self):
-        writer = FecDataWriter.mock()
-        with self.assertRaises(DataNotYetAvialable):
-            FecDataView.get_dsg_targets()
-        targets = DsSqlliteDatabase()
-        writer.set_dsg_targets(targets)
-        self.assertEqual(targets, FecDataView.get_dsg_targets())
-        with self.assertRaises(TypeError):
-            writer.set_dsg_targets(dict())
-
     def test_gatherer_map(self):
         writer = FecDataWriter.mock()
         with self.assertRaises(DataNotYetAvialable):
@@ -584,8 +582,8 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_n_gathers()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_gathers()
-        vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, None, None)
-        vertex2 = DataSpeedUpPacketGatherMachineVertex(8, 8, None, None)
+        vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, None)
+        vertex2 = DataSpeedUpPacketGatherMachineVertex(8, 8, None)
         map = dict()
         # Setting empty ok
         writer.set_gatherer_map(map)
@@ -599,7 +597,7 @@ class TestSimulatorData(unittest.TestCase):
             elif core == (8, 8):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise Exception(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {core} {vertex}")
         self.assertCountEqual(
             [vertex1, vertex2], FecDataView.iterate_gathers())
         self.assertEqual(2, FecDataView.get_n_gathers())
@@ -633,8 +631,8 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_n_monitors()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_monitors()
-        vertex1 = ExtraMonitorSupportMachineVertex(None, None)
-        vertex2 = ExtraMonitorSupportMachineVertex(None, None)
+        vertex1 = ExtraMonitorSupportMachineVertex()
+        vertex2 = ExtraMonitorSupportMachineVertex()
         map = dict()
         # Setting empty ok
         writer.set_monitor_map(map)
@@ -649,7 +647,7 @@ class TestSimulatorData(unittest.TestCase):
             elif core == (8, 8):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise Exception(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {core} {vertex}")
         self.assertCountEqual([vertex1, vertex2],
                               FecDataView.iterate_monitors())
         self.assertEqual(2, FecDataView.get_n_monitors())
@@ -721,3 +719,40 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(protocol2.is_closed)
         with self.assertRaises(TypeError):
             writer.set_notification_protocol([])
+
+    def test_run_step(self):
+        self.assertIsNone(FecDataView.get_run_step())
+        writer = FecDataWriter.setup()
+        self.assertEqual(1, writer.next_run_step())
+        self.assertEqual(1, FecDataView.get_run_step())
+        self.assertEqual(2, writer.next_run_step())
+        self.assertEqual(3, writer.next_run_step())
+        self.assertEqual(3, FecDataView.get_run_step())
+        self.assertEqual(3, FecDataView.get_run_step())
+        writer.clear_run_steps()
+        self.assertIsNone(FecDataView.get_run_step())
+        self.assertEqual(1, writer.next_run_step())
+        self.assertEqual(1, FecDataView.get_run_step())
+
+    def test_ds_references(self):
+        refs1 = FecDataView.get_next_ds_references(7)
+        self.assertEqual(7, len(refs1))
+        self.assertEqual(7, len(set(refs1)))
+        refs2 = FecDataView.get_next_ds_references(5)
+        self.assertEqual(5, len(refs2))
+        set2 = set(refs2)
+        self.assertEqual(5, len(set2))
+        self.assertEqual(0, len(set2.intersection(refs1)))
+
+        # reference repeat after a hard reset
+        # So if called the same way will generate teh same results
+        # setup is also a hard reset
+        writer = FecDataWriter.setup()
+        self.assertListEqual(refs1, FecDataView.get_next_ds_references(7))
+        self.assertListEqual(refs2, FecDataView.get_next_ds_references(5))
+
+        writer.start_run()
+        writer.finish_run()
+        writer.hard_reset()
+        self.assertListEqual(refs1, FecDataView.get_next_ds_references(7))
+        self.assertListEqual(refs2, FecDataView.get_next_ds_references(5))

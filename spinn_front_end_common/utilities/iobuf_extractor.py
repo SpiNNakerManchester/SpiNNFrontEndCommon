@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2020 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import os
@@ -20,10 +19,11 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
+from spinnman.model.enums import ExecutableType
 from spinnman.model.io_buffer import IOBuffer
-from spinn_utilities.config_holder import get_config_str
+from spinn_utilities.config_holder import get_config_str_or_none
+
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
 
@@ -41,8 +41,9 @@ class _DummyProgress(object):
 
 
 class IOBufExtractor(object):
-    """ Extract the logging output buffers from the machine, and separates\
-        lines based on their prefix.
+    """
+    Extract the logging output buffers from the machine, and separates
+    lines based on their prefix.
     """
 
     __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
@@ -59,8 +60,9 @@ class IOBufExtractor(object):
         :param str filename_template:
         :param bool suppress_progress:
         :param executable_targets:
-            Which Binaries and core to extract from. Noe to extract from all.
-        :tpye executable_targets:  ~spinnman.model.ExecutableTargets or None
+            Which Binaries and core to extract from.
+            `None` to extract from all.
+        :type executable_targets: ~spinnman.model.ExecutableTargets or None
         :param str from_cores:
         :param str binary_types:
         """
@@ -70,9 +72,9 @@ class IOBufExtractor(object):
 
         self.__app_path = FecDataView.get_app_provenance_dir_path()
         self.__sys_path = FecDataView.get_system_provenance_dir_path()
-        self.__from_cores = get_config_str(
+        self.__from_cores = get_config_str_or_none(
             "Reports", "extract_iobuf_from_cores")
-        self.__binary_types = get_config_str(
+        self.__binary_types = get_config_str_or_none(
             "Reports", "extract_iobuf_from_binary_types")
         if executable_targets is None:
             self.__executable_targets = FecDataView.get_executable_targets()
@@ -88,7 +90,8 @@ class IOBufExtractor(object):
             pass
 
     def extract_iobuf(self):
-        """ Perform the extraction of IOBUF
+        """
+        Perform the extraction of IOBUF.
 
         :return: error_entries, warn_entries
         :rtype: tuple(list(str),list(str))
@@ -263,8 +266,9 @@ class IOBufExtractor(object):
                 except Exception as e:  # pylint: disable=broad-except
                     io_buffers.append(IOBuffer(
                         core_subset.x, core_subset.y, p,
-                        "failed to retrieve iobufs from {},{},{}; {}".format(
-                            core_subset.x, core_subset.y, p, str(e))))
+                        "failed to retrieve iobufs from "
+                        f"{core_subset.x},{core_subset.y},{p}; "
+                        f"{str(e)}"))
         return io_buffers
 
     @staticmethod
@@ -277,6 +281,6 @@ class IOBufExtractor(object):
         """
         match = regex.match(line)
         if match:
-            entries.append("{}, {}, {}: {} ({})".format(
-                iobuf.x, iobuf.y, iobuf.p, match.group(ENTRY_TEXT),
-                match.group(ENTRY_FILE)))
+            entries.append(f"{iobuf.x}, {iobuf.y}, {iobuf.p}: "
+                           f"{match.group(ENTRY_TEXT)} "
+                           f"({match.group(ENTRY_FILE)})")

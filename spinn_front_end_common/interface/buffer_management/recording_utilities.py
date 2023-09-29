@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, BYTES_PER_WORD)
@@ -22,7 +21,8 @@ _PER_REGION_HEADER_SIZE = BYTES_PER_WORD * 3
 
 
 def get_recording_header_size(n_recording_regions):
-    """ Get the size of the data to be written for the recording header.
+    """
+    Get the size of the data to be written for the recording header.
 
     This is the data that sets up how recording will be done, and indicates the
     sizes of the regions to be stored.
@@ -35,9 +35,10 @@ def get_recording_header_size(n_recording_regions):
 
 
 def get_recording_data_constant_size(n_recording_regions):
-    """ Get the size of the headers that are stored in the SDRAM spaces
-        allocated during recording_initialise, and so do not need to be
-        reserved with DSG (but need to be accounted for in SDRAM calculations)
+    """
+    Get the size of the headers that are stored in the SDRAM spaces
+    allocated during recording_initialise, and so do not need to be
+    reserved with DSG (but need to be accounted for in SDRAM calculations).
 
     :param int n_recording_regions: The number of regions that can be recorded
     :rtype: int
@@ -46,7 +47,8 @@ def get_recording_data_constant_size(n_recording_regions):
 
 
 def get_recording_header_array(recorded_region_sizes):
-    """ Get data to be written for the recording header
+    """
+    Get data to be written for the recording header.
 
     :param list(int) recorded_region_sizes:
         A list of sizes of each region to be recorded.

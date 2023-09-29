@@ -1,18 +1,16 @@
-# Copyright (c) 2017-2022 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import os
 import datetime
 import logging
@@ -24,9 +22,7 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
-from spinnman.messages.scp.impl.iptag_set import IPTagSet
-from spinnman.connections.udp_packet_connections import SCAMPConnection
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState, ExecutableType, SDP_PORTS
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, IPtagResource
 from spinn_front_end_common.data import FecDataView
@@ -39,12 +35,10 @@ from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine)
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
+    BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset)
+    get_region_base_address_offset, open_scp_connection, retarget_tag)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
@@ -56,8 +50,6 @@ log = FormatAdapter(logging.getLogger(__name__))
 DEST_X_SHIFT = 16
 
 TIMEOUT_RETRY_LIMIT = 100
-TIMEOUT_MESSAGE = "Failed to hear from the machine during {} attempts. "\
-    "Please try removing firewalls."
 _MINOR_LOSS_THRESHOLD = 10
 
 # cap for stopping wrap arounds
@@ -100,7 +92,7 @@ WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM = (
     TRANSACTION_ID_SIZE_IN_ITEMS)
 
 #: offset where data in starts on commands
-#: (command, transaction_id, seq num)
+#: (command, transaction_id, sequence number)
 WORDS_FOR_COMMAND_AND_KEY = 3
 BYTES_FOR_COMMAND_AND_ADDRESS_HEADER = (
     WORDS_FOR_COMMAND_AND_KEY * BYTES_PER_WORD)
@@ -123,14 +115,18 @@ SIZE_DATA_IN_CHIP_TO_KEY_SPACE = ((3 * 48) + 2) * BYTES_PER_WORD
 
 
 class _DATA_REGIONS(IntEnum):
-    """DSG data regions"""
+    """
+    DSG data regions.
+    """
     CONFIG = 0
     CHIP_TO_KEY_SPACE = 1
     PROVENANCE_REGION = 2
 
 
 class DATA_OUT_COMMANDS(Enum):
-    """command IDs for the SDP packets for data out"""
+    """
+    Command IDs for the SDP packets for data out.
+    """
     START_SENDING = 100
     START_MISSING_SEQ = 1000
     MISSING_SEQ = 1001
@@ -138,7 +134,9 @@ class DATA_OUT_COMMANDS(Enum):
 
 
 class DATA_IN_COMMANDS(Enum):
-    """command IDs for the SDP packets for data in"""
+    """
+    Command IDs for the SDP packets for data in.
+    """
     SEND_DATA_TO_LOCATION = 200
     SEND_SEQ_DATA = 2000
     SEND_TELL = 2001
@@ -163,7 +161,8 @@ _PROVENANCE_DATA_SIZE = 4 * BYTES_PER_WORD
 
 
 def ceildiv(dividend, divisor):
-    """ How to divide two possibly-integer numbers and round up.
+    """
+    How to divide two possibly-integer numbers and round up.
     """
     assert divisor > 0
     q, r = divmod(dividend, divisor)
@@ -180,11 +179,15 @@ class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
         AbstractProvidesProvenanceDataFromMachine):
-    """ Machine vertex for handling fast data transfer between host and \
-        SpiNNaker. This machine vertex is only ever placed on chips with a \
-        working Ethernet connection; it collaborates with the \
-        :py:class:`ExtraMonitorSupportMachineVertex` to write data on other \
-        chips..
+    """
+    Machine vertex for handling fast data transfer between host and  SpiNNaker.
+    This machine vertex is only ever placed on chips with a working Ethernet
+    connection; it collaborates with the
+    :py:class:`ExtraMonitorSupportMachineVertex` to write data on other chips.
+
+    .. note::
+        This is an unusual machine vertex, in that it has no associated
+        application vertex.
     """
     __slots__ = [
         # x coordinate
@@ -257,7 +260,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     FLAG_FOR_MISSING_ALL_SEQUENCES = 0xFFFFFFFE
 
     _ADDRESS_PACKET_BYTE_FORMAT = struct.Struct(
-        "<{}B".format(BYTES_IN_FULL_PACKET_WITH_KEY))
+        f"<{BYTES_IN_FULL_PACKET_WITH_KEY}B")
 
     # Router timeouts, in mantissa,exponent form. See datasheet for details
     _LONG_TIMEOUT = (14, 14)
@@ -268,24 +271,15 @@ class DataSpeedUpPacketGatherMachineVertex(
     # Initial port for the reverse IP tag (to be replaced later)
     _TAG_INITIAL_PORT = 10000
 
-    def __init__(self, x, y, ip_address, app_vertex=None, constraints=None):
+    def __init__(self, x, y, ip_address):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
-        :param constraints:
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint) or None
-        :param app_vertex:
-            The application vertex that caused this machine vertex to be
-            created. If None, there is no such application vertex.
-        :type app_vertex:
-            ~pacman.model.graphs.application.ApplicationVertex or None
         """
         super().__init__(
-            label=f"SYSTEM:PacketGatherer({x},{y})",
-            constraints=constraints, app_vertex=app_vertex)
+            label=f"SYSTEM:PacketGatherer({x},{y})", app_vertex=None)
 
         # data holders for the output, and sequence numbers
         self._view = None
@@ -318,10 +312,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._last_status = None
 
     def __throttled_send(self, message):
-        """ slows down transmissions to allow spinnaker to keep up.
+        """
+        Slows down transmissions to allow SpiNNaker to keep up.
 
         :param ~.SDPMessage message: message to send
-        :rtype: None
         """
         # send first message
         self._connection.send_sdp_message(message)
@@ -342,12 +336,12 @@ class DataSpeedUpPacketGatherMachineVertex(
             ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
 
     def update_transaction_id_from_machine(self):
-        """ Looks up from the machine what the current transaction ID is\
-            and updates the data speed up gatherer.
-
         """
-        self._transaction_id = FecDataView.get_transceiver().read_user_1(
-            self._placement.x, self._placement.y, self._placement.p)
+        Looks up from the machine what the current transaction ID is
+        and updates the data speed up gatherer.
+        """
+        self._transaction_id = FecDataView.get_transceiver().read_user(
+            self._placement.x, self._placement.y, self._placement.p, 1)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -355,6 +349,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
+        # pylint: disable=unsubscriptable-object
         # update my placement for future knowledge
         self._placement = placement
 
@@ -414,8 +409,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.end_specification()
 
     def _reserve_memory_regions(self, spec):
-        """ Writes the DSG regions memory sizes. Static so that it can be used\
-            by the application vertex.
+        """
+        Writes the DSG regions memory sizes. Static so that it can be used
+        by the application vertex.
 
         :param ~.DataSpecificationGenerator spec: spec file
         """
@@ -429,7 +425,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             label="mc_key_map")
         spec.reserve_memory_region(
             region=_DATA_REGIONS.PROVENANCE_REGION,
-            size=_PROVENANCE_DATA_SIZE, label="Provenance", empty=True)
+            size=_PROVENANCE_DATA_SIZE, label="Provenance")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -439,8 +435,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     def locate_correct_write_data_function_for_chip_location(
             uses_advanced_monitors, x, y, transceiver,
             extra_monitor_cores_to_ethernet_connection_map):
-        """ Supports other components figuring out which gatherer and function\
-            to call for writing data onto SpiNNaker.
+        """
+        Supports other components figuring out which gatherer and function
+        to call for writing data onto SpiNNaker.
 
         :param bool uses_advanced_monitors:
             Whether the system is using advanced monitors
@@ -468,7 +465,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _generate_data_in_report(
             self, time_diff, data_size, x, y,
             address_written_to, missing_seq_nums):
-        """ Writes the data in report for this stage.
+        """
+        Writes the data in report for this stage.
 
         :param ~datetime.timedelta time_diff:
             the time taken to write the memory
@@ -480,7 +478,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int address_written_to: where in SDRAM it was written to
         :param list(set(int)) missing_seq_nums:
             the set of missing sequence numbers per data transmission attempt
-        :rtype: None
         """
         if not os.path.isfile(self._in_report_path):
             with open(self._in_report_path, "w", encoding="utf-8") as writer:
@@ -502,14 +499,14 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         with open(self._in_report_path, "a", encoding="utf-8") as writer:
             writer.write(
-                "{}\t\t {}\t\t {}\t\t {}\t\t\t\t {}\t\t\t {}\t\t {}\n".format(
-                    x, y, address_written_to, data_size, time_took_ms,
-                    mbs, missing_seq_nums))
+                f"{x}\t\t {y}\t\t {address_written_to}\t\t {data_size}\t\t"
+                f"\t\t {time_took_ms}\t\t\t {mbs}\t\t {missing_seq_nums}\n")
 
     def send_data_into_spinnaker(
             self, x, y, base_address, data, n_bytes=None, offset=0,
             cpu=0, is_filename=False):  # pylint: disable=unused-argument
-        """ Sends a block of data into SpiNNaker to a given chip.
+        """
+        Sends a block of data into SpiNNaker to a given chip.
 
         :param int x: chip x for data
         :param int y: chip y for data
@@ -517,7 +514,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param data: the data to write (or filename to load data from,
             if ``is_filename`` is True; that's the only time this is a str)
         :type data: bytes or bytearray or memoryview or str
-        :param int n_bytes: how many bytes to read, or None if not set
+        :param int n_bytes: how many bytes to read, or `None` if not set
         :param int offset: where in the data to start from
         :param int cpu:
         :param bool is_filename: whether data is actually a file.
@@ -525,7 +522,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # if file, read in and then process as normal
         if is_filename:
             if offset != 0:
-                raise Exception(
+                raise ValueError(
                     "when using a file, you can only have a offset of 0")
 
             with open(data, "rb") as reader:
@@ -569,7 +566,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             log.error("verified:{}", verified_data.hex())
             for i, (a, b) in enumerate(zip(original_data, verified_data)):
                 if a != b:
-                    raise Exception("damn at " + str(i))
+                    raise ValueError(f"Mismatch found as position {i}")
 
     @staticmethod
     def __make_sdp_message(placement, port, payload):
@@ -588,10 +585,22 @@ class DataSpeedUpPacketGatherMachineVertex(
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=payload)
 
+    def __open_connection(self):
+        """
+        Open an SCP connection and make our tag target it.
+
+        :return: The opened connection, ready for use.
+        :rtype: ~.SCAMPConnection
+        """
+        connection = open_scp_connection(self._x, self._y, self._ip_address)
+        retarget_tag(connection, self._x, self._y, self._remote_tag)
+        return connection
+
     def _send_data_via_extra_monitors(
             self, destination_chip_x, destination_chip_y, start_address,
             data_to_write):
-        """ sends data using the extra monitor cores
+        """
+        Sends data using the extra monitor cores.
 
         :param int destination_chip_x: chip x
         :param int destination_chip_y: chip y
@@ -600,102 +609,104 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int start_address: the base SDRAM address
         """
         # Set up the connection
-        self._connection = SCAMPConnection(
-            chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
-        self.__reprogram_tag(self._connection)
+        with self.__open_connection() as self._connection:
+            # how many packets after first one we need to send
+            self._max_seq_num = ceildiv(
+                len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
 
-        # how many packets after first one we need to send
-        self._max_seq_num = ceildiv(
-            len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
+            # determine board chip IDs, as the LPG does not know
+            # machine scope IDs
+            machine = FecDataView.get_machine()
+            chip = FecDataView.get_chip_at(
+                destination_chip_x, destination_chip_y)
+            dest_x, dest_y = machine.get_local_xy(chip)
+            self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
 
-        # determine board chip IDs, as the LPG does not know machine scope IDs
-        machine = FecDataView.get_machine()
-        chip = FecDataView.get_chip_at(destination_chip_x, destination_chip_y)
-        dest_x, dest_y = machine.get_local_xy(chip)
-        self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
+            # for safety, check the transaction id from the machine before
+            # updating
+            self.update_transaction_id_from_machine()
+            self._transaction_id = (
+                self._transaction_id + 1) & TRANSACTION_ID_CAP
+            time_out_count = 0
 
-        # for safety, check the transaction id from the machine before updating
-        self.update_transaction_id_from_machine()
-        self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
-        time_out_count = 0
-
-        # verify completed
-        received_confirmation = False
-        while not received_confirmation:
-
-            # send initial attempt at sending all the data
-            self._send_all_data_based_packets(data_to_write, start_address)
-
-            # Don't create a missing buffer until at least one packet has
-            # come back.
-            missing = None
-
+            # verify completed
+            received_confirmation = False
             while not received_confirmation:
-                try:
-                    # try to receive a confirmation of some sort from spinnaker
-                    data = self._connection.receive(
-                        timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
-                    time_out_count = 0
 
-                    # Read command and transaction id
-                    (cmd, transaction_id) = _TWO_WORDS.unpack_from(data, 0)
+                # send initial attempt at sending all the data
+                self._send_all_data_based_packets(data_to_write, start_address)
 
-                    # If wrong transaction id, ignore packet
-                    if self._transaction_id != transaction_id:
-                        continue
+                # Don't create a missing buffer until at least one packet has
+                # come back.
+                missing = None
 
-                    # Decide what to do with the packet
-                    if cmd == DATA_IN_COMMANDS.RECEIVE_FINISHED.value:
-                        received_confirmation = True
-                        break
+                while not received_confirmation:
+                    try:
+                        # try to receive a confirmation of some sort from
+                        # spinnaker
+                        data = self._connection.receive(
+                            timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
+                        time_out_count = 0
 
-                    if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA.value:
-                        raise Exception("Unknown command {} received".format(
-                            cmd))
+                        # Read command and transaction id
+                        (cmd, transaction_id) = _TWO_WORDS.unpack_from(data, 0)
 
-                    # The currently received packet has missing sequence
-                    # numbers. Accumulate and dispatch transactionId when
-                    # we've got them all.
-                    if missing is None:
-                        missing = set()
-                        self._missing_seq_nums_data_in.append(missing)
-                    seen_last, seen_all = self._read_in_missing_seq_nums(
-                        data, BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER,
-                        missing)
+                        # If wrong transaction id, ignore packet
+                        if self._transaction_id != transaction_id:
+                            continue
 
-                    # Check that you've seen something that implies ready
-                    # to retransmit.
-                    if seen_all or seen_last:
+                        # Decide what to do with the packet
+                        if cmd == DATA_IN_COMMANDS.RECEIVE_FINISHED.value:
+                            received_confirmation = True
+                            break
+
+                        if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA\
+                                .value:
+                            raise ValueError(f"Unknown command {cmd} received")
+
+                        # The currently received packet has missing sequence
+                        # numbers. Accumulate and dispatch transactionId when
+                        # we've got them all.
+                        if missing is None:
+                            missing = set()
+                            self._missing_seq_nums_data_in.append(missing)
+                        seen_last, seen_all = self._read_in_missing_seq_nums(
+                            data,
+                            BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER,
+                            missing)
+
+                        # Check that you've seen something that implies ready
+                        # to retransmit.
+                        if seen_all or seen_last:
+                            self._outgoing_retransmit_missing_seq_nums(
+                                data_to_write, missing)
+                            missing.clear()
+
+                    except SpinnmanTimeoutException as e:
+                        # if the timeout has not occurred x times, keep trying
+                        time_out_count += 1
+                        if time_out_count > TIMEOUT_RETRY_LIMIT:
+                            emergency_recover_state_from_failure(
+                                self, self._placement)
+                            raise SpinnFrontEndException(
+                                "Failed to hear from the machine during "
+                                f"{time_out_count} attempts. "
+                                "Please try removing firewalls.") from e
+
+                        # If we never received a packet, we will never have
+                        # created the buffer, so send everything again
+                        if missing is None:
+                            break
+
                         self._outgoing_retransmit_missing_seq_nums(
-                            data_to_write, missing)
+                                data_to_write, missing)
                         missing.clear()
 
-                except SpinnmanTimeoutException as e:
-                    # if the timeout has not occurred x times, keep trying
-                    time_out_count += 1
-                    if time_out_count > TIMEOUT_RETRY_LIMIT:
-                        emergency_recover_state_from_failure(
-                            self, self._placement)
-                        raise SpinnFrontEndException(
-                            TIMEOUT_MESSAGE.format(
-                                time_out_count)) from e
-
-                    # If we never received a packet, we will never have
-                    # created the buffer, so send everything again
-                    if missing is None:
-                        break
-
-                    self._outgoing_retransmit_missing_seq_nums(
-                            data_to_write, missing)
-                    missing.clear()
-
-        # Close the connection
-        self._connection.close()
-
     def _read_in_missing_seq_nums(self, data, position, seq_nums):
-        """ handles a missing seq num packet from spinnaker
+        """
+        Handles a missing sequence number packet from SpiNNaker.
 
-        :param data: the data to translate into missing seq nums
+        :param data: the data to translate into missing sequence numbers
         :type data: bytearray or bytes
         :param int position: the position in the data to write.
         :param set(int) seq_nums: a set of sequence numbers to add to
@@ -726,8 +737,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _outgoing_retransmit_missing_seq_nums(
             self, data_to_write, missing):
-        """ Transmits back into SpiNNaker the missing data based off missing\
-            sequence numbers
+        """
+        Transmits back into SpiNNaker the missing data based off missing
+        sequence numbers.
 
         :param bytearray data_to_write: the data to write.
         :param set(int) missing: a set of missing sequence numbers
@@ -748,8 +760,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _calculate_position_from_seq_number(seq_num):
-        """ Calculates where in the raw data to start reading from, given a\
-            sequence number
+        """
+        Calculates where in the raw data to start reading from, given a
+        sequence number.
 
         :param int seq_num: the sequence number to determine position from
         :return: the position in the byte data
@@ -759,14 +772,15 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _calculate_data_in_data_from_seq_number(
             self, data_to_write, seq_num, command_id, position):
-        """ Determine the data needed to be sent to the SpiNNaker machine\
-            given a sequence number
+        """
+        Determine the data needed to be sent to the SpiNNaker machine
+        given a sequence number.
 
         :param bytearray data_to_write:
             the data to write to the SpiNNaker machine
-        :param int seq_num: the seq num to get the data for
+        :param int seq_num: the sequence number to get the data for
         :param int command_id:
-        :param position: the position in the data to write to spinnaker
+        :param position: the position in the data to write to SpiNNaker
         :type position: int or None
         :return: SDP message and how much data has been written
         :rtype: tuple(~.SDPMessage, int)
@@ -784,7 +798,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             packet_data_length = len(data_to_write) - position
 
         if packet_data_length < 0:
-            raise Exception("weird packet data length.")
+            raise ValueError("weird packet data length.")
 
         # determine the true packet length (with header)
         packet_length = (
@@ -795,7 +809,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         _THREE_WORDS.pack_into(
             packet_data, 0, command_id, self._transaction_id, seq_num)
         struct.pack_into(
-            "<{}B".format(packet_data_length), packet_data,
+            f"<{packet_data_length}B", packet_data,
             BYTES_FOR_COMMAND_AND_ADDRESS_HEADER,
             *data_to_write[position:position+packet_data_length])
 
@@ -811,7 +825,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         return message, packet_data_length
 
     def _send_location(self, start_address):
-        """ Send location as separate message.
+        """
+        Send location as separate message.
 
         :param int start_address: SDRAM location
         """
@@ -822,11 +837,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self._transaction_id, start_address, self._coord_word,
                 self._max_seq_num - 1)))
         log.debug(
-            "start address for transaction {} is {}".format(
-                self._transaction_id, start_address))
+            "start address for transaction {} is {}",
+            self._transaction_id, start_address)
 
     def _send_tell_flag(self):
-        """ Send tell flag as separate message.
+        """
+        Send tell flag as separate message.
         """
         self._connection.send_sdp_message(self.__make_sdp_message(
             self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
@@ -834,7 +850,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 DATA_IN_COMMANDS.SEND_TELL.value, self._transaction_id)))
 
     def _send_all_data_based_packets(self, data_to_write, start_address):
-        """ Send all the data as one block.
+        """
+        Send all the data as one block.
 
         :param bytearray data_to_write: the data to send
         :param int start_address:
@@ -863,9 +880,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         log.debug("sent end flag")
 
     def set_cores_for_data_streaming(self):
-        """ Helper method for setting the router timeouts to a state usable\
-            for data streaming.
-
+        """
+        Helper method for setting the router timeouts to a state usable
+        for data streaming.
         """
         lead_monitor = FecDataView.get_monitor_by_xy(0, 0)
         # Store the last reinjection status for resetting
@@ -886,20 +903,21 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def load_application_routing_tables():
-        """ Set all chips to have application table loaded in the router
-
+        """
+        Set all chips to have application table loaded in the router.
         """
         FecDataView.get_monitor_by_xy(0, 0).load_application_mc_routes()
 
     @staticmethod
     def load_system_routing_tables():
-        """ Set all chips to have the system table loaded in the router
-
+        """
+        Set all chips to have the system table loaded in the router.
         """
         FecDataView.get_monitor_by_xy(0, 0).load_system_mc_routes()
 
     def set_router_wait1_timeout(self, timeout):
-        """ Set the wait1 field for a set of routers.
+        """
+        Set the wait1 field for a set of routers.
 
         :param tuple(int,int) timeout:
         :param ~pacman.model.placements.Placements placements:
@@ -916,7 +934,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             raise
 
     def set_router_wait2_timeout(self, timeout):
-        """ Set the wait2 field for a set of routers.
+        """
+        Set the wait2 field for a set of routers.
 
         :param tuple(int,int) timeout:
         """
@@ -932,7 +951,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             raise
 
     def clear_reinjection_queue(self):
-        """ Clears the queues for reinjection.
+        """
+        Clears the queues for reinjection.
 
         :param ~pacman.model.placements.Placements placements:
             the placements object
@@ -948,9 +968,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             raise
 
     def unset_cores_for_data_streaming(self):
-        """ Helper method for restoring the router timeouts to normal after\
-            being in a state usable for data streaming.
-
+        """
+        Helper method for restoring the router timeouts to normal after
+        being in a state usable for data streaming.
         """
         # Set the routers to temporary values
         self.set_router_wait1_timeout(self._TEMP_TIMEOUT)
@@ -980,38 +1000,18 @@ class DataSpeedUpPacketGatherMachineVertex(
                 FecDataView.iterate_monitors())
             try:
                 transceiver = FecDataView.get_transceiver()
-                error_cores = transceiver.get_cores_not_in_state(
-                    core_subsets, {CPUState.RUNNING})
+                error_cores = transceiver.get_cpu_infos(
+                    core_subsets, {CPUState.RUNNING}, False)
                 if error_cores:
-                    log.error("Cores in an unexpected state: {}".format(
-                        error_cores))
+                    log.error("Cores in an unexpected state: {}", error_cores)
             except Exception:  # pylint: disable=broad-except
                 log.exception("Couldn't get core state")
-
-    def __reprogram_tag(self, connection):
-        """ Make our tag deliver to the given connection.
-
-        :param ~.SCAMPConnection connection: The connection to deliver to.
-        """
-        request = IPTagSet(
-            self._x, self._y, [0, 0, 0, 0], 0,
-            self._remote_tag, strip=True, use_sender=True)
-        data = connection.get_scp_data(request)
-        exn = None
-        for _ in range(3):
-            try:
-                connection.send(data)
-                _, _, response, offset = connection.receive_scp_response()
-                request.get_scp_response().read_bytestring(response, offset)
-                return
-            except SpinnmanTimeoutException as e:
-                exn = e
-        raise exn or SpinnmanTimeoutException
 
     def get_data(
             self, extra_monitor, placement, memory_address,
             length_in_bytes):
-        """ Gets data from a given core and memory address.
+        """
+        Gets data from a given core and memory address.
 
         :param ExtraMonitorSupportMachineVertex extra_monitor:
             the extra monitor used for this data
@@ -1022,8 +1022,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: byte array of the data
         :rtype: bytearray
         """
-        start = float(time.time())
+        # create report elements
+        if get_config_bool("Reports", "write_data_speed_up_reports"):
+            routers_been_in_use = self._determine_which_routers_were_used(
+                placement)
+            self._write_routers_used_into_report(
+                routers_been_in_use, placement)
 
+        start = float(time.time())
         # if asked for no data, just return a empty byte array
         if length_in_bytes == 0:
             data = bytearray(0)
@@ -1038,33 +1044,30 @@ class DataSpeedUpPacketGatherMachineVertex(
         transceiver = FecDataView.get_transceiver()
 
         # Update the IP Tag to work through a NAT firewall
-        connection = SCAMPConnection(
-            chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
-        self.__reprogram_tag(connection)
+        with self.__open_connection() as connection:
+            # update transaction id for extra monitor
+            extra_monitor.update_transaction_id()
+            transaction_id = extra_monitor.transaction_id
 
-        # update transaction id for extra monitor
-        extra_monitor.update_transaction_id()
-        transaction_id = extra_monitor.transaction_id
+            # send
+            connection.send_sdp_message(self.__make_sdp_message(
+                placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
+                _FOUR_WORDS.pack(
+                    DATA_OUT_COMMANDS.START_SENDING.value, transaction_id,
+                    memory_address, length_in_bytes)))
 
-        # send
-        connection.send_sdp_message(self.__make_sdp_message(
-            placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
-            _FOUR_WORDS.pack(
-                DATA_OUT_COMMANDS.START_SENDING.value, transaction_id,
-                memory_address, length_in_bytes)))
+            # receive
+            self._output = bytearray(length_in_bytes)
+            self._view = memoryview(self._output)
+            self._max_seq_num = self.calculate_max_seq_num()
+            lost_seq_nums = self._receive_data(
+                transceiver, placement, connection, transaction_id)
 
-        # receive
-        self._output = bytearray(length_in_bytes)
-        self._view = memoryview(self._output)
-        self._max_seq_num = self.calculate_max_seq_num()
-        lost_seq_nums = self._receive_data(
-            transceiver, placement, connection, transaction_id)
-
-        # Stop anything else getting through (and reduce traffic)
-        connection.send_sdp_message(self.__make_sdp_message(
-            placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
-            _TWO_WORDS.pack(DATA_OUT_COMMANDS.CLEAR.value, transaction_id)))
-        connection.close()
+            # Stop anything else getting through (and reduce traffic)
+            connection.send_sdp_message(self.__make_sdp_message(
+                placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
+                _TWO_WORDS.pack(
+                    DATA_OUT_COMMANDS.CLEAR.value, transaction_id)))
 
         end = float(time.time())
         with ProvenanceWriter() as db:
@@ -1083,14 +1086,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                         placement.x, placement.y, memory_address,
                         length_in_bytes, self._run, "Lost_seq_nums",
                         lost_seq_num)
-
-        # create report elements
-        if get_config_bool("Reports", "write_data_speed_up_reports"):
-            routers_been_in_use = self._determine_which_routers_were_used(
-                placement)
-            self._write_routers_used_into_report(
-                self._out_report_path, routers_been_in_use,
-                placement)
 
         return self._output
 
@@ -1120,14 +1115,13 @@ class DataSpeedUpPacketGatherMachineVertex(
                 else:
                     log.info(
                         "ignoring packet as transaction id should be {}"
-                        " but is {}".format(
-                            transaction_id, response_transaction_id))
+                        " but is {}", transaction_id, response_transaction_id)
             except SpinnmanTimeoutException as e:
                 if timeoutcount > TIMEOUT_RETRY_LIMIT:
                     raise SpinnFrontEndException(
-                        "Failed to hear from the machine during {} attempts. "
-                        "Please try removing firewalls".format(
-                            timeoutcount)) from e
+                        "Failed to hear from the machine during "
+                        f"{timeoutcount} attempts. "
+                        "Please try removing firewalls") from e
 
                 timeoutcount += 1
                 # self.__reset_connection()
@@ -1139,8 +1133,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _determine_which_routers_were_used(placement):
-        """ Traverse the fixed route paths from a given location to its\
-            destination. Used for determining which routers were used.
+        """
+        Traverse the fixed route paths from a given location to its
+        destination. Used for determining which routers were used.
 
         :param ~.Placement placement: the source to start from
         :return: list of chip locations
@@ -1163,26 +1158,23 @@ class DataSpeedUpPacketGatherMachineVertex(
             entry = fixed_routes[chip_x, chip_y]
         return routers
 
-    @staticmethod
-    def _write_routers_used_into_report(
-            report_path, routers_been_in_use, placement):
-        """ Write the used routers into a report
+    def _write_routers_used_into_report(self, routers_been_in_use, placement):
+        """
+        Write the used routers into a report.
 
         :param str report_path: the path to the report file
         :param list(tuple(int,int)) routers_been_in_use:
             the routers been in use
         :param ~.Placement placement: the first placement used
         """
-        writer_behaviour = "w"
-        if os.path.isfile(report_path):
-            writer_behaviour = "a"
-
-        with open(report_path, writer_behaviour, encoding="utf-8") as writer:
-            writer.write("[{}:{}:{}] = {}\n".format(
-                placement.x, placement.y, placement.p, routers_been_in_use))
+        with open(self._out_report_path, "a", encoding="utf-8") as writer:
+            writer.write(
+                f"[{placement.x}:{placement.y}:{placement.p}] "
+                f"= {routers_been_in_use}\n")
 
     def _calculate_missing_seq_nums(self, seq_nums):
-        """ Determine which sequence numbers we've missed
+        """
+        Determine which sequence numbers we've missed.
 
         :param set(int) seq_nums: the set already acquired
         :return: list of missing sequence numbers
@@ -1193,9 +1185,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _determine_and_retransmit_missing_seq_nums(
             self, seq_nums, transceiver, placement, lost_seq_nums,
             transaction_id):
-        """ Determine if there are any missing sequence numbers, and if so\
-            retransmits the missing sequence numbers back to the core for\
-            retransmission.
+        """
+        Determine if there are any missing sequence numbers, and if so
+        retransmits the missing sequence numbers back to the core for
+        retransmission.
 
         :param set(int) seq_nums: the sequence numbers already received
         :param ~.Transceiver transceiver: spinnman instance
@@ -1294,7 +1287,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _process_data(
             self, data, seq_nums, finished, placement, transceiver,
             lost_seq_nums, transaction_id):
-        """ Take a packet and processes it see if we're finished yet.
+        """
+        Take a packet and process it see if we're finished yet.
 
         :param bytearray data: the packet data
         :param set(int) seq_nums: the list of sequence numbers received so far
@@ -1321,10 +1315,10 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # check seq num not insane
         if seq_num > self._max_seq_num:
-            raise Exception(
-                "got an insane sequence number. got {} when "
-                "the max is {} with a length of {}".format(
-                    seq_num, self._max_seq_num, length_of_data))
+            raise ValueError(
+                f"got an insane sequence number. got {seq_num} when "
+                f"the max is {self._max_seq_num} "
+                f"with a length of {length_of_data}")
 
         # figure offset for where data is to be put
         offset = self._calculate_offset(seq_num)
@@ -1339,8 +1333,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 length_of_data != BYTES_FOR_SEQ_AND_TRANSACTION_ID):
             self._write_into_view(
                 offset, true_data_length, data,
-                BYTES_FOR_SEQ_AND_TRANSACTION_ID, length_of_data, seq_num,
-                length_of_data, False)
+                BYTES_FOR_SEQ_AND_TRANSACTION_ID, length_of_data)
 
         # add seq num to list
         seq_nums.add(seq_num)
@@ -1368,9 +1361,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _write_into_view(
             self, view_start_position, view_end_position,
-            data, data_start_position, data_end_position, seq_num,
-            packet_length, is_final):
-        """ Puts data into the view
+            data, data_start_position, data_end_position):
+        """
+        Puts data into the view.
 
         :param int view_start_position: where in view to start
         :param int view_end_position: where in view to end
@@ -1382,19 +1375,15 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # pylint: disable=too-many-arguments
         if view_end_position > len(self._output):
-            raise Exception(
-                "I'm trying to add to my output data, but am trying to add "
-                "outside my acceptable output positions! max is {} and I "
-                "received a request to fill to {} from {} for sequence num "
-                "{} from max sequence num {} length of packet {} and "
-                "final {}".format(
-                    len(self._output), view_end_position, view_start_position,
-                    seq_num, self._max_seq_num - 1, packet_length, is_final))
+            raise ValueError(
+                f"End position {view_end_position} > "
+                f"output length {len(self._output)}")
         self._view[view_start_position: view_end_position] = \
             data[data_start_position:data_end_position]
 
     def _check(self, seq_nums):
-        """ Verify if the sequence numbers are correct.
+        """
+        Verify if the sequence numbers are correct.
 
         :param list(int) seq_nums: the received sequence numbers
         :return: Whether all the sequence numbers have been received
@@ -1404,13 +1393,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         seq_nums = sorted(seq_nums)
         max_needed = self.calculate_max_seq_num()
         if len(seq_nums) > max_needed + 1:
-            raise Exception("I've received more data than I was expecting!!")
+            raise ValueError(f"too many seg_nums: {len(seq_nums)}")
         return len(seq_nums) == max_needed + 1
 
     def calculate_max_seq_num(self):
-        """ Deduce the max sequence number expected to be received
+        """
+        Deduce the max sequence number expected to be received.
 
-        :return: the biggest sequence num expected
+        :return: the biggest sequence number expected
         :rtype: int
         """
         return ceildiv(
@@ -1419,7 +1409,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_missing(seq_nums):
-        """ Debug printer for the missing sequence numbers from the pile.
+        """
+        Debug printer for the missing sequence numbers from the pile.
 
         :param list(int) seq_nums: the sequence numbers received so far
         """
@@ -1428,7 +1419,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_missing_n_packets(n_packets):
-        """ Debug printer for the number of missing packets from the pile.
+        """
+        Debug printer for the number of missing packets from the pile.
 
         :param n_packets: the number of packets
         """
@@ -1436,23 +1428,25 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_out_packet_data(data, position):
-        """ Debug prints out the data from the packet.
+        """
+        Debug prints out the data from the packet.
 
         :param bytearray data: the packet data
         """
-        reread_data = struct.unpack("<{}B".format(len(data)), data)
+        reread_data = struct.unpack(f"<{len(data)}B", data)
         output = ""
         position2 = position
-        log.debug("size of data is {}".format((len(data) / 4) - 3))
+        log.debug("size of data is {}", (len(data) / 4) - 3)
         for index, reread_data_element in enumerate(reread_data):
             if index >= 12:
-                output += "{}:{},".format(position2, reread_data_element)
+                output += f"{position2}:{reread_data_element},"
                 position2 += 1
         log.debug("converted data back into readable form is {}", output)
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
-        """ Debug helper method for figuring out if everything been received.
+        """
+        Debug helper method for figuring out if everything been received.
 
         :param list(int) seq_nums: sequence numbers received
         :param int max_needed: biggest expected to have
@@ -1463,8 +1457,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):
-        """ Debug helper for printing missing sequence number packet\
-            transmission.
+        """
+        Debug helper for printing missing sequence number packet transmission.
 
         :param int packet_count: which packet is being fired
         :param int n_packets: how many packets to fire.
@@ -1491,8 +1485,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = (
             _FOUR_WORDS.unpack_from(data))
         with ProvenanceWriter() as db:
-            db.add_core_name(
-                placement.x, placement.y, placement.p, placement.vertex.label)
             db.insert_core(
                 placement.x, placement.y, placement.p,
                 "Sent_SDP_Packets", n_sdp_sent)
