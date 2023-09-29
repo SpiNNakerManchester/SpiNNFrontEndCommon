@@ -21,7 +21,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, MAX_MEM_REGIONS)
-from .utils import csvopen
+from spinn_front_end_common.utilities.utility_calls import csvopen
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")

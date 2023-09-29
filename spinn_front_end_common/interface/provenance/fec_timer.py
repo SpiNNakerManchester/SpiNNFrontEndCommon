@@ -18,7 +18,7 @@ from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from .global_provenance import GlobalProvenance
-from spinn_front_end_common.utilities.report_functions.utils import csvopen
+from spinn_front_end_common.utilities.utility_calls import csvopen
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

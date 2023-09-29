@@ -16,7 +16,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities.algorithm_utilities.routes_format import (
     _reduce_route_value)
 from spinn_front_end_common.data import FecDataView
-from .utils import csvopen
+from spinn_front_end_common.utilities.utility_calls import csvopen
 
 
 def fixed_route_from_machine_report():

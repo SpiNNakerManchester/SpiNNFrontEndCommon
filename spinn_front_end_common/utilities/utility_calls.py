@@ -13,9 +13,11 @@
 # limitations under the License.
 
 """
-Utility calls for interpreting bits of the DSG
+Utility calls.
 """
 
+from contextlib import contextmanager
+import csv
 import io
 import os
 import threading
@@ -185,3 +187,25 @@ def open_scp_connection(chip_x, chip_y, chip_ip_address):
         if conn:
             return conn
     return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
+
+
+@contextmanager
+def csvopen(filename, header, *, mode="w"):
+    """
+    Open a CSV file for writing, write a header row (comma-separated string),
+    and yield a writer for the CSV rows.
+
+    Intended to be used like this::
+
+        with csvopen("abc.csv", "A,B,C") as csv:
+            csv.writerow([1,2,3])
+
+    .. note::
+        This handles all the complexities of quoting so you can ignore them.
+    """
+    with open(filename, mode, encoding="utf-8", newline="") as f:
+        at_start = f.tell() == 0
+        csv_writer = csv.writer(f)
+        if header is not None and at_start:
+            csv_writer.writerow(header.split(","))
+        yield csv_writer

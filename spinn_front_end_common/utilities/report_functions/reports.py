@@ -25,8 +25,8 @@ from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     get_app_partitions)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.utility_calls import csvopen
 from .router_summary import RouterSummary
-from .utils import csvopen
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

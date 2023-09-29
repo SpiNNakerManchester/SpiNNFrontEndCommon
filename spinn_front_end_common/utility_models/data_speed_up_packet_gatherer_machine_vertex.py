@@ -43,7 +43,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         SetRouterTimeoutProcess, ClearQueueProcess)
-from spinn_front_end_common.utilities.report_functions.utils import csvopen
+from spinn_front_end_common.utilities.utility_calls import csvopen
 
 log = FormatAdapter(logging.getLogger(__name__))
 

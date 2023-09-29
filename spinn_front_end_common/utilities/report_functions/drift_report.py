@@ -17,7 +17,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
-from .utils import csvopen
+from spinn_front_end_common.utilities.utility_calls import csvopen
 
 # The fixed point position for drift readings
 CLOCK_DRIFT_REPORT = "clock_drift.csv"
