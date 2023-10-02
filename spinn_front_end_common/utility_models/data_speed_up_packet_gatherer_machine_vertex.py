@@ -1000,7 +1000,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 FecDataView.iterate_monitors())
             try:
                 transceiver = FecDataView.get_transceiver()
-                error_cores = transceiver.get_cores_in_state(
+                error_cores = transceiver.get_cores_in_states(
                     core_subsets, {CPUState.RUNNING})
                 if error_cores:
                     log.error("Cores in an unexpected state: {}",
