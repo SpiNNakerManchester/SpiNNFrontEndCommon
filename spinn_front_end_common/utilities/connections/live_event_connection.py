@@ -22,6 +22,7 @@ from typing import (
     cast, overload)
 from typing_extensions import Literal, TypeGuard
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.logger_utils import warn_once
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement, KeyDataElement)
 from spinnman.messages.eieio import EIEIOType, AbstractEIEIOMessage
@@ -96,7 +97,7 @@ class LiveEventConnection(DatabaseConnection):
         "__error_keys",
         "__init_callbacks",
         "__key_to_atom_id_and_label",
-        "__live_event_callbacks",
+        "__no_time_event_callbacks",
         "__time_event_callbacks",
         "__live_packet_gather_label",
         "__pause_stop_callbacks",
@@ -157,7 +158,7 @@ class LiveEventConnection(DatabaseConnection):
         # Also used by SpynnakerPoissonControlConnection
         self._atom_id_to_key: Dict[str, Dict[int, int]] = dict()
         self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = dict()
-        self.__live_event_callbacks: List[
+        self.__no_time_event_callbacks: List[
             List[Tuple[_RcvCallback, bool]]] = list()
         self.__time_event_callbacks: List[
             List[Tuple[_RcvTimeCallback, bool]]] = list()
@@ -167,7 +168,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__receiver_details: List[Tuple[int, int, int, str]] = list()
         if receive_labels is not None:
             for label in receive_labels:
-                self.__live_event_callbacks.append(list())
+                self.__no_time_event_callbacks.append(list())
                 self.__time_event_callbacks.append(list())
                 self.__start_resume_callbacks[label] = list()
                 self.__pause_stop_callbacks[label] = list()
@@ -204,7 +205,7 @@ class LiveEventConnection(DatabaseConnection):
             self.__receive_labels = list()
         if label not in self.__receive_labels:
             self.__receive_labels.append(label)
-            self.__live_event_callbacks.append(list())
+            self.__no_time_event_callbacks.append(list())
             self.__time_event_callbacks.append(list())
         if label not in self.__start_resume_callbacks:
             self.__start_resume_callbacks[label] = list()
@@ -242,19 +243,25 @@ class LiveEventConnection(DatabaseConnection):
     def add_receive_callback(
             self, label: str, live_event_callback: Union[
                 _RcvCallback, _RcvTimeCallback], *,
-            translate_key: bool = True, for_times: bool = False):
+            translate_key: bool = True):
         """
-        Add a callback for the reception of live events from a vertex.
+        Add a callback for the reception of time events from a vertex.
+
+        These are typically used to receive keys or atoms ids that spiked.
+
+        .. note::
+            Previously this method was also used to add no time callback
+            Ie the once that take as parameters the label of the vertex,
+            an int atom ID or key, and an int payload which may be None.
+            For those use add_receive_no_time_callback now
 
         :param str label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
-        :param live_event_callback:
-            A function to be called when events are received.
-            This should take as parameters *either* the label of the vertex,
-            the key or atom when the event occurred, and optionally the
-            payload, *or* the label of the vertex, the simulation timestep
-            when the event occurred, and an array-like of atom IDs.
-        :type live_event_callback: callable(str, int, int) -> None
+        :param live_event_callback: A function to be called when events are
+            received. This should take as parameters the label of the vertex,
+            the simulation timestep when the event occurred, and an
+            array-like of atom IDs or keys.
+        :type live_event_callback: callable(str, int, list(int)) -> None
         :param bool translate_key:
             True if the key is to be converted to an atom ID, False if the
             key should stay a key
@@ -267,12 +274,26 @@ class LiveEventConnection(DatabaseConnection):
         label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
-        if for_times:
-            self.__time_event_callbacks[label_id].append(
-                (cast(_RcvTimeCallback, live_event_callback), translate_key))
-        else:
-            self.__live_event_callbacks[label_id].append(
-                (cast(_RcvCallback, live_event_callback), translate_key))
+        self.__time_event_callbacks[label_id].append(
+            (live_event_callback, translate_key))
+
+    def add_receive_no_time_callback(
+            self, label, live_event_callback, translate_key=True):
+        """
+        Add a callback for the reception of live events from a vertex.
+
+        :param str label: The label of the vertex to be notified about.
+            Must be one of the vertices listed in the constructor
+        :param live_event_callback: A function to be called when events are
+            received. This should take as parameters the label of the vertex,
+            an int atom ID or key, and an int payload which may be None
+        :type live_event_callback: callable(str, int, int or None) -> None
+        """
+        label_id = self.__receive_labels.index(label)
+        logger.info("Receive callback {} registered to label {}",
+                    live_event_callback, label)
+        self.__no_time_event_callbacks[label_id].append(
+            (live_event_callback, translate_key))
 
     def add_start_callback(self, label: str, start_callback: _Callback):
         """
@@ -563,7 +584,13 @@ class LiveEventConnection(DatabaseConnection):
         for time in key_times_labels:
             for label_id in key_times_labels[time]:
                 label = self.__rcv_label(label_id)
-                for c_back, use_atom in self.__time_event_callbacks[label_id]:
+                callbacks = self.__time_event_callbacks[label_id]
+                if len(callbacks) == 0:
+                    msg = f"LiveEventConnection received a packet " \
+                          f"with time for {label} but has no callback. " \
+                          f"Use add_receive_callback to register one."
+                    warn_once(logger, msg)
+                for c_back, use_atom in callbacks:
                     if use_atom:
                         c_back(label, time, atoms_times_labels[time][label_id])
                     else:
@@ -579,7 +606,13 @@ class LiveEventConnection(DatabaseConnection):
             if key in self.__key_to_atom_id_and_label:
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
                 label = self.__rcv_label(label_id)
-                for c_back, use_atom in self.__live_event_callbacks[label_id]:
+                callbacks = self.__no_time_event_callbacks[label_id]
+                if len(callbacks) == 0:
+                    msg = f"LiveEventConnection received a packet " \
+                          f"without time for {label} but has no callback." \
+                          f" Use add_receive_no_time_callback to register one"
+                    warn_once(logger, msg)
+                for c_back, use_atom in callbacks:
                     if isinstance(element, KeyPayloadDataElement):
                         if use_atom:
                             c_back(label, atom_id, element.payload)
