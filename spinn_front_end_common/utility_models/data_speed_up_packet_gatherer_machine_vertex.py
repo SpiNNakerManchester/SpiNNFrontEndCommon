@@ -22,7 +22,7 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
-from spinnman.model.enums import CPUState, ExecutableType
+from spinnman.model.enums import CPUState, ExecutableType, SDP_PORTS
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, IPtagResource
 from spinn_front_end_common.data import FecDataView
@@ -36,7 +36,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
+    BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset, open_scp_connection, retarget_tag)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
@@ -340,8 +340,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         Looks up from the machine what the current transaction ID is
         and updates the data speed up gatherer.
         """
-        self._transaction_id = FecDataView.get_transceiver().read_user_1(
-            self._placement.x, self._placement.y, self._placement.p)
+        self._transaction_id = FecDataView.get_transceiver().read_user(
+            self._placement.x, self._placement.y, self._placement.p, 1)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -425,7 +425,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             label="mc_key_map")
         spec.reserve_memory_region(
             region=_DATA_REGIONS.PROVENANCE_REGION,
-            size=_PROVENANCE_DATA_SIZE, label="Provenance", empty=True)
+            size=_PROVENANCE_DATA_SIZE, label="Provenance")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -1000,8 +1000,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 FecDataView.iterate_monitors())
             try:
                 transceiver = FecDataView.get_transceiver()
-                error_cores = transceiver.get_cores_not_in_state(
-                    core_subsets, {CPUState.RUNNING})
+                error_cores = transceiver.get_cpu_infos(
+                    core_subsets, {CPUState.RUNNING}, False)
                 if error_cores:
                     log.error("Cores in an unexpected state: {}", error_cores)
             except Exception:  # pylint: disable=broad-except

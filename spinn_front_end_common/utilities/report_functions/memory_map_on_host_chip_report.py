@@ -17,9 +17,10 @@ import os
 import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
-from data_specification.constants import MAX_MEM_REGIONS
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.utilities.constants import (
+    BYTES_PER_WORD, MAX_MEM_REGIONS)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -37,19 +38,20 @@ def memory_map_on_host_chip_report():
         os.makedirs(directory_name)
 
     transceiver = FecDataView.get_transceiver()
-    dsg_targets = FecDataView.get_dsg_targets()
-    progress = ProgressBar(
-        dsg_targets.ds_n_cores(), "Writing memory map reports")
-    for (x, y, p) in progress.over(dsg_targets.keys()):
-        file_name = os.path.join(
-            directory_name, f"memory_map_from_processor_{x}_{y}_{p}.txt")
-        try:
-            with open(file_name, "w", encoding="utf-8") as f:
-                _describe_mem_map(f, transceiver, x, y, p)
-        except IOError:
-            logger.exception(
-                "Generate_placement_reports: Can't open file {} for writing.",
-                file_name)
+    with DsSqlliteDatabase() as ds_database:
+        progress = ProgressBar(
+            ds_database.get_n_ds_cores(), "Writing memory map reports")
+        for (x, y, p) in progress.over(ds_database.get_ds_cores()):
+            file_name = os.path.join(
+                directory_name, f"memory_map_from_processor_{x}_{y}_{p}.txt")
+            try:
+                with open(file_name, "w", encoding="utf-8") as f:
+                    _describe_mem_map(f, transceiver, x, y, p)
+            except IOError:
+                logger.exception(
+                    "Generate_placement_reports: "
+                    "Can't open file {} for writing.",
+                    file_name)
 
 
 def _describe_mem_map(f, txrx, x, y, p):
@@ -73,5 +75,4 @@ def _get_region_table_addr(txrx, x, y, p):
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """
-    user_0_addr = txrx.get_user_0_register_address_from_core(p)
-    return txrx.read_word(x, y, user_0_addr) + REGION_HEADER_SIZE
+    return txrx.read_user(x, y, p, 0) + REGION_HEADER_SIZE

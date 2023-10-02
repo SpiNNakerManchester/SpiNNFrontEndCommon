@@ -31,7 +31,6 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
@@ -573,16 +572,6 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_executable_targets([])
 
-    def test_dsg_target(self):
-        writer = FecDataWriter.mock()
-        with self.assertRaises(DataNotYetAvialable):
-            FecDataView.get_dsg_targets()
-        targets = DsSqlliteDatabase()
-        writer.set_dsg_targets(targets)
-        self.assertEqual(targets, FecDataView.get_dsg_targets())
-        with self.assertRaises(TypeError):
-            writer.set_dsg_targets(dict())
-
     def test_gatherer_map(self):
         writer = FecDataWriter.mock()
         with self.assertRaises(DataNotYetAvialable):
@@ -744,3 +733,26 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIsNone(FecDataView.get_run_step())
         self.assertEqual(1, writer.next_run_step())
         self.assertEqual(1, FecDataView.get_run_step())
+
+    def test_ds_references(self):
+        refs1 = FecDataView.get_next_ds_references(7)
+        self.assertEqual(7, len(refs1))
+        self.assertEqual(7, len(set(refs1)))
+        refs2 = FecDataView.get_next_ds_references(5)
+        self.assertEqual(5, len(refs2))
+        set2 = set(refs2)
+        self.assertEqual(5, len(set2))
+        self.assertEqual(0, len(set2.intersection(refs1)))
+
+        # reference repeat after a hard reset
+        # So if called the same way will generate teh same results
+        # setup is also a hard reset
+        writer = FecDataWriter.setup()
+        self.assertListEqual(refs1, FecDataView.get_next_ds_references(7))
+        self.assertListEqual(refs2, FecDataView.get_next_ds_references(5))
+
+        writer.start_run()
+        writer.finish_run()
+        writer.hard_reset()
+        self.assertListEqual(refs1, FecDataView.get_next_ds_references(7))
+        self.assertListEqual(refs2, FecDataView.get_next_ds_references(5))
