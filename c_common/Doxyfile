@@ -26,7 +26,7 @@
 #---------------------------------------------------------------------------
 
 PROJECT_NAME           = SpiNNFrontEndCommon
-PROJECT_NUMBER         = 7.1.0
+PROJECT_NUMBER         = 7.1.1
 PROJECT_BRIEF          = "Common support code for user-facing front end systems."
 PROJECT_LOGO           =
 
