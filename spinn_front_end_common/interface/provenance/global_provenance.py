@@ -21,6 +21,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -102,16 +103,19 @@ class GlobalProvenance(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        self.execute(
-            """
-            INSERT INTO category_timer_provenance(
-                category, machine_on, n_run, n_loop)
-            VALUES(?, ?, ?, ?)
-            """,
-            [category.category_name, machine_on,
-             FecDataView.get_run_number(),
-             FecDataView.get_run_step()])
-        return self.lastrowid
+        for row in self.execute(
+                """
+                INSERT INTO category_timer_provenance(
+                    category, machine_on, n_run, n_loop)
+                VALUES(?, ?, ?, ?)
+                RETURNING category_id
+                """,
+                [category.category_name, machine_on,
+                 FecDataView.get_run_number(),
+                 FecDataView.get_run_step()]):
+            return row[0]
+        raise DatabaseException(
+            "database insert failed (category_timer_provenance)")
 
     def insert_category_timing(self, category_id, timedelta):
         """

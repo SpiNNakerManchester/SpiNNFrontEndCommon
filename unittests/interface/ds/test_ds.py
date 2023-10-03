@@ -29,7 +29,7 @@ from spinn_front_end_common.interface.ds import \
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_BYTE_SIZE)
 from spinn_front_end_common.utilities.exceptions import (
-    DataSpecException, DsDatabaseException)
+    DataSpecException, DatabaseException)
 
 
 class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
@@ -167,7 +167,7 @@ class TestDataSpecification(unittest.TestCase):
             # check internal fields used later are correct
             self.assertEqual(123456, dsg._size)
             # Error is switching into a region not reserved
-            with self.assertRaises(DsDatabaseException):
+            with self.assertRaises(DatabaseException):
                 dsg.switch_write_focus(8)
 
     def test_pointers(self):
@@ -196,10 +196,10 @@ class TestDataSpecification(unittest.TestCase):
             dsg4 = DataSpecificationGenerator(1, 1, 4, vertex, db)
             dsg4.reference_memory_region(8, 3, "oops")
 
-            with self.assertRaises(DsDatabaseException):
+            with self.assertRaises(DatabaseException):
                 db.set_start_address(1, 3, 4, 123)
 
-            with self.assertRaises(DsDatabaseException):
+            with self.assertRaises(DatabaseException):
                 db.get_start_address(1, 3, 4)
 
             p2 = 1000 + APP_PTR_TABLE_BYTE_SIZE
@@ -230,9 +230,9 @@ class TestDataSpecification(unittest.TestCase):
 
             # region_num, pointer, content
 
-            with self.assertRaises(DsDatabaseException):
+            with self.assertRaises(DatabaseException):
                 db.set_region_pointer(1, 2, 3, 9, 1400)
-            with self.assertRaises(DsDatabaseException):
+            with self.assertRaises(DatabaseException):
                 db.get_region_pointer(1, 2, 3, 9)
 
     def test_write(self):
@@ -283,7 +283,7 @@ class TestDataSpecification(unittest.TestCase):
             self.assertIn(
                 ((0, 1, 3), None, size3, APP_PTR_TABLE_BYTE_SIZE), info)
 
-            with self.assertRaises(DsDatabaseException):
+            with self.assertRaises(DatabaseException):
                 db.set_region_content(
                     0, 1, 4, 5, bytearray(b'\x0c\x00\x00\x00'), "test")
 

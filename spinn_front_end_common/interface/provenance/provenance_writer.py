@@ -16,6 +16,7 @@ import logging
 from spinn_utilities.config_holder import get_config_int_or_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -144,12 +145,16 @@ class ProvenanceWriter(BaseDatabase):
 
         :param str message:
         """
-        self.execute(
-            """
-            INSERT INTO reports(message)
-            VALUES(?)
-            """, [message])
-        recorded = self.lastrowid
+        for row in self.execute(
+                """
+                INSERT INTO reports(message)
+                VALUES(?)
+                RETURNING rowid AS row_num
+                """, [message]):
+            recorded = row["row_num"]
+            break
+        else:
+            raise DatabaseException("database insert failed (reports)")
         cutoff = get_config_int_or_none("Reports", "provenance_report_cutoff")
         if cutoff is None or recorded < cutoff:
             logger.warning(message)
@@ -192,7 +197,7 @@ class ProvenanceWriter(BaseDatabase):
         self.executemany(
             """
             INSERT OR IGNORE INTO boards_provenance(
-            ethernet_x, ethernet_y, ip_addres)
+                ethernet_x, ethernet_y, ip_addres)
             VALUES (?, ?, ?)
             """, ((x, y, ipaddress)
                   for ((x, y), ipaddress) in connections.items()))
