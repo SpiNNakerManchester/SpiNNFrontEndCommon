@@ -1420,7 +1420,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Creates and fills the data spec database
         """
         with FecTimer("Graph data specification writer", TimerWork.OTHER):
-            self._data_writer.set_ds_database(
+            self._data_writer.set_ds_database_path(
                 graph_data_specification_writer())
 
     def _do_data_generation(self):
