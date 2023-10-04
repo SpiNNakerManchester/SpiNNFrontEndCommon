@@ -351,8 +351,8 @@ class ExtraMonitorSupportMachineVertex(
         :rtype: int
         """
         if self._prov_region is None:
-            region_table_addr = txrx.get_cpu_information_from_core(
-                place.x, place.y, place.p).user[0]
+            region_table_addr = txrx.get_region_base_address(
+                place.x, place.y, place.p)
             region_entry_addr = get_region_base_address_offset(
                 region_table_addr, _DSG_REGIONS.PROVENANCE_AREA)
             self._prov_region, = _ONE_WORD.unpack(txrx.read_memory(
