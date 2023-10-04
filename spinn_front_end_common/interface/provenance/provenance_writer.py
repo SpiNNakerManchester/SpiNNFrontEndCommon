@@ -48,8 +48,7 @@ class ProvenanceWriter(BaseDatabase):
             Flag to say unshared in-memory can be used.
             Otherwise a `None` file will mean the default should be used
         """
-        if get_config_bool("Reports", "write_provenance"):
-            super().__init__(database_file)
+        super().__init__(database_file)
 
     def insert_power(self, description, the_value):
         """
