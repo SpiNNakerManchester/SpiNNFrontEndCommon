@@ -27,24 +27,6 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-POWER_CYCLE_WARNING = (
-    "When power-cycling a board, it is recommended that you wait for 30 "
-    "seconds before attempting a reboot. Therefore, the tools will now "
-    "wait for 30 seconds. If you wish to avoid this wait, please set "
-    "reset_machine_on_startup = False in the [Machine] section of the "
-    "relevant configuration (cfg) file.")
-
-POWER_CYCLE_FAILURE_WARNING = (
-    "The end user requested the power-cycling of the board. But the "
-    "tools did not have the required BMP connection to facilitate a "
-    "power-cycling, and therefore will not do so. please set the "
-    "bmp_names accordingly in the [Machine] section of the relevant "
-    "configuration (cfg) file. Or use a machine assess process which "
-    "provides the BMP data (such as a spalloc system) or finally set "
-    "reset_machine_on_startup = False in the [Machine] section of the "
-    "relevant configuration (cfg) file to avoid this warning in future.")
-
-
 def machine_generator(
         bmp_details: Optional[str], board_version: Optional[int],
         auto_detect_bmp: bool, scamp_connection_data: Optional[Dict[XY, str]],
@@ -83,19 +65,10 @@ def machine_generator(
     txrx = create_transceiver_from_hostname(
         FecDataView.get_ipaddress(), board_version or 5,
         bmp_connection_data=_parse_bmp_details(bmp_details),
-        auto_detect_bmp=auto_detect_bmp)
-
-    if reset_machine_on_start_up:
-        success = txrx.power_off_machine()
-        if success:
-            logger.warning(POWER_CYCLE_WARNING)
-            time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
-            logger.warning("Power cycle wait complete")
-        else:
-            logger.warning(POWER_CYCLE_FAILURE_WARNING)
+        auto_detect_bmp=auto_detect_bmp,
+        power_cycle=reset_machine_on_start_up)
 
     # do auto boot if possible
-    txrx.ensure_board_is_ready()
     if scamp_connection_data:
         txrx.add_scamp_connections(scamp_connection_data)
     else:
