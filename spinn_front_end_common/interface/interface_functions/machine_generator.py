@@ -14,12 +14,10 @@
 
 import logging
 import re
-import time
 from typing import Dict, List, Optional, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
 from spinn_machine import Machine
-from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname, Transceiver
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.data import FecDataView
