@@ -2318,11 +2318,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not unsuccessful_cores:
             for executable_type, core_subsets in \
                     self._data_writer.get_executable_types().items():
-                failed_cores = transceiver.get_cpu_infos(
+                unsuccessful_cores = transceiver.get_cpu_infos(
                     core_subsets, executable_type.end_state, False)
-                for (x, y, p) in failed_cores:
-                    unsuccessful_cores.add_processor(
-                        x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
         logger.error(unsuccessful_cores.get_status_string())

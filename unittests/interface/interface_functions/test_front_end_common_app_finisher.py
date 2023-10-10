@@ -20,7 +20,7 @@ from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher)
-from spinnman.model.cpu_infos import CPUInfos
+from spinnman.model import CPUInfo, CPUInfos
 from spinnman.transceiver import Transceiver
 
 
@@ -53,9 +53,11 @@ class _MockTransceiver(Transceiver):
                 if (x, y, p) in core_states:
                     if hasattr(states, "__iter__"):
                         if core_states[x, y, p] in states:
-                            cores_in_state.add_processor(x, y, p, None)
+                            cores_in_state.add_info(CPUInfo.mock_info(
+                                x, y, p, p, core_states[x, y, p]))
                     elif core_states[x, y, p] == states:
-                        cores_in_state.add_processor(x, y, p, None)
+                        cores_in_state.add_info(CPUInfo.mock_info(
+                            x, y, p, p, core_states[x, y, p]))
 
         self._current_state += 1
         return cores_in_state

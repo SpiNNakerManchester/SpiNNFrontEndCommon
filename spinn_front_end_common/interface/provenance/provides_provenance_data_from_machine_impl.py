@@ -116,8 +116,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         :rtype: int
         """
         # Get the App Data for the core
-        region_table_address = transceiver.get_cpu_information_from_core(
-            placement.x, placement.y, placement.p).user[0]
+        region_table_address = transceiver.get_region_base_address(
+            placement.x, placement.y, placement.p)
 
         # Get the provenance region base address
         prov_region_entry_address = get_region_base_address_offset(

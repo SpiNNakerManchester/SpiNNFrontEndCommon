@@ -50,10 +50,8 @@ def _emergency_state_check() -> None:
             for processor in chip.processors:
                 p = processor.processor_id
                 try:
-                    info = txrx.get_cpu_information_from_core(
-                        chip.x, chip.y, p)
-                    if info.state in _bad_states:
-                        infos.add_processor(chip.x, chip.y, p, info)
+                    txrx.add_cpu_information_from_core(
+                        chip.x, chip.y, p, _bad_states)
                 except Exception:
                     errors.append((chip.x, chip.y, p))
         if len(infos):

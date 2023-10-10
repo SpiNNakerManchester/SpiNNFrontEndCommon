@@ -1399,7 +1399,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def __provenance_address(x: int, y: int, p: int) -> int:
         txrx = FecDataView.get_transceiver()
-        region_table = txrx.get_cpu_information_from_core(x, y, p).user[0]
+        region_table = txrx.get_region_base_address(x, y, p)
 
         # Get the provenance region base address
         prov_region_entry_address = get_region_base_address_offset(
