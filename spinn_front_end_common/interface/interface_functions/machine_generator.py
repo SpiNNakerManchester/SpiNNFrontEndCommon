@@ -25,6 +25,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
+
 def machine_generator(
         bmp_details: Optional[str], board_version: Optional[int],
         auto_detect_bmp: bool, scamp_connection_data: Optional[Dict[XY, str]],
