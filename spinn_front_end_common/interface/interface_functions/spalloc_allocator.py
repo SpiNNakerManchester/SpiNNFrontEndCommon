@@ -122,7 +122,6 @@ class SpallocJobController(MachineAllocationController):
         if not self.__use_proxy:
             return super(SpallocJobController, self).create_transceiver()
         txrx = self._job.create_transceiver()
-        txrx.ensure_board_is_ready()
         return txrx
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
