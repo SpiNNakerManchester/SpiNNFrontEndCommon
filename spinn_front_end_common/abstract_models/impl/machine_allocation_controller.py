@@ -91,7 +91,6 @@ class MachineAllocationController(
             hostname=self.__hostname,
             bmp_connection_data=None,
             version=5, auto_detect_bmp=False)
-        txrx.ensure_board_is_ready()
         txrx.discover_scamp_connections()
         return txrx
 
