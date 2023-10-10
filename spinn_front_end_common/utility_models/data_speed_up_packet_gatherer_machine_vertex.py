@@ -216,8 +216,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_coord_word",
         # transaction id
         "_transaction_id",
-        # socket
-        "__connection",
         # path for the data in report
         "_in_report_path",
         # ipaddress
@@ -313,7 +311,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._coord_word: Optional[int] = None
         self._ip_address = ip_address
         self._remote_tag: Optional[int] = None
-        self.__connection: Optional[SCAMPConnection] = None
 
         # local provenance storage
         self._run = 0
@@ -328,14 +325,17 @@ class DataSpeedUpPacketGatherMachineVertex(
         # Stored reinjection status for resetting timeouts
         self._last_status: Optional[ReInjectionStatus] = None
 
-    def __throttled_send(self, message: SDPMessage):
+    def __throttled_send(
+            self, message: SDPMessage, connection: SCAMPConnection):
         """
         Slows down transmissions to allow SpiNNaker to keep up.
 
         :param ~.SDPMessage message: message to send
+        :type connection:
+            ~spinnman.connections.udp_packet_connections.SCAMPConnection
         """
         # send first message
-        self._connection.send_sdp_message(message)
+        connection.send_sdp_message(message)
         time.sleep(self._TRANSMISSION_THROTTLE_TIME)
 
     @property
@@ -608,11 +608,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         retarget_tag(connection, self._x, self._y, self._remote_tag)
         return connection
 
-    @property
-    def _connection(self) -> SCAMPConnection:
-        assert self.__connection is not None
-        return self.__connection
-
     def _send_data_via_extra_monitors(
             self, destination_chip: Chip, start_address: int,
             data_to_write: bytes):
@@ -624,7 +619,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param bytearray data_to_write: the data to write
         """
         # Set up the connection
-        with self.__open_connection() as self.__connection:
+        with self.__open_connection() as connection:
             # how many packets after first one we need to send
             self._max_seq_num = ceildiv(
                 len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
@@ -646,7 +641,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             received_confirmation = False
             while not received_confirmation:
                 # send initial attempt at sending all the data
-                self._send_all_data_based_packets(data_to_write, start_address)
+                self._send_all_data_based_packets(
+                    data_to_write, start_address, connection)
 
                 # Don't create a missing buffer until at least one packet has
                 # come back.
@@ -656,7 +652,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     try:
                         # try to receive a confirmation of some sort from
                         # spinnaker
-                        data = self._connection.receive(
+                        data = connection.receive(
                             timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
                         time_out_count = 0
 
@@ -690,7 +686,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                         # to retransmit.
                         if seen_all or seen_last:
                             self._outgoing_retransmit_missing_seq_nums(
-                                data_to_write, missing)
+                                data_to_write, missing, connection)
                             missing.clear()
 
                     except SpinnmanTimeoutException as e:
@@ -710,7 +706,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                             break
 
                         self._outgoing_retransmit_missing_seq_nums(
-                                data_to_write, missing)
+                                data_to_write, missing, connection)
                         missing.clear()
 
     def _read_in_missing_seq_nums(
@@ -749,13 +745,16 @@ class DataSpeedUpPacketGatherMachineVertex(
         return seen_last, seen_all
 
     def _outgoing_retransmit_missing_seq_nums(
-            self, data_to_write: bytes, missing: Set[int]):
+            self, data_to_write: bytes, missing: Set[int],
+            connection: SCAMPConnection):
         """
         Transmits back into SpiNNaker the missing data based off missing
         sequence numbers.
 
         :param bytearray data_to_write: the data to write.
         :param set(int) missing: a set of missing sequence numbers
+        :type connection:
+            ~spinnman.connections.udp_packet_connections.SCAMPConnection
         """
         missing_seqs_as_list = list(missing)
         missing_seqs_as_list.sort()
@@ -764,10 +763,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         for missing_seq_num in missing_seqs_as_list:
             message, _length = self.__make_data_in_stream_message(
                 data_to_write, missing_seq_num, None)
-            self.__throttled_send(message)
+            self.__throttled_send(message, connection)
 
         # request an update on what is missing
-        self.__send_tell_flag()
+        self.__send_tell_flag(connection)
 
     @staticmethod
     def __position_from_seq_number(seq_num: int) -> int:
@@ -820,13 +819,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         # return message for sending, and the length in data sent
         return self.__make_data_in_message(packet_data), packet_data_length
 
-    def __send_location(self, start_address: int):
+    def __send_location(self, start_address: int, connection: SCAMPConnection):
         """
         Send location as separate message.
 
         :param int start_address: SDRAM location
         """
-        self._connection.send_sdp_message(self.__make_data_in_message(
+        connection.send_sdp_message(self.__make_data_in_message(
             _FIVE_WORDS.pack(
                 DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION,
                 self._transaction_id, start_address, self._coord_word,
@@ -835,16 +834,17 @@ class DataSpeedUpPacketGatherMachineVertex(
             "start address for transaction {} is {}",
             self._transaction_id, start_address)
 
-    def __send_tell_flag(self) -> None:
+    def __send_tell_flag(self, connection: SCAMPConnection) -> None:
         """
         Send tell flag as separate message.
         """
-        self._connection.send_sdp_message(self.__make_data_in_message(
+        connection.send_sdp_message(self.__make_data_in_message(
             _TWO_WORDS.pack(
                 DATA_IN_COMMANDS.SEND_TELL, self._transaction_id)))
 
     def _send_all_data_based_packets(
-            self, data_to_write: bytes, start_address: int):
+            self, data_to_write: bytes, start_address: int,
+            connection: SCAMPConnection):
         """
         Send all the data as one block.
 
@@ -852,7 +852,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int start_address:
         """
         # Send the location
-        self.__send_location(start_address)
+        self.__send_location(start_address, connection)
 
         # where in the data we are currently up to
         position_in_data = 0
@@ -865,11 +865,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             position_in_data += length_to_send
 
             # send the message
-            self.__throttled_send(message)
+            self.__throttled_send(message, connection)
             log.debug("sent seq {} of {} bytes", seq_num, length_to_send)
 
         # check for end flag
-        self.__send_tell_flag()
+        self.__send_tell_flag(connection)
         log.debug("sent end flag")
 
     def set_cores_for_data_streaming(self) -> None:
@@ -1097,8 +1097,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if transaction_id == response_transaction_id:
                     timeoutcount = 0
                     seq_nums, finished = self._process_data(
-                        connection, data, seq_nums, finished, placement,
-                        lost_seq_nums, transaction_id)
+                        data, seq_nums, finished, placement,
+                        lost_seq_nums, transaction_id, connection)
                 else:
                     log.info(
                         "ignoring packet as transaction id should be {}"
@@ -1114,8 +1114,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 # self.__reset_connection()
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
-                        connection, seq_nums, placement, lost_seq_nums,
-                        transaction_id)
+                        seq_nums, placement, lost_seq_nums, transaction_id,
+                        connection)
         return lost_seq_nums
 
     @staticmethod
@@ -1168,19 +1168,19 @@ class DataSpeedUpPacketGatherMachineVertex(
         return [sn for sn in range(self._max_seq_num) if sn not in seq_nums]
 
     def _determine_and_retransmit_missing_seq_nums(
-            self, connection: SCAMPConnection, seq_nums: Set[int],
-            placement: Placement,
-            lost_seq_nums: List[int], transaction_id: int) -> bool:
+            self, seq_nums: Set[int], placement: Placement,
+            lost_seq_nums: List[int], transaction_id: int,
+            connection: SCAMPConnection) -> bool:
         """
         Determine if there are any missing sequence numbers, and if so
         retransmits the missing sequence numbers back to the core for
         retransmission.
 
-        :param SCAMPConnection connection: how to talk to the board
         :param set(int) seq_nums: the sequence numbers already received
         :param ~.Placement placement: placement instance
         :param list(int) lost_seq_nums:
         :param int transaction_id: transaction_id
+        :param SCAMPConnection connection: how to talk to the board
         :return: whether all packets are transmitted
         :rtype: bool
         """
@@ -1272,9 +1272,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         return False
 
     def _process_data(
-            self, connection: SCAMPConnection, data: bytes, seq_nums: Set[int],
-            finished: bool, placement: Placement, lost_seq_nums: List[int],
-            transaction_id: int) -> Tuple[Set[int], bool]:
+            self, data: bytes, seq_nums: Set[int], finished: bool,
+            placement: Placement, lost_seq_nums: List[int],
+            transaction_id: int,
+            connection: SCAMPConnection) -> Tuple[Set[int], bool]:
         """
         Take a packet and process it see if we're finished yet.
 
@@ -1329,8 +1330,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         if is_end_of_stream:
             if not self.__check(seq_nums):
                 finished = self._determine_and_retransmit_missing_seq_nums(
-                    connection, seq_nums, placement, lost_seq_nums,
-                    transaction_id)
+                    seq_nums, placement, lost_seq_nums,
+                    transaction_id, connection)
             else:
                 finished = True
         return seq_nums, finished
