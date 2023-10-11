@@ -85,6 +85,10 @@ class ConfigHandler(object):
                         set_config("Reports", option, "True")
                         logger.info("As mode == \"Debug\", [Reports] {} "
                                     "has been set to True", option)
+            if not get_config_bool("Reports", "extract_iobuf"):
+                set_config("Reports", "extract_iobuf", "True")
+                logger.info("As mode == \"Debug\", [Reports] {} "
+                            "has been set to True", "extract_iobuf")
         elif not get_config_bool("Reports", "reportsEnabled"):
             for option in config_options("Reports"):
                 # options names are all lower without _ inside config
