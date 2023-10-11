@@ -322,7 +322,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         token = self.__bearer_token
         if token is None:
             return None
-        ebrains_drive_client = ebrains_drive.connect(token=self.__bearer_token)
+        ebrains_drive_client = ebrains_drive.connect(token=token)
         repo_by_title = ebrains_drive_client.repos.get_repos_by_name(folder)
         if len(repo_by_title) != 1:
             logger.warning(f"The repository for collab {folder} could not be"
