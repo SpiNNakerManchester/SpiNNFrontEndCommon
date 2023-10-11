@@ -43,17 +43,15 @@ def _emergency_state_check():
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
-        machine = txrx.get_machine_details()
+        machine = FecDataView.get_machine()
         infos = CPUInfos()
         errors = list()
         for chip in machine.chips:
             for p in chip.processors:
                 try:
-                    info = txrx.get_cpu_information_from_core(
-                        chip.x, chip.y, p)
-                    if info.state in (
-                            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):
-                        infos.add_processor(chip.x, chip.y, p, info)
+                    txrx.add_cpu_information_from_core(
+                        chip.x, chip.y, p,
+                        [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
                 except Exception:
                     errors.append((chip.x, chip.y, p))
         if len(infos):

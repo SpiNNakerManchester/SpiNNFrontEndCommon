@@ -1416,7 +1416,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Creates and fills the data spec database
         """
         with FecTimer("Graph data specification writer", TimerWork.OTHER):
-            self._data_writer.set_ds_database(
+            self._data_writer.set_ds_database_path(
                 graph_data_specification_writer())
 
     def _do_data_generation(self):
@@ -1939,7 +1939,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and log the GraphProvenanceGatherer if requested.
         """
         with FecTimer("Graph provenance gatherer", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports",
+                                       "read_graph_provenance_data"):
                 return []
             graph_provenance_gatherer()
 
@@ -1949,7 +1950,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 "Placements provenance gatherer", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports",
+                                       "read_placements_provenance_data"):
                 return []
             if timer.skip_if_virtual_board():
                 return []
@@ -1965,7 +1967,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 "Router provenance gatherer", TimerWork.EXTRACTING) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports",
+                                       "read_router_provenance_data"):
                 return []
             if timer.skip_if_virtual_board():
                 return []
@@ -1976,7 +1979,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the ProfileDataGatherer if requested.
         """
         with FecTimer("Profile data gatherer", TimerWork.EXTRACTING) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports", "read_profile_data"):
                 return
             if timer.skip_if_virtual_board():
                 return
@@ -2227,11 +2230,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not unsuccessful_cores:
             for executable_type, core_subsets in \
                     self._data_writer.get_executable_types().items():
-                failed_cores = transceiver.get_cpu_infos(
+                unsuccessful_cores = transceiver.get_cpu_infos(
                     core_subsets, executable_type.end_state, False)
-                for (x, y, p) in failed_cores:
-                    unsuccessful_cores.add_processor(
-                        x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
         logger.error(unsuccessful_cores.get_status_string())
@@ -2390,9 +2390,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     and not get_config_bool("Machine", "virtual_board")
                     and not self._run_until_complete):
                 self._do_stop_workflow()
-            elif (get_config_bool("Reports", "read_provenance_data_on_end") and
-                  not get_config_bool("Reports", "read_provenance_data")):
-                set_config("Reports", "read_provenance_data", "True")
+            elif get_config_bool("Reports", "read_provenance_data_on_end"):
                 self._do_read_provenance()
 
         except Exception as e:

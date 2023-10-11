@@ -26,7 +26,7 @@ from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     reload_dsg_regions)
 from pacman.model.graphs.machine import (SimpleMachineVertex)
-from spinnman.transceiver import Transceiver
+from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 from spinnman.model import CPUInfo
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.exceptions import DataSpecException
@@ -104,7 +104,7 @@ class _MockCPUInfo(object):
         return [self._user_0]
 
 
-class _MockTransceiver(Transceiver):
+class _MockTransceiver(MockableTransceiver):
     """ Pretend transceiver
     """
     # pylint: disable=unused-argument
@@ -112,15 +112,11 @@ class _MockTransceiver(Transceiver):
     def __init__(self):
         self._regions_rewritten = list()
 
-    @overrides(Transceiver.write_memory)
+    @overrides(MockableTransceiver.write_memory)
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
             cpu=0, is_filename=False, get_sum=False):
         self._regions_rewritten.append((base_address, data))
-
-    @overrides(Transceiver.close)
-    def close(self):
-        pass
 
 
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
@@ -144,20 +140,19 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
-        ds = DsSqlliteDatabase()
-        writer.set_ds_database(ds)
-        for placement in placements:
-            ds.set_core(
-                placement.x, placement.y, placement.p, placement.vertex)
-            base = placement.p * 1000
-            regions = reload_region_data[placement.p]
-            for (reg_num, size, _) in regions:
-                ds.set_memory_region(
-                    placement.x, placement.y, placement.p, reg_num, size,
-                    None, None)
-                ds.set_region_pointer(
-                    placement.x, placement.y, placement.p, reg_num, base)
-                base += size
+        with DsSqlliteDatabase() as ds:
+            for placement in placements:
+                ds.set_core(
+                    placement.x, placement.y, placement.p, placement.vertex)
+                base = placement.p * 1000
+                regions = reload_region_data[placement.p]
+                for (reg_num, size, _) in regions:
+                    ds.set_memory_region(
+                        placement.x, placement.y, placement.p, reg_num, size,
+                        None, None)
+                    ds.set_region_pointer(
+                        placement.x, placement.y, placement.p, reg_num, base)
+                    base += size
 
         reload_dsg_regions()
 
@@ -199,20 +194,19 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
-        ds = DsSqlliteDatabase()
-        writer.set_ds_database(ds)
-        for placement in placements:
-            ds.set_core(
-                placement.x, placement.y, placement.p, placement.vertex)
-            base = placement.p * 1000
-            regions = reload_region_data[placement.p]
-            for (reg_num, size, _) in regions:
-                ds.set_memory_region(
-                    placement.x, placement.y, placement.p, reg_num, size-1,
-                    None, None)
-                ds.set_region_pointer(
-                    placement.x, placement.y, placement.p, reg_num, base)
-                base += size
+        with DsSqlliteDatabase() as ds:
+            for placement in placements:
+                ds.set_core(
+                    placement.x, placement.y, placement.p, placement.vertex)
+                base = placement.p * 1000
+                regions = reload_region_data[placement.p]
+                for (reg_num, size, _) in regions:
+                    ds.set_memory_region(
+                        placement.x, placement.y, placement.p, reg_num, size-1,
+                        None, None)
+                    ds.set_region_pointer(
+                        placement.x, placement.y, placement.p, reg_num, base)
+                    base += size
 
         with self.assertRaises(DataSpecException):
             reload_dsg_regions()

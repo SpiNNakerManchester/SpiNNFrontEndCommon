@@ -122,7 +122,6 @@ class SpallocJobController(MachineAllocationController):
         if not self.__use_proxy:
             return super(SpallocJobController, self).create_transceiver()
         txrx = self._job.create_transceiver()
-        txrx.ensure_board_is_ready()
         return txrx
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
@@ -316,7 +315,8 @@ def _allocate_job_new(
         stack.enter_context(task)
         job.wait_until_ready()
         connections = job.get_connections()
-        ProvenanceWriter().insert_board_provenance(connections)
+        with ProvenanceWriter() as db:
+            db.insert_board_provenance(connections)
         root = connections.get((0, 0), None)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(
