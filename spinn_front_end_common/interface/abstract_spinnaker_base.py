@@ -303,9 +303,24 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self.__get_collab_id_from_folder(
                 match_obj.group(SHARED_WITH_GROUP))
 
+        # Allow this too as it helps in testing; it doesn't matter if it is
+        # spoofed since the user has to have the right permissions for it to
+        # work.
+        collab_id = os.getenv("COLLAB_ID")
+        if collab_id is not None:
+            logger.info(f"Requesting job in collaboratory {collab_id}")
+            return {"collab": collab_id}
+
+        # Another way to get a collab id
+        collab_id = get_config_str("Machine", "spalloc_collab")
+        if collab_id is not None:
+            logger.info(f"Requesting job in collaboratory {collab_id}")
+            return {"collab": collab_id}
+
         # Try to use the config to get a group
         group = get_config_str_or_none("Machine", "spalloc_group")
         if group is not None:
+            logger.info(f"Requesting job in group {group}")
             return {"group": group}
 
         # Nothing ventured, nothing gained
@@ -315,7 +330,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """ Currently hacky way to get the EBRAINS collab id from the
             drive folder, replicated from the NMPI collab template.
         """
-        ebrains_drive_client = ebrains_drive.connect(token=self.__bearer_token)
+        ebrains_drive_client = ebrains_drive.connect(
+            token=self.__bearer_token, env=os.getenv("EBRAINS_ENV", ""))
         repo_by_title = ebrains_drive_client.repos.get_repos_by_name(folder)
         if len(repo_by_title) != 1:
             logger.warning(f"The repository for collab {folder} could not be"
