@@ -296,12 +296,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         cwd = os.getcwd()
         match_obj = SHARED_PATH.match(cwd)
         if match_obj:
-            return self.__get_collab_id_from_folder(
+            collab = self.__get_collab_id_from_folder(
                 match_obj.group(SHARED_GROUP))
+            if collab is not None:
+                return collab
         match_obj = SHARED_WITH_PATH.match(cwd)
         if match_obj:
-            return self.__get_collab_id_from_folder(
+            collab = self.__get_collab_id_from_folder(
                 match_obj.group(SHARED_WITH_GROUP))
+            if collab is not None:
+                return collab
 
         # Try to use the config to get a group
         group = get_config_str_or_none("Machine", "spalloc_group")
@@ -315,6 +319,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """ Currently hacky way to get the EBRAINS collab id from the
             drive folder, replicated from the NMPI collab template.
         """
+        token = self.__bearer_token
+        if token is None:
+            return None
         ebrains_drive_client = ebrains_drive.connect(token=self.__bearer_token)
         repo_by_title = ebrains_drive_client.repos.get_repos_by_name(folder)
         if len(repo_by_title) != 1:
