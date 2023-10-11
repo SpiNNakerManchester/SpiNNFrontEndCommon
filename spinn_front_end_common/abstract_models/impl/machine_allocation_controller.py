@@ -91,7 +91,6 @@ class MachineAllocationController(
         if not self.__hostname:
             return None
         txrx = create_transceiver_from_hostname(self.__hostname, 5)
-        txrx.ensure_board_is_ready()
         txrx.discover_scamp_connections()
         return txrx
 
