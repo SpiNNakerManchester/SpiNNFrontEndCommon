@@ -56,6 +56,13 @@ def machine_generator(
         if txrx:
             return txrx.get_machine_details(), txrx
 
+    txrx = create_transceiver_from_hostname(
+        hostname=FecDataView.get_ipaddress(),
+        bmp_connection_data=_parse_bmp_details(bmp_details),
+        auto_detect_bmp=auto_detect_bmp,
+        power_cycle=reset_machine_on_start_up)
+
+    # do auto boot if possible
     if board_version is None:
         raise ConfigurationException(
             "Please set a machine version number in the "
