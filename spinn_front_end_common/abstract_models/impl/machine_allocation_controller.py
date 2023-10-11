@@ -90,7 +90,7 @@ class MachineAllocationController(
         txrx = create_transceiver_from_hostname(
             hostname=self.__hostname,
             bmp_connection_data=None,
-            version=5, auto_detect_bmp=False)
+            auto_detect_bmp=False)
         txrx.discover_scamp_connections()
         return txrx
 

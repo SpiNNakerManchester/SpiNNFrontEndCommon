@@ -15,7 +15,7 @@
 import unittest
 from collections import defaultdict
 from spinn_utilities.overrides import overrides
-from spinnman.transceiver import Transceiver
+from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
@@ -26,14 +26,14 @@ from spinn_front_end_common.interface.interface_functions import (
 SIM = ExecutableType.USES_SIMULATION_INTERFACE
 
 
-class _MockTransceiver(Transceiver):
+class _MockTransceiver(MockableTransceiver):
 
     def __init__(self, test_case):
         self._test_case = test_case
         self._n_cores_in_app = defaultdict(lambda: 0)
         self._executable_on_core = dict()
 
-    @overrides(Transceiver.execute_flood)
+    @overrides(MockableTransceiver.execute_flood)
     def execute_flood(
             self, core_subsets, executable, app_id,
             n_bytes=None, wait=False, is_filename=False):  # @UnusedVariable
@@ -46,17 +46,9 @@ class _MockTransceiver(Transceiver):
                 self._executable_on_core[x, y, p] = executable
         self._n_cores_in_app[app_id] += len(core_subsets)
 
-    @overrides(Transceiver.get_core_state_count)
+    @overrides(MockableTransceiver.get_core_state_count)
     def get_core_state_count(self, app_id, state, xys=None):  # @UnusedVariable
         return self._n_cores_in_app[app_id]
-
-    @overrides(Transceiver.send_signal)
-    def send_signal(self, app_id, signal):
-        pass
-
-    @overrides(Transceiver.close)
-    def close(self):
-        pass
 
 
 class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
