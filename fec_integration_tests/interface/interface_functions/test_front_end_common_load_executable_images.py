@@ -47,7 +47,7 @@ class _MockTransceiver(Transceiver):
         self._n_cores_in_app[app_id] += len(core_subsets)
 
     @overrides(Transceiver.get_core_state_count)
-    def get_core_state_count(self, app_id, state):  # @UnusedVariable
+    def get_core_state_count(self, app_id, state, xys=None):  # @UnusedVariable
         return self._n_cores_in_app[app_id]
 
     @overrides(Transceiver.send_signal)

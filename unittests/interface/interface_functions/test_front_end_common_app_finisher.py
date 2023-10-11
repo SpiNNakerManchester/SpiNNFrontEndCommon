@@ -33,7 +33,7 @@ class _MockTransceiver(Transceiver):
         self.sdp_send_count = 0
 
     @overrides(Transceiver.get_core_state_count)
-    def get_core_state_count(self, app_id, state):
+    def get_core_state_count(self, app_id, state, xys=None):
         count = 0
         for core_state in self._core_states[self._current_state].values():
             if core_state == state:
