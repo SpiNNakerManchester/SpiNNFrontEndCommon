@@ -2027,7 +2027,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and log the GraphProvenanceGatherer if requested.
         """
         with FecTimer("Graph provenance gatherer", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports",
+                                       "read_graph_provenance_data"):
                 return
             graph_provenance_gatherer()
 
@@ -2037,7 +2038,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 "Placements provenance gatherer", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports",
+                                       "read_placements_provenance_data"):
                 return
             if timer.skip_if_virtual_board():
                 return
@@ -2052,7 +2054,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 "Router provenance gatherer", TimerWork.EXTRACTING) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports",
+                                       "read_router_provenance_data"):
                 return
             if timer.skip_if_virtual_board():
                 return
@@ -2063,7 +2066,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the ProfileDataGatherer if requested.
         """
         with FecTimer("Profile data gatherer", TimerWork.EXTRACTING) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports", "read_profile_data"):
                 return
             if timer.skip_if_virtual_board():
                 return
@@ -2477,9 +2480,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     and not get_config_bool("Machine", "virtual_board")
                     and not self._run_until_complete):
                 self._do_stop_workflow()
-            elif (get_config_bool("Reports", "read_provenance_data_on_end") and
-                  not get_config_bool("Reports", "read_provenance_data")):
-                set_config("Reports", "read_provenance_data", "True")
+            elif get_config_bool("Reports", "read_provenance_data_on_end"):
                 self._do_read_provenance()
 
         except Exception as e:

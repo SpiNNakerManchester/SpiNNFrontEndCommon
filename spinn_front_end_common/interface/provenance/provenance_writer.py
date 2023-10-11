@@ -14,7 +14,8 @@
 
 import logging
 from typing import Dict, Optional, Tuple, Union
-from spinn_utilities.config_holder import get_config_int_or_none
+from spinn_utilities.config_holder import (
+    get_config_int_or_none, get_config_bool)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import (
     BaseDatabase, _SqliteTypes)
@@ -58,6 +59,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: Type of value
         :param float the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         self.execute(
             """
             INSERT INTO power_provenance(
@@ -79,6 +82,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param float the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         self.execute(
             """
             INSERT INTO gatherer_provenance(
@@ -96,6 +101,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         self.execute(
             """
             INSERT INTO monitor_provenance(
@@ -117,6 +124,8 @@ class ProvenanceWriter(BaseDatabase):
         :type the_value: int or float
         :param bool expected: Flag to say this data was expected
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         self.execute(
             """
             INSERT INTO router_provenance(
@@ -136,6 +145,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         core_id = self._get_core_id(x, y, p)
         self.execute(
             """
@@ -153,6 +164,9 @@ class ProvenanceWriter(BaseDatabase):
 
         :param str message:
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            logger.warning(message)
+            return
         self.execute(
             """
             INSERT INTO reports(message)
@@ -180,6 +194,8 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         self.execute(
             """
             INSERT OR IGNORE INTO connector_provenance(
@@ -199,6 +215,8 @@ class ProvenanceWriter(BaseDatabase):
         :param connections: {(x, y): hostname, ...} or None
         :type connections: dict((int, int): str) or None
         """
+        if not get_config_bool("Reports", "write_provenance"):
+            return
         if not connections:
             return
         self.executemany(
