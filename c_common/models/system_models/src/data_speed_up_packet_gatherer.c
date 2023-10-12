@@ -219,7 +219,7 @@ typedef struct data_out_config_t {
 //! values for the priority for each callback
 enum {
     MC_PACKET = -1, //!< Multicast packet receive uses FIQ
-    SDP = 0         //!< SDP receive priority standard (high)
+    SDP = 1         //!< SDP receive priority standard (high)
 };
 
 //! \brief How to find which key to use to talk to which chip on this board.
