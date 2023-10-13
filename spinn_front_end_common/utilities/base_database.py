@@ -17,7 +17,6 @@ import sqlite3
 import time
 from typing import Optional, Union
 from typing_extensions import TypeAlias
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
@@ -31,7 +30,7 @@ def _timestamp():
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 
-class BaseDatabase(SQLiteDB, AbstractContextManager):
+class BaseDatabase(SQLiteDB):
     """
     Specific implementation of the Database for SQLite 3.
 
