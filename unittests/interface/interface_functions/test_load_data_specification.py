@@ -17,7 +17,7 @@ import struct
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
-from spinnman.transceiver import Transceiver
+from spinnman.transceiver.version5transceiver import Version5Transceiver
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placements
@@ -34,7 +34,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 
-class _MockTransceiver(Transceiver):
+class _MockTransceiver(Version5Transceiver):
     """ Pretend transceiver
     """
     # pylint: disable=unused-argument
@@ -49,13 +49,13 @@ class _MockTransceiver(Transceiver):
         """
         return self._regions_written
 
-    @overrides(Transceiver.malloc_sdram)
+    @overrides(Version5Transceiver.malloc_sdram)
     def malloc_sdram(self,  x, y, size, app_id, tag=None):
         address = self._next_address
         self._next_address += size
         return address
 
-    @overrides(Transceiver.write_memory)
+    @overrides(Version5Transceiver.write_memory)
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
             cpu=0, is_filename=False, get_sum=False):
@@ -63,7 +63,7 @@ class _MockTransceiver(Transceiver):
             data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
 
-    @overrides(Transceiver.close)
+    @overrides(Version5Transceiver.close)
     def close(self):
         pass
 

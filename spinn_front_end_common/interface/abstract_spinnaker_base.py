@@ -296,12 +296,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         cwd = os.getcwd()
         match_obj = SHARED_PATH.match(cwd)
         if match_obj:
-            return self.__get_collab_id_from_folder(
+            collab = self.__get_collab_id_from_folder(
                 match_obj.group(SHARED_GROUP))
+            if collab is not None:
+                return collab
         match_obj = SHARED_WITH_PATH.match(cwd)
         if match_obj:
-            return self.__get_collab_id_from_folder(
+            collab = self.__get_collab_id_from_folder(
                 match_obj.group(SHARED_WITH_GROUP))
+            if collab is not None:
+                return collab
 
         # Try to use the config to get a group
         group = get_config_str_or_none("Machine", "spalloc_group")
@@ -315,7 +319,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """ Currently hacky way to get the EBRAINS collab id from the
             drive folder, replicated from the NMPI collab template.
         """
-        ebrains_drive_client = ebrains_drive.connect(token=self.__bearer_token)
+        token = self.__bearer_token
+        if token is None:
+            return None
+        ebrains_drive_client = ebrains_drive.connect(token=token)
         repo_by_title = ebrains_drive_client.repos.get_repos_by_name(folder)
         if len(repo_by_title) != 1:
             logger.warning(f"The repository for collab {folder} could not be"
@@ -1982,7 +1989,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and log the GraphProvenanceGatherer if requested.
         """
         with FecTimer("Graph provenance gatherer", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports",
+                                       "read_graph_provenance_data"):
                 return []
             graph_provenance_gatherer()
 
@@ -1992,7 +2000,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 "Placements provenance gatherer", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports",
+                                       "read_placements_provenance_data"):
                 return []
             if timer.skip_if_virtual_board():
                 return []
@@ -2008,7 +2017,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 "Router provenance gatherer", TimerWork.EXTRACTING) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports",
+                                       "read_router_provenance_data"):
                 return []
             if timer.skip_if_virtual_board():
                 return []
@@ -2019,7 +2029,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the ProfileDataGatherer if requested.
         """
         with FecTimer("Profile data gatherer", TimerWork.EXTRACTING) as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+            if timer.skip_if_cfg_false("Reports", "read_profile_data"):
                 return
             if timer.skip_if_virtual_board():
                 return
@@ -2430,9 +2440,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     and not get_config_bool("Machine", "virtual_board")
                     and not self._run_until_complete):
                 self._do_stop_workflow()
-            elif (get_config_bool("Reports", "read_provenance_data_on_end") and
-                  not get_config_bool("Reports", "read_provenance_data")):
-                set_config("Reports", "read_provenance_data", "True")
+            elif get_config_bool("Reports", "read_provenance_data_on_end"):
                 self._do_read_provenance()
 
         except Exception as e:

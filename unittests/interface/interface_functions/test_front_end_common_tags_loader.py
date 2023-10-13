@@ -20,30 +20,22 @@ from pacman.model.graphs.machine import SimpleMachineVertex
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import tags_loader
-from spinnman.transceiver import Transceiver
+from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 
 
-class _MockTransceiver(Transceiver):
+class _MockTransceiver(MockableTransceiver):
 
     def __init__(self):
         self._ip_tags = list()
         self._reverse_ip_tags = list()
 
-    @overrides(Transceiver.set_ip_tag)
+    @overrides(MockableTransceiver.set_ip_tag)
     def set_ip_tag(self, ip_tag, use_sender=False):
         self._ip_tags.append(ip_tag)
 
-    @overrides(Transceiver.set_reverse_ip_tag)
+    @overrides(MockableTransceiver.set_reverse_ip_tag)
     def set_reverse_ip_tag(self, reverse_ip_tag):
         self._reverse_ip_tags.append(reverse_ip_tag)
-
-    @overrides(Transceiver.clear_ip_tag)
-    def clear_ip_tag(self, tag, board_address=None):
-        pass
-
-    @overrides(Transceiver.close)
-    def close(self):
-        pass
 
 
 class TestFrontEndCommonTagsLoader(unittest.TestCase):

@@ -18,13 +18,12 @@ import os
 import pathlib
 import sqlite3
 import struct
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = logging.getLogger(__name__)
 
 
-class SQLiteDB(AbstractContextManager):
+class SQLiteDB(object):
     """
     General support class for SQLite databases. This handles a lot of the
     low-level detail of setting up a connection.
@@ -122,6 +121,12 @@ class SQLiteDB(AbstractContextManager):
         self.__cursor = None
 
     def _context_entered(self):
+        """
+        Work to do when then context is entered.
+
+        May be extended by super classes
+
+        """
         if self.__db is None:
             raise DatabaseException("database has been closed")
         if self.__cursor is not None:
@@ -130,6 +135,10 @@ class SQLiteDB(AbstractContextManager):
             self.__db.execute("BEGIN")
         self.__cursor = self.__db.cursor()
 
+    def __enter__(self):
+        self._context_entered()
+        return self
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.__db is not None:
             if exc_type is None:
@@ -137,8 +146,7 @@ class SQLiteDB(AbstractContextManager):
             else:
                 self.__db.rollback()
         self.__cursor = None
-        # calls close
-        return super().__exit__(exc_type, exc_val, exc_tb)
+        self.close()
 
     def __del__(self):
         self.close()
