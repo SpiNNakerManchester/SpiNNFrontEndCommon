@@ -195,8 +195,8 @@ bool recording_initialize(
                         sark_heap_max(sv->sdram_heap, 0));
                 return false;
             }
-            log_info("Allocated %u bytes for recording channel %u at 0x%08x",
-                    space, i, region->data);
+//            log_info("Allocated %u bytes for recording channel %u at 0x%08x",
+//                    space, i, region->data);
             if (recording_flags != NULL) {
                 *recording_flags = (*recording_flags | (1 << i));
             }

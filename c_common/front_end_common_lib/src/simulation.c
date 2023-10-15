@@ -197,15 +197,15 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
             log_info("Calling pre-exit function");
             stored_exit_function();
         }
-        log_info("Exiting");
+//        log_info("Exiting");
         spin1_exit(0);
         break;
 
     case CMD_RUNTIME:
-        log_info("Setting the runtime of this model to %d starting at %d",
-                msg->arg1, msg->arg3);
-        log_info("Setting the flag of infinite run for this model to %d",
-                msg->arg2);
+        log_info("Setting the runtime of this model to %d starting at %d (flag %d)",
+                msg->arg1, msg->arg3, msg->arg2);
+//        log_info("Setting the flag of infinite run for this model to %d",
+//                msg->arg2);
 
         // resetting the simulation time pointer
         *pointer_to_simulation_time = msg->arg1;

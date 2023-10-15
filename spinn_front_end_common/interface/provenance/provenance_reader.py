@@ -147,7 +147,7 @@ class ProvenanceReader(BaseDatabase):
             f"{ row[0] }: { row[1] }"
             for row in self.run_query(query, [int(x), int(y)]))
 
-    def get_cores_with_provenace(self):
+    def get_cores_with_provenance(self):
         """
         Gets the cores with provenance.
 
@@ -233,10 +233,10 @@ class ProvenanceReader(BaseDatabase):
                 print(row)
             print("\nCORES WITH LATE SPIKES:")
             print(pr.cores_with_late_spikes())
-            print("\nROUETER (0,0) PROVENANCE:")
+            print("\nROUTER (0,0) PROVENANCE:")
             print(pr.get_provenance_for_router(0, 0))
             print("\nCORES WITH PROVENACE")
-            print(pr.get_cores_with_provenace())
+            print(pr.get_cores_with_provenance())
 
 
 if __name__ == '__main__':

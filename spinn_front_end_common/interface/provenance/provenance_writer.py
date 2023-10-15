@@ -214,3 +214,42 @@ class ProvenanceWriter(BaseDatabase):
             VALUES (?, ?, ?)
             """, ((x, y, ipaddress)
                   for ((x, y), ipaddress) in connections.items()))
+
+    def insert_app_vertex(
+            self, label, the_type, description, the_value):
+        """
+        Inserts app level data into the app_vertex_provenance
+
+        :param str label: Label of the app_vertex
+        :param str the_type: Class of the app_vertex
+        :param str description: type of value
+        :param float the_value: data
+        """
+        self.execute(
+            """
+            INSERT OR IGNORE INTO app_vertex_provenance(
+                label, the_type, description, the_value)
+            VALUES(?, ?, ?, ?)
+            """,
+            [label, the_type, description, the_value])
+
+    def insert_lut(
+            self, pre_population, post_population, the_type, description,
+            the_value):
+        """
+        Inserts edge data into the lut_provenance
+        :param str pre_population: Name of the pre population / vertex
+        :param str post_population:  Name of the post population / vertex
+        :param str the_type: Class of the rule of the LUT
+        :param str description: type of value
+        :param float the_value: data
+        """
+        self.execute(
+            """
+            INSERT OR IGNORE INTO lut_provenance(
+                pre_population, post_population, the_type, description,
+                the_value)
+            VALUES(?, ?, ?, ?, ?)
+            """,
+            [pre_population, post_population, the_type, description,
+             the_value])
