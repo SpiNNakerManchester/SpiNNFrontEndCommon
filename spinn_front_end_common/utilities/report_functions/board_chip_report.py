@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
 from spinn_machine import Router
@@ -26,16 +25,14 @@ def board_chip_report():
     """
     machine = FecDataView.get_machine()
     # create file path
-    directory_name = os.path.join(
-        FecDataView.get_run_dir_path(), AREA_CODE_REPORT_NAME)
+    directory_name = FecDataView.get_run_dir_file_name(AREA_CODE_REPORT_NAME)
     # create the progress bar for end users
-    progress_bar = ProgressBar(
-        len(machine.ethernet_connected_chips),
-        "Writing the board chip report")
-
-    # iterate over ethernet chips and then the chips on that board
-    with open(directory_name, "w", encoding="utf-8") as writer:
-        _write_report(writer, machine, progress_bar)
+    with ProgressBar(
+            len(machine.ethernet_connected_chips),
+            "Writing the board chip report") as progress_bar:
+        # iterate over ethernet chips and then the chips on that board
+        with open(directory_name, "w", encoding="utf-8") as writer:
+            _write_report(writer, machine, progress_bar)
 
 
 def _write_report(writer, machine, progress_bar):

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from spinn_front_end_common.data import FecDataView
 
 _REPORT_FILENAME = "tags_on_machine.txt"
@@ -22,7 +21,7 @@ def tags_from_machine_report():
     """
     Describes what the tags actually present on the machine are.
     """
-    filename = os.path.join(FecDataView.get_run_dir_path(), _REPORT_FILENAME)
+    filename = FecDataView.get_run_dir_file_name(_REPORT_FILENAME)
     tags = _get_tags()
     with open(filename, "w", encoding="utf-8") as f:
         f.write("Tags actually read off the machine\n")

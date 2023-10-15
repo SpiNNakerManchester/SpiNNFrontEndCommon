@@ -14,7 +14,6 @@
 
 from collections import defaultdict
 import logging
-import os
 from spinn_utilities.config_holder import is_config_none
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
@@ -52,13 +51,13 @@ class EnergyReport(object):
         :param ~spinn_machine.Machine machine: the machine
         :param PowerUsed power_used:
         """
-        report_dir = FecDataView.get_run_dir_path()
-
         # detailed report path
-        detailed_report = os.path.join(report_dir, self._DETAILED_FILENAME)
+        detailed_report = FecDataView.get_run_dir_file_name(
+            self._DETAILED_FILENAME)
 
         # summary report path
-        summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
+        summary_report = FecDataView.get_run_dir_file_name(
+            self._SUMMARY_FILENAME)
 
         # create detailed report
         with open(detailed_report, "w", encoding="utf-8") as f:

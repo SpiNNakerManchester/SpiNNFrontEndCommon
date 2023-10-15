@@ -363,11 +363,10 @@ class JavaCaller(object):
                 BufferDatabase.default_database_file(),
                 FecDataView.get_run_dir_path())
         if result != 0:
-            log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
+            log_file = FecDataView.get_run_dir_file_name("jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call exited with value " + str(result) + " see "
-                + str(log_file) + " for logged info")
+                f"Java call exited with value {result}; "
+                f"see {log_file} for logged info")
 
     def load_system_data_specification(self):
         """
@@ -382,11 +381,10 @@ class JavaCaller(object):
             FecDataView.get_ds_database_path(),
             FecDataView.get_run_dir_path())
         if result != 0:
-            log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
+            log_file = FecDataView.get_run_dir_file_name("jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call exited with value " + str(result) + " see "
-                + str(log_file) + " for logged info")
+                f"Java call exited with value {result}; "
+                f"see {log_file} for logged info")
 
     def load_app_data_specification(self, use_monitors):
         """
@@ -412,8 +410,7 @@ class JavaCaller(object):
                 FecDataView.get_ds_database_path(),
                 FecDataView.get_run_dir_path())
         if result != 0:
-            log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
+            log_file = FecDataView.get_run_dir_file_name("jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call exited with value " + str(result) + " see "
-                + str(log_file) + " for logged info")
+                f"Java call exited with value {result}; "
+                f"see {log_file} for logged info")

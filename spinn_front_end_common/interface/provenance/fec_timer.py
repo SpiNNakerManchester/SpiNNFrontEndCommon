@@ -12,43 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-import os
-import sys
 import time
 from datetime import timedelta
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from .global_provenance import GlobalProvenance
+from spinn_front_end_common.utilities.utility_calls import csvopen
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-if sys.version_info >= (3, 7):
-    # acquire the most accurate measurement available (perf_counter_ns)
-    _now = time.perf_counter_ns  # pylint: disable=no-member
-    # conversion factor
-    _NANO_TO_MICRO = 1000.0
+# conversion factor
+_NANO_TO_MICRO = 1000.0
 
-    def _convert_to_timedelta(time_diff):
-        """
-        Have to convert to a timedelta for rest of code to read.
 
-        As perf_counter_ns is nano seconds, and time delta lowest is micro,
-        need to convert.
-        """
-        return timedelta(microseconds=time_diff / _NANO_TO_MICRO)
+def _convert_to_timedelta(time_diff):
+    """
+    Have to convert to a timedelta for rest of code to read.
 
-else:
-    # acquire the most accurate measurement available (perf_counter)
-    _now = time.perf_counter  # pylint: disable=no-member
-
-    def _convert_to_timedelta(time_diff):
-        """
-        Have to convert to a timedelta for rest of code to read.
-
-        As perf_counter is fractional seconds, put into correct time delta.
-        """
-        return timedelta(seconds=time_diff)
+    As perf_counter_ns is nano seconds, and time delta lowest is micro,
+    need to convert.
+    """
+    return timedelta(microseconds=time_diff / _NANO_TO_MICRO)
 
 
 class FecTimer(object):
@@ -61,8 +46,7 @@ class FecTimer(object):
     _category_time = None
     _machine_on = False
     _previous = []
-    __slots__ = [
-
+    __slots__ = (
         # The start time when the timer was set off
         "_start_time",
 
@@ -70,20 +54,22 @@ class FecTimer(object):
         "_algorithm",
 
         # Type of work being done
-        "_work"
-        ]
+        "_work")
 
     # Algorithm Names used elsewhere
     APPLICATION_RUNNER = "Application runner"
+
+    _CSV_HEADER = "Category,Algorithm,Action,Time Taken,Detail"
 
     @classmethod
     def setup(cls, simulator):
         # pylint: disable=global-statement, protected-access
         cls._simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
-            cls._provenance_path = os.path.join(
-                FecDataView.get_run_dir_path(),
+            cls._provenance_path = FecDataView.get_run_dir_file_name(
                 "algorithm_timings.rpt")
+            cls._provenance_csv = FecDataView.get_run_dir_file_name(
+                "algorithm_timings.csv")
         else:
             cls._provenance_path = None
         cls._print_timings = get_config_bool(
@@ -95,23 +81,33 @@ class FecTimer(object):
         self._work = work
 
     def __enter__(self):
-        self._start_time = _now()
+        self._start_time = time.perf_counter_ns()
         return self
 
-    def _report(self, message):
+    def _report(self, message, act, time_taken, detail):
         if self._provenance_path is not None:
             with open(self._provenance_path, "a", encoding="utf-8") as p_file:
                 p_file.write(f"{message}\n")
+        if self._provenance_csv:
+            with csvopen(self._provenance_csv, self._CSV_HEADER,
+                         mode="a") as c_file:
+                c_file.writerow([
+                    self._category, self._algorithm, act, time_taken, detail])
         if self._print_timings:
             logger.info(message)
+
+    def _insert_timing(self, time_taken, skip_reason):
+        if self._category_id is not None:
+            with GlobalProvenance() as db:
+                db.insert_timing(
+                    self._category_id, self._algorithm, self._work,
+                    time_taken, skip_reason)
 
     def skip(self, reason):
         message = f"{self._algorithm} skipped as {reason}"
         time_taken = self._stop_timer()
-        with GlobalProvenance() as db:
-            db.insert_timing(self._category_id, self._algorithm, self._work,
-                             time_taken, reason)
-        self._report(message)
+        self._insert_timing(time_taken, reason)
+        self._report(message, "skip", "", reason)
 
     def skip_if_has_not_run(self):
         if self._simulator.has_ran:
@@ -156,11 +152,9 @@ class FecTimer(object):
 
     def error(self, reason):
         time_taken = self._stop_timer()
-        message = f"{self._algorithm} failed after {timedelta} as {reason}"
-        with GlobalProvenance() as db:
-            db.insert_timing(self._category_id, self._algorithm,
-                             self._work, time_taken, reason)
-        self._report(message)
+        message = f"{self._algorithm} failed after {time_taken} as {reason}"
+        self._insert_timing(time_taken, reason)
+        self._report(message, "fail", time_taken, reason)
 
     def _stop_timer(self):
         """
@@ -169,7 +163,7 @@ class FecTimer(object):
 
         :rtype: datetime.timedelta
         """
-        time_now = _now()
+        time_now = time.perf_counter_ns()
         diff = time_now - self._start_time
         self._start_time = None
         return _convert_to_timedelta(diff)
@@ -180,8 +174,10 @@ class FecTimer(object):
         time_taken = self._stop_timer()
         if exc_type is None:
             message = f"{self._algorithm} took {time_taken} "
+            act = "run"
             skip = None
         else:
+            act = "exception"
             try:
                 message = (f"{self._algorithm} exited with "
                            f"{exc_type.__name__} after {time_taken}")
@@ -191,10 +187,8 @@ class FecTimer(object):
                            f"after {time_taken}")
                 skip = f"Exception {ex}"
 
-        with GlobalProvenance() as db:
-            db.insert_timing(self._category_id, self._algorithm, self._work,
-                             time_taken, skip)
-        self._report(message)
+        self._insert_timing(time_taken, skip)
+        self._report(message, act, time_taken, exc_value if exc_value else "")
         return False
 
     @classmethod
@@ -204,7 +198,7 @@ class FecTimer(object):
 
         :return: Time the stop happened
         """
-        time_now = _now()
+        time_now = time.perf_counter_ns()
         if cls._category_id:
             with GlobalProvenance() as db:
                 diff = _convert_to_timedelta(time_now - cls._category_time)

@@ -43,6 +43,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         SetRouterTimeoutProcess, ClearQueueProcess)
+from spinn_front_end_common.utilities.utility_calls import csvopen
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -238,9 +239,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     _TRANSMISSION_THROTTLE_TIME = 0.000001
 
     #: report name for tracking used routers
-    OUT_REPORT_NAME = "routers_used_in_speed_up_process.rpt"
+    OUT_REPORT_NAME = "routers_used_in_speed_up_process.csv"
     #: report name for tracking performance gains
-    IN_REPORT_NAME = "speeds_gained_in_speed_up_process.rpt"
+    IN_REPORT_NAME = "speeds_gained_in_speed_up_process.csv"
 
     # the end flag is set when the high bit of the sequence number word is set
     _LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000
@@ -300,9 +301,10 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # create report if it doesn't already exist
 
-        dir_path = FecDataView.get_run_dir_path()
-        self._out_report_path = os.path.join(dir_path, self.OUT_REPORT_NAME)
-        self._in_report_path = os.path.join(dir_path, self.IN_REPORT_NAME)
+        self._out_report_path = FecDataView.get_run_dir_file_name(
+            self.OUT_REPORT_NAME)
+        self._in_report_path = FecDataView.get_run_dir_file_name(
+            self.IN_REPORT_NAME)
 
         # Stored reinjection status for resetting timeouts
         self._last_status = None
@@ -447,14 +449,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             the set of missing sequence numbers per data transmission attempt
         """
         if not os.path.isfile(self._in_report_path):
-            with open(self._in_report_path, "w", encoding="utf-8") as writer:
-                writer.write(
-                    "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
-                    " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
-                writer.write(
-                    "------------------------------------------------"
-                    "------------------------------------------------"
-                    "-------------------------------------------------\n")
+            COLUMNS = (
+                "x,y,SDRAM address,size (bytes),time,data rate (Mb/s),"
+                "missing sequence numbers")
+            with csvopen(self._in_report_path, COLUMNS):
+                pass
 
         time_took_ms = float(time_diff.microseconds +
                              time_diff.total_seconds() * 1000000)
@@ -464,10 +463,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         else:
             mbs = megabits / (float(time_took_ms) / 100000.0)
 
-        with open(self._in_report_path, "a", encoding="utf-8") as writer:
-            writer.write(
-                f"{x}\t\t {y}\t\t {address_written_to}\t\t {data_size}\t\t"
-                f"\t\t {time_took_ms}\t\t\t {mbs}\t\t {missing_seq_nums}\n")
+        with csvopen(self._in_report_path, None, mode="a") as writer:
+            writer.writerow([
+                x, y, hex(address_written_to), data_size, time_took_ms, mbs,
+                missing_seq_nums])
 
     def send_data_into_spinnaker(
             self, x, y, base_address, data, n_bytes=None, offset=0,
@@ -1005,10 +1004,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # create report elements
         if get_config_bool("Reports", "write_data_speed_up_reports"):
-            routers_been_in_use = self._determine_which_routers_were_used(
-                placement)
-            self._write_routers_used_into_report(
-                routers_been_in_use, placement)
+            self._write_routers_used_into_report(placement)
 
         start = float(time.time())
         # if asked for no data, just return a empty byte array
@@ -1110,7 +1106,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return lost_seq_nums
 
     @staticmethod
-    def _determine_which_routers_were_used(placement):
+    def __describe_fixed_route_from(placement):
         """
         Traverse the fixed route paths from a given location to its
         destination. Used for determining which routers were used.
@@ -1136,19 +1132,16 @@ class DataSpeedUpPacketGatherMachineVertex(
             entry = fixed_routes[chip_x, chip_y]
         return routers
 
-    def _write_routers_used_into_report(self, routers_been_in_use, placement):
+    def _write_routers_used_into_report(self, placement):
         """
         Write the used routers into a report.
 
-        :param str report_path: the path to the report file
-        :param list(tuple(int,int)) routers_been_in_use:
-            the routers been in use
         :param ~.Placement placement: the first placement used
         """
-        with open(self._out_report_path, "a", encoding="utf-8") as writer:
-            writer.write(
-                f"[{placement.x}:{placement.y}:{placement.p}] "
-                f"= {routers_been_in_use}\n")
+        routers_used = self.__describe_fixed_route_from(placement)
+        with csvopen(
+                self._out_report_path, "x,y,p,routers used", mode="a") as f:
+            f.writerow([placement.x, placement.y, placement.p, routers_used])
 
     def _calculate_missing_seq_nums(self, seq_nums):
         """
