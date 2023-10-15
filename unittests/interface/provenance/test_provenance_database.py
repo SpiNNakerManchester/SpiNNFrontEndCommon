@@ -185,6 +185,14 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_board_provenance(data)
 
+    def test_app_vertex(self):
+        with ProvenanceWriter() as db:
+            db.insert_app_vertex("pop", "type", "description", 0.5)
+        with ProvenanceReader() as db:
+            data = db.run_query("Select * from app_vertex_provenance")
+        expected = [(1, 'pop', 'type', 'description', 0.5)]
+        self.assertListEqual(expected, data)
+
     def test_log(self):
         db1 = LogStoreDB()
         db2 = LogStoreDB()

@@ -18,6 +18,16 @@ from enum import Enum
 import numpy as np
 
 
+def _round_to_int(value):
+    """ Rounds a number to the closest integer
+    :param float value: The value to round
+    :rtype: int
+    """
+    if isinstance(value, int):
+        return value
+    return int(round(value))
+
+
 class DataType(Enum):
     """
     Supported data types.
@@ -49,7 +59,7 @@ class DataType(Enum):
              decimal.Decimal("1"),
              "B",
              False,
-             int,
+             _round_to_int,
              np.uint8,
              "8-bit unsigned integer")
     #: 16-bit unsigned integer
@@ -60,7 +70,7 @@ class DataType(Enum):
               decimal.Decimal("1"),
               "H",
               False,
-              int,
+              _round_to_int,
               np.uint16,
               "16-bit unsigned integer")
     #: 32-bit unsigned integer
@@ -71,7 +81,7 @@ class DataType(Enum):
               decimal.Decimal("1"),
               "I",
               False,
-              int,
+              _round_to_int,
               np.uint32,
               "32-bit unsigned integer")
     #: 64-bit unsigned integer
@@ -82,7 +92,7 @@ class DataType(Enum):
               decimal.Decimal("1"),
               "Q",
               False,
-              int,
+              _round_to_int,
               np.uint64,
               "64-bit unsigned integer")
     #: 8-bit signed integer
@@ -93,7 +103,7 @@ class DataType(Enum):
             decimal.Decimal("1"),
             "b",
             False,
-            int,
+            _round_to_int,
             np.int8,
             "8-bit signed integer")
     #: 16-bit signed integer
@@ -104,7 +114,7 @@ class DataType(Enum):
              decimal.Decimal("1"),
              "h",
              False,
-             int,
+             _round_to_int,
              np.int16,
              "16-bit signed integer")
     #: 32-bit signed integer
@@ -115,7 +125,7 @@ class DataType(Enum):
              decimal.Decimal("1"),
              "i",
              False,
-             int,
+             _round_to_int,
              np.int32,
              "32-bit signed integer")
     #: 64-bit signed integer
@@ -126,7 +136,7 @@ class DataType(Enum):
              decimal.Decimal("1"),
              "q",
              False,
-             int,
+             _round_to_int,
              np.int64,
              "64-bit signed integer")
     #: 8.8 unsigned fixed point number
@@ -402,6 +412,31 @@ class DataType(Enum):
         """
         return self._numpy_typename
 
+    def closest_representable_value(self, value):
+        """
+        Returns the closest value to the given value that can be represented
+        by this type
+
+        :param value:
+        :type value: float or in
+        :rtype: float
+        """
+        return self.decode_from_int(self.encode_as_int(value))
+
+    def closest_representable_value_above(self, value):
+        """
+        Returns the closest value above the given value that can be
+        represented by this type.
+
+        :param value:
+        :type value: float or in
+        :rtype: float
+        """
+        closest_value = self.decode_from_int(self.encode_as_int(value))
+        if closest_value >= value:
+            return closest_value
+        return self.decode_from_int(self.encode_as_int(value)+1)
+
     def encode_as_int(self, value):
         """
         Returns the value as an integer, according to this type.
@@ -424,6 +459,15 @@ class DataType(Enum):
         if self._force_cast is not None:
             return self._force_cast(value)
         return value
+
+    def decode_from_int(self, value):
+        """
+        Decode a single value represented as an int according to this type.
+
+        :param int array:
+        :rtype: float or int
+        """
+        return value / float(self._scale)
 
     def encode_as_numpy_int(self, value):
         """
