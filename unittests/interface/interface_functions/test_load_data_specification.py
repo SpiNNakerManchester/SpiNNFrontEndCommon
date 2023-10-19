@@ -57,7 +57,7 @@ class _MockTransceiver(Version5Transceiver):
 
     @overrides(Version5Transceiver.write_memory)
     def write_memory(
-            self, x, y, base_address, data, n_bytes=None, offset=0,
+            self, x, y, base_address, data, *, n_bytes=None, offset=0,
             cpu=0, is_filename=False, get_sum=False):
         if isinstance(data, int):
             data = struct.pack("<I", data)
