@@ -35,7 +35,7 @@ class _MockTransceiver(MockableTransceiver):
 
     @overrides(MockableTransceiver.execute_flood)
     def execute_flood(
-            self, core_subsets, executable, app_id,
+            self, core_subsets, executable, app_id, *,
             n_bytes=None, wait=False, is_filename=False):  # @UnusedVariable
         for core_subset in core_subsets.core_subsets:
             x = core_subset.x
