@@ -20,6 +20,7 @@ eieio
 PyNN
 HBP
 DDL
+scp
 
 # Our special words
 borrowable
