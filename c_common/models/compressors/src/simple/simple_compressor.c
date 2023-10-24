@@ -85,6 +85,7 @@ void compress_start(UNUSED uint unused0, UNUSED uint unused1) {
 
         // Free the block of SDRAM used to load the routing table.
         log_debug("free sdram blocks which held router tables");
+        FREE((void *) header);
 
         // set the failed flag and exit
         malloc_extras_terminate(EXIT_FAIL);
@@ -100,7 +101,7 @@ bool standalone(void) {
 //! \brief the main entrance.
 void c_main(void) {
     log_debug("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
-    malloc_extras_turn_on_print();
+    malloc_extras_turn_off_print();
 
     // kick-start the process
     spin1_schedule_callback(compress_start, 0, 0, 3);

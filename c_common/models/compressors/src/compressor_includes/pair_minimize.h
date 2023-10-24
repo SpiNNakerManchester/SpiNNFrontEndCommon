@@ -353,9 +353,9 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         }
     }
 
-    log_info("before sort %u", routes_count);
+    log_debug("before sort %u", routes_count);
     for (uint i = 0; i < routes_count; i++) {
-        log_info("%u", routes[i]);
+        log_debug("%u", routes[i]);
     }
 
     sort_routes();
@@ -364,12 +364,12 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         return false;
     }
 
-    log_info("after sort %u", routes_count);
+    log_debug("after sort %u", routes_count);
     for (uint i = 0; i < routes_count; i++) {
-        log_info("%u", routes[i]);
+        log_debug("%u", routes[i]);
     }
 
-    log_info("do sort_table by route %u", table_size);
+    log_debug("do sort_table by route %u", table_size);
     tc[T2_LOAD] = 0xFFFFFFFF;
     tc[T2_CONTROL] = 0x83;
     sort_table();
@@ -388,14 +388,14 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     while (left <= max_index) {
         int right = left;
         uint32_t left_route = routing_table_get_entry(left)->route;
-        log_info("A %u %u %u %u", left, max_index, right, left_route);
+        log_debug("A %u %u %u %u", left, max_index, right, left_route);
         while ((right < table_size - 1) &&
                 routing_table_get_entry(right+1)->route ==
                         left_route) {
             right++;
         }
         remaining_index = right + 1;
-        log_info("compress %u %u", left, right);
+        log_debug("compress %u %u", left, right);
         tc[T2_LOAD] = 0xFFFFFFFF;
         tc[T2_CONTROL] = 0x83;
         compress_by_route(left, right);
@@ -417,6 +417,7 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         left = right + 1;
     }
 
+    log_debug("done %u %u", table_size, write_index);
 
     //for (uint i = 0; i < write_index; i++) {
     //    entry_t *entry1 = routing_table_get_entry(i);
