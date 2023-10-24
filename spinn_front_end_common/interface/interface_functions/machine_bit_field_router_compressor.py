@@ -475,8 +475,8 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size)
 
         # write sdram
-        transceiver.write_memory(
-            chip_x, chip_y, sdram_address, address_data, len(address_data))
+        transceiver.write_memory(chip_x, chip_y, sdram_address, address_data,
+                                 n_bytes=len(address_data))
 
         # get the only processor on the chip
         processor_id = list(cores.all_core_subsets.get_core_subset_for_chip(
@@ -547,8 +547,8 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size, len(address_data))
 
         # write sdram
-        transceiver.write_memory(
-            chip_x, chip_y, sdram_address, address_data, len(address_data))
+        transceiver.write_memory(chip_x, chip_y, sdram_address, address_data,
+                                 n_bytes=len(address_data))
 
         # get the only processor on the chip
         sorter_cores = cores.get_cores_for_binary(

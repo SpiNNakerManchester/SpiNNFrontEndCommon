@@ -154,8 +154,7 @@ def _load_application(executable_targets, app_id):
     transceiver = FecDataView.get_transceiver()
     for binary in executable_targets.binaries:
         core_subsets = executable_targets.get_cores_for_binary(binary)
-        transceiver.execute_flood(
-            core_subsets, binary, app_id, wait=True, is_filename=True)
+        transceiver.execute_flood(core_subsets, binary, app_id, wait=True)
 
     # Sleep to allow cores to get going
     time.sleep(0.5)
