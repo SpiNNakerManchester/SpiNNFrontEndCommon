@@ -24,13 +24,13 @@ from spinn_front_end_common.utility_models import ReverseIpTagMultiCastSource
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def splitter_selector():
+def splitter_selector() -> None:
     """
     Basic selector which puts the legacy splitter object on
     everything without a splitter object.
     """
     for app_vertex in PacmanDataView.iterate_vertices():
-        if app_vertex.splitter is None:
+        if not app_vertex.has_splitter is None:
             vertex_selector(app_vertex)
 
 
