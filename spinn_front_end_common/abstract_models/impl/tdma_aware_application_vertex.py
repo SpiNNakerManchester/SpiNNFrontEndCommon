@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from spinn_utilities.abstract_base import AbstractBase
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_utilities.abstract_base import abstractmethod
 
 
-class TDMAAwareApplicationVertex(ApplicationVertex):
+class TDMAAwareApplicationVertex(ApplicationVertex, metaclass=AbstractBase):
     """
     An application vertex that contains the code for using TDMA to spread
     packet transmission to try to avoid overloading any SpiNNaker routers.
