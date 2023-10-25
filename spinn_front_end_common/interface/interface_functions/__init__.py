@@ -41,7 +41,6 @@ from .insert_extra_monitor_vertices_to_graphs import (
 from .split_lpg_vertices import split_lpg_vertices
 from .load_executable_images import load_app_images, load_sys_images
 from .load_fixed_routes import load_fixed_routes
-from .local_tdma_builder import local_tdma_builder
 from .locate_executable_start_type import locate_executable_start_type
 from .machine_generator import machine_generator
 from .create_notification_protocol import create_notification_protocol
@@ -74,7 +73,7 @@ __all__ = (
     "insert_extra_monitor_vertices_to_graphs",
     "split_lpg_vertices",
     "load_app_images", "load_fixed_routes", "load_sys_images",
-    "local_tdma_builder", "locate_executable_start_type",
+    "locate_executable_start_type",
     "machine_generator", "placements_provenance_gatherer",
     "profile_data_gatherer",
     "read_routing_tables_from_machine", "router_provenance_gatherer",

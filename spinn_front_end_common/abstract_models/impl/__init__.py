@@ -14,7 +14,5 @@
 
 from .machine_allocation_controller import MachineAllocationController
 from .machine_data_specable_vertex import MachineDataSpecableVertex
-from .tdma_aware_application_vertex import TDMAAwareApplicationVertex
 
-__all__ = ("MachineAllocationController", "MachineDataSpecableVertex",
-           "TDMAAwareApplicationVertex")
+__all__ = ("MachineAllocationController", "MachineDataSpecableVertex")
