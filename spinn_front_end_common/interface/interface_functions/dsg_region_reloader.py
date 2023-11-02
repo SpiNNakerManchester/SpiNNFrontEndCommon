@@ -39,7 +39,7 @@ def regenerate_data_spec(placement, ds_database):
 
     :param ~.Placement placement: The placement to regenerate
     :param ds_database: The database to use for reload
-    :type ds_database: ~spinn_front_end_common.interface.ds.DsSqlliteDatabas db
+    :type ds_database: ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
     :return: Whether the data was regenerated or not
     :rtype: bool
     """
