@@ -19,7 +19,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.connections.udp_packet_connections import SCAMPConnection
-from spinnman.transceiver import create_transceiver_from_hostname
+from spinnman.transceiver import create_transceiver_from_hostname, Transceiver
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -103,7 +103,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
                 " the script; this script will now exit")
             sys.exit(1)
 
-    def create_transceiver(self):
+    def create_transceiver(self) -> Transceiver:
         """
         Create a transceiver for talking to the allocated machine, and
         make sure everything is ready for use (i.e. boot and discover
@@ -112,7 +112,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         :rtype: ~spinnman.transceiver.Transceiver
         """
         if not self.__hostname:
-            return None
+            raise NotImplementedError("Needs a hostname")
         txrx = create_transceiver_from_hostname(
             hostname=self.__hostname,
             bmp_connection_data=None,
@@ -120,7 +120,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         txrx.discover_scamp_connections()
         return txrx
 
-    def can_create_transceiver(self):
+    def can_create_transceiver(self) -> bool:
         return self.__hostname is not None
 
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
@@ -179,7 +179,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         """
         return False
 
-    @abstractmethod
     def make_report(self, filename):
         """
         Asks the controller to make a report of details of allocations.

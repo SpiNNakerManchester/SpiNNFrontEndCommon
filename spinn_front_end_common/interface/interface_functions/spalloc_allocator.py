@@ -118,7 +118,7 @@ class SpallocJobController(MachineAllocationController):
 
     @overrides(MachineAllocationController.create_transceiver,
                extend_doc=True)
-    def create_transceiver(self) -> Optional[Transceiver]:
+    def create_transceiver(self) -> Transceiver:
         """
         .. note::
             This allocation controller proxies the transceiver's connections
@@ -129,6 +129,12 @@ class SpallocJobController(MachineAllocationController):
             return super().create_transceiver()
         txrx = self._job.create_transceiver()
         return txrx
+
+    @overrides(MachineAllocationController.can_create_transceiver)
+    def can_create_transceiver(self) -> bool:
+        if not self.__use_proxy:
+            return super().can_create_transceiver()
+        return True
 
     @overrides(MachineAllocationController.open_sdp_connection,
                extend_doc=True)
