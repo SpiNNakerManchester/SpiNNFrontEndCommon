@@ -366,7 +366,8 @@ class LiveEventConnection(DatabaseConnection):
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep / 1000.0)
 
-    def __init_sender(self, database: DatabaseReader, vertex_sizes: Dict[str, int]):
+    def __init_sender(
+            self, database: DatabaseReader, vertex_sizes: Dict[str, int]):
         """
         :param DatabaseReader database:
         :param dict(str,int) vertex_sizes:
@@ -382,7 +383,8 @@ class LiveEventConnection(DatabaseConnection):
         for label in self.__send_labels:
             self.__send_address_details[label] = self.__get_live_input_details(
                 database, label)
-            self._atom_id_to_key[label] = database.get_atom_id_to_key_mapping(label)
+            self._atom_id_to_key[label] = \
+                database.get_atom_id_to_key_mapping(label)
             vertex_sizes[label] = len(self._atom_id_to_key[label])
 
     def __init_receivers(
