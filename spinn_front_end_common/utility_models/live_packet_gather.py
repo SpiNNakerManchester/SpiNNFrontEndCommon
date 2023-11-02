@@ -56,8 +56,8 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
         machine = FecDataView.get_machine()
         for eth in machine.ethernet_connected_chips:
             lpg_vtx = LivePacketGatherMachineVertex(
-                self._governed_app_vertex.params, self._governed_app_vertex)
-            self._governed_app_vertex.remember_machine_vertex(lpg_vtx)
+                self.governed_app_vertex.params, self.governed_app_vertex)
+            self.governed_app_vertex.remember_machine_vertex(lpg_vtx)
             p = pick_core_for_system_placement(system_placements, eth)
             system_placements.add_placement(
                 Placement(lpg_vtx, eth.x, eth.y, p))
@@ -81,7 +81,7 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
     @overrides(AbstractSplitterCommon.get_in_coming_vertices)
     def get_in_coming_vertices(self, partition_id: str) -> Sequence[
             LivePacketGatherMachineVertex]:
-        return tuple(self._governed_app_vertex.machine_vertices)
+        return tuple(self.governed_app_vertex.machine_vertices)
 
     @overrides(AbstractSplitterCommon.get_source_specific_in_coming_vertices)
     def get_source_specific_in_coming_vertices(
