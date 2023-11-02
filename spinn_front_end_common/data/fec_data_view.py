@@ -1198,7 +1198,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_next_ds_references(cls, number):
         """
-        Get a a list of unigue data specification references
+        Get a a list of unique data specification references
 
         These will be unique since the last hard reset
 

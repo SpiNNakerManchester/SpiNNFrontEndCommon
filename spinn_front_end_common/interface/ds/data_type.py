@@ -39,7 +39,7 @@ class DataType(Enum):
     .. note::
         Some types (notably 64-bit fixed-point and floating-point types) are
         not recommended for use on SpiNNaker due to complications with
-        representability and lack of hardware/library support.
+        represent them and lack of hardware/library support.
     """
     #: 8-bit unsigned integer
     UINT8 = (0,

@@ -92,6 +92,7 @@ BMPConnectionData
 DatabaseReader
 DataWritten
 BufferedSendingRegion
+SpiNNakerGraphFrontEnd
 
 # Python packages
 struct
