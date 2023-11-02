@@ -27,7 +27,7 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.resources import AbstractSDRAM
 from .reverse_ip_tag_multicast_source_machine_vertex import (
-    ReverseIPTagMulticastSourceMachineVertex, _is_array_list)
+    ReverseIPTagMulticastSourceMachineVertex, is_array_list)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 _SendBufferTimes = Optional[Union[numpy.ndarray, List[numpy.ndarray]]]
 
@@ -196,7 +196,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             self, send_buffer_times: _SendBufferTimes) -> _SendBufferTimes:
         if send_buffer_times is None:
             return None
-        if _is_array_list(send_buffer_times):
+        if is_array_list(send_buffer_times):
             if len(send_buffer_times) != self.__n_atoms:
                 raise ConfigurationException(
                     f"The array or arrays of times {send_buffer_times} does "
@@ -231,7 +231,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         self.__send_buffer_times = send_buffer_times
         for vertex in self.machine_vertices:
             send_buffer_times_to_set = self.__send_buffer_times
-            if _is_array_list(self.__send_buffer_times):
+            if is_array_list(self.__send_buffer_times):
                 vertex_slice = vertex.vertex_slice
                 send_buffer_times_to_set = self.__send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
@@ -264,7 +264,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         if send_buffer_times is not None:
             # If there is at least one array element, and that element is
             # itself an array
-            if _is_array_list(send_buffer_times):
+            if is_array_list(send_buffer_times):
                 send_buffer_times = send_buffer_times[ids]
             # Check the buffer times are not empty
             assert send_buffer_times is not None

@@ -77,17 +77,17 @@ _MAX_OFFSET_DENOMINATOR = 10
 _MAX_OFFSET_MODULO = 1000
 
 
-def _is_array_list(val: _SendBufferTimes) -> TypeGuard[List[NDArray]]:
+def is_array_list(value: _SendBufferTimes) -> TypeGuard[List[NDArray]]:
     """
     Whether the send buffer times are a list of arrays (i.e., are 2D).
     Ugly, but we'll have the ugly in one place.
 
-    :param val: A collection of send buffer times.
+    :param value: A collection of send buffer times.
     :return: Whether this is a list of numpy arrays.
     """
-    if val is None:
+    if value is None:
         return False
-    return bool(len(val) and hasattr(val[0], "__len__"))
+    return bool(len(value) and hasattr(value[0], "__len__"))
 
 
 class ReverseIPTagMulticastSourceMachineVertex(
@@ -252,7 +252,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int n_keys:
         :rtype: int
         """
-        if _is_array_list(send_buffer_times):
+        if is_array_list(send_buffer_times):
             counts = numpy.bincount(
                 numpy.concatenate(send_buffer_times).astype("int"))
             if len(counts):
@@ -322,7 +322,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         :param ~numpy.ndarray send_buffer_times:
         """
-        if _is_array_list(send_buffer_times):
+        if is_array_list(send_buffer_times):
             # Working with a list of lists so check length
             if len(send_buffer_times) != self._n_keys:
                 raise ConfigurationException(
@@ -483,7 +483,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if self._send_buffer is not None:
             self._send_buffer.clear()
         if self._send_buffer_times is not None:
-            if _is_array_list(self._send_buffer_times):
+            if is_array_list(self._send_buffer_times):
                 # Works with a list-of-lists
                 self._fill_send_buffer_2d(key_to_send)
             elif len(self._send_buffer_times):

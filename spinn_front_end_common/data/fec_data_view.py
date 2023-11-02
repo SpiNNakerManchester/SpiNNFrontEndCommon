@@ -706,8 +706,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retrieve the system_multicast_router_timeout_keys if known.
         Keys are the coordinates of chips.
-        Values are the base keys for multicast comms received by the reinjector
-        module of the extra monitor running on those chips.
+        Values are the base keys for multicast comms received by the
+        re-injector module of the extra monitor running on those chips.
 
         :rtype: dict(tuple(int,int), int)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:

@@ -1207,7 +1207,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _supported_info_allocators(self) -> Dict[str, Callable[[Iterable[
                 Tuple[ApplicationVertex, str]]], None]]:
         """
-        The routing info allocator algoriths supported by
+        The routing info allocator algorithms supported by
         :py:meth`_do_info_allocator`.
         """
         return {

@@ -491,7 +491,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         Sets the Data Spec targets database.
 
-        :param str ds_database_path: Existing patj to the database
+        :param str ds_database_path: Existing path to the database
         """
         if not os.path.isfile(ds_database_path):
             raise TypeError("ds_database path must be a filee")
