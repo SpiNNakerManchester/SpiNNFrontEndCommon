@@ -445,20 +445,20 @@ class BufferManager(object):
                     data)
 
     def _get_region_information(
-            self, addr: int, x: int, y: int) -> List[Tuple[int, int, bool]]:
+            self, address: int, x: int, y: int) -> List[Tuple[int, int, bool]]:
         """
         Get the recording information from all regions of a core.
 
-        :param addr: The recording region base address
+        :param address: The recording region base address
         :param x: The X coordinate of the chip containing the data
         :param y: The Y coordinate of the chip containing the data
         :return: (size, address, missing flag) for each region
         """
         transceiver = FecDataView.get_transceiver()
-        n_regions = transceiver.read_word(x, y, addr)
+        n_regions = transceiver.read_word(x, y, address)
         n_bytes = get_recording_header_size(n_regions)
         data = transceiver.read_memory(
-            x, y, addr + BYTES_PER_WORD, n_bytes - BYTES_PER_WORD)
+            x, y, address + BYTES_PER_WORD, n_bytes - BYTES_PER_WORD)
         data_type = _RecordingRegion * n_regions
         regions = data_type.from_buffer_copy(data)
         sizes_and_addresses = [

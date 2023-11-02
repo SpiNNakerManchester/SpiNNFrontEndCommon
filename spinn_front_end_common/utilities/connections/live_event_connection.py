@@ -251,7 +251,7 @@ class LiveEventConnection(DatabaseConnection):
 
         .. note::
             Previously this method was also used to add no time callback
-            Ie the once that take as parameters the label of the vertex,
+            I.e. the once that take as parameters the label of the vertex,
             an int atom ID or key, and an int payload which may be None.
             For those use add_receive_no_time_callback now
 
@@ -366,13 +366,13 @@ class LiveEventConnection(DatabaseConnection):
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep / 1000.0)
 
-    def __init_sender(self, db: DatabaseReader, vertex_sizes: Dict[str, int]):
+    def __init_sender(self, database: DatabaseReader, vertex_sizes: Dict[str, int]):
         """
-        :param DatabaseReader db:
+        :param DatabaseReader database:
         :param dict(str,int) vertex_sizes:
         """
         if self.__sender_connection is None:
-            job = db.get_job()
+            job = database.get_job()
             if job:
                 self.__sender_connection = job.open_eieio_listener_connection()
             else:
@@ -381,19 +381,19 @@ class LiveEventConnection(DatabaseConnection):
             raise ConfigurationException("no send labels defined")
         for label in self.__send_labels:
             self.__send_address_details[label] = self.__get_live_input_details(
-                db, label)
-            self._atom_id_to_key[label] = db.get_atom_id_to_key_mapping(label)
+                database, label)
+            self._atom_id_to_key[label] = database.get_atom_id_to_key_mapping(label)
             vertex_sizes[label] = len(self._atom_id_to_key[label])
 
     def __init_receivers(
-            self, db: DatabaseReader, vertex_sizes: Dict[str, int]):
+            self, database: DatabaseReader, vertex_sizes: Dict[str, int]):
         """
-        :param DatabaseReader db:
+        :param DatabaseReader database:
         :param dict(str,int) vertex_sizes:
         """
         # Set up a single connection for receive
         if self.__receiver_connection is None:
-            job = db.get_job()
+            job = database.get_job()
             if job:
                 self.__receiver_connection = job.open_udp_listener_connection()
             else:
@@ -403,7 +403,7 @@ class LiveEventConnection(DatabaseConnection):
             raise ConfigurationException("no receive labels defined")
         for label_id, label in enumerate(self.__receive_labels):
             _, port, board_address, tag, x, y = self.__get_live_output_details(
-                db, label)
+                database, label)
 
             # Update the tag if not already done
             if (board_address, port, tag) not in receivers:
@@ -416,7 +416,7 @@ class LiveEventConnection(DatabaseConnection):
                 self.__receiver_connection.local_ip_address,
                 self.__receiver_connection.local_port)
 
-            key_to_atom_id = db.get_key_to_atom_id_mapping(label)
+            key_to_atom_id = database.get_key_to_atom_id_mapping(label)
             for key, atom_id in key_to_atom_id.items():
                 self.__key_to_atom_id_and_label[key] = (atom_id, label_id)
             vertex_sizes[label] = len(key_to_atom_id)

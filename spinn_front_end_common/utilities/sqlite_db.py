@@ -33,8 +33,8 @@ class SQLiteDB(object):
 
     Basic usage (with the default row type)::
 
-        with SQLiteDB("db_file.sqlite3") as db:
-            with db.transaction() as cursor:
+        with SQLiteDB("db_file.sqlite3") as database:
+            with database.transaction() as cursor:
                 for row in cursor.execute("SELECT thing FROM ..."):
                     print(row["thing"])
 
@@ -220,38 +220,38 @@ class SQLiteDB(object):
         else:
             raise TypeError("can only set pragmas to bool, int or str")
 
-    def execute(self, sql, paramters=()):
+    def execute(self, sql, parameters=()):
         """
         Executes a query by passing it to the database
 
         :param str sql:
-        :param paramters:
+        :param parameters:
         :raises DatabaseException: If there is no cursor.
             Typically because database was used outside of a with
         """
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
-        return self.__cursor.execute(sql, paramters)
+        return self.__cursor.execute(sql, parameters)
 
-    def executemany(self, sql, paramters=()):
+    def executemany(self, sql, parameters=()):
         """
         Repeatedly executes a query by passing it to the database
 
         :param str sql:
-        :param paramters:
+        :param parameters:
         :raises DatabaseException: If there is no cursor.
             Typically because database was used outside of a with
         """
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
-        return self.__cursor.executemany(sql, paramters)
+        return self.__cursor.executemany(sql, parameters)
 
     @property
     def lastrowid(self) -> int:
         """
-        Gets the lastrow from the last query run/ execute
+        Gets the lastrowid from the last query run/ execute
 
         :rtype: int
         :raises DatabaseException: If there is no cursor.

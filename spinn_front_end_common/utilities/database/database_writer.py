@@ -270,8 +270,8 @@ class DatabaseWriter(SQLiteDB):
                 Tuple[MachineVertex, str, MachineVertex]]:
         """
         Get places where an LPG Machine vertex has been added to a graph
-        "directly" (via GFE); and so it's application vertex *isn't* a
-        LivePacketGather
+        "directly" (via SpiNNakerGraphFrontEnd);
+        and so it's application vertex *isn't* a LivePacketGather
         """
         for edge in part.edges:
             if (isinstance(edge.pre_vertex,

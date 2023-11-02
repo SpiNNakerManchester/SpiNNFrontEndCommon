@@ -347,7 +347,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :param int region_num: The DS region number
+        :param int region_num: The Data Specifiation region number
         :return: The pointer set during the original load
         :rtype: int or None
         :raises DsDatabaseException: if the region is not known
