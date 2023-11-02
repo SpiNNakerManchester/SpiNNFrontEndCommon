@@ -24,12 +24,23 @@ scp
 
 # Our special words
 borrowable
-precompiled
-reentrant
-malloc
-txrx
-malloc'ed
+collab
+cpu
+iobuf
+iptag
+iptags
 params
+precompiled
+malloc
+malloc'ed
+reentrant
+regex
+replacer
+sdram
+sql
+txrx
+url
+xy
 
 # Our types
 IPTag
@@ -90,3 +101,8 @@ FileIO
 RawIOBase
 TextIOBase
 Struct
+
+# sqlite3.cursor methods mentioned in docs
+fetchone
+lastrowid
+rowcount
