@@ -97,7 +97,7 @@ class _ChipProvenanceUpdater(object):
             unsuccessful_cores = self.__txrx.get_cpu_infos(
                 self.__all_cores, CPUState.FINISHED, False)
 
-            for (x, y, p) in unsuccessful_cores.keys():
+            for (x, y, p) in unsuccessful_cores:
                 self.__txrx.send_chip_update_provenance_and_exit(x, y, p)
 
             processors_completed = self.__txrx.get_core_state_count(
