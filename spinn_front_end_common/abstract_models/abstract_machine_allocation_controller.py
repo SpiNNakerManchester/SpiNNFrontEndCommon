@@ -60,7 +60,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
         raise NotImplementedError
 
     @abstractmethod
-    def create_transceiver(self) -> Optional[Transceiver]:
+    def create_transceiver(self) -> Transceiver:
         """
         Create a transceiver for talking to the allocated machine, and
         make sure everything is ready for use (i.e. boot and discover

@@ -72,9 +72,9 @@ class _ChipProvenanceUpdater(object):
             if error_cores or watchdog_cores or idle_cores:
                 raise ConfigurationException(
                     "Some cores have crashed. "
-                    f"RTE cores {error_cores.values()}, "
-                    f"watch-dogged cores {watchdog_cores.values()}, "
-                    f"idle cores {idle_cores.values()}")
+                    f"RTE cores {error_cores}, "
+                    f"watch-dogged cores {watchdog_cores}, "
+                    f"idle cores {idle_cores}")
 
             # check that all cores are in the state FINISHED which shows that
             # the core has received the message and done provenance updating
