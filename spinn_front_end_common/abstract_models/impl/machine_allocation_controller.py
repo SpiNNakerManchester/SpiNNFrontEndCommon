@@ -90,7 +90,7 @@ class MachineAllocationController(
     def create_transceiver(self) -> Optional[Transceiver]:
         if not self.__hostname:
             return None
-        txrx = create_transceiver_from_hostname(self.__hostname, 5)
+        txrx = create_transceiver_from_hostname(self.__hostname)
         txrx.discover_scamp_connections()
         return txrx
 
