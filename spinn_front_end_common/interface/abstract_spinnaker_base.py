@@ -2278,11 +2278,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         logger.error(unsuccessful_cores.get_status_string())
 
         # Find the cores that are not in RTE i.e. that can still be read
-        non_rte_cores = [
-            (x, y, p)
-            for (x, y, p), core_info in unsuccessful_cores
-            if (core_info.state != CPUState.RUN_TIME_EXCEPTION and
-                core_info.state != CPUState.WATCHDOG)]
+        non_rte_cores = unsuccessful_cores.infos_not_in_states(
+            [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
 
         # If there are any cores that are not in RTE, extract data from them
         if (non_rte_cores and
