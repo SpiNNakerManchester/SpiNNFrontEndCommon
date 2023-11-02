@@ -114,9 +114,9 @@ class _GraphDataSpecificationWriter(object):
             self._run_check_queries(ds_db)
         return path
 
-    def __generate_data_spec_for_vertices(self, pl, vertex, ds_db):
+    def __generate_data_spec_for_vertices(self, placement, vertex, ds_db):
         """
-        :param ~.Placement pl: placement of machine graph to cores
+        :param ~.Placement placement: placement of machine graph to cores
         :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
         :param DsSqlliteDatabase ds_db:
         :return: True if the vertex was data spec-able, False otherwise
@@ -127,16 +127,16 @@ class _GraphDataSpecificationWriter(object):
         if not isinstance(vertex, AbstractGeneratesDataSpecification):
             return False
 
-        x = pl.x
-        y = pl.y
-        p = pl.p
+        x = placement.x
+        y = placement.y
+        p = placement.p
 
         report_writer = get_report_writer(x, y, p)
         spec = DataSpecificationGenerator(
             x, y, p, vertex, ds_db, report_writer)
 
         # generate the DSG file
-        vertex.generate_data_specification(spec, pl)
+        vertex.generate_data_specification(spec, placement)
 
         # Check the memory usage
         total_size = ds_db.get_total_regions_size(x, y, p)
