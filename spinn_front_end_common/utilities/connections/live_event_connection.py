@@ -161,7 +161,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__no_time_event_callbacks: List[
             List[Tuple[_RcvCallback, bool]]] = list()
         self.__time_event_callbacks: List[
-            List[Tuple[Union[_RcvCallback, _RcvTimeCallback], bool]]] = list()
+            List[Tuple[Union[_RcvTimeCallback], bool]]] = list()
         self.__start_resume_callbacks: Dict[str, List[_Callback]] = dict()
         self.__pause_stop_callbacks: Dict[str, List[_Callback]] = dict()
         self.__init_callbacks: Dict[str, List[_InitCallback]] = dict()
@@ -229,8 +229,8 @@ class LiveEventConnection(DatabaseConnection):
         self.__init_callbacks[label].append(init_callback)
 
     def add_receive_callback(
-            self, label: str, live_event_callback: Union[
-                _RcvCallback, _RcvTimeCallback], translate_key: bool = True):
+            self, label: str, live_event_callback: _RcvTimeCallback,
+            translate_key: bool = True):
         """
         Add a callback for the reception of time events from a vertex.
 
