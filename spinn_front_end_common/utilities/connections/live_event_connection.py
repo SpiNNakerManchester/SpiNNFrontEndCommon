@@ -161,7 +161,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__no_time_event_callbacks: List[
             List[Tuple[_RcvCallback, bool]]] = list()
         self.__time_event_callbacks: List[
-            List[Tuple[_RcvTimeCallback, bool]]] = list()
+            List[Tuple[Union[_RcvCallback, _RcvTimeCallback], bool]]] = list()
         self.__start_resume_callbacks: Dict[str, List[_Callback]] = dict()
         self.__pause_stop_callbacks: Dict[str, List[_Callback]] = dict()
         self.__init_callbacks: Dict[str, List[_InitCallback]] = dict()
