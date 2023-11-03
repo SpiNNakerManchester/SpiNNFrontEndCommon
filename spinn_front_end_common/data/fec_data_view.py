@@ -232,7 +232,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Returns the allocation controller if known.
 
-        :rtype: AbstractMachineAllocationController
+        :rtype: MachineAllocationController
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the buffer manager unavailable
         """
@@ -1198,12 +1198,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_next_ds_references(cls, number):
         """
-        Get a a list of unigue ds references
+        Get a a list of unique data specification references
 
-        These will be Unigue since the last hard reset
+        These will be unique since the last hard reset
 
         :param number: number of values in the list
-        :rtype: list(inrt)
+        :rtype: list(int)
         """
         references = range(cls.__fec_data._next_ds_reference,
                            cls.__fec_data._next_ds_reference+number)

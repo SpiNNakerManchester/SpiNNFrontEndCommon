@@ -494,8 +494,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         end_time_step = FecDataView.get_current_run_timesteps()
         if first_time_step == end_time_step:
             return
-        keys = get_keys(key_base, self._vertex_slice)
-        for atom in range(self._vertex_slice.n_atoms):
+        keys = get_keys(key_base, self.vertex_slice)
+        for atom in range(self.vertex_slice.n_atoms):
             for tick in sorted(self._send_buffer_times[atom]):
                 if self._is_in_range(tick, first_time_step, end_time_step):
                     self._send_buffer.add_key(tick, keys[atom])
@@ -512,7 +512,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         end_time_step = FecDataView.get_current_run_timesteps()
         if first_time_step == end_time_step:
             return
-        keys = get_keys(key_base, self._vertex_slice)
+        keys = get_keys(key_base, self.vertex_slice)
         for tick in sorted(self._send_buffer_times):
             if self._is_in_range(tick, first_time_step, end_time_step):
                 self._send_buffer.add_keys(tick, keys)
