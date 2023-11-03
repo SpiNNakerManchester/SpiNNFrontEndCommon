@@ -137,7 +137,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 time.sleep(0.5)
 
     def set_allocation_controller(self, allocation_controller: Optional[
-        MachineAllocationController]):
+            MachineAllocationController]):
         """
         Sets the allocation controller variable.
 
