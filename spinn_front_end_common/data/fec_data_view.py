@@ -265,7 +265,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Returns the allocation controller if known.
 
-        :rtype: AbstractMachineAllocationController
+        :rtype: MachineAllocationController
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the buffer manager unavailable
         """

@@ -20,8 +20,6 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
-from spinn_front_end_common.abstract_models import (
-    AbstractMachineAllocationController)
 from spinn_front_end_common.data import FecDataView
 from pacman.exceptions import PacmanConfigurationException
 
@@ -55,7 +53,7 @@ class _HBPJobController(MachineAllocationController):
         logging.getLogger("requests").setLevel(logging.WARNING)
         super().__init__("HBPJobController")
 
-    @overrides(AbstractMachineAllocationController.extend_allocation)
+    @overrides(MachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time: float):
         r = requests.get(self._extend_lease_url, params={
             "runTime": str(new_total_run_time)}, timeout=10)
@@ -85,7 +83,7 @@ class _HBPJobController(MachineAllocationController):
         r.raise_for_status()
         return r.json()
 
-    @overrides(AbstractMachineAllocationController.close)
+    @overrides(MachineAllocationController.close)
     def close(self) -> None:
         super().close()
         self._release(self._machine_name)
@@ -102,7 +100,7 @@ class _HBPJobController(MachineAllocationController):
         self._set_power(self._machine_name, power)
         self._power_on = power
 
-    @overrides(AbstractMachineAllocationController.where_is_machine)
+    @overrides(MachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x: int, chip_y: int) -> Tuple[
             int, int, int]:
         c, f, b = cast(Tuple[int, int, int],

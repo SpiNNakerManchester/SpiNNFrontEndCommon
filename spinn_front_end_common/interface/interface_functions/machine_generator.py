@@ -52,8 +52,8 @@ def machine_generator(
         # If there is an allocation controller and it wants to make a
         # transceiver for us, we let it do so; transceivers obtained that way
         # are already fully configured
-        txrx = FecDataView.get_allocation_controller().create_transceiver()
-        if txrx:
+        if FecDataView.get_allocation_controller().can_create_transceiver():
+            txrx = FecDataView.get_allocation_controller().create_transceiver()
             return txrx.get_machine_details(), txrx
 
     txrx = create_transceiver_from_hostname(
