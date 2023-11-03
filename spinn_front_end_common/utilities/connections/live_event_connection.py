@@ -19,8 +19,8 @@ from threading import Thread, Condition
 from time import sleep
 from typing import (
     Callable, Dict, Iterable, List, Optional, Set, Tuple, Union,
-    cast, overload)
-from typing_extensions import Literal, TypeGuard
+    cast)
+from typing_extensions import TypeGuard
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once
 from spinnman.messages.eieio.data_messages import (
