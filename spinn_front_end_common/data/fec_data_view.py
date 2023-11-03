@@ -30,10 +30,10 @@ from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.routing_tables import MulticastRoutingTables
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
+    from spinn_front_end_common.abstract_models.impl import (
+        MachineAllocationController)
     from spinn_front_end_common.interface.buffer_management import (
         BufferManager)
-    from spinn_front_end_common.abstract_models import (
-        AbstractMachineAllocationController)
     from spinn_front_end_common.interface.java_caller import JavaCaller
     from spinn_front_end_common.utilities.utility_objs import (
         LivePacketGatherParameters)
@@ -158,7 +158,7 @@ class _FecDataModel(object):
         """
         self._buffer_manager: Optional[BufferManager] = None
         self._allocation_controller: Optional[
-            AbstractMachineAllocationController] = None
+            MachineAllocationController] = None
         self._data_in_multicast_key_to_chip_map: Optional[Dict[XY, int]] = None
         self._data_in_multicast_routing_tables: Optional[
             MulticastRoutingTables] = None
@@ -261,7 +261,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._allocation_controller is not None
 
     @classmethod
-    def get_allocation_controller(cls) -> AbstractMachineAllocationController:
+    def get_allocation_controller(cls) -> MachineAllocationController:
         """
         Returns the allocation controller if known.
 
