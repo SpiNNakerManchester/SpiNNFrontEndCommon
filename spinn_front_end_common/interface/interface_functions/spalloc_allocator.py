@@ -246,7 +246,7 @@ class _OldSpallocJobController(MachineAllocationController):
         return self._state != JobState.destroyed
 
     @overrides(MachineAllocationController._teardown)
-    def _teardown(self):
+    def _teardown(self) -> None:
         if not self._exited:
             self._job.close()
         super()._teardown()

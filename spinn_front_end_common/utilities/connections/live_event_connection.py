@@ -228,22 +228,9 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__init_callbacks[label].append(init_callback)
 
-    @overload
-    def add_receive_callback(
-            self, label: str, live_event_callback: _RcvCallback, *,
-            translate_key: bool = True, for_times: bool = False):
-        ...
-
-    @overload
-    def add_receive_callback(
-            self, label: str, live_event_callback: _RcvTimeCallback, *,
-            translate_key: bool = True, for_times: Literal[True]):
-        ...
-
     def add_receive_callback(
             self, label: str, live_event_callback: Union[
-                _RcvCallback, _RcvTimeCallback], *,
-            translate_key: bool = True):
+                _RcvCallback, _RcvTimeCallback], translate_key: bool = True):
         """
         Add a callback for the reception of time events from a vertex.
 
@@ -265,9 +252,6 @@ class LiveEventConnection(DatabaseConnection):
         :param bool translate_key:
             True if the key is to be converted to an atom ID, False if the
             key should stay a key
-        :param bool for_times:
-            If the callback is to handle events with times (i.e., it takes a
-            list of IDs as its third argument) then this must be True.
         """
         if self.__receive_labels is None:
             raise ConfigurationException("no receive labels defined")

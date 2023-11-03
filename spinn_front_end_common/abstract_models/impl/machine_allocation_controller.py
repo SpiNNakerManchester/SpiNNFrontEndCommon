@@ -59,6 +59,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
             The total run time that is now required starting from when the
             machine was first allocated
         """
+        raise NotImplementedError
 
     def close(self) -> None:
         """
@@ -89,8 +90,9 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         :return: (cabinet, frame, board)
         :rtype: tuple(int,int,int)
         """
+        raise NotImplementedError
 
-    def _teardown(self) -> bool:
+    def _teardown(self) -> None:
         """
         Perform any extra tear-down that the thread requires. Does not
         need to be overridden if no action is desired.

@@ -315,7 +315,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Nothing ventured, nothing gained
         return {}
 
-    def __get_collab_id_from_folder(self, folder: str) -> Dict[str, str]:
+    def __get_collab_id_from_folder(
+            self, folder: str) -> Optional[Dict[str, str]]:
         """
         Currently hacky way to get the EBRAINS collab id from the
         drive folder, replicated from the NMPI collab template.
