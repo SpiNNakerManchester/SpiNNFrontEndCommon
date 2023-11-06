@@ -58,6 +58,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.buffer_management.recording_utilities \
     import (get_recording_header_array, get_recording_header_size,
             get_recording_data_constant_size)
+from .eieio_parameters import EIEIOParameters
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
@@ -164,8 +165,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice = Slice(0, n_keys - 1)
         if not eieio_params:
             # Get the defaults
-            from .reverse_ip_tag_multi_cast_source import _EIEIOParameters
-            eieio_params = _EIEIOParameters()
+            eieio_params = EIEIOParameters()
 
         if (eieio_params.send_buffer_partition_id is not None and
                 eieio_params.injection_partition_id is not None):
