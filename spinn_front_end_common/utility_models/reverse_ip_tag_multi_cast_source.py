@@ -15,7 +15,6 @@
 import sys
 import numpy
 from typing import List, Optional, Union
-from dataclasses import dataclass
 from spinn_utilities.overrides import overrides
 from spinn_machine.tags import IPTag
 from spinnman.messages.eieio import EIEIOPrefix
@@ -29,8 +28,9 @@ from pacman.model.resources import AbstractSDRAM
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex, is_array_list)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-_SendBufferTimes = Optional[Union[numpy.ndarray, List[numpy.ndarray]]]
 from .eieio_parameters import EIEIOParameters
+
+_SendBufferTimes = Optional[Union[numpy.ndarray, List[numpy.ndarray]]]
 
 
 class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
