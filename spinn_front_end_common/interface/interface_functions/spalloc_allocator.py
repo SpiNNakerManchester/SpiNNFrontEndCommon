@@ -26,8 +26,6 @@ from spalloc_client.states import JobState  # type: ignore[import]
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
     is_server_address, SpallocClient, SpallocJob, SpallocState)
-from spinn_front_end_common.abstract_models import (
-    AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.data import FecDataView
@@ -72,7 +70,7 @@ class SpallocJobController(MachineAllocationController):
         self.__use_proxy = use_proxy
         super().__init__("SpallocJobController")
 
-    @overrides(AbstractMachineAllocationController.extend_allocation)
+    @overrides(MachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time: float):
         # Does Nothing in this allocator - machines are held until exit
         pass
@@ -82,12 +80,12 @@ class SpallocJobController(MachineAllocationController):
         self._job.destroy()
         self.__client.close()
 
-    @overrides(AbstractMachineAllocationController.close)
+    @overrides(MachineAllocationController.close)
     def close(self) -> None:
         super().close()
         self.__stop()
 
-    @overrides(AbstractMachineAllocationController.where_is_machine)
+    @overrides(MachineAllocationController.where_is_machine)
     def where_is_machine(
             self, chip_x: int, chip_y: int) -> Tuple[int, int, int]:
         """
@@ -118,9 +116,9 @@ class SpallocJobController(MachineAllocationController):
             self.__stop()
         super()._teardown()
 
-    @overrides(AbstractMachineAllocationController.create_transceiver,
+    @overrides(MachineAllocationController.create_transceiver,
                extend_doc=True)
-    def create_transceiver(self) -> Optional[Transceiver]:
+    def create_transceiver(self) -> Transceiver:
         """
         .. note::
             This allocation controller proxies the transceiver's connections
@@ -132,7 +130,13 @@ class SpallocJobController(MachineAllocationController):
         txrx = self._job.create_transceiver()
         return txrx
 
-    @overrides(AbstractMachineAllocationController.open_sdp_connection,
+    @overrides(MachineAllocationController.can_create_transceiver)
+    def can_create_transceiver(self) -> bool:
+        if not self.__use_proxy:
+            return super().can_create_transceiver()
+        return True
+
+    @overrides(MachineAllocationController.open_sdp_connection,
                extend_doc=True)
     def open_sdp_connection(
             self, chip_x: int, chip_y: int,
@@ -146,7 +150,7 @@ class SpallocJobController(MachineAllocationController):
             return super().open_sdp_connection(chip_x, chip_y, udp_port)
         return self._job.connect_to_board(chip_x, chip_y, udp_port)
 
-    @overrides(AbstractMachineAllocationController.open_eieio_connection,
+    @overrides(MachineAllocationController.open_eieio_connection,
                extend_doc=True)
     def open_eieio_connection(
             self, chip_x: int, chip_y: int) -> Optional[EIEIOConnection]:
@@ -159,7 +163,7 @@ class SpallocJobController(MachineAllocationController):
             return super().open_eieio_connection(chip_x, chip_y)
         return self._job.open_eieio_connection(chip_x, chip_y)
 
-    @overrides(AbstractMachineAllocationController.open_eieio_listener,
+    @overrides(MachineAllocationController.open_eieio_listener,
                extend_doc=True)
     def open_eieio_listener(self) -> EIEIOConnection:
         """
@@ -172,7 +176,7 @@ class SpallocJobController(MachineAllocationController):
         return self._job.open_eieio_listener_connection()
 
     @property
-    @overrides(AbstractMachineAllocationController.proxying)
+    @overrides(MachineAllocationController.proxying)
     def proxying(self) -> bool:
         return self.__use_proxy
 
@@ -200,12 +204,12 @@ class _OldSpallocJobController(MachineAllocationController):
         self._state = job.state
         super().__init__("SpallocJobController", host)
 
-    @overrides(AbstractMachineAllocationController.extend_allocation)
+    @overrides(MachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time: float):
         # Does Nothing in this allocator - machines are held until exit
         pass
 
-    @overrides(AbstractMachineAllocationController.close)
+    @overrides(MachineAllocationController.close)
     def close(self) -> None:
         super().close()
         self._job.destroy()
@@ -225,7 +229,7 @@ class _OldSpallocJobController(MachineAllocationController):
         if power:
             self._job.wait_until_ready()
 
-    @overrides(AbstractMachineAllocationController.where_is_machine)
+    @overrides(MachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
         return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
 
