@@ -34,6 +34,8 @@ from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
+    import SpallocJobController
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
@@ -147,7 +149,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 allocation_controller, MachineAllocationController):
             raise TypeError(
                 "allocation_controller must be a MachineAllocationController")
+        self.__fec_data._spalloc_job = None
         self.__fec_data._allocation_controller = allocation_controller
+        if allocation_controller.proxying:
+            if not isinstance(allocation_controller, SpallocJobController):
+                raise not NotImplementedError(
+                    "Expecting only the SpallocJobController to be proxying")
+            self.__fec_data._spalloc_job = allocation_controller.job
 
     def set_buffer_manager(self, buffer_manager: BufferManager):
         """

@@ -109,6 +109,7 @@ class _FecDataModel(object):
         "_simulation_time_step_per_s",
         "_simulation_time_step_s",
         "_simulation_time_step_us",
+        "_spalloc_job",
         "_system_multicast_router_timeout_keys",
         "_timestamp_dir_path",
         "_time_scale_factor")
@@ -176,6 +177,7 @@ class _FecDataModel(object):
         self._max_run_time_steps: Optional[int] = None
         self._monitor_map: Optional[Dict[
             Chip, ExtraMonitorSupportMachineVertex]] = None
+        self._spalloc_job: Optional[SpallocJob] = None
         self._system_multicast_router_timeout_keys: Optional[
             Dict[XY, int]] = None
         self._soft_reset()
@@ -275,20 +277,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._allocation_controller
 
     @classmethod
-    def _get_spalloc_job(cls) -> Optional[SpallocJob]:
+    def get_spalloc_job(cls) -> Optional[SpallocJob]:
         """
         Returns the (new) Spalloc job, if there is one.
         """
-        mac = cls.__fec_data._allocation_controller
-        if mac is None:
-            return None
-        if mac.proxying:
-            # This is now assumed to be a SpallocJobController;
-            # can't fully check that because of import circularity.
-            job = cast(_JobCtrl, mac)._job
-            if isinstance(job, SpallocJob):
-                return job
-        return None
+        cls.__fec_data._spalloc_job
 
     # _buffer_manager
     @classmethod
