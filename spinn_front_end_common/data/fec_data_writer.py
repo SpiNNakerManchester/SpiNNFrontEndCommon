@@ -35,8 +35,8 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
-from spinn_front_end_common.abstract_models import (
-    AbstractMachineAllocationController)
+from spinn_front_end_common.abstract_models.impl import (
+    MachineAllocationController)
 from .fec_data_view import FecDataView, _FecDataModel
 
 
@@ -137,10 +137,10 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         Sets the allocation controller variable.
 
-        :param AbstractMachineAllocationController allocation_controller:
+        :param MachineAllocationController allocation_controller:
         """
         if allocation_controller and not isinstance(
-                allocation_controller, AbstractMachineAllocationController):
+                allocation_controller, MachineAllocationController):
             raise TypeError(
                 "allocation_controller must be a MachineAllocationController")
         self.__fec_data._allocation_controller = allocation_controller
