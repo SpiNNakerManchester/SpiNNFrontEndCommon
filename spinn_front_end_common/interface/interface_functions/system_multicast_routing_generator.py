@@ -13,7 +13,7 @@
 # limitations under the License.
 from collections import defaultdict
 import logging
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Set, Optional, cast
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
 from pacman.exceptions import (PacmanRoutingException)
@@ -90,99 +90,100 @@ class _SystemMulticastRoutingGenerator(object):
         return (self._routing_tables, self._key_to_destination_map,
                 self._time_out_keys_by_board)
 
-    def _generate_routing_tree(self, ethernet_chip: Chip) -> \
-            Optional[Dict[XY, Tuple[int, int, int]]]:
+    __LINK_ORDER = (1, 0, 2, 5, 3, 4)
+
+    def _generate_routing_tree(self, ethernet_chip: Chip) -> Optional[
+            Dict[Chip, Tuple[Chip, int]]]:
         """
         Generates a map for each chip to over which link it gets its data.
 
         :param ~spinn_machine.Chip ethernet_chip:
-        :return: Map of chip.x, chip.y to (source.x, source.y, source.link)
-        :rtype: dict(tuple(int, int), tuple(int, int, int))
+        :return: Map of chip to (source_chip, source_link)
+        :rtype: dict(Chip, tuple(Chip, int))
         """
-        eth_x = ethernet_chip.x
-        eth_y = ethernet_chip.y
-        tree: Dict[XY, Tuple[int, int, int]] = dict()
-
-        to_reach = set(
-            self._machine.get_existing_xys_by_ethernet(eth_x, eth_y))
-        to_reach.remove((eth_x, eth_y))
-        found = set()
-        found.add((eth_x, eth_y))
-        while len(to_reach) > 0:
-            just_reached = found
-            found = set()
-            for x, y in just_reached:
+        tree: Dict[Chip, Tuple[Chip, int]] = dict()
+        to_reach = set(self._machine.get_chips_by_ethernet(
+            ethernet_chip.x, ethernet_chip.y))
+        to_reach.remove(ethernet_chip)
+        found = {ethernet_chip}
+        while to_reach:
+            just_reached: Set[Chip]
+            just_reached, found = found, set()
+            for chip in just_reached:
                 # Check links starting with the most direct from 0,0
-                for link_id in [1, 0, 2, 5, 3, 4]:
-                    # Get protential destination
-                    destination = self._machine.xy_over_link(x, y, link_id)
-                    # If it is useful
-                    if destination in to_reach:
-                        # check it actually exits
-                        if self._machine.is_link_at(x, y, link_id):
-                            # Add to tree and record chip reachable
-                            tree[destination] = (x, y, link_id)
-                            to_reach.remove(destination)
-                            found.add(destination)
-            if len(found) == 0:
+                for link_id in self.__LINK_ORDER:
+                    # Get potential destination
+                    destination = self._machine.get_chip_at(
+                        *self._machine.xy_over_link(
+                            chip.x, chip.y, link_id))
+                    # If destination is useful and link exists
+                    if destination in to_reach and (
+                            chip.router.is_link(link_id)):
+                        # Add to tree and record chip reachable
+                        tree[destination] = (chip, link_id)
+                        to_reach.remove(destination)
+                        found.add(destination)
+            if not found:
                 return None
         return tree
 
-    def _logging_retry(self, ethernet_chip: Chip) -> \
-            Dict[XY, Tuple[int, int, int]]:
-        eth_x = ethernet_chip.x
-        eth_y = ethernet_chip.y
-        tree = dict()
-        to_reach = set(
-            self._machine.get_existing_xys_by_ethernet(eth_x, eth_y))
-        to_reach.remove((eth_x, eth_y))
-        found = set((eth_x, eth_y))
+    def _logging_retry(
+            self, ethernet_chip: Chip) -> Dict[Chip, Tuple[Chip, int]]:
+        # pylint: disable=unsubscriptable-object
+        tree: Dict[Chip, Tuple[Chip, int]] = dict()
+        to_reach = set(self._machine.get_chips_by_ethernet(
+            ethernet_chip.x, ethernet_chip.y))
+        to_reach.remove(ethernet_chip)
+        found = {ethernet_chip}
         logger.warning("In _logging_retry")
-        for x, y in to_reach:
-            logger.warning("Still need to reach {}:{}", x, y)
-        while len(to_reach) > 0:
-            just_reached = found
-            found = set()
-            for x, y in just_reached:
-                logger.warning("Trying from {}:{}", x, y)
+        for chip in to_reach:
+            logger.warning("Still need to reach {}:{}", chip.x, chip.y)
+        while to_reach:
+            just_reached, found = found, set()
+            for chip in just_reached:
+                logger.warning("Trying from {}:{}", chip.x, chip.y)
                 # Check links starting with the most direct from 0,0
-                for link_id in [1, 0, 2, 5, 3, 4]:
-                    # Get protential destination
-                    destination = self._machine.xy_over_link(x, y, link_id)
+                for link_id in self.__LINK_ORDER:
+                    # Get potential destination
+                    destination = self._machine.get_chip_at(
+                        *self._machine.xy_over_link(
+                            chip.x, chip.y, link_id))
                     # If it is useful
-                    if destination in to_reach:
+                    if destination and destination in to_reach:
                         logger.warning(
-                            "Could reach {} over {}", destination, link_id)
+                            "Could reach ({},{}) over {}",
+                            destination.x, destination.y, link_id)
                         # check it actually exits
-                        if self._machine.is_link_at(x, y, link_id):
+                        if chip.router.is_link(link_id):
                             # Add to tree and record chip reachable
-                            tree[destination] = (x, y, link_id)
+                            tree[destination] = (chip, link_id)
                             to_reach.remove(destination)
                             found.add(destination)
                         else:
                             logger.error("Link down")
             logger.warning("Found {}", len(found))
-            if len(found) == 0:
+            if not found:
                 raise PacmanRoutingException(
                     "Unable to do data in routing on "
                     f"{ethernet_chip.ip_address}.")
         return tree
 
     def _add_routing_entry(
-            self, x: int, y: int, key, processor_id=None, link_ids=None):
+            self, chip: Chip, key: int, *, processor_id=None, link_ids=None):
         """
         Adds a routing entry on this chip, creating the table if needed.
 
-        :param int x: chip.x
-        :param int y: chip.y
+        :param Chip chip: The chip
         :param int key: The key to use
         :param int processor_id:
             placement.p of the monitor vertex if applicable
         :param int link_id: If of the link out if applicable
         """
-        table = self._routing_tables.get_routing_table_for_chip(x, y)
+        table = cast(
+            Optional[UnCompressedMulticastRoutingTable],
+            self._routing_tables.get_routing_table_for_chip(chip.x, chip.y))
         if table is None:
-            table = UnCompressedMulticastRoutingTable(x, y)
+            table = UnCompressedMulticastRoutingTable(chip.x, chip.y)
             self._routing_tables.add_routing_table(table)
         if processor_id is None:
             processor_ids = []
@@ -196,7 +197,7 @@ class _SystemMulticastRoutingGenerator(object):
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(
-            self, ethernet_chip: Chip, tree: Dict[XY, Tuple[int, int, int]]):
+            self, ethernet_chip: Chip, tree: Dict[Chip, Tuple[Chip, int]]):
         """
         Adds the routing entries based on the tree.
 
@@ -207,37 +208,34 @@ class _SystemMulticastRoutingGenerator(object):
 
         :param ~spinn_machine.Chip ethernet_chip:
             the Ethernet-enabled chip to make entries for
-        :param dict(tuple(int,int),tuple(int,int,int)) tree:
+        :param dict(Chip,tuple(Chip,int)) tree:
             map of chips and links
         """
-        eth_x = ethernet_chip.x
-        eth_y = ethernet_chip.y
+        eth_x, eth_y = ethernet_chip.x, ethernet_chip.y
         key = KEY_START_VALUE
-        for (x, y) in self._machine.get_existing_xys_by_ethernet(
-                eth_x, eth_y):
-            self._key_to_destination_map[x, y] = key
+        for chip in self._machine.get_chips_by_ethernet(eth_x, eth_y):
+            self._key_to_destination_map[chip.x, chip.y] = key
             placement = FecDataView.get_placement_of_vertex(
-                FecDataView.get_monitor_by_xy(x, y))
-            self._add_routing_entry(x, y, key, processor_id=placement.p)
-            while (x, y) in tree:
-                x, y, link = tree[(x, y)]
-                self._add_routing_entry(x, y, key, link_ids=[link])
+                FecDataView.get_monitor_by_chip(chip))
+            self._add_routing_entry(chip, key, processor_id=placement.p)
+            while chip in tree:
+                chip, link = tree[chip]
+                self._add_routing_entry(chip, key, link_ids=[link])
             key += N_KEYS_PER_PARTITION_ID
 
-        # accum links to make a broad cast
+        # accum links to make a broadcast
         links_per_chip = defaultdict(list)
         for chip_key in tree:
-            x, y, link = tree[chip_key]
-            links_per_chip[x, y].append(link)
+            chip, link = tree[chip_key]
+            links_per_chip[chip].append(link)
 
         # add broadcast router timeout keys
         time_out_key = key
-        for (x, y) in self._machine.get_existing_xys_by_ethernet(
-                eth_x, eth_y):
+        for chip in self._machine.get_chips_by_ethernet(eth_x, eth_y):
             placement = FecDataView.get_placement_of_vertex(
-                FecDataView.get_monitor_by_xy(x, y))
+                FecDataView.get_monitor_by_chip(chip))
             self._add_routing_entry(
-                x, y, time_out_key, processor_id=placement.p,
-                link_ids=links_per_chip[x, y])
+                chip, time_out_key, processor_id=placement.p,
+                link_ids=links_per_chip[chip])
             # update tracker
-            self._time_out_keys_by_board[(eth_x, eth_y)] = key
+            self._time_out_keys_by_board[eth_x, eth_y] = key

@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Tuple, Dict
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import Chip
 from pacman.model.placements import Placement, Placements
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import (
@@ -22,8 +23,8 @@ from spinn_front_end_common.utilities.utility_calls import (
 
 
 def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
-        Dict[Tuple[int, int], DataSpeedUpPacketGatherMachineVertex],
-        Dict[Tuple[int, int], ExtraMonitorSupportMachineVertex]]:
+        Dict[Chip, DataSpeedUpPacketGatherMachineVertex],
+        Dict[Chip, ExtraMonitorSupportMachineVertex]]:
     """
     Inserts the extra monitor vertices into the graph that correspond to
     the extra monitor cores required.
@@ -35,10 +36,8 @@ def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
         dict(Chip,DataSpeedUpPacketGatherMachineVertex),
         dict(Chip,ExtraMonitorSupportMachineVertex))
     """
-    chip_to_gatherer_map: \
-        Dict[Tuple[int, int], DataSpeedUpPacketGatherMachineVertex] = dict()
-    chip_to_monitor_map: \
-        Dict[Tuple[int, int], ExtraMonitorSupportMachineVertex] = dict()
+    chip_to_gatherer_map = dict()
+    chip_to_monitor_map = dict()
     machine = FecDataView.get_machine()
     ethernet_chips = machine.ethernet_connected_chips
     progress = ProgressBar(
@@ -48,12 +47,12 @@ def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
         assert eth.ip_address is not None
         gatherer = DataSpeedUpPacketGatherMachineVertex(
             x=eth.x, y=eth.y, ip_address=eth.ip_address)
-        chip_to_gatherer_map[(eth.x, eth.y)] = gatherer
+        chip_to_gatherer_map[eth] = gatherer
         p = pick_core_for_system_placement(placements, eth)
         placements.add_placement(Placement(gatherer, eth.x, eth.y, p))
         for chip in machine.get_chips_by_ethernet(eth.x, eth.y):
             monitor = ExtraMonitorSupportMachineVertex()
-            chip_to_monitor_map[(chip.x, chip.y)] = monitor
+            chip_to_monitor_map[chip] = monitor
             p = pick_core_for_system_placement(placements, chip)
             placements.add_placement(Placement(monitor, chip.x, chip.y, p))
     return chip_to_gatherer_map, chip_to_monitor_map

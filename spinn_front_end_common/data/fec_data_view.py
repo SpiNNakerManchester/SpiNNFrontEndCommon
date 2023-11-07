@@ -19,7 +19,7 @@ from typing import (
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
-from spinn_machine import CoreSubsets, FixedRouteEntry
+from spinn_machine import Chip, CoreSubsets, FixedRouteEntry
 from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
@@ -165,14 +165,14 @@ class _FecDataModel(object):
         self._executable_targets: Optional[ExecutableTargets] = None
         self._fixed_routes: Optional[Dict[XY, FixedRouteEntry]] = None
         self._gatherer_map: \
-            Optional[Dict[XY, DataSpeedUpPacketGatherMachineVertex]] = None
+            Optional[Dict[Chip, DataSpeedUpPacketGatherMachineVertex]] = None
         self._ipaddress: Optional[str] = None
         self._n_chips_in_graph: Optional[int] = None
         self._next_sync_signal: Signal = Signal.SYNC0
         self._notification_protocol: Optional[NotificationProtocol] = None
         self._max_run_time_steps: Optional[int] = None
         self._monitor_map: \
-            Optional[Dict[XY, ExtraMonitorSupportMachineVertex]] = None
+            Optional[Dict[Chip, ExtraMonitorSupportMachineVertex]] = None
         self._spalloc_job: Optional[SpallocJob] = None
         self._system_multicast_router_timeout_keys: Optional[
             Dict[XY, int]] = None
@@ -1079,13 +1079,30 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
         # pylint: disable=unsubscriptable-object
-        return cls.__fec_data._monitor_map[(x, y)]
+        return cls.__fec_data._monitor_map[cls.get_chip_at(x, y)]
+
+    @classmethod
+    def get_monitor_by_chip(
+            cls, chip: Chip) -> ExtraMonitorSupportMachineVertex:
+        """
+        The ExtraMonitorSupportMachineVertex for chip.
+
+        :param ~spinn_machine.Chip chip: chip to get monitor for
+        :rtype: ExtraMonitorSupportMachineVertex
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the monitors are currently unavailable
+        :raises KeyError: If chip does not have a monitor
+        """
+        if cls.__fec_data._monitor_map is None:
+            raise cls._exception("monitors_map")
+        # pylint: disable=unsubscriptable-object
+        return cls.__fec_data._monitor_map[chip]
 
     @classmethod
     def iterate_monitor_items(cls) -> \
-            Iterable[Tuple[XY, ExtraMonitorSupportMachineVertex]]:
+            Iterable[Tuple[Chip, ExtraMonitorSupportMachineVertex]]:
         """
-        Iterates over the (x,y) and ExtraMonitorSupportMachineVertex.
+        Iterates over the Chip and ExtraMonitorSupportMachineVertex.
 
         get_n_monitors returns the number of items this iterable will provide.
 
@@ -1124,6 +1141,25 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._monitor_map.values()
 
     @classmethod
+    def get_gatherer_by_chip(
+            cls, chip: Chip) -> DataSpeedUpPacketGatherMachineVertex:
+        """
+        The DataSpeedUpPacketGatherMachineVertex for an Ethernet-enabled chip.
+
+        :param ~spinn_machine.Chip chip: The Ethernet-enabled chip
+        :rtype: DataSpeedUpPacketGatherMachineVertex
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the gatherers are currently unavailable
+        :raises KeyError:
+            If the chip does not have a gatherer
+            (e.g., if it is not an Ethernet-enabled chip)
+        """
+        if cls.__fec_data._gatherer_map is None:
+            raise cls._exception("gatherer_map")
+        # pylint: disable=unsubscriptable-object
+        return cls.__fec_data._gatherer_map[chip]
+
+    @classmethod
     def get_gatherer_by_xy(
             cls, x: int, y: int) -> DataSpeedUpPacketGatherMachineVertex:
         """
@@ -1139,11 +1175,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._gatherer_map is None:
             raise cls._exception("gatherer_map")
         # pylint: disable=unsubscriptable-object
-        return cls.__fec_data._gatherer_map[(x, y)]
+        return cls.__fec_data._gatherer_map[cls.get_chip_at(x, y)]
 
     @classmethod
     def iterate_gather_items(cls) -> Iterable[
-            Tuple[XY, DataSpeedUpPacketGatherMachineVertex]]:
+            Tuple[Chip, DataSpeedUpPacketGatherMachineVertex]]:
         """
         Iterates over the (x,y) and DataSpeedUpPacketGatherMachineVertex.
 
