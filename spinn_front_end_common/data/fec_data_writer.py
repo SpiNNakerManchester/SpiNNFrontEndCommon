@@ -155,7 +155,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             return
         if allocation_controller.proxying:
             if not isinstance(allocation_controller, SpallocJobController):
-                raise not NotImplementedError(
+                raise NotImplementedError(
                     "Expecting only the SpallocJobController to be proxying")
             self.__fec_data._spalloc_job = allocation_controller.job
 
