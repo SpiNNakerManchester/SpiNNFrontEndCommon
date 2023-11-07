@@ -15,7 +15,7 @@ from __future__ import annotations  # Type checking trickery
 import logging
 import os
 from typing import (
-    Dict, Iterable, Iterator, Optional, Set, Tuple, Union, cast, TYPE_CHECKING)
+    Dict, Iterable, Iterator, Optional, Set, Tuple, Union, TYPE_CHECKING)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
