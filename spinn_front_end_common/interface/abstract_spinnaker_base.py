@@ -653,7 +653,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 AbstractVertexWithEdgeToDependentVertices))
         for vertex in vertices:
             v = cast(ApplicationVertex, vertex)
-            if v._added_to_graph:  # pylint: disable=protected-access
+            if v.has_been_added_to_graph():
                 continue
             for dpt_vtx in vertex.dependent_vertices():
                 self._data_writer.add_vertex(dpt_vtx)
