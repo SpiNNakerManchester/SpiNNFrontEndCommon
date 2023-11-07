@@ -101,7 +101,7 @@ class _SystemMulticastRoutingGenerator(object):
         """
         eth_x = ethernet_chip.x
         eth_y = ethernet_chip.y
-        tree: Dict[XY, Tuple[XY, int]] = dict()
+        tree: Dict[XY, Tuple[int, int, int]] = dict()
 
         to_reach = set(
             self._machine.get_existing_xys_by_ethernet(eth_x, eth_y))
@@ -195,7 +195,7 @@ class _SystemMulticastRoutingGenerator(object):
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(
-            self, ethernet_chip: Chip, tree: Dict[XY, Tuple[XY, int]]):
+            self, ethernet_chip: Chip, tree: Dict[XY, Tuple[int, int, int]]):
         """
         Adds the routing entries based on the tree.
 

@@ -19,7 +19,7 @@ from typing import (
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
-from spinn_machine import CoreSubsets, Chip, FixedRouteEntry
+from spinn_machine import CoreSubsets, FixedRouteEntry
 from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
@@ -163,17 +163,15 @@ class _FecDataModel(object):
         self._ds_database_path: Optional[str] = None
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
-        self._fixed_routes: \
-            Optional[Dict[Tuple[int, int], FixedRouteEntry]] = None
-        self._gatherer_map: Optional[Dict[
-            Tuple[int, int], DataSpeedUpPacketGatherMachineVertex]] = None
+        self._fixed_routes: Optional[Dict[XY, FixedRouteEntry]] = None
+        self._gatherer_map: Optional[Dict[XY, DataSpeedUpPacketGatherMachineVertex]] = None
         self._ipaddress: Optional[str] = None
         self._n_chips_in_graph: Optional[int] = None
         self._next_sync_signal: Signal = Signal.SYNC0
         self._notification_protocol: Optional[NotificationProtocol] = None
         self._max_run_time_steps: Optional[int] = None
-        self._monitor_map: Optional[Dict[
-            Tuple[int, int], ExtraMonitorSupportMachineVertex]] = None
+        self._monitor_map: \
+            Optional[Dict[XY, ExtraMonitorSupportMachineVertex]] = None
         self._spalloc_job: Optional[SpallocJob] = None
         self._system_multicast_router_timeout_keys: Optional[
             Dict[XY, int]] = None
@@ -736,7 +734,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # fixed_routes
     @classmethod
-    def get_fixed_routes(cls) -> Dict[Tuple[int, int], FixedRouteEntry]:
+    def get_fixed_routes(cls) -> Dict[XY, FixedRouteEntry]:
         """
         Gets the fixed routes if they have been created.
 
@@ -1083,8 +1081,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._monitor_map[(x, y)]
 
     @classmethod
-    def iterate_monitor_items(
-            cls) -> Iterable[Tuple[Chip, ExtraMonitorSupportMachineVertex]]:
+    def iterate_monitor_items(cls) -> Iterable[Tuple[XY, ExtraMonitorSupportMachineVertex]]:
         """
         Iterates over the (x,y) and ExtraMonitorSupportMachineVertex.
 
@@ -1144,7 +1141,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def iterate_gather_items(cls) -> Iterable[
-            Tuple[Tuple[int, int], DataSpeedUpPacketGatherMachineVertex]]:
+            Tuple[XY, DataSpeedUpPacketGatherMachineVertex]]:
         """
         Iterates over the (x,y) and DataSpeedUpPacketGatherMachineVertex.
 
