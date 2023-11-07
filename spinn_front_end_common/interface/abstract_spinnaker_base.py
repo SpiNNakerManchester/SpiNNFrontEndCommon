@@ -983,14 +983,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_placements(place_application_graph(
                 system_placements))
 
-    @property
-    def _supported_placers(self) -> Dict[str, Callable[[Placements], None]]:
-        """
-        The placers supported by :py:meth:`_do_placer`.
-        """
-        return {"ApplicationPlacer": self._execute_application_placer}
-
-    @final
     def _do_placer(self, system_placements: Placements):
         """
         Runs, times and logs one of the placers.
@@ -1004,9 +996,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raise ConfigurationException:
             if the configuration place value is unexpected
         """
-        placer = self.__pick_from_config(
-            "Mapping", "placer", self._supported_placers)
-        placer(system_placements)
+        name = get_config_str("Mapping", "placer")
+        if name == "ApplicationPlacer":
+            return self._execute_application_placer(system_placements)
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for placer")
+        raise ConfigurationException(
+            f"Unexpected cfg setting placer: {name}")
 
     def _do_write_metadata(self) -> None:
         """
@@ -1126,16 +1123,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_routing_table_by_partition(
                 route_application_graph())
 
-    def _supported_routers(self) -> Dict[str, Callable[[], None]]:
-        """
-        The router algorithms that :py:meth:`_do_routing` can choose from.
-        """
-        return {
-            "BasicDijkstraRouting": self._execute_basic_dijkstra_routing,
-            "NerRoute": self._execute_ner_route,
-            "NerRouteTrafficAware": self._execute_ner_route_traffic_aware,
-            "ApplicationRouter": self._execute_application_router}
-
     @final
     def _do_routing(self) -> None:
         """
@@ -1150,9 +1137,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raise ConfigurationException:
             if the configuration router value is unexpected
         """
-        router = self.__pick_from_config(
-            "Mapping", "router", self._supported_routers())
-        router()
+        name = get_config_str("Mapping", "router")
+        if name == "BasicDijkstraRouting":
+            return self._execute_basic_dijkstra_routing()
+        if name == "NerRoute":
+            return self._execute_ner_route()
+        if name == "NerRouteTrafficAware":
+            return self._execute_ner_route_traffic_aware()
+        if name == "ApplicationRouter":
+            return self._execute_application_router()
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for router")
+        raise ConfigurationException(
+            f"Unexpected cfg setting router: {name}")
 
     def _execute_basic_tag_allocator(self) -> None:
         """
@@ -1205,16 +1203,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_routing_infos(
                 flexible_allocate(extra_allocations))
 
-    def _supported_info_allocators(self) -> Dict[str, Callable[[Iterable[
-                Tuple[ApplicationVertex, str]]], None]]:
-        """
-        The routing info allocator algorithms supported by
-        :py:meth`_do_info_allocator`.
-        """
-        return {
-            "GlobalZonedRoutingInfoAllocator": self._execute_global_allocate,
-            "ZonedRoutingInfoAllocator": self._execute_flexible_allocate}
-
     @final
     def _do_info_allocator(
             self, extra_allocations: Iterable[
@@ -1236,9 +1224,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raise ConfigurationException:
             if the configuration info_allocator value is unexpected
         """
-        allocator = self.__pick_from_config(
-            "Mapping", "info_allocator", self._supported_info_allocators())
-        allocator(extra_allocations)
+        name = get_config_str("Mapping", "info_allocator")
+        if name == "GlobalZonedRoutingInfoAllocator":
+            return self._execute_global_allocate([])
+        if name == "ZonedRoutingInfoAllocator":
+            return self._execute_flexible_allocate([])
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for info_allocator")
+        raise ConfigurationException(
+            f"Unexpected cfg setting info_allocator: {name}")
 
     def _report_router_info(self) -> None:
         """
@@ -1276,18 +1271,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # TODO Nuke ZonedRoutingTableGenerator
 
-    def _supported_routing_table_generators(
-            self) -> Dict[str, Callable[[], None]]:
-        """
-        The routing table generators supported by
-        :py:meth:`_do_routing_table_generator`.
-        """
-        return {
-            "BasicRoutingTableGenerator": (
-                self._execute_basic_routing_table_generator),
-            "MergedRoutingTableGenerator": (
-                self._execute_merged_routing_table_generator)}
-
     @final
     def _do_routing_table_generator(self) -> None:
         """
@@ -1305,10 +1288,17 @@ class AbstractSpinnakerBase(ConfigHandler):
             if the configuration's `routing_table_generator` value is
             unexpected
         """
-        generator = self.__pick_from_config(
-            "Mapping", "routing_table_generator",
-            self._supported_routing_table_generators())
-        generator()
+        name = get_config_str("Mapping", "routing_table_generator")
+        if name == "BasicRoutingTableGenerator":
+            return self._execute_basic_routing_table_generator()
+        if name == "MergedRoutingTableGenerator":
+            return self._execute_merged_routing_table_generator()
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for"
+                " routing_table_generator")
+        raise ConfigurationException(
+            f"Unexpected cfg setting routing_table_generator: {name}")
 
     def _report_routers(self) -> None:
         """
@@ -2563,16 +2553,3 @@ class AbstractSpinnakerBase(ConfigHandler):
         for p in self._data_writer.iterate_partitions():
             for edge in p.edges:
                 self.__reset_object(edge)
-
-    @staticmethod
-    def __pick_from_config(
-            section: str, option: str, choices: Mapping[str, _T]) -> _T:
-        name = get_config_str(section, option)
-        if "," in name:
-            raise ConfigurationException(
-                f"Only a single algorithm is supported for {option}")
-        val = choices.get(name)
-        if val is not None:
-            return val
-        raise ConfigurationException(
-            f"Unexpected cfg setting {option}: {name}")
