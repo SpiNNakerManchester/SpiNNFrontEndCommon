@@ -598,7 +598,7 @@ class TestSimulatorData(unittest.TestCase):
             elif (core.x, core.y) == (1, 1):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise ValueError(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {core=} {vertex=}")
         self.assertCountEqual(
             [vertex1, vertex2], FecDataView.iterate_gathers())
         self.assertEqual(2, FecDataView.get_n_gathers())
@@ -649,7 +649,7 @@ class TestSimulatorData(unittest.TestCase):
             elif (core.x, core.y) == (1, 1):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise ValueError(f"Unexpected item {x=} {y=} {vertex=}")
+                raise ValueError(f"Unexpected item {core=} {vertex=}")
         self.assertCountEqual([vertex1, vertex2],
                               FecDataView.iterate_monitors())
         self.assertEqual(2, FecDataView.get_n_monitors())
