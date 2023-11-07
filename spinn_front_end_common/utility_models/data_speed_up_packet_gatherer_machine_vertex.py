@@ -1141,7 +1141,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             chip = FecDataView.get_chip_at(
                 link.destination_x, link.destination_y)
             routers.append((link.destination_x, link.destination_y))
-            entry = fixed_routes[chip]
+            entry = fixed_routes[(link.destination_x, link.destination_y)]
         return routers
 
     def _report_routers_used_for_out(self, placement: Placement):

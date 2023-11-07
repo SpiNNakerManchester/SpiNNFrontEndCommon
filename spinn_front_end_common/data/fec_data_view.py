@@ -167,7 +167,8 @@ class _FecDataModel(object):
         self._ds_database_path: Optional[str] = None
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
-        self._fixed_routes: Optional[Dict[Chip, FixedRouteEntry]] = None
+        self._fixed_routes: \
+            Optional[Dict[Tuple[int, int], FixedRouteEntry]] = None
         self._gatherer_map: Optional[Dict[
             Chip, DataSpeedUpPacketGatherMachineVertex]] = None
         self._ipaddress: Optional[str] = None
@@ -739,11 +740,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # fixed_routes
     @classmethod
-    def get_fixed_routes(cls) -> Dict[Chip, FixedRouteEntry]:
+    def get_fixed_routes(cls) -> Dict[Tuple[int, int], FixedRouteEntry]:
         """
         Gets the fixed routes if they have been created.
 
-        :rtype: dict(~spinn_machine.Chip, ~spinn_machine.FixedRouteEntry)
+        :rtype: dict((int, int), ~spinn_machine.FixedRouteEntry)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the fixed_routes is currently unavailable
         """

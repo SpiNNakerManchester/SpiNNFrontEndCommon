@@ -62,7 +62,6 @@ from .eieio_parameters import EIEIOParameters
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
-    from .reverse_ip_tag_multi_cast_source import _EIEIOParameters as Params
     _SBT: TypeAlias = Union[NDArray, List[NDArray]]
     _SendBufferTimes: TypeAlias = Optional[_SBT]
 
@@ -155,7 +154,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             app_vertex: Optional[ReverseIpTagMultiCastSource] = None,
             n_keys: Optional[int] = None,
             # General fixed parameters from app vertex
-            eieio_params: Optional[Params] = None,
+            eieio_params: Optional[EIEIOParameters] = None,
             # Send buffer parameters
             send_buffer_times: _SendBufferTimes = None):
         # pylint: disable=too-many-arguments

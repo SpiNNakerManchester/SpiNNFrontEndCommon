@@ -26,5 +26,5 @@ def load_fixed_routes() -> None:
         string_describing_what_being_progressed="loading fixed routes")
     app_id = FecDataView.get_app_id()
     transceiver = FecDataView.get_transceiver()
-    for chip, route in progress_bar.over(fixed_routes.items()):
-        transceiver.load_fixed_route(chip.x, chip.y, route, app_id)
+    for (x, y), route in progress_bar.over(fixed_routes.items()):
+        transceiver.load_fixed_route(x, y, route, app_id)
