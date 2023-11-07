@@ -164,7 +164,8 @@ class _FecDataModel(object):
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
         self._fixed_routes: Optional[Dict[XY, FixedRouteEntry]] = None
-        self._gatherer_map: Optional[Dict[XY, DataSpeedUpPacketGatherMachineVertex]] = None
+        self._gatherer_map: \
+            Optional[Dict[XY, DataSpeedUpPacketGatherMachineVertex]] = None
         self._ipaddress: Optional[str] = None
         self._n_chips_in_graph: Optional[int] = None
         self._next_sync_signal: Signal = Signal.SYNC0
@@ -1081,7 +1082,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._monitor_map[(x, y)]
 
     @classmethod
-    def iterate_monitor_items(cls) -> Iterable[Tuple[XY, ExtraMonitorSupportMachineVertex]]:
+    def iterate_monitor_items(cls) -> \
+            Iterable[Tuple[XY, ExtraMonitorSupportMachineVertex]]:
         """
         Iterates over the (x,y) and ExtraMonitorSupportMachineVertex.
 
