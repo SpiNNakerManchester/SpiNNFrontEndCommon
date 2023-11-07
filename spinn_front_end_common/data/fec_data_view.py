@@ -279,9 +279,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_spalloc_job(cls) -> Optional[SpallocJob]:
         """
-        Returns the (new) Spalloc job, if there is one.
+        Returns the Spalloc job, if there is one.
         """
-        cls.__fec_data._spalloc_job
+        return cls.__fec_data._spalloc_job
 
     # _buffer_manager
     @classmethod
