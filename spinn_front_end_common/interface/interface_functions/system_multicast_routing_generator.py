@@ -91,7 +91,7 @@ class _SystemMulticastRoutingGenerator(object):
                 self._time_out_keys_by_board)
 
     def _generate_routing_tree(self, ethernet_chip: Chip) -> \
-            Optional[Dict[XY, Tuple[XY, int]]]:
+            Optional[Dict[XY, Tuple[int, int, int]]]:
         """
         Generates a map for each chip to over which link it gets its data.
 
@@ -128,7 +128,8 @@ class _SystemMulticastRoutingGenerator(object):
                 return None
         return tree
 
-    def _logging_retry(self, ethernet_chip: Chip) -> Dict[XY, Tuple[XY, int]]:
+    def _logging_retry(self, ethernet_chip: Chip) -> \
+            Dict[XY, Tuple[int, int, int]]:
         eth_x = ethernet_chip.x
         eth_y = ethernet_chip.y
         tree = dict()
