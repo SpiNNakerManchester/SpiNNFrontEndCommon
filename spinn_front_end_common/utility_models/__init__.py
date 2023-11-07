@@ -17,6 +17,7 @@ from .command_sender import CommandSender
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex)
+from .eieio_parameters import EIEIOParameters
 from .extra_monitor_support_machine_vertex import (
     ExtraMonitorSupportMachineVertex)
 from .live_packet_gather import LivePacketGather
@@ -30,7 +31,7 @@ from .streaming_context_manager import StreamingContextManager
 __all__ = ("CommandSender", "CommandSenderMachineVertex",
            "ChipPowerMonitorMachineVertex",
            "DataSpeedUpPacketGatherMachineVertex",
-           "ExtraMonitorSupportMachineVertex",
+           "EIEIOParameters", "ExtraMonitorSupportMachineVertex",
            "LivePacketGather", "LivePacketGatherMachineVertex",
            "MultiCastCommand", "ReverseIpTagMultiCastSource",
            "ReverseIPTagMulticastSourceMachineVertex",
