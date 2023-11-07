@@ -588,17 +588,17 @@ class TestSimulatorData(unittest.TestCase):
         map = dict()
         # Setting empty ok
         writer.set_gatherer_map(map)
-        map[FecDataView.get_chip_at(0, 0)] = vertex1
-        map[FecDataView.get_chip_at(1, 1)] = vertex2
+        map[(0, 0)] = vertex1
+        map[(1, 1)] = vertex2
         writer.set_gatherer_map(map)
         self.assertEqual(vertex1, FecDataView.get_gatherer_by_xy(0, 0))
-        for core, vertex in FecDataView.iterate_gather_items():
-            if (core.x, core.y) == (0, 0):
+        for (x, y), vertex in FecDataView.iterate_gather_items():
+            if (x, y) == (0, 0):
                 self.assertEqual(vertex1, vertex)
-            elif (core.x, core.y) == (1, 1):
+            elif (x, y) == (1, 1):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise ValueError(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {x=} {y=} {vertex=}")
         self.assertCountEqual(
             [vertex1, vertex2], FecDataView.iterate_gathers())
         self.assertEqual(2, FecDataView.get_n_gathers())
@@ -638,18 +638,18 @@ class TestSimulatorData(unittest.TestCase):
         map = dict()
         # Setting empty ok
         writer.set_monitor_map(map)
-        map[FecDataView.get_chip_at(0, 0)] = vertex1
-        map[FecDataView.get_chip_at(1, 1)] = vertex2
+        map[(0, 0)] = vertex1
+        map[(1, 1)] = vertex2
         writer.set_monitor_map(map)
         self.assertTrue(FecDataView.has_monitors())
         self.assertEqual(vertex1, FecDataView.get_monitor_by_xy(0, 0))
-        for core, vertex in FecDataView.iterate_monitor_items():
-            if (core.x, core.y) == (0, 0):
+        for (x, y), vertex in FecDataView.iterate_monitor_items():
+            if (x, y) == (0, 0):
                 self.assertEqual(vertex1, vertex)
-            elif (core.x, core.y) == (1, 1):
+            elif (x, y) == (1, 1):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise ValueError(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {x=} {y=} {vertex=}")
         self.assertCountEqual([vertex1, vertex2],
                               FecDataView.iterate_monitors())
         self.assertEqual(2, FecDataView.get_n_monitors())
