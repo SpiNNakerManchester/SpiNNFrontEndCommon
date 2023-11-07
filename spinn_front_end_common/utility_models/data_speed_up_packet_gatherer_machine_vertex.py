@@ -1132,7 +1132,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         fixed_routes = FecDataView.get_fixed_routes()
         # pylint: disable=unsubscriptable-object
         chip = placement.chip
-        entry = fixed_routes[chip]
+        entry = fixed_routes[(placement.xy)]
         while not entry.processor_ids:
             # can assume one link, as its a minimum spanning tree going to
             # the root
