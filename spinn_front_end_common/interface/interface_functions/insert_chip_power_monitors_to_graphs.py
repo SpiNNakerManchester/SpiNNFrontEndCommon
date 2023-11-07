@@ -23,7 +23,7 @@ from spinn_front_end_common.utilities.utility_calls import (
 
 
 def insert_chip_power_monitors_to_graphs(
-        placements: Placements) -> Optional[ChipPowerMonitorMachineVertex]:
+        placements: Placements) -> ChipPowerMonitorMachineVertex:
     """
     Adds chip power monitors into a given graph.
 
@@ -36,7 +36,8 @@ def insert_chip_power_monitors_to_graphs(
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
-    vertex = None  # In case of a machine with no chips...
+    vertex = ChipPowerMonitorMachineVertex(
+        "No Chips", sampling_frequency=sampling_frequency)
 
     for chip in progress.over(machine.chips):
         vertex = ChipPowerMonitorMachineVertex(
