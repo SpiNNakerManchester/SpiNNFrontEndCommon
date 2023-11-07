@@ -120,7 +120,7 @@ class DsSqlliteDatabase(SQLiteDB):
         Gets a list of id, x, y, p, ethernet_x, ethernet_y for all cores
         according to is_system
 
-        :param bool is_system: if True returns systenm cores
+        :param bool is_system: if True returns system cores
             otherwise application cores
         :return:
             (x, y, p, ethernet_x, ethernet_y)
