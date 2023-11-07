@@ -513,8 +513,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             "gatherer_map must be a dict((int, int), "
             "DataSpeedUpPacketGatherMachineVertex)")
 
-    def set_gatherer_map(self, gatherer_map:
-            Dict[Tuple[int, int], DataSpeedUpPacketGatherMachineVertex]):
+    def set_gatherer_map(self, gatherer_map: Dict[
+            Tuple[int, int], DataSpeedUpPacketGatherMachineVertex]):
         """
         Sets the map of (x,y) to Gatherer Vertices.
 

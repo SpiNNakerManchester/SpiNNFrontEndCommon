@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Tuple, Dict
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import Chip
 from pacman.model.placements import Placement, Placements
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import (
@@ -36,7 +35,7 @@ def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
         dict(Chip,DataSpeedUpPacketGatherMachineVertex),
         dict(Chip,ExtraMonitorSupportMachineVertex))
     """
-    chip_to_gatherer_map:\
+    chip_to_gatherer_map: \
         Dict[Tuple[int, int], DataSpeedUpPacketGatherMachineVertex] = dict()
     chip_to_monitor_map: \
         Dict[Tuple[int, int], ExtraMonitorSupportMachineVertex] = dict()
