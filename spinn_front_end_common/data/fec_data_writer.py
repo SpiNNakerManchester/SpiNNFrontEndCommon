@@ -151,6 +151,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 "allocation_controller must be a MachineAllocationController")
         self.__fec_data._spalloc_job = None
         self.__fec_data._allocation_controller = allocation_controller
+        if allocation_controller is None:
+            return
         if allocation_controller.proxying:
             if not isinstance(allocation_controller, SpallocJobController):
                 raise not NotImplementedError(
