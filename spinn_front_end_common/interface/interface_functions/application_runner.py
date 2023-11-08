@@ -99,7 +99,6 @@ class _ApplicationRunner(object):
             # Do NOT stop the buffer manager at end; app is using it still
             logger.info("Application is set to run forever; exiting")
         else:
-            assert runtime is not None
             # Wait for the application to finish
             self._run_wait(
                 run_until_complete, runtime, time_threshold)
@@ -108,7 +107,7 @@ class _ApplicationRunner(object):
             notification_interface.send_stop_pause_notification()
 
     def _run_wait(
-            self, run_until_complete: bool, runtime: float,
+            self, run_until_complete: bool, runtime: Optional[float],
             time_threshold: Optional[float]):
         """
         :param bool run_until_complete:
@@ -116,6 +115,7 @@ class _ApplicationRunner(object):
         :param float time_threshold:
         """
         if not run_until_complete:
+            assert runtime is not None
             factor = (FecDataView.get_time_scale_factor() /
                       MICRO_TO_MILLISECOND_CONVERSION)
             scaled_runtime = runtime * factor
