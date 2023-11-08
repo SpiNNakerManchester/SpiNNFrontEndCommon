@@ -653,9 +653,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 AbstractVertexWithEdgeToDependentVertices))
         for vertex in vertices:
             v = cast(ApplicationVertex, vertex)
-            if v.has_been_added_to_graph():
-                continue
             for dpt_vtx in vertex.dependent_vertices():
+                if dpt_vtx.has_been_added_to_graph():
+                    continue
                 self._data_writer.add_vertex(dpt_vtx)
                 edge_partition_ids = vertex.\
                     edge_partition_identifiers_for_dependent_vertex(dpt_vtx)
