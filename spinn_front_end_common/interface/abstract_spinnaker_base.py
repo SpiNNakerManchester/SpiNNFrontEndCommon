@@ -26,7 +26,7 @@ import types
 import requests
 from threading import Condition
 from typing import (
-    Callable, Dict, Final, Iterable, Mapping, Optional, Sequence, Tuple, Type,
+    Dict, Final, Iterable, Optional, Sequence, Tuple, Type,
     TypeVar, Union, cast, final)
 from numpy import __version__ as numpy_version
 
