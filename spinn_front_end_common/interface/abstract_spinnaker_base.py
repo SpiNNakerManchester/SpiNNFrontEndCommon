@@ -1202,9 +1202,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 flexible_allocate(extra_allocations))
 
     @final
-    def _do_info_allocator(
-            self, extra_allocations: Iterable[
-                Tuple[ApplicationVertex, str]] = ()) -> None:
+    def _do_info_allocator(self) -> None:
         """
         Runs, times and logs one of the info allocators.
 
