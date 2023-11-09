@@ -19,8 +19,7 @@ Utility calls for interpreting bits of the DSG
 import io
 import os
 import threading
-from typing import (
-    Callable, Iterable, Optional, Union, TextIO, Tuple, TypeVar)
+from typing import (Optional, Union, TextIO, Tuple, TypeVar)
 from urllib.parse import urlparse
 from spinn_utilities.config_holder import get_config_bool
 from spinn_machine import Chip
