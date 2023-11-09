@@ -199,24 +199,6 @@ def open_scp_connection(
     return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
 
 
-def uniquifier() -> Callable[[Iterable[T]], Iterable[T]]:
-    """
-    Returns a function that filters out duplicates from sequences.
-    The function filters *all* duplicates that it sees.
-
-    :rtype: callable(iterable, iterable)
-    """
-    seen = set()
-
-    def f(sequence):
-        for elem in sequence:
-            if elem not in seen:
-                seen.add(elem)
-                yield elem
-
-    return f
-
-
 def pick_core_for_system_placement(
         system_placements: Placements, chip: Chip) -> int:
     """

@@ -33,7 +33,6 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_calls import uniquifier
 from pacman.model.graphs.abstract_edge import AbstractEdge
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 if TYPE_CHECKING:
@@ -366,14 +365,16 @@ class CommandSenderMachineVertex(
         """
         edges: List[E] = list()
         partition_ids: List[str] = list()
-        unique_keys = uniquifier()
+        keys_added = set()
         for vertex in self._vertex_to_key_map:
             if not isinstance(vertex, vertex_type):
                 continue
-            for key in unique_keys(self._vertex_to_key_map[vertex]):
-                edges.append(edge_type(pre_vertex, vertex))
-                partition_ids.append(self._keys_to_partition_id[key])
-        return edges, partition_ids
+            for key in self._vertex_to_key_map[vertex]:
+                if key not in keys_added:
+                    edges.append(edge_type(pre_vertex, vertex))
+                    keys_added.add(key)
+            partition_ids.append(self._keys_to_partition_id[key])
+            return edges, partition_ids
 
     def edges_and_partitions(self) -> Tuple[List[MachineEdge], List[str]]:
         """
