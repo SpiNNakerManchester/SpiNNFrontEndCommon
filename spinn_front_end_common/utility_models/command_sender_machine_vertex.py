@@ -371,9 +371,9 @@ class CommandSenderMachineVertex(
                 continue
             for key in self._vertex_to_key_map[vertex]:
                 if key not in keys_added:
-                    edges.append(edge_type(pre_vertex, vertex))
                     keys_added.add(key)
-            partition_ids.append(self._keys_to_partition_id[key])
+                    edges.append(edge_type(pre_vertex, vertex))
+                    partition_ids.append(self._keys_to_partition_id[key])
             return edges, partition_ids
 
     def edges_and_partitions(self) -> Tuple[List[MachineEdge], List[str]]:
