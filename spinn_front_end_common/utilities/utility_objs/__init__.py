@@ -18,6 +18,6 @@ from .live_packet_gather_parameters import LivePacketGatherParameters
 from .power_used import PowerUsed
 from .reinjection_status import ReInjectionStatus
 
-__all__ = [
+__all__ = (
     "DPRIFlags", "ExecutableType", "LivePacketGatherParameters", "PowerUsed",
-    "ReInjectionStatus"]
+    "ReInjectionStatus")

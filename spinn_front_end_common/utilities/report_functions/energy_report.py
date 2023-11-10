@@ -15,8 +15,10 @@
 from collections import defaultdict
 import logging
 import os
+from typing import Dict, Final, TextIO
 from spinn_utilities.config_holder import is_config_none
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.typing.coords import XY
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     FecTimer, GlobalProvenance, TimerCategory)
@@ -26,6 +28,7 @@ from spinn_front_end_common.interface.interface_functions.compute_energy_used\
     import (JOULES_PER_SPIKE, MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
             MILLIWATTS_PER_FRAME_ACTIVE_COST, MILLIWATTS_PER_FPGA,
             MILLIWATTS_PER_IDLE_CHIP)
+from spinn_front_end_common.utilities.utility_objs import PowerUsed
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -39,13 +42,13 @@ class EnergyReport(object):
     __slots__ = ()
 
     #: converter between joules to kilowatt hours
-    JOULES_TO_KILOWATT_HOURS = 3600000
+    JOULES_TO_KILOWATT_HOURS: Final = 3600000
 
     # energy report file name
     _DETAILED_FILENAME = "detailed_energy_report.rpt"
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
-    def write_energy_report(self, power_used):
+    def write_energy_report(self, power_used: PowerUsed):
         """
         Writes the report.
 
@@ -69,15 +72,13 @@ class EnergyReport(object):
             self._write_summary_report(f, power_used)
 
     @classmethod
-    def _write_summary_report(cls, f, power_used):
+    def _write_summary_report(cls, f: TextIO, power_used: PowerUsed):
         """
         Write summary file.
 
         :param ~io.TextIOBase f: file writer
         :param PowerUsed power_used:
         """
-        # pylint: disable=too-many-arguments, too-many-locals
-
         # figure runtime in milliseconds with time scale factor
         runtime_total_ms = (
                 FecDataView.get_current_run_time_ms() *
@@ -132,7 +133,7 @@ class EnergyReport(object):
                 cls.JOULES_TO_KILOWATT_HOURS))
 
     @staticmethod
-    def __report_time(time):
+    def __report_time(time: float) -> str:
         """
         :param float time:
         :rtype: str
@@ -142,7 +143,7 @@ class EnergyReport(object):
         else:
             return f"(over {time} seconds)"
 
-    def _write_detailed_report(self, power_used, f):
+    def _write_detailed_report(self, power_used: PowerUsed, f: TextIO):
         """
         Write detailed report and calculate costs.
 
@@ -169,16 +170,16 @@ class EnergyReport(object):
         self._write_data_extraction_time_cost(power_used, f)
 
         # sort what to report by chip
-        active_chips = defaultdict(dict)
+        active_chips: Dict[XY, Dict[int, str]] = defaultdict(dict)
         for placement in FecDataView.iterate_placements_by_vertex_type(
                 ChipPowerMonitorMachineVertex):
             labels = active_chips[placement.x, placement.y]
-            labels[placement.p] = placement.vertex.label
+            labels[placement.p] = placement.vertex.label or "None"
         for xy in active_chips:
             self._write_chips_active_cost(
                 xy, active_chips[xy], runtime_total_ms, power_used, f)
 
-    def _write_warning(self, f):
+    def _write_warning(self, f: TextIO):
         """
         Writes the warning about this being only an estimate.
 
@@ -201,7 +202,7 @@ class EnergyReport(object):
             "The energy used by each active FPGA per millisecond is "
             f"{MILLIWATTS_PER_FPGA} Joules.\n\n\n")
 
-    def _write_fpga_cost(self, power_used, f):
+    def _write_fpga_cost(self, power_used: PowerUsed, f: TextIO):
         """
         FPGA cost model calculation.
 
@@ -216,7 +217,7 @@ class EnergyReport(object):
             if version in (2, 3):
                 f.write(
                     f"A SpiNN-{version} board does not contain any FPGA's, "
-                    f"and so its energy cost is 0 \n")
+                    f"and so its energy cost is 0\n")
                 return
             elif version not in (4, 5):
                 # no idea where we are; version unrecognised
@@ -256,7 +257,8 @@ class EnergyReport(object):
 
     @staticmethod
     def _write_chips_active_cost(
-            chip_coord, labels, runtime_total_ms, power_used, f):
+            chip_coord: XY, labels: Dict[int, str],
+            runtime_total_ms: float, power_used: PowerUsed, f: TextIO):
         """
         Figure out the chip active cost during simulation.
 
@@ -290,7 +292,7 @@ class EnergyReport(object):
             "being idle during the execution of the simulation\n")
 
     @staticmethod
-    def _write_load_time_cost(power_used, f):
+    def _write_load_time_cost(power_used: PowerUsed, f: TextIO):
         """
         Energy usage from the loading phase.
 
@@ -316,7 +318,7 @@ class EnergyReport(object):
             f"{power_used.loading_joules} Joules.\n")
 
     @staticmethod
-    def _write_data_extraction_time_cost(power_used, f):
+    def _write_data_extraction_time_cost(power_used: PowerUsed, f: TextIO):
         """
         Data extraction cost.
 

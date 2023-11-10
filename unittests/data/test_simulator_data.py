@@ -43,7 +43,7 @@ from spinn_front_end_common.utility_models import (
 
 class TestSimulatorData(unittest.TestCase):
 
-    def setUp(cls):
+    def setUp(self):
         unittest_setup()
 
     def test_setup(self):
@@ -574,6 +574,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_gatherer_map(self):
         writer = FecDataWriter.mock()
+        set_config("Machine", "version", 5)
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_gatherer_by_xy(0, 0)
         with self.assertRaises(DataNotYetAvialable):
@@ -583,21 +584,21 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_gathers()
         vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, None)
-        vertex2 = DataSpeedUpPacketGatherMachineVertex(8, 8, None)
+        vertex2 = DataSpeedUpPacketGatherMachineVertex(1, 1, None)
         map = dict()
         # Setting empty ok
         writer.set_gatherer_map(map)
-        map[(0, 0)] = vertex1
-        map[(8, 8)] = vertex2
+        map[FecDataView.get_chip_at(0, 0)] = vertex1
+        map[FecDataView.get_chip_at(1, 1)] = vertex2
         writer.set_gatherer_map(map)
         self.assertEqual(vertex1, FecDataView.get_gatherer_by_xy(0, 0))
         for core, vertex in FecDataView.iterate_gather_items():
-            if core == (0, 0):
+            if (core.x, core.y) == (0, 0):
                 self.assertEqual(vertex1, vertex)
-            elif core == (8, 8):
+            elif (core.x, core.y) == (1, 1):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise ValueError(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {core=} {vertex=}")
         self.assertCountEqual(
             [vertex1, vertex2], FecDataView.iterate_gathers())
         self.assertEqual(2, FecDataView.get_n_gathers())
@@ -622,6 +623,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_monitor_map(self):
         writer = FecDataWriter.mock()
+        set_config("Machine", "version", 5)
         self.assertFalse(FecDataView.has_monitors())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_monitor_by_xy(0, 0)
@@ -636,23 +638,23 @@ class TestSimulatorData(unittest.TestCase):
         map = dict()
         # Setting empty ok
         writer.set_monitor_map(map)
-        map[(0, 0)] = vertex1
-        map[(8, 8)] = vertex2
+        map[FecDataView.get_chip_at(0, 0)] = vertex1
+        map[FecDataView.get_chip_at(1, 1)] = vertex2
         writer.set_monitor_map(map)
         self.assertTrue(FecDataView.has_monitors())
         self.assertEqual(vertex1, FecDataView.get_monitor_by_xy(0, 0))
         for core, vertex in FecDataView.iterate_monitor_items():
-            if core == (0, 0):
+            if (core.x, core.y) == (0, 0):
                 self.assertEqual(vertex1, vertex)
-            elif core == (8, 8):
+            elif (core.x, core.y) == (1, 1):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise ValueError(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {core=} {vertex=}")
         self.assertCountEqual([vertex1, vertex2],
                               FecDataView.iterate_monitors())
         self.assertEqual(2, FecDataView.get_n_monitors())
         with self.assertRaises(KeyError):
-            FecDataView.get_monitor_by_xy(1, 1)
+            FecDataView.get_monitor_by_xy(0, 1)
         with self.assertRaises(TypeError):
             writer.set_monitor_map([])
         with self.assertRaises(TypeError):

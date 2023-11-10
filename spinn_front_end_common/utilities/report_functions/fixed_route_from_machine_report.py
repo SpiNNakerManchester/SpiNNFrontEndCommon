@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import os
+from typing import Iterable
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
 
 
-def fixed_route_from_machine_report():
+def fixed_route_from_machine_report() -> None:
     """
     Writes the fixed routes from the machine.
     """
@@ -42,7 +43,8 @@ def fixed_route_from_machine_report():
                     fixed_route.processor_ids, fixed_route.link_ids)))
 
 
-def _reduce_route_value(processors_ids, link_ids):
+def _reduce_route_value(
+        processors_ids: Iterable[int], link_ids: Iterable[int]) -> str:
     value = 0
     for link in link_ids:
         value += 1 << link
@@ -51,27 +53,24 @@ def _reduce_route_value(processors_ids, link_ids):
     return str(value)
 
 
-def _expand_route_value(processors_ids, link_ids):
+def _expand_route_value(
+        processors_ids: Iterable[int], link_ids: Iterable[int]) -> str:
     """
     Convert a 32-bit route word into a string which lists the target
     cores and links.
     """
+    route_string = "["
 
     # Convert processor targets to readable values:
-    route_string = "["
-    separator = ""
-    for processor in processors_ids:
-        route_string += separator + str(processor)
-        separator = ", "
+    route_string += ", ".join(
+        str(processor) for processor in sorted(processors_ids))
 
     route_string += "] ["
 
     # Convert link targets to readable values:
     link_labels = {0: 'E', 1: 'NE', 2: 'N', 3: 'W', 4: 'SW', 5: 'S'}
+    route_string += ", ".join(
+        link_labels[link] for link in sorted(link_ids))
 
-    separator = ""
-    for link in link_ids:
-        route_string += separator + link_labels[link]
-        separator = ", "
     route_string += "]"
     return route_string

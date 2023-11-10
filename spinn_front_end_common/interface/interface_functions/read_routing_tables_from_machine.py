@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.routing_tables import MulticastRoutingTables
-from pacman.model.routing_tables.compressed_multicast_routing_table import (
-    CompressedMulticastRoutingTable)
+from spinnman.transceiver import Transceiver
+from pacman.model.routing_tables import (
+    AbstractMulticastRoutingTable, CompressedMulticastRoutingTable,
+    MulticastRoutingTables)
 from spinn_front_end_common.data import FecDataView
 
 
-def read_routing_tables_from_machine():
+def read_routing_tables_from_machine() -> MulticastRoutingTables:
     """
     Reads compressed routing tables from a SpiNNaker machine.
 
@@ -27,23 +28,26 @@ def read_routing_tables_from_machine():
     routing_tables = FecDataView.get_uncompressed()
     progress = ProgressBar(
         routing_tables, "Reading Routing Tables from Machine")
-    machine_routing_tables = MulticastRoutingTables()
     app_id = FecDataView.get_app_id()
     transceiver = FecDataView.get_transceiver()
-    for routing_table in progress.over(routing_tables):
+
+    machine_routing_tables = MulticastRoutingTables()
+    for table in progress.over(routing_tables):
         # get multicast entries from machine
         machine_routing_table = _read_routing_table(
-            transceiver, routing_table, app_id)
+            transceiver, table, app_id)
         machine_routing_tables.add_routing_table(machine_routing_table)
-
     return machine_routing_tables
 
 
-def _read_routing_table(transceiver, table, app_id):
+def _read_routing_table(
+        transceiver: Transceiver, table: AbstractMulticastRoutingTable,
+        app_id: int) -> CompressedMulticastRoutingTable:
     """
     :param ~spinnman.transceiver.Transceiver transceiver:
     :param ~.UnCompressedMulticastRoutingTable table:
     :param int app_id:
+    :rtype: CompressedMulticastRoutingTable
     """
     machine_routing_table = CompressedMulticastRoutingTable(table.x, table.y)
     for routing_entry in transceiver.get_multicast_routes(

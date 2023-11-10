@@ -14,7 +14,7 @@
 
 import tempfile
 import unittest
-from testfixtures import LogCapture
+from testfixtures import LogCapture  # type: ignore[import]
 from spinn_front_end_common.interface.provenance import (
     FecTimer, GlobalProvenance, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.config_setup import unittest_setup

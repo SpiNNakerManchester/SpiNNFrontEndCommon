@@ -33,7 +33,7 @@ from spinn_front_end_common.utility_models import LivePacketGather
 from spinn_front_end_common.utilities.database import DatabaseReader
 
 
-class TestSplitter(AbstractSplitterCommon):
+class MockSplitter(AbstractSplitterCommon):
     def create_machine_vertices(self, chip_counter):
         pass
 
@@ -56,10 +56,10 @@ class TestSplitter(AbstractSplitterCommon):
         pass
 
 
-class TestAppVertex(ApplicationVertex):
+class MockAppVertex(ApplicationVertex):
     def __init__(self, n_atoms, label):
-        super(TestAppVertex, self).__init__(
-            label=label, splitter=TestSplitter())
+        super(MockAppVertex, self).__init__(
+            label=label, splitter=MockSplitter())
         self.__n_atoms = n_atoms
 
     @property
@@ -111,8 +111,8 @@ def test_database_interface():
     writer = FecDataWriter.mock()
     placements = Placements()
 
-    app_vertex_1 = TestAppVertex(100, "test_1")
-    app_vertex_2 = TestAppVertex(200, "test_2")
+    app_vertex_1 = MockAppVertex(100, "test_1")
+    app_vertex_2 = MockAppVertex(200, "test_2")
     writer.add_vertex(app_vertex_1)
     writer.add_vertex(app_vertex_2)
     writer.add_edge(ApplicationEdge(app_vertex_1, app_vertex_2), "Test")
@@ -124,7 +124,7 @@ def test_database_interface():
     writer.add_vertex(lpg_vertex)
     writer.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
 
-    lpg_vertex.splitter.create_vertices(placements)
+    lpg_vertex.splitter.create_sys_vertices(placements)
     _place_vertices(app_vertex_1, placements, [(0, 0)])
     _place_vertices(app_vertex_2, placements, [(0, 1), (1, 1)])
 

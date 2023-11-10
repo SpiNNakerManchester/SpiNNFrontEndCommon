@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
@@ -26,9 +25,8 @@ class AbstractProvidesLocalProvenanceData(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def get_local_provenance_data(self):
+    def get_local_provenance_data(self) -> None:
         """
-        Get an iterable of provenance data items.
-
-        :rtype: iterable
+        Get provenance data items and store them in the provenance DB.
         """
+        raise NotImplementedError

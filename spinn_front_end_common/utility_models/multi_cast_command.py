@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Optional
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
@@ -21,8 +21,9 @@ class MultiCastCommand(object):
     """
 
     def __init__(
-            self, key, payload=None, time=None, repeat=0,
-            delay_between_repeats=0):
+            self, key: int, payload: Optional[int] = None, *,
+            time: Optional[int] = None, repeat: int = 0,
+            delay_between_repeats: int = 0):
         """
         :param int key: The key of the command
         :param payload: The payload of the command
@@ -59,7 +60,7 @@ class MultiCastCommand(object):
         self._delay_between_repeats = delay_between_repeats
 
     @property
-    def time(self):
+    def time(self) -> Optional[int]:
         """
         The time within the simulation at which to send the
         command, or `None` if this is not a timed command.
@@ -69,7 +70,7 @@ class MultiCastCommand(object):
         return self._time
 
     @property
-    def is_timed(self):
+    def is_timed(self) -> bool:
         """
         Whether this command is a timed command.
 
@@ -78,28 +79,28 @@ class MultiCastCommand(object):
         return self._time is not None
 
     @property
-    def key(self):
+    def key(self) -> int:
         """
         :rtype: int
         """
         return self._key
 
     @property
-    def repeat(self):
+    def repeat(self) -> int:
         """
         :rtype: int
         """
         return self._repeat
 
     @property
-    def delay_between_repeats(self):
+    def delay_between_repeats(self) -> int:
         """
         :rtype: int
         """
         return self._delay_between_repeats
 
     @property
-    def payload(self):
+    def payload(self) -> Optional[int]:
         """
         The payload of the command, or `None` if there is no payload.
 
@@ -107,12 +108,8 @@ class MultiCastCommand(object):
         """
         return self._payload
 
-    @payload.setter
-    def payload(self, payload):
-        self._payload = payload
-
     @property
-    def is_payload(self):
+    def is_payload(self) -> bool:
         """
         Whether this command has a payload. By default, this returns
         True if the payload passed in to the constructor is not `None`, but
@@ -121,11 +118,11 @@ class MultiCastCommand(object):
 
         :rtype: bool
         """
-        return self._payload is not None
+        return self.payload is not None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"MultiCastCommand(time={self._time}, key={self._key}, "
-            f"payload={self._payload}, "
+            f"payload={self.payload}, "
             f"time_between_repeat={self._delay_between_repeats}, "
             f"repeats={self._repeat})")

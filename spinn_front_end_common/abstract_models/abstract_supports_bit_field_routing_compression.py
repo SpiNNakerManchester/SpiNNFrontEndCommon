@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import List, Tuple
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
+from pacman.model.placements import Placement
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(MachineVertex)
@@ -27,7 +29,7 @@ class AbstractSupportsBitFieldRoutingCompression(
     __slots__ = ()
 
     @abstractmethod
-    def bit_field_base_address(self, placement):
+    def bit_field_base_address(self, placement: Placement) -> int:
         """
         Returns the SDRAM address for the bit-field table data.
 
@@ -35,9 +37,11 @@ class AbstractSupportsBitFieldRoutingCompression(
         :return: the SDRAM address for the bitfield address
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def regeneratable_sdram_blocks_and_sizes(self, placement):
+    def regeneratable_sdram_blocks_and_sizes(
+            self, placement: Placement) -> List[Tuple[int, int]]:
         """
         Returns the SDRAM addresses and sizes for the cores' SDRAM that
         are available (borrowed) for generating bitfield tables.
@@ -49,3 +53,4 @@ class AbstractSupportsBitFieldRoutingCompression(
             there)
         :rtype: list(tuple(int,int))
         """
+        raise NotImplementedError

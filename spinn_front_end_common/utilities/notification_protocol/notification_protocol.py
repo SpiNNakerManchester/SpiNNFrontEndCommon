@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import logging
+from typing import List, Optional
+from concurrent.futures import Future
 from concurrent.futures import ThreadPoolExecutor, wait  # @UnresolvedImport
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
@@ -24,7 +26,8 @@ from spinnman.exceptions import SpinnmanTimeoutException
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MAX_DATABASE_PATH_LENGTH)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.exceptions import (
+    ConfigurationException, SpinnFrontEndException)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -38,23 +41,24 @@ class NotificationProtocol(object):
     :py:class:`DatabaseConnection` (and its subclasses). They are not routed
     via SpiNNaker.
     """
-    __slots__ = [
+    __slots__ = (
         "__database_message_connections",
         "__sent_visualisation_confirmation",
         "__wait_for_read_confirmation",
         "__wait_for_read_timeout",
         "__wait_futures",
-        "__wait_pool"]
+        "__wait_pool")
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Determines whether to wait for confirmation that the database
         # has been read before starting the simulation
         self.__wait_for_read_confirmation = get_config_bool(
             "Database", "wait_on_confirmation")
         self.__wait_for_read_timeout = get_config_int(
             "Database", "wait_on_confirmation_timeout")
-        self.__wait_pool = ThreadPoolExecutor(max_workers=1)
-        self.__wait_futures = list()
+        self.__wait_pool: Optional[ThreadPoolExecutor] = \
+            ThreadPoolExecutor(max_workers=1)
+        self.__wait_futures: List[Future[None]] = list()
         self.__sent_visualisation_confirmation = False
         # These connections are not used to talk to SpiNNaker boards
         # but rather to code running on the current host computer
@@ -66,7 +70,7 @@ class NotificationProtocol(object):
             for socket_address in
             FecDataView.iterate_database_socket_addresses()]
 
-    def wait_for_confirmation(self):
+    def wait_for_confirmation(self) -> None:
         """
         If asked to wait for confirmation, waits for all external systems
         to confirm that they are configured and have read the database.
@@ -82,7 +86,7 @@ class NotificationProtocol(object):
                     self.__wait_for_read_timeout)
         self.__wait_futures = list()
 
-    def send_start_resume_notification(self):
+    def send_start_resume_notification(self) -> None:
         """
         Either waits till all sources have confirmed read the database
         and are configured, and/or just sends the start notification
@@ -102,7 +106,7 @@ class NotificationProtocol(object):
                     "application on {}:{} about the simulation ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
-    def send_stop_pause_notification(self):
+    def send_stop_pause_notification(self) -> None:
         """
         Sends the pause / stop notifications when the script has either
         finished or paused.
@@ -119,42 +123,41 @@ class NotificationProtocol(object):
                     "application on {}:{} about the simulation ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
-    # noinspection PyPep8
-    def send_read_notification(self):
+    def send_read_notification(self) -> None:
         """
         Sends notifications to all devices which have expressed an
         interest in when the database has been written
         """
+        database_path = FecDataView.get_database_file_path()
+        if database_path is not None and (
+                len(database_path) > MAX_DATABASE_PATH_LENGTH):
+            raise ConfigurationException(
+                "The file path to the database is too large to be "
+                "transmitted via the command packet, please set the file "
+                "path manually and set the .cfg parameter "
+                "[Database] send_file_path to False")
+        if self.__wait_pool is None:
+            raise SpinnFrontEndException("notification protocol is closed")
         notification_task = self.__wait_pool.submit(
             self._send_read_notification)
         if self.__wait_for_read_confirmation:
             self.__wait_futures.append(notification_task)
 
-    def _send_read_notification(self):
+    def _send_read_notification(self) -> None:
         """
         Sends notifications to a list of socket addresses that the
         database has been written. Message also includes the path to the
         database
-
-        :param str database_path: the path to the database
         """
         # noinspection PyBroadException
         try:
-            self.__do_read_notify()
+            self.__do_read_notify(FecDataView.get_database_file_path())
         except Exception:  # pylint: disable=broad-except
             logger.warning("problem when sending DB notification",
                            exc_info=True)
 
-    def __do_read_notify(self):
-        database_path = FecDataView.get_database_file_path()
+    def __do_read_notify(self, database_path: Optional[str]) -> None:
         # add file path to database into command message.
-        if (database_path is not None and
-                len(database_path) > MAX_DATABASE_PATH_LENGTH):
-            raise ConfigurationException(
-                "The file path to the database is too large to be transmitted "
-                "via the command packet, please set the file path manually "
-                "and set the .cfg parameter [Database] send_file_path to "
-                "False")
         message = NotificationProtocolDatabaseLocation(database_path)
 
         # Send command and wait for response
@@ -189,7 +192,7 @@ class NotificationProtocol(object):
                         c.remote_ip_address, c.remote_port, exc_info=True)
 
     @property
-    def sent_visualisation_confirmation(self):
+    def sent_visualisation_confirmation(self) -> bool:
         """
         Whether the external application has actually been notified yet.
 
@@ -197,11 +200,11 @@ class NotificationProtocol(object):
         """
         return self.__sent_visualisation_confirmation
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the thread pool and the connections.
         """
-        if self.__wait_pool:
+        if self.__wait_pool is not None:
             self.__wait_pool.shutdown()
             self.__wait_futures = list()
             self.__wait_pool = None

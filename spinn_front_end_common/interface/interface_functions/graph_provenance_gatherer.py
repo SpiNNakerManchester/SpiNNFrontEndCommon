@@ -18,13 +18,12 @@ from spinn_front_end_common.interface.provenance import (
     AbstractProvidesLocalProvenanceData)
 
 
-def graph_provenance_gatherer():
+def graph_provenance_gatherer() -> None:
     """
     Gets provenance information from the graph.
     """
     progress = ProgressBar(
-        FecDataView.get_n_vertices() +
-        FecDataView.get_n_partitions(),
+        FecDataView.get_n_vertices() + FecDataView.get_n_partitions(),
         "Getting provenance data from application graph")
     for vertex in progress.over(FecDataView.iterate_vertices(), False):
         if isinstance(vertex, AbstractProvidesLocalProvenanceData):
@@ -32,8 +31,7 @@ def graph_provenance_gatherer():
             for m_vertex in vertex.machine_vertices:
                 if isinstance(m_vertex, AbstractProvidesLocalProvenanceData):
                     m_vertex.get_local_provenance_data()
-    for partition in progress.over(
-            FecDataView.iterate_partitions()):
+    for partition in progress.over(FecDataView.iterate_partitions()):
         for edge in partition.edges:
             if isinstance(edge, AbstractProvidesLocalProvenanceData):
                 edge.get_local_provenance_data()

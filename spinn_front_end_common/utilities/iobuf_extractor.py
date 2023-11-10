@@ -15,10 +15,12 @@
 import logging
 import os
 import re
+from typing import List, Optional, Pattern, Sequence, Set, Sized, Tuple, Union
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.model.io_buffer import IOBuffer
 from spinn_utilities.config_holder import get_config_str_or_none
@@ -46,25 +48,25 @@ class IOBufExtractor(object):
     lines based on their prefix.
     """
 
-    __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
-                 "__app_path", "__sys_path",
-                 "__suppress_progress", "__from_cores", "__binary_types",
-                 "__executable_targets"]
+    __slots__ = (
+        "_filename_template", "_recovery_mode", "__system_binaries",
+        "__app_path", "__sys_path", "__suppress_progress",
+        "__from_cores", "__binary_types", "__executable_targets")
 
-    def __init__(self, executable_targets=None,
-                 recovery_mode=False,
-                 filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt",
-                 suppress_progress=False):
+    def __init__(
+            self, executable_targets: Optional[ExecutableTargets] = None, *,
+            recovery_mode: bool = False,
+            filename_template: str = (
+                "iobuf_for_chip_{}_{}_processor_id_{}.txt"),
+            suppress_progress: bool = False):
         """
-        :param bool recovery_mode:
-        :param str filename_template:
-        :param bool suppress_progress:
         :param executable_targets:
             Which Binaries and core to extract from.
             `None` to extract from all.
         :type executable_targets: ~spinnman.model.ExecutableTargets or None
-        :param str from_cores:
-        :param str binary_types:
+        :param bool recovery_mode:
+        :param str filename_template:
+        :param bool suppress_progress:
         """
         self._filename_template = filename_template
         self._recovery_mode = bool(recovery_mode)
@@ -81,7 +83,7 @@ class IOBufExtractor(object):
         else:
             self.__executable_targets = executable_targets
 
-        self.__system_binaries = set()
+        self.__system_binaries: Set[str] = set()
         try:
             self.__system_binaries.update(
                 self.__executable_targets.get_binaries_of_executable_type(
@@ -89,7 +91,7 @@ class IOBufExtractor(object):
         except KeyError:
             pass
 
-    def extract_iobuf(self):
+    def extract_iobuf(self) -> Tuple[Sequence[str], Sequence[str]]:
         """
         Perform the extraction of IOBUF.
 
@@ -108,7 +110,7 @@ class IOBufExtractor(object):
             # nothing
             return [], []
 
-    def __progress(self, bins):
+    def __progress(self, bins: Sized) -> Union[ProgressBar, _DummyProgress]:
         """
         :param list bins:
         :rtype: ~.ProgressBar
@@ -119,7 +121,7 @@ class IOBufExtractor(object):
                  + " IOBUF from the machine")
         return ProgressBar(len(bins), label)
 
-    def __prov_path(self, binary):
+    def __prov_path(self, binary: str) -> str:
         """
         :param str binary:
         :return: provenance directory path
@@ -128,12 +130,12 @@ class IOBufExtractor(object):
         return (self.__sys_path if binary in self.__system_binaries
                 else self.__app_path)
 
-    def __extract_all_cores(self):
+    def __extract_all_cores(self) -> Tuple[List[str], List[str]]:
         """
         :rtype: tuple(list(str), list(str))
         """
-        error_entries = list()
-        warn_entries = list()
+        error_entries: List[str] = list()
+        warn_entries: List[str] = list()
         # all the cores
         progress = self.__progress(self.__executable_targets.binaries)
         for binary in progress.over(self.__executable_targets.binaries):
@@ -143,13 +145,15 @@ class IOBufExtractor(object):
                 core_subsets, binary, error_entries, warn_entries)
         return error_entries, warn_entries
 
-    def __extract_selected_cores_and_types(self):
+    def __extract_selected_cores_and_types(
+            self) -> Tuple[List[str], List[str]]:
         """
         :rtype: tuple(list(str), list(str))
         """
-        error_entries = list()
-        warn_entries = list()
+        error_entries: List[str] = list()
+        warn_entries: List[str] = list()
         # bit of both
+        assert self.__binary_types is not None
         progress = self.__progress(self.__executable_targets.binaries)
         binaries = FecDataView.get_executable_paths(self.__binary_types)
         iocores = convert_string_into_chip_and_core_subset(self.__from_cores)
@@ -165,12 +169,12 @@ class IOBufExtractor(object):
                     core_subsets, binary, error_entries, warn_entries)
         return error_entries, warn_entries
 
-    def __extract_selected_cores(self):
+    def __extract_selected_cores(self) -> Tuple[List[str], List[str]]:
         """
         :rtype: tuple(list(str), list(str))
         """
-        error_entries = list()
-        warn_entries = list()
+        error_entries: List[str] = list()
+        warn_entries: List[str] = list()
         # some hard coded cores
         progress = self.__progress(self.__executable_targets.binaries)
         iocores = convert_string_into_chip_and_core_subset(self.__from_cores)
@@ -182,13 +186,14 @@ class IOBufExtractor(object):
                     core_subsets, binary, error_entries, warn_entries)
         return error_entries, warn_entries
 
-    def __extract_selected_types(self):
+    def __extract_selected_types(self) -> Tuple[List[str], List[str]]:
         """
         :rtype: tuple(list(str), list(str))
         """
-        error_entries = list()
-        warn_entries = list()
+        error_entries: List[str] = list()
+        warn_entries: List[str] = list()
         # some binaries
+        assert self.__binary_types is not None
         binaries = FecDataView.get_executable_paths(self.__binary_types)
         progress = self.__progress(binaries)
         for binary in progress.over(binaries):
@@ -200,7 +205,8 @@ class IOBufExtractor(object):
         return error_entries, warn_entries
 
     def __extract_iobufs_for_binary(
-            self, core_subsets, binary, error_entries, warn_entries):
+            self, core_subsets: CoreSubsets, binary: str,
+            error_entries: List[str], warn_entries: List[str]):
         """
         :param ~.CoreSubsets core_subsets: Where the binary is deployed
         :param str binary: What binary was deployed there.
@@ -224,7 +230,8 @@ class IOBufExtractor(object):
                                      error_entries, warn_entries)
 
     def __process_one_iobuf(
-            self, iobuf, file_path, replacer, error_entries, warn_entries):
+            self, iobuf: IOBuffer, file_path: str, replacer: Replacer,
+            error_entries: List[str], warn_entries: List[str]):
         """
         :param ~.IOBuffer iobuf:
         :param str file_path:
@@ -250,12 +257,12 @@ class IOBufExtractor(object):
                 self.__add_value_if_match(
                     WARNING_ENTRY, replaced, warn_entries, iobuf)
 
-    def __recover_iobufs(self, core_subsets):
+    def __recover_iobufs(self, core_subsets: CoreSubsets) -> List[IOBuffer]:
         """
         :param ~.CoreSubsets core_subsets:
         :rtype: list(~.IOBuffer)
         """
-        io_buffers = []
+        io_buffers: List[IOBuffer] = []
         for core_subset in core_subsets:
             for p in core_subset.processor_ids:
                 cs = CoreSubsets()
@@ -272,7 +279,8 @@ class IOBufExtractor(object):
         return io_buffers
 
     @staticmethod
-    def __add_value_if_match(regex, line, entries, iobuf):
+    def __add_value_if_match(
+            regex: Pattern, line: str, entries: List[str], iobuf: IOBuffer):
         """
         :param ~typing.Pattern regex:
         :param str line:

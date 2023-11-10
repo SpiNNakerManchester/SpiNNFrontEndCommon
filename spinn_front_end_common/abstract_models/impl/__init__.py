@@ -15,4 +15,4 @@
 from .machine_allocation_controller import MachineAllocationController
 from .machine_data_specable_vertex import MachineDataSpecableVertex
 
-__all__ = ["MachineAllocationController", "MachineDataSpecableVertex"]
+__all__ = ("MachineAllocationController", "MachineDataSpecableVertex")

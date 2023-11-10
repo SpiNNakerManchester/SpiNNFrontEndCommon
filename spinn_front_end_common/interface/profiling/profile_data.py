@@ -15,7 +15,8 @@
 import logging
 import numpy
 import math
-import scipy.stats
+import scipy.stats  # type: ignore[import]
+from typing import Dict, Iterable, Mapping, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 
@@ -45,18 +46,17 @@ class ProfileData(object):
         "_tag_labels",
 
         # The maximum time recorded
-        "_max_time"
-    )
+        "_max_time")
 
-    def __init__(self, tag_labels):
+    def __init__(self, tag_labels: Mapping[int, str]):
         """
         :param list(str) tag_labels: A list of labels indexed by tag ID
         """
         self._tag_labels = tag_labels
-        self._tags = dict()
-        self._max_time = None
+        self._tags: Dict[str, Tuple[numpy.ndarray, numpy.ndarray]] = dict()
+        self._max_time: float = 0.0
 
-    def add_data(self, data):
+    def add_data(self, data: bytes):
         """
         Add profiling data read from the profile section.
 
@@ -95,7 +95,8 @@ class ProfileData(object):
                 entry_tags, entry_times_ms, exit_tags, exit_times_ms, tag)
 
     def _add_tag_data(
-            self, entry_tags, entry_times, exit_tags, exit_times, tag):
+            self, entry_tags: numpy.ndarray, entry_times: numpy.ndarray,
+            exit_tags: numpy.ndarray, exit_times: numpy.ndarray, tag: int):
         """
         :param ~numpy.ndarray entry_tags:
         :param ~numpy.ndarray entry_times:
@@ -139,7 +140,7 @@ class ProfileData(object):
         self._max_time = numpy.max(tag_entry_times + tag_durations)
 
     @property
-    def tags(self):
+    def tags(self) -> Iterable[str]:
         """
         The tags recorded as labels.
 
@@ -147,7 +148,7 @@ class ProfileData(object):
         """
         return self._tags.keys()
 
-    def get_mean_ms(self, tag):
+    def get_mean_ms(self, tag: str) -> float:
         """
         Get the mean time in milliseconds spent on operations with the
         given tag.
@@ -157,7 +158,7 @@ class ProfileData(object):
         """
         return numpy.average(self._tags[tag][_DURATION])
 
-    def get_n_calls(self, tag):
+    def get_n_calls(self, tag: str) -> int:
         """
         Get the number of times the given tag was recorded.
 
@@ -166,7 +167,7 @@ class ProfileData(object):
         """
         return self._tags[tag][_DURATION].size
 
-    def get_mean_n_calls_per_ts(self, tag):
+    def get_mean_n_calls_per_ts(self, tag: str) -> float:
         """
         Get the mean number of times the given tag was recorded per timestep.
 
@@ -174,14 +175,13 @@ class ProfileData(object):
         :rtype: float
         """
         time_step_ms = FecDataView.get_simulation_time_step_ms()
-        n_points = math.ceil(
-            self._max_time / time_step_ms)
+        n_points = math.ceil(self._max_time / time_step_ms)
         endpoint = n_points * time_step_ms
         bins = numpy.linspace(0, endpoint, n_points + 1)
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], bins)[0])
 
-    def get_mean_ms_per_ts(self, tag):
+    def get_mean_ms_per_ts(self, tag: str) -> float:
         """
         Get the mean time in milliseconds spent on operations with the
         given tag per timestep.
@@ -190,8 +190,7 @@ class ProfileData(object):
         :rtype: float
         """
         time_step_ms = FecDataView.get_simulation_time_step_ms()
-        n_points = math.ceil(
-            self._max_time / time_step_ms)
+        n_points = math.ceil(self._max_time / time_step_ms)
         endpoint = n_points * time_step_ms
         bins = numpy.linspace(0, endpoint, n_points + 1)
         mean_per_ts = scipy.stats.binned_statistic(

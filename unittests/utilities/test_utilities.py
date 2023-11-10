@@ -20,7 +20,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 
 class TestingUtilities(unittest.TestCase):
 
-    def setUp(cls):
+    def setUp(self):
         unittest_setup()
 
     def test_get_region_base_address_offset(self):

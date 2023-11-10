@@ -25,6 +25,8 @@ class TestingDataType(unittest.TestCase):
         self.assertEqual(DataType.UINT8.min, 0)
         self.assertEqual(DataType.UINT8.max, 255)
 
+        self.assertEqual(DataType(0), DataType.UINT8)
+
         self.assertEqual(DataType.UINT16.value, 1)
         self.assertEqual(DataType.UINT16.size, 2)
         self.assertEqual(DataType.UINT16.min, 0)
@@ -151,6 +153,9 @@ class TestingDataType(unittest.TestCase):
             DataType.S063.max,
             decimal.Decimal("0.99999999999999999989157978275144"
                             "95565992547199130058"))
+
+        self.assertEqual(DataType.S1615.__doc__,
+                         "16.15 signed fixed point number")
 
 
 if __name__ == '__main__':
