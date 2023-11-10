@@ -374,7 +374,7 @@ class CommandSenderMachineVertex(
                     keys_added.add(key)
                     edges.append(edge_type(pre_vertex, vertex))
                     partition_ids.append(self._keys_to_partition_id[key])
-            return edges, partition_ids
+        return edges, partition_ids
 
     def edges_and_partitions(self) -> Tuple[List[MachineEdge], List[str]]:
         """
