@@ -61,6 +61,7 @@ LivePacketGatherMachineVertex
 DataSpeedUpPacketGatherMachineVertex
 ExtraMonitorSupportMachineVertex
 AbstractEIEIOMessage
+CommandSender
 CPUState
 CoreSubset
 CoreSubsets
@@ -107,3 +108,4 @@ Struct
 fetchone
 lastrowid
 rowcount
+WAL

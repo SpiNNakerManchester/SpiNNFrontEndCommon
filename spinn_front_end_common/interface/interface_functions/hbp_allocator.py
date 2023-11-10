@@ -14,8 +14,10 @@
 
 import logging
 import requests
+from typing import Optional, Tuple, cast
 from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.overrides import overrides
+from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.data import FecDataView
@@ -23,7 +25,7 @@ from pacman.exceptions import PacmanConfigurationException
 
 
 class _HBPJobController(MachineAllocationController):
-    __slots__ = [
+    __slots__ = (
         # the URLs to call the HBP system
         "_extend_lease_url",
         "_check_lease_url",
@@ -31,12 +33,11 @@ class _HBPJobController(MachineAllocationController):
         "_set_power_url",
         "_where_is_url",
         "_machine_name",
-        "_power_on"
-    ]
+        "_power_on")
 
     _WAIT_TIME_MS = 10000
 
-    def __init__(self, url, machine_name):
+    def __init__(self, url: str, machine_name: str):
         """
         :param str url:
         :param str machine_name:
@@ -53,61 +54,67 @@ class _HBPJobController(MachineAllocationController):
         super().__init__("HBPJobController")
 
     @overrides(MachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time):
+    def extend_allocation(self, new_total_run_time: float):
         r = requests.get(self._extend_lease_url, params={
-            "runTime": new_total_run_time}, timeout=10)
+            "runTime": str(new_total_run_time)}, timeout=10)
         r.raise_for_status()
 
-    def _check_lease(self, wait_time):
+    def _check_lease(self, wait_time: int) -> JsonObject:
         r = requests.get(self._check_lease_url, params={
-            "waitTime": wait_time}, timeout=10 + wait_time)
+            "waitTime": str(wait_time)}, timeout=10 + wait_time)
         r.raise_for_status()
         return r.json()
 
-    def _release(self, machine_name):
+    def _release(self, machine_name: str):
         r = requests.delete(self._release_machine_url, params={
             "machineName": machine_name}, timeout=10)
         r.raise_for_status()
 
-    def _set_power(self, machine_name, power_on):
+    def _set_power(self, machine_name: str, power_on: bool):
         r = requests.put(self._set_power_url, params={
-            "machineName": machine_name, "on": bool(power_on)}, timeout=10)
+            "machineName": machine_name, "on": str(power_on)}, timeout=10)
         r.raise_for_status()
 
-    def _where_is(self, machine_name, chip_x, chip_y):
+    def _where_is(
+            self, machine_name: str, chip_x: int, chip_y: int) -> JsonArray:
         r = requests.get(self._where_is_url, params={
-            "machineName": machine_name, "chipX": chip_x,
-            "chipY": chip_y}, timeout=10)
+            "machineName": machine_name, "chipX": str(chip_x),
+            "chipY": str(chip_y)}, timeout=10)
         r.raise_for_status()
         return r.json()
 
     @overrides(MachineAllocationController.close)
-    def close(self):
+    def close(self) -> None:
         super().close()
         self._release(self._machine_name)
 
     @overrides(MachineAllocationController._teardown)
-    def _teardown(self):
+    def _teardown(self) -> None:
         self._release(self._machine_name)
 
     @property
-    def power(self):
+    def power(self) -> bool:
         return self._power_on
 
-    def set_power(self, power):
+    def set_power(self, power: bool):
         self._set_power(self._machine_name, power)
         self._power_on = power
 
     @overrides(MachineAllocationController.where_is_machine)
-    def where_is_machine(self, chip_x, chip_y):
-        return self._where_is(self._machine_name, chip_x, chip_y)
+    def where_is_machine(self, chip_x: int, chip_y: int) -> Tuple[
+            int, int, int]:
+        c, f, b = cast(Tuple[int, int, int],
+                       self._where_is(self._machine_name, chip_x, chip_y))
+        return (c, f, b)
 
     @overrides(MachineAllocationController._wait)
-    def _wait(self):
-        return self._check_lease(self._WAIT_TIME_MS)["allocated"]
+    def _wait(self) -> bool:
+        return bool(self._check_lease(self._WAIT_TIME_MS)["allocated"])
 
 
-def hbp_allocator(total_run_time):
+def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
+        str, int, Optional[str], bool, bool, None,
+        MachineAllocationController]:
     """
     Request a machine from the HBP remote access server that will fit
     a number of chips.
@@ -122,23 +129,21 @@ def hbp_allocator(total_run_time):
         If neither `n_chips` or `n_boards` provided
     """
 
-    url = str(get_config_str("Machine", "remote_spinnaker_url"))
+    url = get_config_str("Machine", "remote_spinnaker_url")
     if url.endswith("/"):
         url = url[:-1]
 
     machine = _get_machine(url, total_run_time)
-    hbp_job_controller = _HBPJobController(url, machine["machineName"])
-
-    bmp_details = None
-    if "bmp_details" in machine:
-        bmp_details = machine["bmpDetails"]
+    name = cast(str, machine["machineName"])
+    hbp_job_controller = _HBPJobController(url, name)
 
     return (
-        machine["machineName"], int(machine["version"]),
-        bmp_details, False, False, None, hbp_job_controller)
+        name, cast(int, machine["version"]),
+        cast(Optional[str], machine.get("bmpDetails")),
+        False, False, None, hbp_job_controller)
 
 
-def _get_machine(url, total_run_time):
+def _get_machine(url: str, total_run_time: Optional[float]) -> JsonObject:
     """
     :param str url:
     :param int total_run_time:

@@ -21,15 +21,16 @@ from spinnman.model.enums import SDP_PORTS
 from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
-class SetRouterTimeoutMessage(AbstractSCPRequest):
+class SetRouterTimeoutMessage(AbstractSCPRequest[CheckOKResponse]):
     """
     An SCP Request to the extra monitor core to set the router timeout
     for dropped packet reinjection.
     """
 
-    __slots__ = []
+    __slots__ = ()
 
-    def __init__(self, x, y, p, timeout_mantissa, timeout_exponent, wait=1):
+    def __init__(self, x: int, y: int, p: int, *,
+                 timeout_mantissa: int, timeout_exponent: int, wait: int):
         """
         :param int x: The x-coordinate of a chip, between 0 and 255
         :param int y: The y-coordinate of a chip, between 0 and 255
@@ -57,6 +58,6 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
                        ((timeout_exponent & 0xF) << 4))
 
     @overrides(AbstractSCPRequest.get_scp_response)
-    def get_scp_response(self):
+    def get_scp_response(self) -> CheckOKResponse:
         return CheckOKResponse("Set router timeout",
                                self.scp_request_header.command)

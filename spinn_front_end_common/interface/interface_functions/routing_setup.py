@@ -19,43 +19,37 @@ from spinnman.model.enums import (
     DiagnosticFilterDefaultRoutingStatus, DiagnosticFilterPacketType,
     DiagnosticFilterSource)
 from spinn_front_end_common.data import FecDataView
+from spinnman.transceiver import Transceiver
 
 
-def routing_setup():
+def routing_setup() -> None:
     """
-    Initialises the routers.
+    Initialises the routing diagnostic filters.
 
     .. note::
         This does not load any routes into them.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
     """
     transceiver = FecDataView.get_transceiver()
     routing_tables = FecDataView.get_uncompressed().routing_tables
     progress = ProgressBar(len(routing_tables), "Preparing Routing Tables")
 
-    # Clear the routing table for each router that needs to be set up
+    # Clear the routing table for each table that needs to be set up
     # and set up the diagnostics
-    for router_table in progress.over(routing_tables):
-        transceiver.clear_multicast_routes(
-            router_table.x, router_table.y)
-        transceiver.clear_router_diagnostic_counters(
-            router_table.x, router_table.y)
-
-        # set the router diagnostic for user 3 to catch local default
-        # routed packets. This can only occur when the source router
-        # has no router entry, and therefore should be detected a bad
-        # dropped packet.
-        __set_router_diagnostic_filters(
-            router_table.x, router_table.y, transceiver)
+    for table in progress.over(routing_tables):
+        transceiver.clear_multicast_routes(table.x, table.y)
+        transceiver.clear_router_diagnostic_counters(table.x, table.y)
+        _set_router_diagnostic_filters(table.x, table.y, transceiver)
 
 
-def __set_router_diagnostic_filters(x, y, transceiver):
+def _set_router_diagnostic_filters(x: int, y: int, transceiver: Transceiver):
     """
     :param int x:
     :param int y:
     :param ~.Transceiver transceiver:
     """
+    # Set the router diagnostic for user 3 to catch local default routed
+    # packets. This can only occur when the source router has no router
+    # entry, and therefore should be detected as a bad dropped packet.
     transceiver.set_router_diagnostic_filter(
         x, y, ROUTER_REGISTER_REGISTERS.USER_3.value,
         DiagnosticFilter(
@@ -69,6 +63,7 @@ def __set_router_diagnostic_filters(x, y, transceiver):
             emergency_routing_statuses=[],
             packet_types=[DiagnosticFilterPacketType.MULTICAST]))
 
+    # Sets user 2 to count non-local default routed packets
     transceiver.set_router_diagnostic_filter(
         x, y, ROUTER_REGISTER_REGISTERS.USER_2.value,
         DiagnosticFilter(

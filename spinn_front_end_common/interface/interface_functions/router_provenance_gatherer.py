@@ -13,42 +13,47 @@
 # limitations under the License.
 
 import logging
+from typing import Dict, Optional, Set
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.typing.coords import XY
+from spinn_machine import Chip
 from spinnman.exceptions import SpinnmanException
+from spinnman.model import RouterDiagnostics
+from pacman.model.routing_tables import AbstractMulticastRoutingTable
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def router_provenance_gatherer():
-    gather = _RouterProvenanceGatherer()
-    # pylint: disable=protected-access
-    gather._add_router_provenance_data()
+    _RouterProvenanceGatherer().add_router_provenance_data()
 
 
 class _RouterProvenanceGatherer(object):
     """
     Gathers diagnostics from the routers.
     """
+    __slots__ = ()
 
-    __slots__ = []
-
-    def _add_router_provenance_data(self):
+    def add_router_provenance_data(self) -> None:
         """
         Writes the provenance data of the router diagnostics
         """
-        progress = ProgressBar(FecDataView.get_machine().n_chips*2,
-                               "Getting Router Provenance")
+        count = len(FecDataView.get_uncompressed().routing_tables) \
+            + FecDataView.get_machine().n_chips + 1
+        progress = ProgressBar(count, "Getting Router Provenance")
 
-        seen_chips = set()
+        seen_chips: Set[XY] = set()
 
         # get all extra monitor core data if it exists
-        reinjection_data = None
+        reinjection_data: Optional[Dict[Chip, ReInjectionStatus]] = None
         if FecDataView.has_monitors():
             monitor = FecDataView.get_monitor_by_xy(0, 0)
             reinjection_data = monitor.get_reinjection_status_for_vertices()
+        progress.update()
 
         for router_table in progress.over(
                 FecDataView.get_uncompressed().routing_tables, False):
@@ -62,59 +67,67 @@ class _RouterProvenanceGatherer(object):
                 self._add_unseen_router_chip_diagnostic(
                     chip, reinjection_data)
 
-    def _add_router_table_diagnostic(self, table, reinjection_data):
+    def __get_router_diagnostics(self, chip: Chip) -> RouterDiagnostics:
+        return FecDataView.get_transceiver().get_router_diagnostics(
+            chip.x, chip.y)
+
+    def _add_router_table_diagnostic(
+            self, table: AbstractMulticastRoutingTable,
+            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]]) -> XY:
         """
-        :param ~.MulticastRoutingTable table:
+        :param ~.AbstractMulticastRoutingTable table:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
+        :rtype: Chip
         """
-        x = table.x
-        y = table.y
+        chip = table.chip
         try:
-            transceiver = FecDataView.get_transceiver()
-            diagnostics = transceiver.get_router_diagnostics(x, y)
+            diagnostics = self.__get_router_diagnostics(chip)
         except SpinnmanException:
             logger.warning(
-                "Could not read routing diagnostics from {}, {}",
-                x, y, exc_info=True)
-            return
-        status = self.__get_status(reinjection_data, x, y)
-        self.__router_diagnostics(x, y, diagnostics, status, True, table)
-        return x, y
+                "Could not read routing diagnostics from {},{}",
+                chip.x, chip.y, exc_info=True)
+            return (-1, -1)  # Not a chip location
+        status = self.__get_status(reinjection_data, chip)
+        self.__router_diagnostics(chip, diagnostics, status, True, table)
+        return chip.x, chip.y
 
-    def _add_unseen_router_chip_diagnostic(self, chip, reinjection_data):
+    def _add_unseen_router_chip_diagnostic(
+            self, chip: Chip,
+            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]]):
         """
         :param ~.Chip chip:
-        :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
+        :param dict(Chip,ReInjectionStatus) reinjection_data:
         """
         try:
-            transceiver = FecDataView.get_transceiver()
-            diagnostics = transceiver.get_router_diagnostics(chip.x, chip.y)
+            diagnostics = self.__get_router_diagnostics(chip)
         except SpinnmanException:
             # There could be issues with unused chips - don't worry!
             return
         if (diagnostics.n_dropped_multicast_packets or
                 diagnostics.n_local_multicast_packets or
                 diagnostics.n_external_multicast_packets):
-            status = self.__get_status(reinjection_data, chip.x, chip.y)
-            self.__router_diagnostics(
-                chip.x, chip.y, diagnostics, status, False, None)
+            status = self.__get_status(reinjection_data, chip)
+            self.__router_diagnostics(chip, diagnostics, status, False, None)
 
     @staticmethod
-    def __get_status(reinjection_data, x, y):
+    def __get_status(
+            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]],
+            chip: Chip) -> Optional[ReInjectionStatus]:
         """
-        :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
-        :param int x:
-        :param int y:
+        :param dict(Chip,ReInjectionStatus) reinjection_data:
+        :param Chip chip:
         :rtype: ReInjectionStatus or None
         """
-        return reinjection_data[x, y] if reinjection_data else None
+        return reinjection_data.get(chip) if reinjection_data else None
 
-    def __router_diagnostics(self, x, y, diagnostics, status, expected, table):
+    def __router_diagnostics(
+            self, chip: Chip, diagnostics: RouterDiagnostics,
+            status: Optional[ReInjectionStatus], expected: bool,
+            table: Optional[AbstractMulticastRoutingTable]):
         """
         Describes the router diagnostics for one router.
 
-        :param int x: x coordinate of the router in question
-        :param int y: y coordinate of the router in question
+        :param Chip chip: Chip of the router in question
         :param ~.RouterDiagnostics diagnostics: the router diagnostics object
         :param ReInjectionStatus status:
             the data gained from the extra monitor re-injection subsystem
@@ -126,14 +139,13 @@ class _RouterProvenanceGatherer(object):
 
         # simplify the if by making components of it outside.
         has_dropped = (diagnostics.n_dropped_multicast_packets > 0)
-        missing_stuff = False
         has_reinjection = status is not None
-        if has_reinjection:
-            missing_stuff = ((
-                status.n_dropped_packets + status.n_missed_dropped_packets +
-                status.n_dropped_packet_overflows +
-                status.n_reinjected_packets + status.n_processor_dumps +
-                status.n_link_dumps) < diagnostics.n_dropped_multicast_packets)
+        missing_stuff = status is not None and ((
+            status.n_dropped_packets + status.n_missed_dropped_packets +
+            status.n_dropped_packet_overflows + status.n_reinjected_packets +
+            status.n_processor_dumps + status.n_link_dumps) <
+            diagnostics.n_dropped_multicast_packets)
+        x, y = chip.x, chip.y
 
         with ProvenanceWriter() as db:
             db.insert_router(
@@ -147,8 +159,7 @@ class _RouterProvenanceGatherer(object):
             db.insert_router(
                 x, y, "Dropped_Multicast_Packets",
                 diagnostics.n_dropped_multicast_packets, expected)
-            if (has_dropped and not has_reinjection) or (
-                    has_dropped and has_reinjection and missing_stuff):
+            if has_dropped and (not has_reinjection or missing_stuff):
                 db.insert_report(
                     f"The router on {x}, {y} has dropped "
                     f"{diagnostics.n_dropped_multicast_packets} "

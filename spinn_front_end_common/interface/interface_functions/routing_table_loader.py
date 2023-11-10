@@ -13,10 +13,11 @@
 # limitations under the License.
 
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.data import FecDataView
 
 
-def routing_table_loader(router_tables):
+def routing_table_loader(router_tables: MulticastRoutingTables):
     """
     Loads routes into initialised routers.
 
@@ -30,7 +31,6 @@ def routing_table_loader(router_tables):
     app_id = FecDataView.get_app_id()
     transceiver = FecDataView.get_transceiver()
     for table in progress.over(router_tables.routing_tables):
-        if (table.number_of_entries):
+        if table.number_of_entries:
             transceiver.load_multicast_routes(
-                table.x, table.y, table.multicast_routing_entries,
-                app_id)
+                table.x, table.y, table.multicast_routing_entries, app_id)

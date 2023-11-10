@@ -19,21 +19,26 @@ Utility calls for interpreting bits of the DSG
 import io
 import os
 import threading
+from typing import (Optional, Union, TextIO, Tuple, TypeVar)
 from urllib.parse import urlparse
 from spinn_utilities.config_holder import get_config_bool
+from spinn_machine import Chip
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.utilities.utility_functions import (
     reprogram_tag, reprogram_tag_to_listener)
 from spinnman.spalloc import SpallocEIEIOListener, SpallocEIEIOConnection
+from pacman.model.placements import Placements
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from spinn_front_end_common.data import FecDataView
 
 # used to stop file conflicts
 _lock_condition = threading.Condition()
+#: :meta private:
+T = TypeVar("T")
 
 
-def _mkdir(directory):
+def _mkdir(directory: str):
     """
     Make a directory if it doesn't exist.
 
@@ -53,7 +58,8 @@ def _mkdir(directory):
             pass
 
 
-def get_region_base_address_offset(app_data_base_address, region):
+def get_region_base_address_offset(
+        app_data_base_address: int, region: int) -> int:
     """
     Find the address of the of a given region for the DSG.
 
@@ -70,8 +76,9 @@ _RPT_TMPL = "dataSpec_{}_{}_{}.txt"
 _RPT_DIR = "data_spec_text_files"
 
 
-def get_report_writer(processor_chip_x, processor_chip_y, processor_id,
-                      use_run_number=False):
+def get_report_writer(
+        processor_chip_x: int, processor_chip_y: int,
+        processor_id: int, use_run_number: bool = False) -> Optional[TextIO]:
     """
     Check if text reports are needed, and if so initialise the report
     writer to send down to DSG.
@@ -84,8 +91,6 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id,
     :return: the report_writer_object, or `None` if not reporting
     :rtype: ~io.FileIO or None
     """
-    # pylint: disable=too-many-arguments
-
     # check if text reports are needed at all
     if not get_config_bool("Reports", "write_text_specs"):
         return None
@@ -102,7 +107,8 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id,
 
 
 def parse_old_spalloc(
-        spalloc_server, spalloc_port=22244, spalloc_user="unknown user"):
+        spalloc_server: str, spalloc_port: int,
+        spalloc_user: str) -> Tuple[str, int, str]:
     """
     Parse a URL to the old-style service. This may take the form:
 
@@ -126,13 +132,16 @@ def parse_old_spalloc(
     if spalloc_user is None or spalloc_user == "":
         spalloc_user = "unknown user"
     parsed = urlparse(spalloc_server, "spalloc")
-    if parsed.netloc == "":
+    if parsed.netloc == "" or parsed.hostname is None:
         return spalloc_server, spalloc_port, spalloc_user
     return parsed.hostname, (parsed.port or spalloc_port), \
         (parsed.username or spalloc_user)
 
 
-def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
+def retarget_tag(
+        connection: Union[SpallocEIEIOListener, SpallocEIEIOConnection,
+                          SCAMPConnection], x: int, y: int, tag: int,
+        ip_address: Optional[str] = None, strip: bool = True):
     """
     Make a tag deliver to the given connection.
 
@@ -165,7 +174,8 @@ def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
         reprogram_tag(connection, tag, strip)
 
 
-def open_scp_connection(chip_x, chip_y, chip_ip_address):
+def open_scp_connection(
+        chip_x: int, chip_y: int, chip_ip_address: str) -> SCAMPConnection:
     """
     Create an SCP connection to the given Ethernet-enabled chip. SpiNNaker will
     not be configured to map that connection to a tag; that is the
@@ -186,3 +196,18 @@ def open_scp_connection(chip_x, chip_y, chip_ip_address):
         if conn:
             return conn
     return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
+
+
+def pick_core_for_system_placement(
+        system_placements: Placements, chip: Chip) -> int:
+    """
+    Get a core number for use putting a system placement on a chip.
+
+    :param ~pacman.model.placements.Placements system_placements:
+        Already-made system placements
+    :param ~spinn_machine.Chip chip: Chip of interest
+    :return: a core that a system placement could be put on
+    :rtype: int
+    """
+    cores = [p.processor_id for p in chip.processors if not p.is_monitor]
+    return cores[system_placements.n_placements_on_chip(chip.x, chip.y)]

@@ -11,32 +11,40 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
+from typing import Iterable, List, Tuple, TYPE_CHECKING
+from spinn_utilities.overrides import overrides
+from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
+from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
 from .command_sender_machine_vertex import CommandSenderMachineVertex
-from spinn_utilities.overrides import overrides
+if TYPE_CHECKING:
+    from spinn_front_end_common.utility_models import MultiCastCommand
 
 
 class CommandSender(
-        AbstractOneAppOneMachineVertex):
+        AbstractOneAppOneMachineVertex[CommandSenderMachineVertex]):
     """
     A utility for sending commands to a vertex (possibly an external device)
     at fixed times in the simulation or in response to simulation events
     (e.g., starting and stopping).
     """
 
-    def __init__(self, label):
+    def __init__(self, label: str):
         """
         :param str label: The label of this vertex
         """
         super().__init__(
             CommandSenderMachineVertex(label, self), label)
+        self.splitter = SplitterOneAppOneMachine()
 
     def add_commands(
-            self, start_resume_commands, pause_stop_commands,
-            timed_commands, vertex_to_send_to):
+            self, start_resume_commands: Iterable[MultiCastCommand],
+            pause_stop_commands: Iterable[MultiCastCommand],
+            timed_commands: Iterable[MultiCastCommand],
+            vertex_to_send_to: AbstractVertex):
         """
         Add commands to be sent down a given edge.
 
@@ -55,7 +63,7 @@ class CommandSender(
             start_resume_commands, pause_stop_commands, timed_commands,
             vertex_to_send_to)
 
-    def edges_and_partitions(self):
+    def edges_and_partitions(self) -> Tuple[List[ApplicationEdge], List[str]]:
         """
         Construct application edges from this vertex to the app vertices
         that this vertex knows how to target (and has keys allocated for).
@@ -68,5 +76,5 @@ class CommandSender(
             self, ApplicationVertex, ApplicationEdge)
 
     @overrides(AbstractOneAppOneMachineVertex.get_fixed_key_and_mask)
-    def get_fixed_key_and_mask(self, partition_id):
+    def get_fixed_key_and_mask(self, partition_id: str):
         return self._machine_vertex.get_fixed_key_and_mask(partition_id)

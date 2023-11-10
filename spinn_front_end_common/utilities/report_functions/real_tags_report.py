@@ -13,12 +13,13 @@
 # limitations under the License.
 
 import os
+from typing import Any, Iterable
 from spinn_front_end_common.data import FecDataView
 
 _REPORT_FILENAME = "tags_on_machine.txt"
 
 
-def tags_from_machine_report():
+def tags_from_machine_report() -> None:
     """
     Describes what the tags actually present on the machine are.
     """
@@ -31,7 +32,7 @@ def tags_from_machine_report():
             f.write(f"{repr(tag)}\n")
 
 
-def _get_tags():
+def _get_tags() -> Iterable[Any]:
     try:
         return FecDataView.get_transceiver().get_tags()
     except Exception as e:  # pylint: disable=broad-except

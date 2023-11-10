@@ -22,7 +22,7 @@ from .set_reinjection_packet_types_message import (
     SetReinjectionPacketTypesMessage)
 from .set_router_timeout_message import SetRouterTimeoutMessage
 
-__all__ = [
+__all__ = (
     "ClearReinjectionQueueMessage",
     "GetReinjectionStatusMessage",
     "GetReinjectionStatusMessageResponse",
@@ -30,5 +30,4 @@ __all__ = [
     "LoadSystemMCRoutesMessage",
     "ResetCountersMessage",
     "SetReinjectionPacketTypesMessage",
-    "SetRouterTimeoutMessage",
-    ]
+    "SetRouterTimeoutMessage")

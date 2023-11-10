@@ -14,10 +14,12 @@
 
 from collections import deque
 from threading import Lock
+from typing import Deque, Iterable
 import logging
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.command_messages import (
     EventStopRequest, HostSendSequencedData)
+from spinnman.messages.eieio import AbstractEIEIOMessage
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -31,7 +33,7 @@ class BuffersSentDeque(object):
     A tracker of buffers sent / to send for a region
     """
 
-    __slots__ = [
+    __slots__ = (
         #: The region being managed
         "_region",
 
@@ -51,11 +53,10 @@ class BuffersSentDeque(object):
         "_sent_stop_message",
 
         #: The number of sequence numbers allowed in a single transmission
-        "_n_sequences_per_transmission"
-    ]
+        "_n_sequences_per_transmission")
 
-    def __init__(self, region, sent_stop_message=False,
-                 n_sequences_per_tranmission=64):
+    def __init__(self, region: int, sent_stop_message: bool = False,
+                 n_sequences_per_tranmission: int = 64):
         """
         :param int region: The region being managed
         :param bool sent_stop_message: True if the stop message has been sent
@@ -63,7 +64,8 @@ class BuffersSentDeque(object):
             The number of sequences allowed in each transmission set
         """
         self._region = region
-        self._buffers_sent = deque(maxlen=n_sequences_per_tranmission)
+        self._buffers_sent: Deque[HostSendSequencedData] = deque(
+            maxlen=n_sequences_per_tranmission)
         self._sequence_number = 0
         self._sequence_lock = Lock()
         self._last_received_sequence_number = _N_SEQUENCES - 1
@@ -71,7 +73,7 @@ class BuffersSentDeque(object):
         self._n_sequences_per_transmission = n_sequences_per_tranmission
 
     @property
-    def is_full(self):
+    def is_full(self) -> bool:
         """
         Whether the number of messages sent is at the limit for the
         sequencing system.
@@ -80,15 +82,15 @@ class BuffersSentDeque(object):
         """
         return len(self._buffers_sent) >= self._n_sequences_per_transmission
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Determine if there are no messages.
 
-        :rtype: int
+        :rtype: bool
         """
         return len(self._buffers_sent) == 0
 
-    def send_stop_message(self):
+    def send_stop_message(self) -> None:
         """
         Send a message to indicate the end of all the messages.
         """
@@ -96,7 +98,7 @@ class BuffersSentDeque(object):
             self._sent_stop_message = True
             self.add_message_to_send(EventStopRequest())
 
-    def add_message_to_send(self, message):
+    def add_message_to_send(self, message: AbstractEIEIOMessage):
         """
         Add a message to send.  The message is converted to a sequenced
         message.
@@ -105,7 +107,6 @@ class BuffersSentDeque(object):
         :type message:
             ~spinnman.messages.eieio.abstract_messages.AbstractEIEIOMessage
         """
-
         # If full, raise an exception
         if self.is_full:
             raise SpinnFrontEndException("The buffer is full")
@@ -121,7 +122,7 @@ class BuffersSentDeque(object):
         self._buffers_sent.append(sequenced_message)
 
     @property
-    def messages(self):
+    def messages(self) -> Iterable[HostSendSequencedData]:
         """
         The messages that have been added to the set.
 
@@ -130,7 +131,8 @@ class BuffersSentDeque(object):
         """
         return self._buffers_sent
 
-    def update_last_received_sequence_number(self, last_received_sequence_no):
+    def update_last_received_sequence_number(
+            self, last_received_sequence_no: int) -> bool:
         """
         Updates the last received sequence number.  If the sequence number is
         within the valid window, packets before the sequence number within the
@@ -143,7 +145,6 @@ class BuffersSentDeque(object):
         :return: True if update went ahead, False if it was ignored
         :rtype: bool
         """
-
         # The sequence number window is between the last received and
         # the last received + window size, taking account that the end
         # of the window might wrap
@@ -154,18 +155,15 @@ class BuffersSentDeque(object):
 
         if (min_seq_no_acceptable <= last_received_sequence_no <=
                 max_seq_no_acceptable):
-
             # The sequence hasn't wrapped and the sequence is valid
             self._last_received_sequence_number = last_received_sequence_no
             self._remove_messages()
             return True
         elif max_seq_no_acceptable < min_seq_no_acceptable:
-
             # The sequence has wrapped
             if (0 <= last_received_sequence_no <= max_seq_no_acceptable or
                     min_seq_no_acceptable <= last_received_sequence_no <=
                     _N_SEQUENCES):
-
                 # The sequence is in the valid range
                 self._last_received_sequence_number = last_received_sequence_no
                 self._remove_messages()
@@ -174,7 +172,7 @@ class BuffersSentDeque(object):
         # If none of the above match, the sequence is out of the window
         return False
 
-    def _remove_messages(self):
+    def _remove_messages(self) -> None:
         """
         Remove messages that are no longer relevant, based on the last
         sequence number received.

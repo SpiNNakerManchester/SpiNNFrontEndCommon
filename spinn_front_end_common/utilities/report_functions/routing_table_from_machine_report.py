@@ -13,22 +13,22 @@
 # limitations under the License.
 import os
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.report_functions import reports
+from .reports import generate_routing_table
 
 _FOLDER_NAME = "routing_tables_from_machine"
 
 
-def routing_table_from_machine_report(routing_tables):
+def routing_table_from_machine_report(routing_tables: MulticastRoutingTables):
     """
     Report the routing table that was actually on the machine.
 
         folder_name = os.path.join(FecDataView().run_dir_path, _FOLDER_NAME)
         os.mkdir(folder_name)
 
-    :param routing_tables: Compressed routing tables
-    :type routing_tables:
-        ~pacman.model.routing_tables.MulticastRoutingTables
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
+        Compressed routing tables
     :param ~spinnman.transceiver.Transceiver transceiver:
     :param int app_id:
     """
@@ -40,4 +40,4 @@ def routing_table_from_machine_report(routing_tables):
 
     # generate a file for every multicast entry
     for routing_table in progress.over(tables):
-        reports.generate_routing_table(routing_table, folder_name)
+        generate_routing_table(routing_table, folder_name)
