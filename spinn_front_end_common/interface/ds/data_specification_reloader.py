@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import DataSpecException
@@ -23,11 +24,12 @@ class DataSpecificationReloader(DataSpecificationBase):
     Used to reload the data specification data
     """
 
-    __slots__ = []
+    __slots__ = ()
 
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
-            self, region, size, label=None, reference=None):
+            self, region: int, size: int, label: Optional[str] = None,
+            reference: Optional[int] = None):
         original_size = self._ds_db.get_region_size(
             self._x, self._y, self._p, region)
         if original_size != size:
@@ -42,15 +44,16 @@ class DataSpecificationReloader(DataSpecificationBase):
         raise NotImplementedError(
             "reference_memory_region unexpected during reload")
 
-    def _end_write_block(self):
-        if self._content is not None and len(self._content) > 0:
+    def _end_block(self) -> None:
+        if self._region_num is None:
+            raise DataSpecException("region number is unknown?!")
 
-            pointer = self._ds_db.get_region_pointer(
-                self._x, self._y, self._p, self._region_num)
+        pointer = self._ds_db.get_region_pointer(
+            self._x, self._y, self._p, self._region_num)
+        if pointer is None:
+            raise DataSpecException("region pointer is unknown?!")
 
-            self._check_write_block()
+        self._check_write_block()
 
-            FecDataView.write_memory(self._x, self._y, pointer, self._content)
-
-        self._content = bytearray()
-        self._content_debug = ""
+        assert self._content is not None
+        FecDataView.write_memory(self._x, self._y, pointer, self._content)

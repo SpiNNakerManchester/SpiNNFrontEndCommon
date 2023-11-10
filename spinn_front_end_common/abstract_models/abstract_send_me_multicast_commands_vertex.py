@@ -11,8 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from __future__ import annotations
+from typing import Iterable, List, TYPE_CHECKING
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+if TYPE_CHECKING:
+    from spinn_front_end_common.utility_models import MultiCastCommand
+# mypy: disable-error-code=empty-body
 
 
 class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
@@ -28,29 +32,34 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
 
     __slots__ = ()
 
-    @abstractproperty
-    def start_resume_commands(self):
+    @property
+    @abstractmethod
+    def start_resume_commands(self) -> Iterable[MultiCastCommand]:
         """
         The commands needed when starting or resuming simulation.
 
         :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
+        raise NotImplementedError
 
-    @abstractproperty
-    def pause_stop_commands(self):
+    @property
+    @abstractmethod
+    def pause_stop_commands(self) -> Iterable[MultiCastCommand]:
         """
         The commands needed when pausing or stopping simulation.
 
         :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
+        raise NotImplementedError
 
-    @abstractproperty
-    def timed_commands(self):
+    @property
+    @abstractmethod
+    def timed_commands(self) -> List[MultiCastCommand]:
         """
         The commands to be sent at given times in the simulation.
 
-        :rtype:
-            iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
+        :rtype: list(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
+        raise NotImplementedError

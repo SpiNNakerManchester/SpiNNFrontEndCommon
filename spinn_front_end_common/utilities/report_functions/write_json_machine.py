@@ -14,15 +14,20 @@
 
 import json
 import os
-from spinn_utilities.progress_bar import ProgressBar
+from typing import Optional
+from spinn_utilities.progress_bar import ProgressBar, DummyProgressBar
 from spinn_machine.json_machine import to_json
 from pacman.utilities import file_format_schemas
 from spinn_front_end_common.data import FecDataView
 
+#: The name of the generated JSON machine description file.
+#: Also the name of the schema that we validate against.
 MACHINE_FILENAME = "machine.json"
 
 
-def write_json_machine(json_folder=None, progress_bar=True, validate=True):
+def write_json_machine(
+        json_folder: Optional[str] = None, progress_bar: bool = True,
+        validate: bool = True) -> str:
     """
     Runs the code to write the machine in Java readable JSON.
 
@@ -35,33 +40,26 @@ def write_json_machine(json_folder=None, progress_bar=True, validate=True):
     :return: the name of the generated file
     :rtype: str
     """
-    if progress_bar:
-        # Steps are tojson, validate and writefile
-        progress = ProgressBar(3, "Converting to JSON machine")
-    else:
-        progress = None
-    if json_folder is None:
-        json_folder = FecDataView.get_json_dir_path()
+    json_folder = json_folder or FecDataView.get_json_dir_path()
     file_path = os.path.join(json_folder, MACHINE_FILENAME)
     if not os.path.exists(file_path):
-        json_obj = to_json()
-
-        if progress:
+        with _progress(progress_bar) as progress:
+            # Step 1: generate
+            json_obj = to_json()
             progress.update()
-
-        if validate:
-            # validate the schema
-            file_format_schemas.validate(json_obj, MACHINE_FILENAME)
-
-        # update and complete progress bar
-        if progress:
-            progress.end()
-
-        # dump to json file
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(json_obj, f)
-
-    if progress:
-        progress.end()
-
+            # Step 2: validate against the schema
+            if validate:
+                file_format_schemas.validate(json_obj, MACHINE_FILENAME)
+            progress.update()
+            # Step 3: dump to json file
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(json_obj, f)
     return file_path
+
+
+def _progress(progress_bar: bool) -> ProgressBar:
+    # Steps are tojson, validate and writefile
+    if progress_bar:
+        return ProgressBar(3, "Converting to JSON machine")
+    else:
+        return DummyProgressBar(3, "Converting to JSON machine")

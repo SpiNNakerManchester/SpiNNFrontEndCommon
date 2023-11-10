@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sqlite3
+from sqlite3 import Binary, IntegrityError
 import time
-from spinnman.spalloc.spalloc_job import SpallocJob
+from typing import Optional, Tuple
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
@@ -42,9 +42,9 @@ class BufferDatabase(BaseDatabase):
         Threads can access different DBs just fine.
     """
 
-    __slots__ = []
+    __slots__ = ()
 
-    def clear_region(self, x, y, p, region):
+    def clear_region(self, x: int, y: int, p: int, region: int) -> bool:
         """
         Clears the data for a single region.
 
@@ -81,7 +81,7 @@ class BufferDatabase(BaseDatabase):
             """, locus)
         return True
 
-    def _read_contents(self, region_id):
+    def _read_contents(self, region_id: int) -> memoryview:
         """
         :param int region_id:
         :rtype: memoryview
@@ -124,7 +124,7 @@ class BufferDatabase(BaseDatabase):
             data = c_buffer
         return memoryview(data)
 
-    def _get_region_id(self, x, y, p, region):
+    def _get_region_id(self, x: int, y: int, p: int, region: int) -> int:
         """
         :param int x:
         :param int y:
@@ -146,9 +146,13 @@ class BufferDatabase(BaseDatabase):
                 core_id, local_region_index, content, content_len, fetches)
             VALUES(?, ?, CAST('' AS BLOB), 0, 0)
             """, (core_id, region))
-        return self.lastrowid
+        region_id = self.lastrowid
+        assert region_id is not None
+        return region_id
 
-    def store_data_in_region_buffer(self, x, y, p, region, missing, data):
+    def store_data_in_region_buffer(
+            self, x: int, y: int, p: int, region: int, missing: bool,
+            data: bytes):
         """
         Store some information in the corresponding buffer for a
         specific chip, core and recording region.
@@ -163,10 +167,9 @@ class BufferDatabase(BaseDatabase):
             .. note::
                     Must be shorter than 1GB
         """
-
         # pylint: disable=too-many-arguments, unused-argument
         # TODO: Use missing
-        datablob = sqlite3.Binary(data)
+        datablob = Binary(data)
         region_id = self._get_region_id(x, y, p, region)
         if self.__use_main_table(region_id):
             self.execute(
@@ -195,7 +198,7 @@ class BufferDatabase(BaseDatabase):
                 """, (region_id, datablob, len(data)))
         assert self.rowcount == 1
 
-    def __use_main_table(self, region_id):
+    def __use_main_table(self, region_id: int) -> bool:
         """
         :param int region_id:
         """
@@ -209,7 +212,8 @@ class BufferDatabase(BaseDatabase):
             return existing == 1
         return False
 
-    def get_region_data(self, x, y, p, region):
+    def get_region_data(self, x: int, y: int, p: int, region: int) -> Tuple[
+            memoryview, bool]:
         """
         Get the data stored for a given region of a given core.
 
@@ -235,26 +239,20 @@ class BufferDatabase(BaseDatabase):
         except LookupError:
             return memoryview(b''), True
 
-    def write_session_credentials_to_db(self):
+    def write_session_credentials_to_db(self) -> None:
         """
         Write Spalloc session credentials to the database if in use.
         """
-        # pylint: disable=protected-access
-        if not FecDataView.has_allocation_controller():
-            return
-        mac = FecDataView.get_allocation_controller()
-        if mac.proxying:
-            # This is now assumed to be a SpallocJobController;
-            # can't check that because of import circularity.
-            job = mac._job
-            if isinstance(job, SpallocJob):
-                config = job.get_session_credentials_for_db()
-                self.executemany("""
-                    INSERT INTO proxy_configuration(kind, name, value)
-                    VALUES(?, ?, ?)
-                    """, [(k1, k2, v) for (k1, k2), v in config.items()])
+        job = FecDataView.get_spalloc_job()
+        if job is not None:
+            config = job.get_session_credentials_for_db()
+            self.executemany(
+                """
+                INSERT INTO proxy_configuration(kind, name, value)
+                VALUES(?, ?, ?)
+                """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
-    def _set_core_name(self, x, y, p, core_name):
+    def _set_core_name(self, x: int, y: int, p: int, core_name: Optional[str]):
         """
         :param int x:
         :param int y:
@@ -267,17 +265,17 @@ class BufferDatabase(BaseDatabase):
                 INSERT INTO core (x, y, processor, core_name)
                 VALUES (?, ?, ? ,?)
                 """, (x, y, p, core_name))
-        except sqlite3.IntegrityError:
+        except IntegrityError:
             self.execute(
                 """
                 UPDATE core SET core_name = ?
                 WHERE x = ? AND y = ? and processor = ?
                 """, (core_name, x, y, p))
 
-    def store_vertex_labels(self):
+    def store_vertex_labels(self) -> None:
         for placement in FecDataView.iterate_placemements():
-            self._set_core_name(placement.x, placement.y,
-                                placement.p, placement.vertex.label)
+            self._set_core_name(
+                placement.x, placement.y, placement.p, placement.vertex.label)
         for chip in FecDataView.get_machine().chips:
             for processor in chip.processors:
                 if processor.is_monitor:
@@ -285,7 +283,7 @@ class BufferDatabase(BaseDatabase):
                         chip.x, chip.y, processor.processor_id,
                         f"SCAMP(OS)_{chip.x}:{chip.y}")
 
-    def get_core_name(self, x, y, p):
+    def get_core_name(self, x: int, y: int, p: int) -> Optional[str]:
         for row in self.execute(
                 """
                 SELECT core_name
@@ -293,3 +291,4 @@ class BufferDatabase(BaseDatabase):
                 WHERE x = ? AND y = ? and processor = ?
                 """, (x, y, p)):
             return str(row["core_name"], 'utf8')
+        return None

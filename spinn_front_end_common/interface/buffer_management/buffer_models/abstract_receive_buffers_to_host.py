@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Sequence
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
+from pacman.model.placements import Placement
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(MachineVertex)
@@ -27,16 +29,17 @@ class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def get_recorded_region_ids(self):
+    def get_recorded_region_ids(self) -> Sequence[int]:
         """
         Get the recording region IDs that have been recorded using buffering.
 
         :return: The region numbers that have active recording
         :rtype: iterable(int)
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def get_recording_region_base_address(self, placement):
+    def get_recording_region_base_address(self, placement: Placement) -> int:
         """
         Get the recording region base address.
 
@@ -45,3 +48,4 @@ class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
         :return: the base address of the recording region
         :rtype: int
         """
+        raise NotImplementedError

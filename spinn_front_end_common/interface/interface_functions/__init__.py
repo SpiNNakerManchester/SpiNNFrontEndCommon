@@ -58,7 +58,7 @@ from .sdram_outgoing_partition_allocator import (
 from .command_sender_adder import add_command_senders
 
 
-__all__ = [
+__all__ = (
     "application_finisher", "application_runner", "chip_io_buf_clearer",
     "chip_io_buf_extractor", "chip_provenance_updater",
     "chip_runtime_updater", "create_notification_protocol",
@@ -81,5 +81,4 @@ __all__ = [
     "routing_table_loader", "sdram_outgoing_partition_allocator",
     "spalloc_allocator",
     "system_multicast_routing_generator", "tags_loader",
-    "virtual_machine_generator", "add_command_senders"
-]
+    "virtual_machine_generator", "add_command_senders")

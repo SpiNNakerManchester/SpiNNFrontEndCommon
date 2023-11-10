@@ -13,12 +13,13 @@
 # limitations under the License.
 
 import struct
+from typing import Sequence, Tuple
 from .dpri_flags import DPRIFlags
 
 _PATTERN = struct.Struct("<IIIIIIIIII")
 
 
-def _decode_router_timeout_value(value):
+def _decode_router_timeout_value(value: int) -> int:
     """
     Get the timeout value of a router in ticks, given an 8-bit floating
     point value stored in an int (!)
@@ -39,46 +40,37 @@ class ReInjectionStatus(object):
     """
 
     __slots__ = (
-
         # The WAIT1 timeout value of the router in cycles
         "_wait1_timeout",
-
         # The WAIT2 timeout value of the router in cycles
         "_wait2_timeout",
 
         # The number of packets dropped by the router and received by\
         # the re injection functionality (may not fit in the queue though)
         "_n_dropped_packets",
-
         # The number of times that when a dropped packet was read it was\
         #    found that another one or more packets had also been dropped,\
         #    but had been missed
         "_n_missed_dropped_packets",
-
         # Of the n_dropped_packets received, how many were lost due to not\
         #    having enough space in the queue of packets to reinject
         "_n_dropped_packet_overflows",
-
         # Of the n_dropped_packets received, how many packets were\
         #    successfully re-injected
         "_n_reinjected_packets",
-
         # The number of times that when a dropped packet was caused due to\
         # a link failing to take the packet.
         "_n_link_dumps",
-
         # The number of times that when a dropped packet was caused due to\
         # a processor failing to take the packet.
         "_n_processor_dumps",
 
         # the flags that states which types of packets were being recorded
         "_flags",
-
         # Indicates the links or processors dropped from
-        "_link_proc_bits"
-    )
+        "_link_proc_bits")
 
-    def __init__(self, data, offset):
+    def __init__(self, data: bytes, offset: int):
         """
         :param bytes data: The data containing the information
         :param int offset: The offset in the data where the information starts
@@ -90,7 +82,7 @@ class ReInjectionStatus(object):
          self._link_proc_bits) = _PATTERN.unpack_from(data, offset)
 
     @property
-    def router_wait1_timeout(self):
+    def router_wait1_timeout(self) -> int:
         """
         The WAIT1 timeout value of the router, in cycles.
 
@@ -99,7 +91,7 @@ class ReInjectionStatus(object):
         return _decode_router_timeout_value(self._wait1_timeout)
 
     @property
-    def router_wait1_timeout_parameters(self):
+    def router_wait1_timeout_parameters(self) -> Tuple[int, int]:
         """
         The WAIT1 timeout value of the router as mantissa and exponent.
 
@@ -110,7 +102,7 @@ class ReInjectionStatus(object):
         return mantissa, exponent
 
     @property
-    def router_wait2_timeout(self):
+    def router_wait2_timeout(self) -> int:
         """
         The WAIT2 timeout value of the router, in cycles.
 
@@ -119,7 +111,7 @@ class ReInjectionStatus(object):
         return _decode_router_timeout_value(self._wait2_timeout)
 
     @property
-    def router_wait2_timeout_parameters(self):
+    def router_wait2_timeout_parameters(self) -> Tuple[int, int]:
         """
         The WAIT2 timeout value of the router as mantissa and exponent.
 
@@ -130,7 +122,7 @@ class ReInjectionStatus(object):
         return mantissa, exponent
 
     @property
-    def n_dropped_packets(self):
+    def n_dropped_packets(self) -> int:
         """
         The number of packets dropped by the router and received by
         the reinjection functionality (may not fit in the queue though).
@@ -140,7 +132,7 @@ class ReInjectionStatus(object):
         return self._n_dropped_packets
 
     @property
-    def n_missed_dropped_packets(self):
+    def n_missed_dropped_packets(self) -> int:
         """
         The number of times that when a dropped packet was read it was
         found that another one or more packets had also been dropped,
@@ -151,7 +143,7 @@ class ReInjectionStatus(object):
         return self._n_missed_dropped_packets
 
     @property
-    def n_dropped_packet_overflows(self):
+    def n_dropped_packet_overflows(self) -> int:
         """
         Of the n_dropped_packets received, how many were lost due to not
         having enough space in the queue of packets to reinject.
@@ -161,7 +153,7 @@ class ReInjectionStatus(object):
         return self._n_dropped_packet_overflows
 
     @property
-    def n_processor_dumps(self):
+    def n_processor_dumps(self) -> int:
         """
         The number of times that when a dropped packet was caused due to
         a processor failing to take the packet.
@@ -171,7 +163,7 @@ class ReInjectionStatus(object):
         return self._n_processor_dumps
 
     @property
-    def n_link_dumps(self):
+    def n_link_dumps(self) -> int:
         """
         The number of times that when a dropped packet was caused due to
         a link failing to take the packet.
@@ -181,7 +173,7 @@ class ReInjectionStatus(object):
         return self._n_link_dumps
 
     @property
-    def n_reinjected_packets(self):
+    def n_reinjected_packets(self) -> int:
         """
         Of the n_dropped_packets received, how many packets were
         successfully re-injected.
@@ -190,11 +182,11 @@ class ReInjectionStatus(object):
         """
         return self._n_reinjected_packets
 
-    def _flag_set(self, flag):
+    def _flag_set(self, flag: DPRIFlags) -> bool:
         return (self._flags & flag.value) != 0
 
     @property
-    def is_reinjecting_multicast(self):
+    def is_reinjecting_multicast(self) -> bool:
         """
         True if re-injection of multicast packets is enabled.
 
@@ -203,7 +195,7 @@ class ReInjectionStatus(object):
         return self._flag_set(DPRIFlags.MULTICAST)
 
     @property
-    def is_reinjecting_point_to_point(self):
+    def is_reinjecting_point_to_point(self) -> bool:
         """
         True if re-injection of point-to-point packets is enabled.
 
@@ -212,7 +204,7 @@ class ReInjectionStatus(object):
         return self._flag_set(DPRIFlags.POINT_TO_POINT)
 
     @property
-    def is_reinjecting_nearest_neighbour(self):
+    def is_reinjecting_nearest_neighbour(self) -> bool:
         """
         True if re-injection of nearest neighbour packets is enabled.
 
@@ -221,7 +213,7 @@ class ReInjectionStatus(object):
         return self._flag_set(DPRIFlags.NEAREST_NEIGHBOUR)
 
     @property
-    def is_reinjecting_fixed_route(self):
+    def is_reinjecting_fixed_route(self) -> bool:
         """
         True if re-injection of fixed-route packets is enabled.
 
@@ -230,11 +222,11 @@ class ReInjectionStatus(object):
         return self._flag_set(DPRIFlags.FIXED_ROUTE)
 
     @property
-    def links_dropped_from(self):
+    def links_dropped_from(self) -> Sequence[int]:
         return [
             link for link in range(6) if self._link_proc_bits & (1 << link)]
 
     @property
-    def processors_dropped_from(self):
+    def processors_dropped_from(self) -> Sequence[int]:
         return [
             p for p in range(18) if self._link_proc_bits & (1 << p + 6)]

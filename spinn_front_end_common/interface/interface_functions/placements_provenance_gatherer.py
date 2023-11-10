@@ -14,24 +14,27 @@
 
 import logging
 import traceback
+from typing import Iterable, List
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.placements import Placement
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def placements_provenance_gatherer(n_placements, placements):
+def placements_provenance_gatherer(
+        n_placements: int, placements: Iterable[Placement]):
     """
-    Gets provenance information from placements.
+    Gets provenance information from the specified placements.
 
     :param int n_placements: Number of placements to gather
     :param iterator(~pacman.model.placements.Placement) placements:
         The placements of the vertices to gather data form.
         May not be all placements so don't use View
     """
-    errors = list()
+    errors: List[str] = list()
 
     progress = ProgressBar(n_placements, "Getting provenance data")
 
@@ -44,7 +47,7 @@ def placements_provenance_gatherer(n_placements, placements):
             logger.warning("{}", error)
 
 
-def _add_placement_provenance(placement, errors):
+def _add_placement_provenance(placement: Placement, errors: List[str]):
     """
     :param ~.Placement placement:
     :param list(str) errors:
@@ -55,6 +58,5 @@ def _add_placement_provenance(placement, errors):
         # get data
         try:
             placement.vertex.get_provenance_data_from_machine(placement)
-
         except Exception:  # pylint: disable=broad-except
             errors.append(traceback.format_exc())

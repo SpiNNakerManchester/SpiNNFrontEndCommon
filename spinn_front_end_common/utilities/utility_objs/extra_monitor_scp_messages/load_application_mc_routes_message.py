@@ -21,15 +21,14 @@ from spinnman.model.enums import SDP_PORTS
 from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 
-class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
+class LoadApplicationMCRoutesMessage(AbstractSCPRequest[CheckOKResponse]):
     """
     An SCP Request to write the application multicast routes into the router.
     """
 
-    __slots__ = (
-    )
+    __slots__ = ()
 
-    def __init__(self, x, y, p):
+    def __init__(self, x: int, y: int, p: int):
         """
         :param int x: The x-coordinate of a chip, between 0 and 255
         :param int y: The y-coordinate of a chip, between 0 and 255
@@ -47,7 +46,7 @@ class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
                 command=SpeedupInSCPCommands.LOAD_APPLICATION_MC_ROUTES))
 
     @overrides(AbstractSCPRequest.get_scp_response)
-    def get_scp_response(self):
+    def get_scp_response(self) -> CheckOKResponse:
         return CheckOKResponse(
             "load application multicast routes",
             SpeedupInSCPCommands.LOAD_APPLICATION_MC_ROUTES)

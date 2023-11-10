@@ -14,7 +14,10 @@
 
 from collections import defaultdict
 import sys
+from typing import Dict, Tuple
+from spinn_utilities.typing.coords import XY
 from spinnman.model.enums import ExecutableType
+from pacman.model.placements import Placements
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
@@ -23,7 +26,7 @@ class FindApplicationChipsUsed(object):
     Builds a set of stats on how many chips were used for application cores.
     """
 
-    def __call__(self, placements):
+    def __call__(self, placements: Placements) -> Tuple[int, int, int, float]:
         """
         Finds how many application chips there were and the cost on each chip
 
@@ -37,7 +40,28 @@ class FindApplicationChipsUsed(object):
 
         :rtype: tuple(int,int,int,float)
         """
-        chips_used = defaultdict(int)
+        chips_used = self._get_chips_used(placements)
+
+        low = sys.maxsize
+        high = 0
+        total = 0
+        n_chips_used = len(chips_used)
+
+        for count in chips_used.values():
+            if count < low:
+                low = count
+            if count > high:
+                high = count
+            total += count
+        average = total / n_chips_used
+        return n_chips_used, high, low, average
+
+    def _get_chips_used(self, placements: Placements) -> Dict[XY, int]:
+        """
+        :param ~.Placements placements:
+        :rtype: dict(tuple(int,int), int)
+        """
+        chips_used: Dict[XY, int] = defaultdict(int)
         for placement in placements:
             # find binary type if applicable
             binary_start_type = None
@@ -45,17 +69,4 @@ class FindApplicationChipsUsed(object):
                 binary_start_type = placement.vertex.get_binary_start_type()
             if binary_start_type != ExecutableType.SYSTEM:
                 chips_used[placement.x, placement.y] += 1
-
-        low = sys.maxsize
-        high = 0
-        total = 0
-        n_chips_used = len(chips_used)
-
-        for key in chips_used:
-            if chips_used[key] < low:
-                low = chips_used[key]
-            if chips_used[key] > high:
-                high = chips_used[key]
-            total += chips_used[key]
-        average = total / n_chips_used
-        return n_chips_used, high, low, average
+        return chips_used
