@@ -16,6 +16,7 @@ import logging
 import os
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.routing_compression_checker import (
     codify_table, compare_route)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
@@ -24,12 +25,12 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def generate_routing_compression_checker_report(
-        routing_tables, compressed_routing_tables):
+        routing_tables: MulticastRoutingTables,
+        compressed_routing_tables: MulticastRoutingTables) -> None:
     """
     Make a full report of how the compressed covers all routes in the
     and uncompressed routing table.
 
-    :param str report_folder: the folder to store the resulting report
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the original routing tables
     :param compressed_routing_tables: the compressed routing tables
@@ -53,12 +54,12 @@ def generate_routing_compression_checker_report(
                     "\t\tCompressed Route\n\n")
 
             for original in progress.over(routing_tables.routing_tables):
-                x = original.x
-                y = original.y
+                x, y = original.x, original.y
                 f.write(f"Chip: X:{x} Y:{y}\n")
 
                 compressed_table = compressed_routing_tables.\
                     get_routing_table_for_chip(x, y)
+                assert compressed_table is not None
                 compressed_dict = codify_table(compressed_table)
                 for o_route in original.multicast_routing_entries:
                     f.write(f"\t{format_route(o_route)}\n")

@@ -24,7 +24,7 @@ from spinn_front_end_common.utilities.exceptions import (
 _ONE_WORD = struct.Struct("<I")
 
 
-def application_finisher():
+def application_finisher() -> None:
     """
     Handles finishing the running of an application, collecting the
     status of the cores that the application was running on.
@@ -36,47 +36,39 @@ def application_finisher():
     all_core_subsets = FecDataView.get_executable_types()[
         ExecutableType.USES_SIMULATION_INTERFACE]
     total_processors = len(all_core_subsets)
+    last_finished_count = 0
 
-    progress = ProgressBar(
-        total_processors,
-        "Turning off all the cores within the simulation")
+    with ProgressBar(
+            total_processors,
+            "Turning off all the cores within the simulation") as progress:
+        # check that the right number of processors are finished
+        while (processors_finished := txrx.get_core_state_count(
+                app_id, CPUState.FINISHED)) != total_processors:
+            if processors_finished > last_finished_count:
+                progress.update(processors_finished - last_finished_count)
+                last_finished_count = processors_finished
 
-    # check that the right number of processors are finished
-    processors_finished = txrx.get_core_state_count(
-        app_id, CPUState.FINISHED)
-    finished_cores = processors_finished
+            processors_rte = txrx.get_core_state_count(
+                app_id, CPUState.RUN_TIME_EXCEPTION)
+            processors_watchdogged = txrx.get_core_state_count(
+                app_id, CPUState.WATCHDOG)
 
-    while processors_finished != total_processors:
-        if processors_finished > finished_cores:
-            progress.update(processors_finished - finished_cores)
-            finished_cores = processors_finished
+            if processors_rte > 0 or processors_watchdogged > 0:
+                raise ExecutableFailedToStopException(
+                    f"{processors_rte + processors_watchdogged} of "
+                    f"{total_processors} processors went into an error state "
+                    "when shutting down")
 
-        processors_rte = txrx.get_core_state_count(
-            app_id, CPUState.RUN_TIME_EXCEPTION)
-        processors_watchdogged = txrx.get_core_state_count(
-            app_id, CPUState.WATCHDOG)
+            successful_cores_finished = txrx.get_cpu_infos(
+                all_core_subsets, CPUState.FINISHED, include=True)
 
-        if processors_rte > 0 or processors_watchdogged > 0:
-            raise ExecutableFailedToStopException(
-                f"{processors_rte + processors_watchdogged} of "
-                f"{total_processors} processors went into an error state "
-                "when shutting down")
+            txrx.send_signal(app_id, Signal.SYNC0)
+            txrx.send_signal(app_id, Signal.SYNC1)
 
-        successful_cores_finished = txrx.get_cpu_infos(
-            all_core_subsets, CPUState.FINISHED, True)
-
-        txrx.send_signal(app_id, Signal.SYNC0)
-        txrx.send_signal(app_id, Signal.SYNC1)
-
-        for core_subset in all_core_subsets:
-            for processor in core_subset.processor_ids:
-                if not successful_cores_finished.is_core(
-                        core_subset.x, core_subset.y, processor):
-                    txrx.update_provenance_and_exit(
-                        core_subset.x, core_subset.y, processor)
-        time.sleep(0.5)
-
-        processors_finished = txrx.get_core_state_count(
-            app_id, CPUState.FINISHED)
-
-    progress.end()
+            for core_subset in all_core_subsets:
+                for processor in core_subset.processor_ids:
+                    if not successful_cores_finished.is_core(
+                            core_subset.x, core_subset.y, processor):
+                        txrx.update_provenance_and_exit(
+                            core_subset.x, core_subset.y, processor)
+            time.sleep(0.5)

@@ -15,6 +15,8 @@
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
+from pacman.model.placements import Placement
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(MachineVertex)
@@ -26,7 +28,7 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def bit_field_base_address(self, placement):
+    def bit_field_base_address(self, placement: Placement) -> int:
         """
         Returns the SDRAM address for the bit field table data.
 
@@ -34,9 +36,10 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
         :return: the SDRAM address for the bitfield address
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def bit_field_builder_region(self, placement):
+    def bit_field_builder_region(self, placement: Placement) -> int:
         """
         Returns the SDRAM address for the bit field builder data.
 
@@ -44,3 +47,4 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
         :return: the SDRAM address for the bitfield builder data
         :rtype: int
         """
+        raise NotImplementedError

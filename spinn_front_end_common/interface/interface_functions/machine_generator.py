@@ -12,21 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import re
-
+from typing import Dict, List, Optional, Tuple
 from spinn_utilities.log import FormatAdapter
-from spinnman.transceiver import create_transceiver_from_hostname
+from spinn_utilities.typing.coords import XY
+from spinn_machine import Machine
+from spinnman.transceiver import create_transceiver_from_hostname, Transceiver
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-import logging
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def machine_generator(
-        bmp_details, board_version, auto_detect_bmp,
-        scamp_connection_data, reset_machine_on_start_up):
+        bmp_details: Optional[str], board_version: Optional[int],
+        auto_detect_bmp: bool, scamp_connection_data: Optional[Dict[XY, str]],
+        reset_machine_on_start_up: bool) -> Tuple[Machine, Transceiver]:
     """
     Makes a transceiver and a machine object.
 
@@ -41,14 +44,10 @@ def machine_generator(
     :type scamp_connection_data:
         dict((int,int), str) or None
     :param bool reset_machine_on_start_up:
-    :param MachineAllocationController allocation_controller:
-        The allocation controller; in some cases, we delegate the creation of
-        the transceiver to it.
     :return: Transceiver, and description of machine it is connected to
     :rtype: tuple(~spinn_machine.Machine,
         ~spinnman.transceiver.Transceiver)
     """
-    # pylint: disable=too-many-arguments
     if FecDataView.has_allocation_controller():
         # If there is an allocation controller and it wants to make a
         # transceiver for us, we let it do so; transceivers obtained that way
@@ -68,6 +67,8 @@ def machine_generator(
         raise ConfigurationException(
             "Please set a machine version number in the "
             "corresponding configuration (cfg) file")
+
+    # do auto boot if possible
     if scamp_connection_data:
         txrx.add_scamp_connections(scamp_connection_data)
     else:
@@ -75,7 +76,7 @@ def machine_generator(
     return txrx.get_machine_details(), txrx
 
 
-def _parse_bmp_cabinet_and_frame(bmp_str):
+def _parse_bmp_cabinet_and_frame(bmp_str: str) -> Tuple[str, Optional[str]]:
     """
     :param str bmp_str:
     :rtype: tuple(str, str or None)
@@ -89,7 +90,7 @@ def _parse_bmp_cabinet_and_frame(bmp_str):
     return host[0], host[1]
 
 
-def _parse_bmp_boards(bmp_boards):
+def _parse_bmp_boards(bmp_boards: str) -> List[int]:
     """
     :param str bmp_boards:
     :rtype: list(int)
@@ -104,7 +105,7 @@ def _parse_bmp_boards(bmp_boards):
     return [int(board) for board in bmp_boards.split(",")]
 
 
-def _parse_bmp_connection(bmp_detail):
+def _parse_bmp_connection(bmp_detail: str) -> BMPConnectionData:
     """
     Parses one item of BMP connection data. Maximal format:
     `cabinet;frame;host,port/boards`
@@ -119,11 +120,12 @@ def _parse_bmp_connection(bmp_detail):
     (hostname, port_num) = _parse_bmp_cabinet_and_frame(pieces[0])
     # if there is no split, then assume its one board, located at 0
     boards = [0] if len(pieces) == 1 else _parse_bmp_boards(pieces[1])
-    port_num = None if port_num is None else int(port_num)
-    return BMPConnectionData(hostname, boards, port_num)
+    port = None if port_num is None else int(port_num)
+    return BMPConnectionData(hostname, boards, port)
 
 
-def _parse_bmp_details(bmp_string):
+def _parse_bmp_details(
+        bmp_string: Optional[str]) -> Optional[BMPConnectionData]:
     """
     Take a BMP line (a colon-separated list) and split it into the
     BMP connection data.

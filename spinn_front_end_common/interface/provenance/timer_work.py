@@ -35,13 +35,14 @@ class TimerWork(Enum):
     EXTRACT_DATA = (auto(), "Extracting")
     REPORT = (auto(), "Reporting")
 
-    def __new__(cls, value, work_name):
-        # pylint: disable=protected-access
+    def __new__(cls, *args) -> 'TimerWork':
         obj = object.__new__(cls)
-        obj._value_ = value
-        obj._work_name = work_name
+        obj._value_ = args[0]
         return obj
 
+    def __init__(self, __, work_name: str):
+        self._work_name = work_name
+
     @property
-    def work_name(self):
+    def work_name(self) -> str:
         return self._work_name

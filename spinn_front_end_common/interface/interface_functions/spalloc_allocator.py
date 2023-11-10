@@ -70,6 +70,10 @@ class SpallocJobController(MachineAllocationController):
         self.__use_proxy = use_proxy
         super().__init__("SpallocJobController")
 
+    @property
+    def job(self) -> SpallocJob:
+        return self._job
+
     @overrides(MachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time: float):
         # Does Nothing in this allocator - machines are held until exit
@@ -246,7 +250,7 @@ class _OldSpallocJobController(MachineAllocationController):
         return self._state != JobState.destroyed
 
     @overrides(MachineAllocationController._teardown)
-    def _teardown(self):
+    def _teardown(self) -> None:
         if not self._exited:
             self._job.close()
         super()._teardown()

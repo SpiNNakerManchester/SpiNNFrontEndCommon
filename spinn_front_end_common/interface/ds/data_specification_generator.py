@@ -12,9 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional, Union, cast
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.utilities.exceptions import DataSpecException
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification,
+    AbstractRewritesDataSpecification, AbstractHasAssociatedBinary)
 from .data_specification_base import DataSpecificationBase
+from .ds_sqllite_database import DsSqlliteDatabase
 
 
 class DataSpecificationGenerator(DataSpecificationBase):
@@ -22,19 +28,24 @@ class DataSpecificationGenerator(DataSpecificationBase):
     Used to generate the data specification data in the database
     """
 
-    __slots__ = []
+    __slots__ = ()
 
-    def __init__(self, x, y, p, vertex, ds_db, report_writer=None):
+    def __init__(
+            self, x: int, y: int, p: int,
+            vertex: Union[
+                AbstractGeneratesDataSpecification,
+                AbstractRewritesDataSpecification],
+            ds_db: DsSqlliteDatabase, report_writer=None):
         """
-
         :param int x:
         :param int y:
         :param int p:
         :param vertex:
+            The vertex being written.
         :type vertex:
             ~spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification
-        :type  ds_db:
-            ~spinn_front_end_common.interface.ds.DataSpecificationGenerator
+        :type ds_db:
+            ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
         :param report_writer:
             Determines if a text version of the specification is to be
             written and, if so, where. No report is written if this is `None`.
@@ -50,20 +61,17 @@ class DataSpecificationGenerator(DataSpecificationBase):
             Even if with the same vertex
         """
         super().__init__(x, y, p, ds_db, report_writer)
-        ds_db.set_core(x, y, p, vertex)
+        ds_db.set_core(x, y, p, cast(AbstractHasAssociatedBinary, vertex))
 
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
-            self, region, size, label=None, reference=None):
-        if self._report_writer is not None:
-            cmd_string = f"RESERVE memRegion={region:d} size={size:d}"
-            if label is not None:
-                cmd_string += f" label='{label}'"
-            if reference is not None:
-                cmd_string += f" REF {reference:d}"
-            cmd_string += "\n"
-            self._report_writer.write(cmd_string)
+            self, region: int, size: int, label: Optional[str] = None,
+            reference: Optional[int] = None):
+        self._report("RESERVE memRegion=", region, " size=", size,
+                     (f" label='{label}'" if label else None),
+                     (f" REF {reference}" if reference is not None else None))
 
+        # Round up the size
         if size % BYTES_PER_WORD != 0:
             size = size + (BYTES_PER_WORD - (size % BYTES_PER_WORD))
 
@@ -71,26 +79,21 @@ class DataSpecificationGenerator(DataSpecificationBase):
             self._x, self._y, self._p, region, size, reference, label)
 
     @overrides(DataSpecificationBase.reference_memory_region)
-    def reference_memory_region(self, region, ref, label=None):
-        if self._report_writer is not None:
-            cmd_string = f"REFERENCE memRegion={region:d} ref={ref:d}"
-            if label is not None:
-                cmd_string += f" label='{label}'"
-            cmd_string += "\n"
-            self._report_writer.write(cmd_string)
+    def reference_memory_region(
+            self, region: int, ref: int, label: Optional[str] = None):
+        self._report("REFERENCE memRegion=", region, " ref=", ref,
+                     (f" label='{label}'" if label else None))
 
         self._ds_db.set_reference(
             self._x, self._y, self._p, region, ref, label)
 
-    def _end_write_block(self):
-        if self._content is not None and len(self._content) > 0:
+    def _end_block(self) -> None:
+        # Safety check if in debug mode
+        self._check_write_block()
+        assert self._content is not None
+        if self._region_num is None:
+            raise DataSpecException("region number is unknown?!")
 
-            # Safety check if in debug mode
-            self._check_write_block()
-
-            self._ds_db.set_region_content(
-                self._x, self._y, self._p, self._region_num,
-                self._content, self._content_debug)
-
-        self._content = bytearray()
-        self._content_debug = ""
+        self._ds_db.set_region_content(
+            self._x, self._y, self._p, self._region_num,
+            self._content, self._content_debug)

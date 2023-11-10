@@ -22,7 +22,7 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 
 class TestJavaCaller(unittest.TestCase):
 
-    def setUp(cls):
+    def setUp(self):
         unittest_setup()
 
     def test_creation(self):

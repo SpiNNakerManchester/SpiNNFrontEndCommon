@@ -17,7 +17,7 @@ import os
 from sqlite3 import OperationalError
 from spinn_utilities.log import FormatAdapter
 from datetime import timedelta
-from testfixtures.logcapture import LogCapture
+from testfixtures.logcapture import LogCapture  # type: ignore[import]
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup

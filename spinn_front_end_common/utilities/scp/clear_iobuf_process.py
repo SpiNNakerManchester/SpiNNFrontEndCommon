@@ -12,19 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
+from typing import Optional
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets
 from spinnman.messages.sdp import SDPHeader, SDPFlag
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.impl import CheckOKResponse
-from spinnman.model.enums import (
-    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinnman.processes import AbstractMultiConnectionProcess
+from spinnman.model.enums import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
 
 
-class _ClearIOBUFRequest(AbstractSCPRequest):
-    def __init__(self, x, y, p):
-
+class _ClearIOBUFRequest(AbstractSCPRequest[CheckOKResponse]):
+    def __init__(self, x: int, y: int, p: int):
         super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
@@ -34,49 +35,39 @@ class _ClearIOBUFRequest(AbstractSCPRequest):
                 command=SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE),
             argument_3=int(True))
 
-    def get_scp_response(self):
+    def get_scp_response(self) -> CheckOKResponse:
         return CheckOKResponse(
             "clear iobuf",
             SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)
 
 
-class ClearIOBUFProcess(AbstractMultiConnectionProcess):
+class ClearIOBUFProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     """
     How to clear the IOBUF buffers of a set of cores.
 
     .. note::
         The cores must be using the simulation interface.
     """
+    __slots__ = ()
 
-    def __init__(self, connection_selector):
-        """
-        :param connection_selector:
-        :type connection_selector:
-            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector
-        """
-        super().__init__(connection_selector)
-        self._progress = None
+    def __receive_response(
+            self, progress: ProgressBar, _response: CheckOKResponse):
+        progress.update()
 
-    def __receive_response(self, _response):
-        if self._progress is not None:
-            self._progress.update()
-
-    def clear_iobuf(self, core_subsets, n_cores=None):
+    def clear_iobuf(self, core_subsets: CoreSubsets,
+                    n_cores: Optional[int] = None):
         """
         :param ~spinn_machine.CoreSubsets core_subsets:
         :param int n_cores: Defaults to the number of cores in `core_subsets`.
         """
         if n_cores is None:
             n_cores = len(core_subsets)
-        self._progress = ProgressBar(
-            n_cores, "clearing IOBUF from the machine")
-        for core_subset in core_subsets:
-            for processor_id in core_subset.processor_ids:
-                self._send_request(
-                    _ClearIOBUFRequest(
-                        core_subset.x, core_subset.y, processor_id),
-                    callback=self.__receive_response)
-        self._finish()
-        self._progress.end()
-        self._progress = None
-        self.check_for_error()
+        with ProgressBar(
+                n_cores, "clearing IOBUF from the machine") as progress, \
+                self._collect_responses():
+            for core_subset in core_subsets:
+                for processor_id in core_subset.processor_ids:
+                    self._send_request(
+                        _ClearIOBUFRequest(
+                            core_subset.x, core_subset.y, processor_id),
+                        callback=partial(self.__receive_response, progress))

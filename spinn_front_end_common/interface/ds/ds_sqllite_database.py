@@ -16,14 +16,20 @@ import logging
 import numpy
 import os
 import sqlite3
+from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.typing.coords import XYP
 from spinnman.model.enums import ExecutableType
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_BYTE_SIZE)
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+if TYPE_CHECKING:
+    from spinn_front_end_common.interface.interface_functions.\
+        spalloc_allocator import SpallocJobController  # @UnusedImport
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -38,9 +44,14 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     A database for holding data specification details.
     """
-    __slots__ = ["_init_file"]
+    __slots__ = ("_init_file")
 
-    def __init__(self, database_file=None):
+    def __init__(self, database_file:  Optional[str] = None):
+        """
+        :param bool init_file:
+            Whether to initialise the DB from our DDL file. If not specified,
+            this is guessed from whether we can read the file.
+        """
         if database_file is None:
             database_file = FecDataView.get_ds_database_path()
 
@@ -55,9 +66,11 @@ class DsSqlliteDatabase(SQLiteDB):
             self.__init_ethernets()
             self._init_file = False
 
-    def __init_ethernets(self):
+    def __init_ethernets(self) -> None:
         """
         Set up the database contents from the machine.
+
+        .. note:: Call of this method has to be delayed until inside the with
         """
         eth_chips = FecDataView.get_machine().ethernet_connected_chips
         self.executemany(
@@ -69,7 +82,8 @@ class DsSqlliteDatabase(SQLiteDB):
                 (ethernet.x, ethernet.y, ethernet.ip_address)
                 for ethernet in eth_chips))
 
-    def set_core(self, x, y, p, vertex):
+    def set_core(self, x: int, y: int, p: int,
+                 vertex: AbstractHasAssociatedBinary):
         """
         Creates a database record for the core with this x,y,z
 
@@ -100,19 +114,20 @@ class DsSqlliteDatabase(SQLiteDB):
             VALUES(?, ?, ?, ?)
             """, (x, y, p, is_system))
 
-    def get_core_infos(self, is_system):
+    def get_core_infos(self, is_system: bool) -> List[
+            Tuple[int, int, int, int, int]]:
         """
         Gets a list of id, x, y, p, ethernet_x, ethernet_y for all cores
         according to is_system
 
-        :param bool is_system: if True returns systenm cores
+        :param bool is_system: if True returns system cores
             otherwise application cores
         :return:
-            list(database_id, x, y, p, ethernet_x, ethernet_y)
+            (x, y, p, ethernet_x, ethernet_y)
             for each system or app core
         :rtype: list(int, int, int, int, int, int)
         """
-        core_infos = []
+        core_infos: List[Tuple[int, int, int, int, int]] = []
         for row in self.execute(
                 """
                 SELECT x, y, p, ethernet_x, ethernet_y
@@ -125,7 +140,7 @@ class DsSqlliteDatabase(SQLiteDB):
                  row["ethernet_x"], row["ethernet_y"]))
         return core_infos
 
-    def _set_chip(self, x, y):
+    def _set_chip(self, x: int, y: int):
         """
         :param int x:
         :param int y:
@@ -146,7 +161,8 @@ class DsSqlliteDatabase(SQLiteDB):
             """, (x, y, chip.nearest_ethernet_x, chip.nearest_ethernet_y))
 
     def set_memory_region(
-            self, x, y, p, region_num, size, reference, label):
+            self, x: int, y: int, p: int, region_num: int, size: int,
+            reference: Optional[int], label: Optional[str]):
         """
         Writes the information to reserve a memory region into the database
 
@@ -155,13 +171,12 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core t
-        :param int region: The number of the region to reserve
+        :param int region_num: The number of the region to reserve
         :param int size: The size to reserve for the region, in bytes
         :param label: An optional label for the region
         :type label: str or None
         :param reference: A globally unique reference for this region
         :type reference: int or None
-        :param label:
         :return:
         """
         self.execute(
@@ -172,7 +187,7 @@ class DsSqlliteDatabase(SQLiteDB):
             """, (x, y, p, region_num, size, reference, label))
         return self.lastrowid
 
-    def get_region_size(self, x, y, p, region_num):
+    def get_region_size(self, x: int, y: int, p: int, region_num: int) -> int:
         """
         Gets the size for a region with this x, y, p and region
 
@@ -180,7 +195,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
         :param int region_num: The region number
-        :return: The database id for this region and the size in bytes
+        :return: The size of the region, in bytes
         :rtype: int
         """
         for row in self.execute(
@@ -193,7 +208,8 @@ class DsSqlliteDatabase(SQLiteDB):
             return row["size"]
         raise DsDatabaseException(f"Region {region_num} not set")
 
-    def set_reference(self, x, y, p, region_num, reference, ref_label):
+    def set_reference(self, x: int, y: int, p: int, region_num: int,
+                      reference: int, ref_label: Optional[str]):
         """
         Writes a outgoing region_reference into the database
 
@@ -211,9 +227,9 @@ class DsSqlliteDatabase(SQLiteDB):
                 x, y, p, region_num, reference_num, ref_label)
             VALUES(?, ?, ?, ?, ?, ?)
             """, (x, y, p, region_num, reference, ref_label))
-        assert (self.rowcount == 1)
 
-    def get_reference_pointers(self, x, y, p):
+    def get_reference_pointers(self, x: int, y: int, p: int) -> Iterable[
+            Tuple[int, int]]:
         """
         Yields the reference regions and where they point for this core
 
@@ -237,7 +253,8 @@ class DsSqlliteDatabase(SQLiteDB):
                 """, (x, y, p)):
             yield row["ref_region"], row["pointer"]
 
-    def get_unlinked_references(self):
+    def get_unlinked_references(self) -> Iterable[
+            Tuple[int, int, int, int, int, str]]:
         """
         Finds and yields info on unreferenced links
 
@@ -259,7 +276,7 @@ class DsSqlliteDatabase(SQLiteDB):
             yield (row["x"], row["y"], row["ref_p"], row["ref_region"],
                    row["reference_num"], str(row["ref_label"], "utf8"))
 
-    def get_double_region(self):
+    def get_double_region(self) -> Iterable[Tuple[int, int, int, int]]:
         """
         Finds and yields any region that was used in both region definition
             and a reference
@@ -269,8 +286,8 @@ class DsSqlliteDatabase(SQLiteDB):
         .. note::
             Do not use the database for anything else while iterating.
 
-        :return: x, y, p
-        :rtype: iterable(tuple(int, int, int))
+        :return: x, y, p, region
+        :rtype: iterable(tuple(int, int, int, int))
         """
         for row in self.execute(
                 """
@@ -281,7 +298,9 @@ class DsSqlliteDatabase(SQLiteDB):
                  """):
             yield (row["x"], row["y"], row["p"], row["region_num"])
 
-    def set_region_content(self, x, y, p, region_num, content, content_debug):
+    def set_region_content(
+            self, x: int, y: int, p: int, region_num: int, content: bytes,
+            content_debug: Optional[str]):
         """
         Sets the content for this region
 
@@ -289,7 +308,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
         :param int region_num: The region number
-        :param bytearray content: content to write
+        :param bytes content: content to write
         :param content_debug: debug text
         :type content_debug: str or None
         :raises DsDatabaseException: If the region already has content
@@ -301,7 +320,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 FROM region
                 WHERE x = ? AND y = ? and p = ? and region_num = ?
                 LIMIT 1
-                 """, (x, y, p, region_num)):
+                """, (x, y, p, region_num)):
             if row["content"]:
                 raise DsDatabaseException(
                     f"Illegal attempt to overwrite content for "
@@ -317,7 +336,8 @@ class DsSqlliteDatabase(SQLiteDB):
             raise DsDatabaseException(
                 f"No region {x=} {y=} {p=} {region_num=}")
 
-    def get_region_pointer(self, x, y, p, region_num):
+    def get_region_pointer(
+            self, x: int, y: int, p: int, region_num: int) -> Optional[int]:
         """
         Gets the pointer for this region as set during the original load
 
@@ -327,7 +347,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :param int region_num: The Data Specifiation region number
+        :param int region_num: The Data Specification region number
         :return: The pointer set during the original load
         :rtype: int or None
         :raises DsDatabaseException: if the region is not known
@@ -342,7 +362,7 @@ class DsSqlliteDatabase(SQLiteDB):
             return row["pointer"]
         raise DsDatabaseException(f"No region {x=} {y=} {p=} {region_num=}")
 
-    def get_region_sizes(self, x, y, p):
+    def get_region_sizes(self, x: int, y: int, p: int) -> Dict[int, int]:
         """
         Gets a dict of the regions and sizes reserved
 
@@ -355,7 +375,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: dict of region_num to size but only for regions with a size
         :rtype: dict(int, int)
         """
-        regions = dict()
+        regions: Dict[int, int] = dict()
         for row in self.execute(
                 """
                 SELECT region_num, size
@@ -366,7 +386,7 @@ class DsSqlliteDatabase(SQLiteDB):
             regions[row["region_num"]] = row["size"]
         return regions
 
-    def get_total_regions_size(self, x, y, p):
+    def get_total_regions_size(self, x: int, y: int, p: int) -> int:
         """
         Gets the total size of the regions of this core
 
@@ -382,7 +402,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         """
         for row in self.execute(
-            """
+                """
                 SELECT COALESCE(sum(size), 0) as total
                 FROM region
                 WHERE x = ? AND y = ? AND p = ?
@@ -391,7 +411,7 @@ class DsSqlliteDatabase(SQLiteDB):
             return row["total"]
         raise DsDatabaseException("Query failed unexpectedly")
 
-    def set_start_address(self, x, y, p, start_address):
+    def set_start_address(self, x: int, y: int, p: int, start_address: int):
         """
         Sets the base address for a core and calculates pointers
 
@@ -399,8 +419,6 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
         :param int start_address: The base address for the whole core
-        :return: The expected size of the malloced_area
-        :rtype: int
         :raises DsDatabaseException: if the region is not known
         """
         self.execute(
@@ -413,7 +431,7 @@ class DsSqlliteDatabase(SQLiteDB):
             raise DsDatabaseException(
                 f"No core {x=} {y=} {p=}")
 
-    def get_start_address(self, x, y, p):
+    def get_start_address(self, x: int, y: int, p: int) -> int:
         """
         Gets the start_address for this core
 
@@ -433,7 +451,8 @@ class DsSqlliteDatabase(SQLiteDB):
             return row["start_address"]
         raise DsDatabaseException(f"No core {x=} {y=} {p=}")
 
-    def set_region_pointer(self, x, y, p, region_num, pointer):
+    def set_region_pointer(
+            self, x: int, y: int, p: int, region_num: int, pointer: int):
         self.execute(
             """
             UPDATE region
@@ -444,7 +463,9 @@ class DsSqlliteDatabase(SQLiteDB):
             raise DsDatabaseException(
                 f"No region {x=} {y=} {p=} {region_num=}")
 
-    def get_region_pointers_and_content(self, x, y, p):
+    def get_region_pointers_and_content(
+            self, x: int, y: int, p: int) -> Iterable[Tuple[
+                int, int, Optional[bytes]]]:
         """
         Yields the number, pointers and content for each reserved region
 
@@ -472,7 +493,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 content = None
             yield row["region_num"], row["pointer"], content
 
-    def get_ds_cores(self):
+    def get_ds_cores(self) -> Iterable[XYP]:
         """
         Yields the x, y, p for the cores with possible Data Specifications
 
@@ -492,7 +513,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 """):
             yield (row["x"], row["y"], row["p"])
 
-    def get_n_ds_cores(self):
+    def get_n_ds_cores(self) -> int:
         """
         Returns the number for cores there is a data specification saved for.
 
@@ -509,7 +530,7 @@ class DsSqlliteDatabase(SQLiteDB):
             return row["count"]
         raise DsDatabaseException("Count query failed")
 
-    def get_memory_to_malloc(self, x, y, p):
+    def get_memory_to_malloc(self, x: int, y: int, p: int) -> int:
         """
         Gets the expected number of bytes to be written
 
@@ -531,7 +552,7 @@ class DsSqlliteDatabase(SQLiteDB):
             to_malloc += row["regions_size"]
         return to_malloc
 
-    def get_memory_to_write(self, x, y, p):
+    def get_memory_to_write(self, x: int, y: int, p: int) -> int:
         """
         Gets the expected number of bytes to be written
 
@@ -553,7 +574,7 @@ class DsSqlliteDatabase(SQLiteDB):
             to_write += row["contents_size"]
         return to_write
 
-    def get_info_for_cores(self):
+    def get_info_for_cores(self) -> Iterable[Tuple[XYP, int, int, int]]:
         """
         Yields the (x, y, p) and write info for each core
 
@@ -577,7 +598,7 @@ class DsSqlliteDatabase(SQLiteDB):
             yield ((row["x"], row["y"], row["p"]), row["start_address"],
                    row["malloc_size"], row["to_write"])
 
-    def write_session_credentials_to_db(self):
+    def write_session_credentials_to_db(self) -> None:
         """
         Write Spalloc session credentials to the database, if in use.
         """
@@ -588,18 +609,18 @@ class DsSqlliteDatabase(SQLiteDB):
         if mac.proxying:
             # This is now assumed to be a SpallocJobController;
             # can't check that because of import circularity.
-            job = mac._job
+            job = cast('SpallocJobController', mac)._job
             if isinstance(job, SpallocJob):
                 config = job.get_session_credentials_for_db()
-                self.executemany("""
+                self.executemany(
+                    """
                     INSERT INTO proxy_configuration(kind, name, value)
                     VALUES(?, ?, ?)
                     """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
-    def set_app_id(self):
+    def set_app_id(self) -> None:
         """
         Sets the app id
-
         """
         # check for previous content
         self.execute(

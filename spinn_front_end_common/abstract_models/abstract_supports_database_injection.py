@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(MachineVertex)
@@ -26,18 +27,22 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
 
     __slots__ = ()
 
-    @abstractproperty
-    def is_in_injection_mode(self):
+    @property
+    @abstractmethod
+    def is_in_injection_mode(self) -> bool:
         """
         Whether this vertex is actually in injection mode.
 
         :rtype: bool
         """
+        raise NotImplementedError
 
-    @abstractproperty
-    def injection_partition_id(self):
+    @property
+    @abstractmethod
+    def injection_partition_id(self) -> str:
         """
         The partition that packets are being injected with.
 
         :rtype: str
         """
+        raise NotImplementedError

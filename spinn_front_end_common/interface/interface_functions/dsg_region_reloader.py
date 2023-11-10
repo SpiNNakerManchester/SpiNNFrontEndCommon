@@ -21,7 +21,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.data import FecDataView
 
 
-def reload_dsg_regions():
+def reload_dsg_regions() -> None:
     """
     Reloads DSG regions where needed.
     """
@@ -33,7 +33,7 @@ def reload_dsg_regions():
             regenerate_data_spec(placement, ds_database)
 
 
-def regenerate_data_spec(placement, ds_database):
+def regenerate_data_spec(placement, ds_database) -> bool:
     """
     Regenerate a data specification for a placement.
 

@@ -56,8 +56,8 @@ class _MockTransceiver(Version5Transceiver):
         return address
 
     @overrides(Version5Transceiver.write_memory)
-    def write_memory(self, x, y, base_address, data, *, n_bytes=None,
-                     offset=0, cpu=0, get_sum=False):
+    def write_memory(self, x, y, base_address, data, *,
+                     n_bytes=None, offset=0, cpu=0, get_sum=False):
         if isinstance(data, int):
             data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
@@ -85,7 +85,7 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
 
 class TestLoadDataSpecification(unittest.TestCase):
 
-    def setUp(cls):
+    def setUp(self):
         unittest_setup()
         set_config("Machine", "enable_advanced_monitor_support", "False")
         set_config("Machine", "version", 5)
@@ -117,7 +117,7 @@ class TestLoadDataSpecification(unittest.TestCase):
         # The space between regions should be as allocated regardless of
         # how much data is written
         header_and_table_size = ((MAX_MEM_REGIONS * 3) + 2) * BYTES_PER_WORD
-        regions = transceiver._regions_written
+        regions = transceiver.regions_written
         self.assertEqual(len(regions), 4)
 
         # Base address for header and table

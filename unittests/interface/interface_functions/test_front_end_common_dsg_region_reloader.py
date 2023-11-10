@@ -113,8 +113,8 @@ class _MockTransceiver(MockableTransceiver):
         self._regions_rewritten = list()
 
     @overrides(MockableTransceiver.write_memory)
-    def write_memory(self, x, y, base_address, data, *, n_bytes=None,
-                     offset=0, cpu=0, get_sum=False):
+    def write_memory(self, x, y, base_address, data, *,
+                     n_bytes=None, offset=0, cpu=0, get_sum=False):
         self._regions_rewritten.append((base_address, data))
 
 

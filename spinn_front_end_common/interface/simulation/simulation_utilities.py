@@ -13,12 +13,13 @@
 # limitations under the License.
 
 import os
+from typing import List
 from pacman.utilities.utility_calls import md5
 from spinnman.model.enums import SDP_PORTS
 from spinn_front_end_common.data import FecDataView
 
 
-def get_simulation_header_array(binary_file_name):
+def get_simulation_header_array(binary_file_name: str) -> List[int]:
     """
     Get data to be written to the simulation header.
 
@@ -30,19 +31,18 @@ def get_simulation_header_array(binary_file_name):
     application_name_hash = md5(os.path.splitext(binary_file_name)[0])[:8]
 
     # Write this to the system region (to be picked up by the simulation):
-    data = list()
-    data.append(int(application_name_hash, 16))
-    data.append(FecDataView.get_hardware_time_step_us())
-
-    # add SDP port number for receiving synchronisations and new run times
-    data.append(SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
-
-    return data
+    return [
+        int(application_name_hash, 16),
+        FecDataView.get_hardware_time_step_us(),
+        # SDP port number for receiving synchronisations and new run times
+        SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value]
 
 
-def get_simulation_header_array_no_timestep(binary_file_name):
+def get_simulation_header_array_no_timestep(
+        binary_file_name: str) -> List[int]:
     """
     Get data to be written to the simulation header.
+    Use for binaries that do not want to know the system timestep.
 
     :param str binary_file_name: The name of the binary of the application
     :return: An array of values to be written as the simulation header
@@ -52,11 +52,8 @@ def get_simulation_header_array_no_timestep(binary_file_name):
     application_name_hash = md5(os.path.splitext(binary_file_name)[0])[:8]
 
     # Write this to the system region (to be picked up by the simulation):
-    data = list()
-    data.append(int(application_name_hash, 16))
-    data.append(0)
-
-    # add SDP port number for receiving synchronisations and new run times
-    data.append(SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
-
-    return data
+    return [
+        int(application_name_hash, 16),
+        0,
+        # SDP port number for receiving synchronisations and new run times
+        SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value]

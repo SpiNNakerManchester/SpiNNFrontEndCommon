@@ -14,6 +14,7 @@
 
 import re
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.utilities.utility_objs import PowerUsed
 
 #: The simple properties of PowerUsed object to be reported
 _BASIC_PROPERTIES = (
@@ -32,7 +33,7 @@ _BASIC_PROPERTIES = (
 _PROV_KEY = "power_provenance"
 
 
-def energy_provenance_reporter(power_used):
+def energy_provenance_reporter(power_used: PowerUsed):
     """
     Converts the power usage information into provenance data.
 
@@ -53,11 +54,11 @@ def energy_provenance_reporter(power_used):
                     power_used.get_router_active_energy_joules(x, y))
 
 
-def __prop_name(name):
+def __prop_name(name: str) -> str:
     name = name.capitalize()
     name = re.sub(r"_time_secs$", r" time (seconds)", name)
     return re.sub(r"(_energy)?_joules", r" energy (Joules)", name)
 
 
-def __router_name(x, y):
+def __router_name(x: int, y: int) -> str:
     return f"router@{x},{y} energy (Joules)"

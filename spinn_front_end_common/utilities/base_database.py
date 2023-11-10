@@ -15,13 +15,15 @@
 import os
 import sqlite3
 import time
+from typing import Optional, Union
+from typing_extensions import TypeAlias
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__),
                          "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
-#: Name of the database in the data folder
+_SqliteTypes: TypeAlias = Union[str, int, float, bytes, None]
 
 
 def _timestamp():
@@ -44,10 +46,12 @@ class BaseDatabase(SQLiteDB):
         Threads can access different DBs just fine.
     """
 
-    __slots__ = ["_database_file"]
+    __slots__ = ("_database_file", )
 
-    def __init__(self, database_file=None, *, read_only=False,
-                 row_factory=sqlite3.Row, text_factory=memoryview):
+    def __init__(self, database_file: Optional[str] = None, *,
+                 read_only: bool = False,
+                 row_factory: Optional[type] = sqlite3.Row,
+                 text_factory: Optional[type] = memoryview):
         """
         :param str database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -63,12 +67,15 @@ class BaseDatabase(SQLiteDB):
             text_factory=text_factory, ddl_file=_DDL_FILE)
 
     @classmethod
-    def default_database_file(cls):
+    def default_database_file(cls) -> str:
         return os.path.join(FecDataView.get_run_dir_path(),
                             f"data{FecDataView.get_reset_str()}.sqlite3")
 
-    def _get_core_id(self, x, y, p):
+    def _get_core_id(
+            self, x: int, y: int, p: int) -> int:
         """
+        Get the ID for a core.
+
         :param int x:
         :param int y:
         :param int p:
