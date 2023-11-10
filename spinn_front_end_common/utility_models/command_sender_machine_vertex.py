@@ -11,12 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
 from enum import IntEnum
+from typing import (
+    Callable, Dict, Iterable, List, Sequence, Set, Sized, Tuple, Type, TypeVar,
+    TYPE_CHECKING)
 from spinn_utilities.overrides import overrides
 from spinnman.model.enums import ExecutableType
+from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
-from pacman.model.resources import ConstantSDRAM
+from pacman.model.placements import Placement
+from pacman.model.resources import AbstractSDRAM, ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
@@ -28,6 +33,17 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from pacman.model.graphs.abstract_edge import AbstractEdge
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+if TYPE_CHECKING:
+    from .command_sender import CommandSender
+    from .multi_cast_command import MultiCastCommand
+#: :meta private:
+V = TypeVar("V", bound=AbstractVertex)
+#: :meta private:
+E = TypeVar("E", bound=AbstractEdge)
+#: :meta private:
+CS = TypeVar("CS", 'CommandSender', "CommandSenderMachineVertex")
 
 
 class CommandSenderMachineVertex(
@@ -37,6 +53,13 @@ class CommandSenderMachineVertex(
     Machine vertex for injecting packets at particular times or in
     response to particular events into a SpiNNaker application.
     """
+    __slots__ = (
+        "_commands_at_start_resume", "_commands_at_pause_stop",
+        "_timed_commands",
+        "_keys_to_partition_id", "_partition_id_keys",
+        "_edge_partition_id_counter",
+        "_vertex_to_key_map")
+
     # Regions for populations
     class DATA_REGIONS(IntEnum):
         SYSTEM_REGION = 0
@@ -66,24 +89,26 @@ class CommandSenderMachineVertex(
     # all commands will use this mask
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
-    def __init__(self, label, app_vertex=None):
+    def __init__(self, label: str, app_vertex: CommandSender):
         """
         :param str label: The label of this vertex
         :param CommandSender app_vertex:
         """
         super().__init__(label, app_vertex)
 
-        self._timed_commands = list()
-        self._commands_at_start_resume = list()
-        self._commands_at_pause_stop = list()
-        self._keys_to_partition_id = dict()
-        self._partition_id_keys = dict()
+        self._timed_commands: List[MultiCastCommand] = list()
+        self._commands_at_start_resume: List[MultiCastCommand] = list()
+        self._commands_at_pause_stop: List[MultiCastCommand] = list()
+        self._keys_to_partition_id: Dict[int, str] = dict()
+        self._partition_id_keys: Dict[str, int] = dict()
         self._edge_partition_id_counter = 0
-        self._vertex_to_key_map = dict()
+        self._vertex_to_key_map: Dict[AbstractVertex, Set[int]] = dict()
 
     def add_commands(
-            self, start_resume_commands, pause_stop_commands,
-            timed_commands, vertex_to_send_to):
+            self, start_resume_commands: Iterable[MultiCastCommand],
+            pause_stop_commands: Iterable[MultiCastCommand],
+            timed_commands: Iterable[MultiCastCommand],
+            vertex_to_send_to: AbstractVertex):
         """
         Add commands to be sent down a given edge.
 
@@ -99,7 +124,7 @@ class CommandSenderMachineVertex(
             The vertex these commands are to be sent to
         """
         # container for keys for partition mapping (remove duplicates)
-        command_keys = set()
+        command_keys: Set[int] = set()
         self._vertex_to_key_map[vertex_to_send_to] = set()
 
         # update holders
@@ -122,7 +147,7 @@ class CommandSenderMachineVertex(
                 self._partition_id_keys[partition_id] = key
                 self._edge_partition_id_counter += 1
 
-    def get_fixed_key_and_mask(self, partition_id):
+    def get_fixed_key_and_mask(self, partition_id: str) -> BaseKeyAndMask:
         """
         Get the key and mask for the given partition.
 
@@ -134,17 +159,17 @@ class CommandSenderMachineVertex(
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
-    def _provenance_region_id(self):
+    def _provenance_region_id(self) -> int:
         return self.DATA_REGIONS.PROVENANCE_REGION
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
-    def _n_additional_data_items(self):
+    def _n_additional_data_items(self) -> int:
         return 1
 
     @property
     @overrides(MachineVertex.sdram_required)
-    def sdram_required(self):
+    def sdram_required(self) -> AbstractSDRAM:
         sdram = (
             self.get_timed_commands_bytes() +
             self.get_n_command_bytes(self._commands_at_start_resume) +
@@ -157,11 +182,14 @@ class CommandSenderMachineVertex(
 
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
+    def generate_data_specification(
+            self, spec: DataSpecificationGenerator, placement: Placement):
         routing_infos = FecDataView.get_routing_infos()
+        av = self.app_vertex
+        assert av is not None
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
-                self.app_vertex, self._keys_to_partition_id[mc_key])
+                av, self._keys_to_partition_id[mc_key])
             if allocated_mc_key != mc_key:
                 raise ConfigurationException(
                     f"The command sender {self._label} has requested key "
@@ -204,7 +232,9 @@ class CommandSenderMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    def _write_basic_commands(self, commands, spec):
+    def _write_basic_commands(
+            self, commands: List[MultiCastCommand],
+            spec: DataSpecificationGenerator):
         """
         :param list(MultiCastCommand) commands:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -216,7 +246,9 @@ class CommandSenderMachineVertex(
         for command in commands:
             self.__write_command(command, spec)
 
-    def _write_timed_commands(self, timed_commands, spec):
+    def _write_timed_commands(
+            self, timed_commands: List[MultiCastCommand],
+            spec: DataSpecificationGenerator):
         """
         :param list(MultiCastCommand) timed_commands:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -225,11 +257,13 @@ class CommandSenderMachineVertex(
 
         # write commands
         for command in timed_commands:
-            spec.write_value(command.time)
+            spec.write_value(command.time or 0)
             self.__write_command(command, spec)
 
     @classmethod
-    def __write_command(cls, command, spec):
+    def __write_command(
+            cls, command: MultiCastCommand,
+            spec: DataSpecificationGenerator):
         """
         :param MultiCastCommand command:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -239,13 +273,13 @@ class CommandSenderMachineVertex(
             spec.write_value(cls._HAS_PAYLOAD)
         else:
             spec.write_value(cls._HAS_NO_PAYLOAD)
-        spec.write_value(command.payload if command.is_payload else 0)
+        spec.write_value(command.payload or 0)
         spec.write_value(command.repeat)
         spec.write_value(command.delay_between_repeats)
 
     def _reserve_memory_regions(
-            self, spec, time_command_size, start_command_size,
-            end_command_size):
+            self, spec: DataSpecificationGenerator, time_command_size: int,
+            start_command_size: int, end_command_size: int):
         """
         Reserve SDRAM space for memory areas:
 
@@ -258,7 +292,6 @@ class CommandSenderMachineVertex(
         :param int time_command_size:
         :param int start_command_size:
         :param int end_command_size:
-        :param ProvidesProvenanceDataFromMachineImpl vertex:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -281,7 +314,7 @@ class CommandSenderMachineVertex(
 
         self.reserve_provenance_data_region(spec)
 
-    def get_timed_commands_bytes(self):
+    def get_timed_commands_bytes(self) -> int:
         """
         :rtype: int
         """
@@ -292,7 +325,7 @@ class CommandSenderMachineVertex(
         return n_bytes
 
     @classmethod
-    def get_n_command_bytes(cls, commands):
+    def get_n_command_bytes(cls, commands: Sized) -> int:
         """
         :param list(MultiCastCommand) commands:
         :rtype: int
@@ -302,14 +335,16 @@ class CommandSenderMachineVertex(
         return n_bytes
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
+    def get_binary_file_name(self) -> str:
         return self.BINARY_FILE_NAME
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
+    def get_binary_start_type(self) -> ExecutableType:
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    def get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
+    def get_edges_and_partitions(
+            self, pre_vertex: CS, vertex_type: Type[V],
+            edge_type: Callable[[CS, V], E]) -> Tuple[List[E], List[str]]:
         """
         Construct edges from this vertex to the vertices that this vertex
         knows how to target (and has keys allocated for).
@@ -328,8 +363,8 @@ class CommandSenderMachineVertex(
         :return: edges, partition IDs
         :rtype: tuple(list(~pacman.model.graphs.AbstractEdge), list(str))
         """
-        edges = list()
-        partition_ids = list()
+        edges: List[E] = list()
+        partition_ids: List[str] = list()
         keys_added = set()
         for vertex in self._vertex_to_key_map:
             if not isinstance(vertex, vertex_type):
@@ -341,7 +376,7 @@ class CommandSenderMachineVertex(
                     partition_ids.append(self._keys_to_partition_id[key])
         return edges, partition_ids
 
-    def edges_and_partitions(self):
+    def edges_and_partitions(self) -> Tuple[List[MachineEdge], List[str]]:
         """
         Construct machine edges from this vertex to the machine vertices
         that this vertex knows how to target (and has keys allocated for).
@@ -354,7 +389,9 @@ class CommandSenderMachineVertex(
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                parse_extra_provenance_items)
-    def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
+    def parse_extra_provenance_items(
+            self, label: str, x: int, y: int, p: int,
+            provenance_data: Sequence[int]):
         # pylint: disable=unused-argument
         n_commands_sent, = provenance_data
         with ProvenanceWriter() as db:

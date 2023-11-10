@@ -19,6 +19,7 @@ from pacman.model.partitioner_splitters import (
     SplitterOneAppOneMachine, SplitterFixedLegacy)
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
+from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utility_models import ReverseIpTagMultiCastSource
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -34,7 +35,7 @@ def splitter_selector() -> None:
             vertex_selector(app_vertex)
 
 
-def vertex_selector(app_vertex):
+def vertex_selector(app_vertex: ApplicationVertex):
     """
     Main point for selecting a splitter object for a given app vertex.
 

@@ -11,11 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
+from pacman.model.placements import Placement
 from .abstract_generates_data_specification import (
     AbstractGeneratesDataSpecification)
+if TYPE_CHECKING:
+    from spinn_front_end_common.interface.ds import DataSpecificationReloader
 
 
 @require_subclass(AbstractGeneratesDataSpecification)
@@ -25,10 +29,11 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     and so can rewrite the data specification.
     """
 
-    __slots__ = []
+    __slots__ = ()
 
     @abstractmethod
-    def regenerate_data_specification(self, spec, placement):
+    def regenerate_data_specification(
+            self, spec: DataSpecificationReloader, placement: Placement):
         """
         Regenerate the data specification, only generating regions that
         have changed and need to be reloaded.
@@ -38,19 +43,22 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
         :param ~pacman.model.placements.Placement placement:
             Where are we regenerating for?
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def reload_required(self):
+    def reload_required(self) -> bool:
         """
         Return true if any data region needs to be reloaded.
 
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def set_reload_required(self, new_value):
+    def set_reload_required(self, new_value: bool):
         """
         Indicate that the regions have been reloaded.
 
         :param new_value: the new value
         """
+        raise NotImplementedError

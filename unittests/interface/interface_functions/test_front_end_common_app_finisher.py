@@ -48,9 +48,7 @@ class _MockTransceiver(Version5Transceiver):
         cores_in_state = CPUInfos()
         core_states = self._core_states[self._current_state]
         for core_subset in core_subsets:
-            x = core_subset.x
-            y = core_subset.y
-
+            x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
                 if (x, y, p) in core_states:
                     if hasattr(states, "__iter__"):

@@ -32,13 +32,14 @@ class TimerCategory(Enum):
     RESETTING = (auto(), "Resetting")
     SHUTTING_DOWN = (auto(), "Shutting down")
 
-    def __new__(cls, value, category_name):
-        # pylint: disable=protected-access
+    def __new__(cls, *args) -> 'TimerCategory':
         obj = object.__new__(cls)
-        obj._value_ = value
-        obj._category_name = category_name
+        obj._value_ = args[0]
         return obj
 
+    def __init__(self, __, category_name: str):
+        self._category_name = category_name
+
     @property
-    def category_name(self):
+    def category_name(self) -> str:
         return self._category_name

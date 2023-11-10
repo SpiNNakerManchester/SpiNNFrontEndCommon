@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Iterable
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(MachineVertex)
@@ -27,24 +28,26 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def buffering_input(self):
+    def buffering_input(self) -> bool:
         """
         Return True if the input of this vertex is to be buffered.
 
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def get_regions(self):
+    def get_regions(self) -> Iterable[int]:
         """
         Get the set of regions for which there are keys to be sent.
 
         :return: Iterable of region IDs
         :rtype: iterable(int)
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def get_region_buffer_size(self, region):
+    def get_region_buffer_size(self, region: int) -> int:
         """
         Get the size of the buffer to be used in SDRAM on the machine
         for the region in bytes.
@@ -53,9 +56,10 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: The size of the buffer space in bytes
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def is_next_timestamp(self, region):
+    def is_next_timestamp(self, region: int) -> bool:
         """
         Determine if there is another timestamp with data to be sent.
 
@@ -63,9 +67,10 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: Whether there is more data
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def get_next_timestamp(self, region):
+    def get_next_timestamp(self, region: int) -> int:
         """
         Get the next timestamp at which there are still keys to be sent
         for the given region.
@@ -74,9 +79,10 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: The timestamp of the next available keys
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def is_next_key(self, region, timestamp):
+    def is_next_key(self, region: int, timestamp: int) -> bool:
         """
         Determine if there are still keys to be sent at the given
         timestamp for the given region.
@@ -87,9 +93,10 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: Whether there are more keys to send for the parameters
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def get_next_key(self, region):
+    def get_next_key(self, region: int) -> int:
         """
         Get the next key in the given region.
 
@@ -97,9 +104,10 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: The next key, or `None` if there are no more keys
         :rtype: int
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def is_empty(self, region):
+    def is_empty(self, region: int) -> bool:
         """
         Return true if there are no spikes to be buffered for the
         specified region.
@@ -108,11 +116,13 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         :return: Whether there are no keys to send for the region
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def rewind(self, region):
+    def rewind(self, region: int):
         """
         Rewinds the internal buffer in preparation of re-sending the spikes.
 
         :param int region: The region to rewind
         """
+        raise NotImplementedError

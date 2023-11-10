@@ -17,6 +17,7 @@ from spinnman.model import ExecutableTargets
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs import AbstractVirtual
+from pacman.model.placements import Placement
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableNotFoundException)
@@ -25,30 +26,26 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def graph_binary_gatherer():
+def graph_binary_gatherer() -> ExecutableTargets:
     """
     Extracts binaries to be executed.
 
     :rtype: ~spinnman.model.ExecutableTargets
     """
-    gatherer = _GraphBinaryGatherer()
-    # pylint: disable=protected-access
-    return gatherer._run()
+    return _GraphBinaryGatherer().gather_binaries()
 
 
 class _GraphBinaryGatherer(object):
     """
     Extracts binaries to be executed.
     """
+    __slots__ = ("_exe_targets", )
 
-    __slots__ = ["_exe_targets"]
-
-    def __init__(self):
+    def __init__(self) -> None:
         self._exe_targets = ExecutableTargets()
 
-    def _run(self):
+    def gather_binaries(self) -> ExecutableTargets:
         """
-        :param ~pacman.model.placements.Placements placements:
         :rtype: ~spinnman.model.ExecutableTargets
         """
         progress = ProgressBar(
@@ -58,10 +55,9 @@ class _GraphBinaryGatherer(object):
 
         return self._exe_targets
 
-    def __get_binary(self, placement):
+    def __get_binary(self, placement: Placement):
         """
         :param ~pacman.model.placements.Placement placement:
-        :param ~pacman.model.graphs.AbstractVertex vertex:
         """
         # if the vertex cannot be executed, ignore it
         vertex = placement.vertex

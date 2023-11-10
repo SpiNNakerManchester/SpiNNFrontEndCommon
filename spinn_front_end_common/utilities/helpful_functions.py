@@ -11,23 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
 import os
 import logging
 import struct
+from typing import (
+    Any, Collection, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING)
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import CoreSubsets
+from spinn_machine import CoreSubsets, Chip, Machine, MulticastRoutingEntry
 from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+if TYPE_CHECKING:
+    from pacman.model.placements import Placement
+    from pacman.model.graphs.machine import MachineVertex
+    from spinn_front_end_common.utility_models import (
+        DataSpeedUpPacketGatherMachineVertex)
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_n_word_structs = []
+_n_word_structs: List[Optional[struct.Struct]] = []
 
 
-def locate_extra_monitor_mc_receiver(placement_x, placement_y):
+def locate_extra_monitor_mc_receiver(
+        placement_x: int, placement_y: int
+        ) -> DataSpeedUpPacketGatherMachineVertex:
     """
     Get the data speed up gatherer that can be used to talk to a
     particular chip. This will be on the same board.
@@ -41,7 +50,8 @@ def locate_extra_monitor_mc_receiver(placement_x, placement_y):
         chip.nearest_ethernet_x, chip.nearest_ethernet_y)
 
 
-def read_data(x, y, address, length, data_format):
+def read_data(x: int, y: int, address: int, length: int,
+              data_format: str) -> int:
     """
     Reads and converts a single data item from memory.
 
@@ -54,12 +64,12 @@ def read_data(x, y, address, length, data_format):
     :return: whatever is produced by unpacking the data
     :rtype: tuple
     """
-    # pylint: disable=too-many-arguments
     data = FecDataView.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
 
 
-def get_region_base_address_offset(app_data_base_address, region):
+def get_region_base_address_offset(
+        app_data_base_address: int, region: int) -> int:
     """
     Find the address of the of a given region for the DSG.
 
@@ -71,15 +81,14 @@ def get_region_base_address_offset(app_data_base_address, region):
             (region * APP_PTR_TABLE_REGION_BYTE_SIZE))
 
 
-def locate_memory_region_for_placement(placement, region):
+def locate_memory_region_for_placement(
+        placement: Placement, region: int) -> int:
     """
     Get the address of a region for a placement.
 
     :param int region: the region to locate the base address of
     :param ~pacman.model.placements.Placement placement:
         the placement object to get the region address of
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the python interface to the SpiNNaker machine
     :return: the address
     :rtype: int
     """
@@ -94,7 +103,8 @@ def locate_memory_region_for_placement(placement, region):
     return transceiver.read_word(placement.x, placement.y, element_addr)
 
 
-def convert_string_into_chip_and_core_subset(cores):
+def convert_string_into_chip_and_core_subset(
+        cores: Optional[str]) -> CoreSubsets:
     """
     Translate a string list of cores into a core subset.
 
@@ -111,7 +121,7 @@ def convert_string_into_chip_and_core_subset(cores):
     return ignored_cores
 
 
-def flood_fill_binary_to_spinnaker(binary):
+def flood_fill_binary_to_spinnaker(binary: str) -> int:
     """
     Flood fills a binary to SpiNNaker.
 
@@ -127,7 +137,8 @@ def flood_fill_binary_to_spinnaker(binary):
     return len(core_subset)
 
 
-def generate_unique_folder_name(folder, filename, extension):
+def generate_unique_folder_name(
+        folder: str, filename: str, extension: str) -> str:
     """
     Generate a unique file name with a given extension in a given folder.
 
@@ -146,7 +157,7 @@ def generate_unique_folder_name(folder, filename, extension):
     return new_file_path
 
 
-def get_ethernet_chip(machine, board_address):
+def get_ethernet_chip(machine: Machine, board_address: str) -> Chip:
     """
     Locate the chip with the given board IP address.
 
@@ -165,7 +176,11 @@ def get_ethernet_chip(machine, board_address):
         f"board address {board_address}")
 
 
-def determine_flow_states(executable_types, no_sync_changes):
+def determine_flow_states(
+        executable_types: Dict[ExecutableType, Any],
+        no_sync_changes: int) -> Tuple[
+            Dict[ExecutableType, Collection[CPUState]],
+            Dict[ExecutableType, Collection[CPUState]]]:
     """
     Get the start and end states for these executable types.
 
@@ -173,32 +188,31 @@ def determine_flow_states(executable_types, no_sync_changes):
         the execute types to locate start and end states from
     :param int no_sync_changes: the number of times sync signals been sent
     :return: dict of executable type to states.
-    :rtype: tuple(dict(ExecutableType,~spinnman.model.enums.CPUState),
-        dict(ExecutableType,~spinnman.model.enums.CPUState))
+    :rtype: tuple(dict(ExecutableType,tuple(~spinnman.model.enums.CPUState)),
+        dict(ExecutableType,tuple(~spinnman.model.enums.CPUState)))
     """
-    expected_start_states = dict()
-    expected_end_states = dict()
+    expected_start_states: Dict[ExecutableType, Collection[CPUState]] = dict()
+    expected_end_states: Dict[ExecutableType, Collection[CPUState]] = dict()
     for start_type in executable_types.keys():
-
         # cores that ignore all control and are just running
         if start_type == ExecutableType.RUNNING:
-            expected_start_states[ExecutableType.RUNNING] = [
-                CPUState.RUNNING, CPUState.FINISHED]
-            expected_end_states[ExecutableType.RUNNING] = [
-                CPUState.RUNNING, CPUState.FINISHED]
+            expected_start_states[ExecutableType.RUNNING] = (
+                CPUState.RUNNING, CPUState.FINISHED)
+            expected_end_states[ExecutableType.RUNNING] = (
+                CPUState.RUNNING, CPUState.FINISHED)
 
         # cores that require a sync barrier
         elif start_type == ExecutableType.SYNC:
-            expected_start_states[ExecutableType.SYNC] = [CPUState.SYNC0]
-            expected_end_states[ExecutableType.SYNC] = [CPUState.FINISHED]
+            expected_start_states[ExecutableType.SYNC] = (CPUState.SYNC0,)
+            expected_end_states[ExecutableType.SYNC] = (CPUState.FINISHED,)
 
         # cores that use our sim interface
         elif start_type == ExecutableType.USES_SIMULATION_INTERFACE:
             if no_sync_changes % 2 == 0:
-                expected_start_states[start_type] = [CPUState.SYNC0]
+                expected_start_states[start_type] = (CPUState.SYNC0,)
             else:
-                expected_start_states[start_type] = [CPUState.SYNC1]
-            expected_end_states[start_type] = [CPUState.PAUSED]
+                expected_start_states[start_type] = (CPUState.SYNC1,)
+            expected_end_states[start_type] = (CPUState.PAUSED,)
 
     # if no states, go boom.
     if not expected_start_states:
@@ -207,7 +221,8 @@ def determine_flow_states(executable_types, no_sync_changes):
     return expected_start_states, expected_end_states
 
 
-def convert_vertices_to_core_subset(vertices):
+def convert_vertices_to_core_subset(
+        vertices: Iterable[MachineVertex]) -> CoreSubsets:
     """
     Converts vertices into core subsets.
 
@@ -223,7 +238,7 @@ def convert_vertices_to_core_subset(vertices):
     return core_subsets
 
 
-def n_word_struct(n_words):
+def n_word_struct(n_words: int) -> struct.Struct:
     """
     Manages a precompiled cache of :py:class`~struct.Struct`\\s for
     parsing blocks of words.
@@ -254,7 +269,7 @@ def n_word_struct(n_words):
     return new_struct
 
 
-def get_defaultable_source_id(entry):
+def get_defaultable_source_id(entry: MulticastRoutingEntry) -> int:
     """
     Hack to support the source requirement for the router compressor on chip.
 

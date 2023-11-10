@@ -30,7 +30,7 @@ from .abstract_supports_bit_field_routing_compression import (
 from .abstract_can_reset import AbstractCanReset
 from .has_custom_atom_key_map import HasCustomAtomKeyMap
 
-__all__ = ["AbstractGeneratesDataSpecification",
+__all__ = ("AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
            "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
@@ -38,4 +38,4 @@ __all__ = ["AbstractGeneratesDataSpecification",
            "AbstractVertexWithEdgeToDependentVertices", "AbstractCanReset",
            "AbstractSupportsBitFieldGeneration",
            "AbstractSupportsBitFieldRoutingCompression",
-           "HasCustomAtomKeyMap"]
+           "HasCustomAtomKeyMap")

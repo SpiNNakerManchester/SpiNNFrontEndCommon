@@ -11,18 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Mapping
+from pacman.model.placements import Placement
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.data import FecDataView
 from .profile_data import ProfileData
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 
 _PROFILE_HEADER_SIZE_BYTES = BYTES_PER_WORD
 _SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 2 * BYTES_PER_WORD
 _BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = BYTES_PER_WORD
 
 
-def get_profile_region_size(n_samples):
+def get_profile_region_size(n_samples: int) -> int:
     """
     Get the size of the region of the profile data.
 
@@ -34,7 +37,8 @@ def get_profile_region_size(n_samples):
         n_samples * _SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES)
 
 
-def reserve_profile_region(spec, region, n_samples):
+def reserve_profile_region(
+        spec: DataSpecificationGenerator, region: int, n_samples: int):
     """
     Reserves the profile region for recording the profile data.
 
@@ -48,7 +52,8 @@ def reserve_profile_region(spec, region, n_samples):
         region=region, size=size, label="profilerRegion")
 
 
-def write_profile_region_data(spec, region, n_samples):
+def write_profile_region_data(
+        spec: DataSpecificationGenerator, region: int, n_samples: int):
     """
     Writes the profile region data.
 
@@ -61,7 +66,9 @@ def write_profile_region_data(spec, region, n_samples):
     spec.write_value(n_samples)
 
 
-def get_profiling_data(profile_region, tag_labels, placement):
+def get_profiling_data(
+        profile_region: int, tag_labels: Mapping[int, str],
+        placement: Placement) -> ProfileData:
     """
     Utility function to get profile data from a profile region.
 

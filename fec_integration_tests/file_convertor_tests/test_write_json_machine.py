@@ -51,7 +51,7 @@ class TestWriteJson(unittest.TestCase):
         if (chip1 == chip2):
             return False
         if len(chip1) != len(chip2):
-            raise True
+            return True
         for i in range(len(chip1)):
             if chip1[i] == chip2[i]:
                 continue

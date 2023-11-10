@@ -14,6 +14,7 @@
 
 import logging
 import os.path
+from typing import TextIO
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.data import FecDataView
@@ -23,7 +24,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _FILENAME = "network_specification.rpt"
 
 
-def network_specification():
+def network_specification() -> None:
     """
     Generate report on the user's network specification.
     """
@@ -38,7 +39,7 @@ def network_specification():
                          " for writing.", filename)
 
 
-def _write_report(f, vertex):
+def _write_report(f: TextIO, vertex: ApplicationVertex):
     """
     :param ~io.FileIO f:
     :param ~pacman.model.graphs.application.ApplicationVertex vertex:

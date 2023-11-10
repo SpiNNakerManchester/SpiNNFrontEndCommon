@@ -19,8 +19,7 @@ import traceback
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.enums import SCPResult
-from spinnman.connections.udp_packet_connections import (
-    utils, UDPConnection)
+from spinnman.connections.udp_packet_connections import UDPConnection
 
 
 class _SCPOKMessage(SDPMessage):
@@ -31,7 +30,7 @@ class _SCPOKMessage(SDPMessage):
         sdp_header = SDPHeader(
             flags=SDPFlag.REPLY_NOT_EXPECTED, destination_port=0,
             destination_cpu=0, destination_chip_x=x, destination_chip_y=y)
-        utils.update_sdp_header_for_udp_send(sdp_header, 0, 0)
+        sdp_header.update_for_send(0, 0)
         super().__init__(sdp_header, data=scp_header.bytestring)
 
 

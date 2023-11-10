@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import cast
+from pacman.model.placements import Placements
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utility_models import LivePacketGather
+from spinn_front_end_common.utility_models.live_packet_gather import (
+    LivePacketGather, _LPGSplitter)
 
 
-def split_lpg_vertices(system_placements):
+def split_lpg_vertices(system_placements: Placements):
     """
     Split any LPG vertices found.
 
-    :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-        The application graph
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine as discovered
     :param ~pacman.model.placements.Placements system_placements:
         existing placements to be added to
     """
     for vertex in FecDataView.get_vertices_by_type(LivePacketGather):
-        vertex.splitter.create_vertices(system_placements)
+        cast(_LPGSplitter, vertex.splitter).create_sys_vertices(
+            system_placements)

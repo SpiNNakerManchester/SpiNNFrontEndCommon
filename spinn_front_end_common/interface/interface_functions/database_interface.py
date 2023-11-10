@@ -13,10 +13,12 @@
 # limitations under the License.
 
 import logging
+from typing import Optional, Set, Tuple
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_bool_or_none)
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from pacman.model.graphs.machine import MachineVertex
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.database import DatabaseWriter
 from spinn_front_end_common.abstract_models import (
@@ -26,39 +28,37 @@ from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface(runtime):
+def database_interface(runtime: Optional[float]) -> Optional[str]:
     """
     :param int runtime:
-    :return: where the database is located
-    :rtype: str
+    :return: where the database is located, if one is made
+    :rtype: str or None
     """
-    # pylint: disable=too-many-arguments
     needs_db = DatabaseWriter.auto_detect_database()
     user_create_database = get_config_bool_or_none(
         "Database", "create_database")
     if user_create_database is not None:
         if user_create_database != needs_db:
-            logger.warning(f"Database creating changed to "
-                           f"{user_create_database} due to cfg settings")
+            logger.warning(
+                "Database creating changed to {} due to cfg settings",
+                user_create_database)
             needs_db = user_create_database
+    if not needs_db:
+        return None
 
-    if needs_db:
-        writer = DatabaseWriter()
+    with DatabaseWriter() as writer:
         logger.info("Creating live event connection database in {}",
                     writer.database_path)
         _write_to_db(writer, runtime)
-        writer.close()
         return writer.database_path
-    return None
 
 
-def _write_to_db(writer, runtime):
+def _write_to_db(w: DatabaseWriter, runtime: Optional[float]):
     """
-    :param DatabaseWriter writer:
+    :param DatabaseWriter w:
     :param int runtime:
     """
-    with writer as w, ProgressBar(
-            6, "Creating graph description database") as p:
+    with ProgressBar(6, "Creating graph description database") as p:
         w.add_system_params(runtime)
         w.add_proxy_configuration()
         p.update()
@@ -74,7 +74,7 @@ def _write_to_db(writer, runtime):
 
         if get_config_bool(
                 "Database", "create_routing_info_to_neuron_id_mapping"):
-            machine_vertices = {
+            machine_vertices: Set[Tuple[MachineVertex, str]] = {
                 (vertex, vertex.injection_partition_id)
                 for vertex in FecDataView.iterate_machine_vertices()
                 if isinstance(vertex, AbstractSupportsDatabaseInjection)

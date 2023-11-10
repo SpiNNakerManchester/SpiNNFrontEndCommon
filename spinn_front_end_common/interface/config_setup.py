@@ -22,7 +22,7 @@ from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 BASE_CONFIG_FILE = "spinnaker.cfg"
 
 
-def unittest_setup():
+def unittest_setup() -> None:
     """
     Does all the steps that may be required before a unit test.
 
@@ -39,7 +39,7 @@ def unittest_setup():
     FecDataWriter.mock()
 
 
-def add_spinnaker_cfg():
+def add_spinnaker_cfg() -> None:
     """
     Add the local configuration and all dependent configuration files.
     """

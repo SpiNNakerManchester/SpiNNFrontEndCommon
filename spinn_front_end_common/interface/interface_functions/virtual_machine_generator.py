@@ -14,14 +14,14 @@
 
 import logging
 from spinn_utilities.config_holder import (
-    get_config_int, get_config_str_or_none)
+    get_config_int, get_config_str_or_none, is_config_none)
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import json_machine, virtual_machine
+from spinn_machine import json_machine, virtual_machine, Machine
 from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def virtual_machine_generator():
+def virtual_machine_generator() -> Machine:
     """
     Generates a virtual machine with given dimensions and configuration.
 
@@ -37,6 +37,7 @@ def virtual_machine_generator():
 
     json_path = get_config_str_or_none("Machine", "json_path")
     if json_path is None:
+        assert width is not None and height is not None
         n_cores = FecDataView.get_machine_version().max_cores_per_chip
         machine = virtual_machine(
             width=width, height=height,
@@ -45,9 +46,9 @@ def virtual_machine_generator():
     else:
         if (height is not None or width is not None or
                 version is not None or
-                get_config_str_or_none("Machine", "down_chips") is not None or
-                get_config_str_or_none("Machine", "down_cores") is not None or
-                get_config_str_or_none("Machine", "down_links") is not None):
+                not is_config_none("Machine", "down_chips") or
+                not is_config_none("Machine", "down_cores") or
+                not is_config_none("Machine", "down_links")):
             logger.warning("As json_path specified all other virtual "
                            "machine settings ignored.")
         machine = json_machine.machine_from_json(json_path)

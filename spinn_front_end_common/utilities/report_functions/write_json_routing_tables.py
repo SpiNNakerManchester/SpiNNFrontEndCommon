@@ -16,42 +16,36 @@ import json
 import os
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
-from pacman.model.routing_tables.multicast_routing_tables import to_json
+from pacman.model.routing_tables.multicast_routing_tables import (
+    to_json, MulticastRoutingTables)
 from spinn_front_end_common.data import FecDataView
 
-ROUTING_TABLES_FILENAME = "routing_tables.json"
+_ROUTING_TABLES_FILENAME = "routing_tables.json"
 
 
-def write_json_routing_tables(router_tables):
+def write_json_routing_tables(router_tables: MulticastRoutingTables) -> str:
     """
     Runs the code to write the machine in Java readable JSON.
 
     :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
         Routing Tables to convert. Could be uncompressed or compressed
-    :param str json_folder: the folder to which the JSON are being written
     """
-    # Steps are tojson, validate and writefile
-    progress = ProgressBar(3, "Converting to JSON RouterTables")
-
     file_path = os.path.join(
-        FecDataView.get_json_dir_path(), ROUTING_TABLES_FILENAME)
-    json_obj = to_json(router_tables)
+        FecDataView.get_json_dir_path(), _ROUTING_TABLES_FILENAME)
+    # Steps are tojson, validate and writefile
+    with ProgressBar(3, "Converting to JSON RouterTables") as progress:
+        json_obj = to_json(router_tables)
 
-    if progress:
         progress.update()
 
-    # validate the schema
-    file_format_schemas.validate(json_obj, ROUTING_TABLES_FILENAME)
+        # validate the schema
+        file_format_schemas.validate(json_obj, _ROUTING_TABLES_FILENAME)
 
-    # update and complete progress bar
-    if progress:
+        # update and complete progress bar
         progress.update()
 
-    # dump to json file
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(json_obj, f)
-
-    if progress:
-        progress.end()
+        # dump to json file
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(json_obj, f)
 
     return file_path

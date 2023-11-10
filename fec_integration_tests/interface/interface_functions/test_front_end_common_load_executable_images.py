@@ -34,11 +34,11 @@ class _MockTransceiver(MockableTransceiver):
         self._executable_on_core = dict()
 
     @overrides(MockableTransceiver.execute_flood)
-    def execute_flood(self, core_subsets, executable, app_id, *,
-                      n_bytes=None, wait=False):  # @UnusedVariable
+    def execute_flood(
+            self, core_subsets, executable, app_id, *,
+            n_bytes=None, wait=False, is_filename=False):  # @UnusedVariable
         for core_subset in core_subsets.core_subsets:
-            x = core_subset.x
-            y = core_subset.y
+            x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
                 self._test_case.assertNotIn(
                     (x, y, p), self._executable_on_core)

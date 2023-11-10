@@ -17,18 +17,25 @@ import logging
 import math
 import os
 import time
+from typing import Dict, Optional, Tuple
 from spinn_utilities.config_holder import (
     get_config_int, get_config_int_or_none, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocol)
+from spinn_utilities.typing.coords import XY
+from spinn_machine import Chip, FixedRouteEntry, CoreSubsets
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
+from spinnman.model.enums import ExecutableType
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
+from pacman.model.graphs.application import ApplicationVertex
+from spinn_front_end_common.utilities.notification_protocol import (
+    NotificationProtocol)
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
+    import SpallocJobController
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
@@ -39,12 +46,10 @@ from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from .fec_data_view import FecDataView, _FecDataModel
 
-
 logger = FormatAdapter(logging.getLogger(__name__))
 __temp_dir = None
 
 REPORTS_DIRNAME = "reports"
-# pylint: disable=protected-access
 
 
 class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
@@ -57,10 +62,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     available to subclasses.
     """
     __fec_data = _FecDataModel()
-    __slots__ = []
+    __slots__ = ()
+    # pylint: disable=protected-access
 
     @overrides(PacmanDataWriter._mock)
-    def _mock(self):
+    def _mock(self) -> None:
         PacmanDataWriter._mock(self)
         self._spinnman_mock()
         self.__fec_data._clear()
@@ -69,7 +75,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.set_up_timings(1000, 1)
 
     @overrides(PacmanDataWriter._setup)
-    def _setup(self):
+    def _setup(self) -> None:
         PacmanDataWriter._setup(self)
         self._spinnman_setup()
         self.__fec_data._clear()
@@ -80,12 +86,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__create_run_dir_path()
 
     @overrides(PacmanDataWriter.finish_run)
-    def finish_run(self):
+    def finish_run(self) -> None:
         PacmanDataWriter.finish_run(self)
+        assert self.__fec_data._run_number is not None
         self.__fec_data._run_number += 1
 
     @overrides(PacmanDataWriter._hard_reset)
-    def _hard_reset(self):
+    def _hard_reset(self) -> None:
         if self.is_ran_last():
             self.__fec_data._reset_number += 1
         PacmanDataWriter._hard_reset(self)
@@ -94,33 +101,31 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__create_run_dir_path()
 
     @overrides(PacmanDataWriter._soft_reset)
-    def _soft_reset(self):
+    def _soft_reset(self) -> None:
         if self.is_ran_last():
             self.__fec_data._reset_number += 1
         PacmanDataWriter._soft_reset(self)
         SpiNNManDataWriter._local_soft_reset(self)
         self.__fec_data._soft_reset()
 
-    def __create_run_dir_path(self):
+    def __create_run_dir_path(self) -> None:
         self.set_run_dir_path(self._child_folder(
             self.__fec_data._timestamp_dir_path,
             f"run_{self.__fec_data._run_number}"))
 
-    def __create_reports_directory(self):
+    def __create_reports_directory(self) -> None:
         default_report_file_path = get_config_str(
             "Reports", "default_report_file_path")
         # determine common report folder
         if default_report_file_path == "DEFAULT":
             directory = os.getcwd()
-
-            # global reports folder
-            self.set_report_dir_path(
-                self._child_folder(directory, REPORTS_DIRNAME))
         else:
-            self.set_report_dir_path(
-                self._child_folder(default_report_file_path, REPORTS_DIRNAME))
+            directory = default_report_file_path
+        # global reports folder
+        self.set_report_dir_path(
+            self._child_folder(directory, REPORTS_DIRNAME))
 
-    def __create_timestamp_directory(self):
+    def __create_timestamp_directory(self) -> None:
         while True:
             try:
                 now = datetime.datetime.now()
@@ -133,7 +138,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             except OSError:
                 time.sleep(0.5)
 
-    def set_allocation_controller(self, allocation_controller):
+    def set_allocation_controller(self, allocation_controller: Optional[
+            MachineAllocationController]):
         """
         Sets the allocation controller variable.
 
@@ -143,9 +149,17 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 allocation_controller, MachineAllocationController):
             raise TypeError(
                 "allocation_controller must be a MachineAllocationController")
+        self.__fec_data._spalloc_job = None
         self.__fec_data._allocation_controller = allocation_controller
+        if allocation_controller is None:
+            return
+        if allocation_controller.proxying:
+            if not isinstance(allocation_controller, SpallocJobController):
+                raise NotImplementedError(
+                    "Expecting only the SpallocJobController to be proxying")
+            self.__fec_data._spalloc_job = allocation_controller.job
 
-    def set_buffer_manager(self, buffer_manager):
+    def set_buffer_manager(self, buffer_manager: BufferManager):
         """
         Sets the Buffer manager variable.
 
@@ -155,7 +169,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("buffer_manager must be a BufferManager")
         self.__fec_data._buffer_manager = buffer_manager
 
-    def increment_current_run_timesteps(self, increment):
+    def increment_current_run_timesteps(self, increment: Optional[int]):
         """
         Increment the current_run_timesteps and sets first_machine_time_step.
 
@@ -168,19 +182,21 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             if self.__fec_data._current_run_timesteps != 0:
                 raise NotImplementedError("Run forever after another run")
             self.__fec_data._current_run_timesteps = None
-        else:
-            if not isinstance(increment, int):
-                raise TypeError("increment should be an int (or None")
-            if increment < 0:
-                raise ConfigurationException(
-                    f"increment {increment} must not be negative")
-            if self.__fec_data._current_run_timesteps is None:
-                raise NotImplementedError("Run after run forever")
-            self.__fec_data._first_machine_time_step = \
-                self.__fec_data._current_run_timesteps
-            self.__fec_data._current_run_timesteps += increment
+            return
 
-    def set_max_run_time_steps(self, max_run_time_steps):
+        if not isinstance(increment, int):
+            raise TypeError("increment should be an int (or None")
+        if increment < 0:
+            raise ConfigurationException(
+                f"increment {increment} must not be negative")
+
+        if self.__fec_data._current_run_timesteps is None:
+            raise NotImplementedError("Run after run forever")
+        self.__fec_data._first_machine_time_step = \
+            self.__fec_data._current_run_timesteps
+        self.__fec_data._current_run_timesteps += increment
+
+    def set_max_run_time_steps(self, max_run_time_steps: int):
         """
         Sets the max_run_time_steps value
 
@@ -194,8 +210,9 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._max_run_time_steps = max_run_time_steps
 
     def set_up_timings(
-            self, simulation_time_step_us, time_scale_factor,
-            default_time_scale_factor=None):
+            self, simulation_time_step_us: Optional[int],
+            time_scale_factor: Optional[float],
+            default_time_scale_factor: Optional[float] = None):
         """
         Set up timings for the simulation.
 
@@ -230,7 +247,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             self.__fec_data._hardware_time_step_ms = None
             raise
 
-    def _set_simulation_time_step(self, simulation_time_step_us):
+    def _set_simulation_time_step(
+            self, simulation_time_step_us: Optional[int]):
         """
         :param simulation_time_step_us:
             An explicitly specified time step for the simulation.  If `None`,
@@ -260,7 +278,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 simulation_time_step_us / MICRO_TO_SECOND_CONVERSION)
 
     def _set_time_scale_factor(
-            self, time_scale_factor, default_time_scale_factor):
+            self, time_scale_factor: Optional[float],
+            default_time_scale_factor: Optional[float]):
         """
         Set up time_scale_factor.
 
@@ -291,8 +310,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 1.0, math.ceil(self.get_simulation_time_step_per_ms()))
             if time_scale_factor > 1.0:
                 logger.warning(
-                    f"A timestep was entered that has forced spinnaker to "
-                    f"automatically slow the simulation down from real time "
+                    "A timestep was entered that has forced SpiNNaker to "
+                    "automatically slow the simulation down from real time "
                     f"by a factor of {time_scale_factor}.")
 
         if not isinstance(time_scale_factor, (int, float)):
@@ -305,7 +324,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
         self.__fec_data._time_scale_factor = time_scale_factor
 
-    def _set_hardware_timestep(self):
+    def _set_hardware_timestep(self) -> None:
         raw = (self.get_simulation_time_step_us() *
                self.get_time_scale_factor())
         rounded = round(raw)
@@ -316,15 +335,18 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 f": {self.get_time_scale_factor()} produced a non integer "
                 f"hardware time step of {raw}")
 
-        logger.info(f"Setting hardware timestep as {rounded} microseconds "
-                    f"based on simulation time step of "
-                    f"{self.get_simulation_time_step_us()} and "
-                    f"timescale factor of {self.get_time_scale_factor()}")
+        logger.info(
+            "Setting hardware timestep as {} microseconds based on "
+            "simulation time step of {} and timescale factor of {}",
+            rounded, self.get_simulation_time_step_us(),
+            self.get_time_scale_factor())
         self.__fec_data._hardware_time_step_us = rounded
         self.__fec_data._hardware_time_step_ms = (
-                rounded / MICRO_TO_MILLISECOND_CONVERSION)
+            rounded / MICRO_TO_MILLISECOND_CONVERSION)
 
-    def set_system_multicast_routing_data(self, data):
+    def set_system_multicast_routing_data(
+            self, data: Tuple[
+                MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]):
         """
         Sets the system_multicast_routing_data.
 
@@ -335,26 +357,21 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :param data: new value
         :type data:
             tuple(~pacman.model.routing_tables.MulticastRoutingTables,
-            dict, dict)
+            dict(tuple(int,int),int), dict(tuple(int,int),int))
         """
-        (data_in_multicast_routing_tables,
-         data_in_multicast_key_to_chip_map,
-         system_multicast_router_timeout_keys) = data
-        if not isinstance(data_in_multicast_routing_tables,
-                          MulticastRoutingTables):
+        routing_tables, key_to_chip_map, timeout_keys = data
+        if not isinstance(routing_tables, MulticastRoutingTables):
             raise TypeError("First element must be a MulticastRoutingTables")
-        if not isinstance(data_in_multicast_key_to_chip_map, dict):
+        if not isinstance(key_to_chip_map, dict):
             raise TypeError("Second element must be dict")
-        if not isinstance(system_multicast_router_timeout_keys, dict):
+        if not isinstance(timeout_keys, dict):
             raise TypeError("Third element must be a dict")
-        self.__fec_data._data_in_multicast_key_to_chip_map = \
-            data_in_multicast_key_to_chip_map
-        self.__fec_data._data_in_multicast_routing_tables = \
-            data_in_multicast_routing_tables
-        self.__fec_data._system_multicast_router_timeout_keys = \
-            system_multicast_router_timeout_keys
+        self.__fec_data._data_in_multicast_key_to_chip_map = key_to_chip_map
+        self.__fec_data._data_in_multicast_routing_tables = routing_tables
+        self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
 
-    def set_n_required(self, n_boards_required, n_chips_required):
+    def set_n_required(self, n_boards_required: Optional[int],
+                       n_chips_required: Optional[int]):
         """
         Sets (if not `None`) the number of boards/chips requested by the user.
 
@@ -392,7 +409,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._n_boards_required = n_boards_required
         self.__fec_data._n_chips_required = n_chips_required
 
-    def set_n_chips_in_graph(self, n_chips_in_graph):
+    def set_n_chips_in_graph(self, n_chips_in_graph: int):
         """
         Sets the number of chips needed by the graph.
 
@@ -406,7 +423,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 f"{n_chips_in_graph}")
         self.__fec_data._n_chips_in_graph = n_chips_in_graph
 
-    def set_ipaddress(self, ip_address):
+    def set_ipaddress(self, ip_address: str):
         """
         :param str ip_address:
         """
@@ -414,17 +431,18 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("ipaddress must be a str")
         self.__fec_data._ipaddress = ip_address
 
-    def set_fixed_routes(self, fixed_routes):
+    def set_fixed_routes(
+            self, fixed_routes: Dict[Tuple[int, int], FixedRouteEntry]):
         """
         :param fixed_routes:
         :type fixed_routes:
-            dict(tuple(int,int), ~spinn_machine.FixedRouteEntry)
+            dict((int, int), ~spinn_machine.FixedRouteEntry)
         """
         if not isinstance(fixed_routes, dict):
             raise TypeError("fixed_routes must be a dict")
         self.__fec_data._fixed_routes = fixed_routes
 
-    def set_java_caller(self, java_caller):
+    def set_java_caller(self, java_caller: JavaCaller):
         """
         :param JavaCaller java_caller:
         """
@@ -432,18 +450,19 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("java_caller must be a JavaCaller")
         self.__fec_data._java_caller = java_caller
 
-    def reset_sync_signal(self):
+    def reset_sync_signal(self) -> None:
         """
         Returns the sync signal to the default value.
         """
         self.__fec_data._next_sync_signal = Signal.SYNC0
 
-    def set_executable_types(self, executable_types):
+    def set_executable_types(self, executable_types: Dict[
+            ExecutableType, CoreSubsets]):
         """
         :param executable_types:
         :type executable_types: dict(
             ~spinnman.model.enum.ExecutableType,
-            ~spinn_machine.CoreSubsets or None)
+            ~spinn_machine.CoreSubsets)
         """
         if not isinstance(executable_types, dict):
             raise TypeError("executable_types must be a Dict")
@@ -457,7 +476,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise NotImplementedError("This call is only for testing")
         self.__fec_data._live_packet_recorder_params = params
 
-    def set_database_file_path(self, database_file_path):
+    def set_database_file_path(self, database_file_path: Optional[str]):
         """
         Sets the database_file_path variable. Possibly to `None`.
 
@@ -468,7 +487,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("database_file_path must be a str or None")
         self.__fec_data._database_file_path = database_file_path
 
-    def set_executable_targets(self, executable_targets):
+    def set_executable_targets(self, executable_targets: ExecutableTargets):
         """
         Sets the executable_targets
 
@@ -478,38 +497,35 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("executable_targets must be a ExecutableTargets")
         self.__fec_data._executable_targets = executable_targets
 
-    def set_ds_database_path(self, ds_database_path):
+    def set_ds_database_path(self, ds_database_path: str):
         """
         Sets the Data Spec targets database.
 
-        :type ds_database:
-            ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
+        :param str ds_database_path: Existing path to the database
         """
         if not os.path.isfile(ds_database_path):
             raise TypeError("ds_database path must be a filee")
 
         self.__fec_data._ds_database_path = ds_database_path
 
-    def __gatherer_map_error(self):
+    def __gatherer_map_error(self) -> TypeError:
         return TypeError(
-            "gatherer_map must be a dict((int, int), "
+            "gatherer_map must be a dict(Chip, "
             "DataSpeedUpPacketGatherMachineVertex)")
 
-    def set_gatherer_map(self, gatherer_map):
+    def set_gatherer_map(self, gatherer_map: Dict[
+            Chip, DataSpeedUpPacketGatherMachineVertex]):
         """
-        Sets the map of (x,y) to Gatherer Vertices.
+        Sets the map of Chip to Gatherer Vertices.
 
         :param gatherer_map:
-        :type gatherer_map:
-            dict((int, int), DataSpeedUpPacketGatherMachineVertex)
+        :type gatherer_map: dict(Chip, DataSpeedUpPacketGatherMachineVertex)
         """
         if not isinstance(gatherer_map, dict):
             raise self.__gatherer_map_error()
         try:
-            for (x, y), vertex in gatherer_map.items():
-                if not isinstance(x, int):
-                    raise self.__gatherer_map_error()
-                if not isinstance(y, int):
+            for chip, vertex in gatherer_map.items():
+                if not isinstance(chip, Chip):
                     raise self.__gatherer_map_error()
                 if not isinstance(
                         vertex, DataSpeedUpPacketGatherMachineVertex):
@@ -519,26 +535,25 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise self.__gatherer_map_error() from ex
         self.__fec_data._gatherer_map = gatherer_map
 
-    def __monitor_map_error(self):
+    def __monitor_map_error(self) -> TypeError:
         return TypeError(
-            "monitor_map must be a dict((int, int), "
+            "monitor_map must be a dict(Chip, "
             "ExtraMonitorSupportMachineVertex)")
 
-    def set_monitor_map(self, monitor_map):
+    def set_monitor_map(self, monitor_map: Dict[
+            Chip, ExtraMonitorSupportMachineVertex]):
         """
-        Sets the map of (x,y) to Monitor Vertices.
+        Sets the map of Chip to Monitor Vertices.
 
         :param monitor_map:
         :type monitor_map:
-            dict((int, int), ExtraMonitorSupportMachineVertex)
+            dict(Chip, ExtraMonitorSupportMachineVertex)
         """
         if not isinstance(monitor_map, dict):
             raise self.__monitor_map_error()
         try:
-            for (x, y), vertex in monitor_map.items():
-                if not isinstance(x, int):
-                    raise self.__monitor_map_error()
-                if not isinstance(y, int):
+            for chip, vertex in monitor_map.items():
+                if not isinstance(chip, Chip):
                     raise self.__monitor_map_error()
                 if not isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     raise self.__monitor_map_error()
@@ -549,7 +564,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise self.__monitor_map_error() from ex
         self.__fec_data._monitor_map = monitor_map
 
-    def set_notification_protocol(self, notification_protocol):
+    def set_notification_protocol(
+            self, notification_protocol: NotificationProtocol):
         """
         Sets the notification_protocol.
 
@@ -561,7 +577,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 "notification_protocol must be a NotificationProtocol")
         self.__fec_data._notification_protocol = notification_protocol
 
-    def clear_notification_protocol(self):
+    def clear_notification_protocol(self) -> None:
         """
         Closes an existing notification_protocol and sets the value to `None`.
 
@@ -573,11 +589,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     @classmethod
     @overrides(FecDataView.add_vertex)
-    def add_vertex(cls, vertex):
+    def add_vertex(cls, vertex: ApplicationVertex):
         # Avoid the safety check in FecDataView
         PacmanDataWriter.add_vertex(vertex)
 
-    def next_run_step(self):
+    def next_run_step(self) -> int:
         """
         Starts or increases the run step count.
 
@@ -588,11 +604,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         if self.__fec_data._run_step is None:
             self.__fec_data._run_step = 1
-        else:
-            self.__fec_data._run_step += 1
+            return 1
+        self.__fec_data._run_step += 1
         return self.__fec_data._run_step
 
-    def clear_run_steps(self):
+    def clear_run_steps(self) -> None:
         """
         Clears the run step.
 
