@@ -599,19 +599,19 @@ class AbstractSpinnakerBase(ConfigHandler):
             assert steps is not None
             logger.info("Running for {} steps for a total of {}ms",
                         len(steps), run_time)
-            for step in steps:
+            for i, step in enumerate(steps):
                 run_step = self._data_writer.next_run_step()
                 logger.info(f"Run {run_step} of {len(steps)}")
-                self._do_run(step, n_sync_steps)
+                self._do_run(step, n_sync_steps, i + 1 == len(steps))
             self._data_writer.clear_run_steps()
         elif run_time is None and self._run_until_complete:
             logger.info("Running until complete")
-            self._do_run(None, n_sync_steps)
+            self._do_run(None, n_sync_steps, False)
         elif (not get_config_bool(
                 "Buffers", "use_auto_pause_and_resume") or
                 not is_per_timestep_sdram):
             logger.info("Running forever")
-            self._do_run(None, n_sync_steps)
+            self._do_run(None, n_sync_steps, False)
             logger.info("Waiting for stop request")
             with self._state_condition:
                 while self._data_writer.is_no_stop_requested():
@@ -622,7 +622,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             while self._data_writer.is_no_stop_requested():
                 logger.info(f"Run {self._data_writer.next_run_step()}")
                 self._do_run(
-                    self._data_writer.get_max_run_time_steps(), n_sync_steps)
+                    self._data_writer.get_max_run_time_steps(), n_sync_steps,
+                    False)
             self._data_writer.clear_run_steps()
 
         # Indicate that the signal handler needs to act
@@ -2057,16 +2058,19 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             profile_data_gatherer()
 
-    def _do_read_provenance(self) -> None:
+    def _do_read_provenance(self, is_end: bool) -> None:
         """
         Runs, times and log the methods that gather provenance.
 
+        :param bool is_end: Is this the end of simulation?
         :rtype: list(ProvenanceDataItem)
         """
-        self._execute_graph_provenance_gatherer()
-        self._execute_placements_provenance_gatherer()
-        self._execute_router_provenance_gatherer()
-        self._execute_profile_data_gatherer()
+        read_on_end = get_config_bool("Reports", "read_provenance_data_on_end")
+        if not read_on_end or is_end:
+            self._execute_graph_provenance_gatherer()
+            self._execute_placements_provenance_gatherer()
+            self._execute_router_provenance_gatherer()
+            self._execute_profile_data_gatherer()
 
     def _report_energy(self) -> None:
         """
@@ -2191,25 +2195,26 @@ class AbstractSpinnakerBase(ConfigHandler):
             bm = self._data_writer.get_buffer_manager()
             bm.get_placement_data()
 
-    def _do_extract_from_machine(self) -> None:
+    def _do_extract_from_machine(self, is_end: bool) -> None:
         """
         Runs, times and logs the steps to extract data from the machine.
 
         :param run_time: the run duration in milliseconds.
         :type run_time: int or None
+        :param bool is_end: Is this the end of simulation?
         """
         self._execute_extract_iobuff()
         self._execute_buffer_extractor()
         self._execute_clear_io_buf()
 
         # FinaliseTimingData never needed as just pushed self._ to inputs
-        self._do_read_provenance()
+        self._do_read_provenance(is_end)
         self._report_energy()
         self._do_provenance_reports()
 
     def __do_run(
             self, n_machine_time_steps: Optional[int],
-            n_sync_steps: int) -> None:
+            n_sync_steps: int, is_last: bool) -> None:
         """
         Runs, times and logs the do run steps.
 
@@ -2217,6 +2222,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type n_machine_time_steps: int or None
         :param int n_sync_steps:
             The number of timesteps between synchronisations
+        :param bool is_last: Is this the last step to run?
         """
         # TODO virtual board
         FecTimer.start_category(TimerCategory.RUN_LOOP)
@@ -2239,7 +2245,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
         if n_machine_time_steps is not None or self._run_until_complete:
-            self._do_extract_from_machine()
+            self._do_extract_from_machine(is_last)
         # reset at the end of each do_run cycle
         self._report_drift(start=False)
         self._execute_control_sync(True)
@@ -2247,7 +2253,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_run(
             self, n_machine_time_steps: Optional[int],
-            n_sync_steps: int) -> None:
+            n_sync_steps: int, is_last: bool) -> None:
         """
         Runs, times and logs the do run steps.
 
@@ -2255,9 +2261,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type n_machine_time_steps: int or None
         :param int n_sync_steps:
             The number of timesteps between synchronisations
+        :param bool is_last: Is this the last step to run?
         """
         try:
-            self.__do_run(n_machine_time_steps, n_sync_steps)
+            self.__do_run(n_machine_time_steps, n_sync_steps, is_last)
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
             self._shutdown()
@@ -2463,7 +2470,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     and not self._run_until_complete):
                 self._do_stop_workflow()
             elif get_config_bool("Reports", "read_provenance_data_on_end"):
-                self._do_read_provenance()
+                self._do_read_provenance(is_end=True)
 
         except Exception as e:
             self._recover_from_error(e)
@@ -2482,7 +2489,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_stop_workflow(self) -> None:
         self._execute_application_finisher()
-        self._do_extract_from_machine()
+        self._do_extract_from_machine(True)
 
     @property
     def get_number_of_available_cores_on_machine(self) -> int:
