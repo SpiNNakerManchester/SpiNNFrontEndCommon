@@ -17,7 +17,7 @@ import json
 import logging
 import os
 import subprocess
-from typing import Dict, Iterable, List, Optional, cast
+from typing import Dict, Tuple, Iterable, List, Optional, cast
 from spinn_utilities.config_holder import (
     get_config_str, get_config_str_or_none)
 from spinn_utilities.log import FormatAdapter
@@ -32,6 +32,7 @@ from pacman.model.graphs.application import (
     ApplicationVertex, ApplicationEdgePartition)
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     vertex_xy, vertex_xy_and_route, get_app_partitions)
+from pacman.model.graphs.machine.machine_vertex import MachineVertex
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import (
         write_json_machine)  # Argh! Mypy
@@ -267,7 +268,8 @@ class JavaCaller(object):
             "tagID": iptag.tag,
             "trafficIdentifier": iptag.traffic_identifier}
 
-    def _json_partition(self, partition: ApplicationEdgePartition):
+    def _json_partition(
+            self, partition: ApplicationEdgePartition) -> JsonObject:
         # Partition is:
         # {
         #     # Partition identifier
@@ -309,34 +311,34 @@ class JavaCaller(object):
         #         }, ...
         #     ]
         # }
-        json_dict = dict()
+        json_dict: JsonObject = dict()
         json_dict["identifier"] = partition.identifier
         json_dict["label"] = partition.pre_vertex.label
-        outgoing = defaultdict(list)
+        outgoing: Dict[Tuple[int, int], JsonArray] = defaultdict(list)
         pre_splitter = partition.pre_vertex.splitter
         for pre_m_vertex in pre_splitter.get_out_going_vertices(
-                partition.indentifier):
+                partition.identifier):
             x, y = vertex_xy(pre_m_vertex)
             outgoing[(x, y)].append(pre_m_vertex.label)
-        outgoing_list = []
+        outgoing_list: JsonArray = []
         for (x, y), sources in outgoing.items():
             outgoing_list.append({"x": x, "y": y, "machine_vertices": sources})
         json_dict["source_chips"] = outgoing_list
 
-        targets = []
+        targets: JsonArray = []
         for edge in partition.edges:
             sp = edge.post_vertex.splitter
-            target_dict = dict()
+            target_dict: JsonObject = dict()
             target_dict["target_app_vertex"] = edge.post_vertex.label
-            target_m_vertices = list()
-            for m_vertex, sources in sp.get_source_specific_in_coming_vertices(
+            target_m_vertices: JsonArray = list()
+            for m_vertex, srcs in sp.get_source_specific_in_coming_vertices(
                     partition.pre_vertex, partition.identifier):
                 (x, y), (_, p, l) = vertex_xy_and_route(m_vertex)
-                target_m_vertex = {"x": x, "y": y, "p": p, "l": l}
-                source_list = list()
-                for source in sources:
+                target_m_vertex: JsonObject = {"x": x, "y": y, "p": p, "l": l}
+                source_list: JsonArray = list()
+                for source in srcs:
                     is_app_vtx = isinstance(source, ApplicationVertex)
-                    source_dict = dict()
+                    source_dict: JsonObject = dict()
                     source_dict["is_app_vertex"] = is_app_vtx
                     source_dict["label"] = source.label
                     if is_app_vtx:
@@ -353,26 +355,29 @@ class JavaCaller(object):
         internal_parts = pre_splitter.get_internal_multicast_partitions()
         if internal_parts:
             # Gather the internal sources for each target
-            internal_targets = defaultdict(list)
+            internal_targets: Dict[MachineVertex, JsonArray] = \
+                defaultdict(list)
             for in_part in internal_parts:
                 src = in_part.pre_vertex
                 for edge in in_part.edges:
                     tgt = edge.post_vertex
                     internal_targets[tgt].append(
-                        {"is_app_vertex": False, "label": src.label,
-                         "app_vertex_label": partition.pre_vertex.label})
+                        {"is_app_vertex": False, "label": src.label or "",
+                         "app_vertex_label": partition.pre_vertex.label or ""})
 
-            int_target_dict = dict()
+            int_target_dict: JsonObject = dict()
             int_target_dict["target_app_vertex"] = partition.pre_vertex.label
-            int_target_m_vertices = list()
-            for int_tgt, srcs in internal_targets.items():
+            int_target_m_vertices: JsonArray = list()
+            for int_tgt, int_srcs in internal_targets.items():
                 (i_x, i_y), (_, i_p, i_l) = vertex_xy_and_route(int_tgt)
                 int_target_m_vertices.append(
-                    {"x": i_x, "y": i_y, "p": i_p, "l": i_l, "sources": srcs})
+                    {"x": i_x, "y": i_y, "p": i_p, "l": i_l,
+                     "sources": int_srcs})
             int_target_dict["target_m_vertices"] = int_target_m_vertices
             targets.append(int_target_dict)
 
         json_dict["targets"] = targets
+        return json_dict
 
     def _placements_grouped(
             self, recording_placements: Iterable[Placement]) -> Dict[
@@ -459,8 +464,8 @@ class JavaCaller(object):
 
         return path
 
-    def _write_partitions(self):
-        path = os.path.join(
+    def _write_partitions(self) -> None:
+        path: str = os.path.join(
             FecDataView.get_json_dir_path(), "java_partitions.json")
         json_obj: JsonArray = list()
         for partition in get_app_partitions():
