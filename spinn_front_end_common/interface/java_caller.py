@@ -28,6 +28,10 @@ from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.data import FecDataView
 from pacman.model.placements import Placement
+from pacman.model.graphs.application import (
+    ApplicationVertex, ApplicationEdgePartition)
+from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
+    vertex_xy, vertex_xy_and_route, get_app_partitions)
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import (
         write_json_machine)  # Argh! Mypy
@@ -206,11 +210,14 @@ class JavaCaller(object):
             FecDataView.get_json_dir_path(), "java_placements.json")
         self._recording = False
         if self._gatherer_iptags is None:
-            self.__placement_json = self._write_placements(
+            self.__placement_json = self._write_recorded_placements(
                 used_placements, path)
         else:
             self.__placement_json = self._write_gather(
                 used_placements, path)
+
+        # We can write this now too
+        self._write_partitions()
 
     @property
     def _placement_json(self) -> str:
@@ -218,7 +225,7 @@ class JavaCaller(object):
             raise SpinnFrontEndException("placements not set")
         return self.__placement_json
 
-    def _json_placement(self, placement: Placement):
+    def _json_recorded_placement(self, placement: Placement):
         """
         :param ~pacman.model.placements.Placement placement:
         :rtype: dict
@@ -259,6 +266,113 @@ class JavaCaller(object):
             "stripSDP": iptag.strip_sdp,
             "tagID": iptag.tag,
             "trafficIdentifier": iptag.traffic_identifier}
+
+    def _json_partition(self, partition: ApplicationEdgePartition):
+        # Partition is:
+        # {
+        #     # Partition identifier
+        #     "identifier": str
+        #     # The source vertex label
+        #     "label": str
+        #     # List of chips containing source machine vertices
+        #     "source_chips": [
+        #         {
+        #             # The coordinates of the source chip.
+        #             "x": int, "y": int,
+        #             # The labels of machine vertices on the chip.
+        #             "machine_vertices": [str]
+        #         }, ...
+        #     ]
+        #     # List of targets by application vertex
+        #     "targets": [
+        #         {
+        #             # Target application vertex name
+        #             "target_app_vertex": str (label of vertex),
+        #             # Target machine vertices and sources which target them
+        #             "target_m_vertices": [
+        #                 {
+        #                     # Chip of the target
+        #                     "x": int, "y": int,
+        #                     # Core or link of the target (might be virtual)
+        #                     "p": int or null
+        #                     "l": int or null
+        #                     # List of source vertex labels to target this
+        #                     "sources": [
+        #                         {
+        #                             "is_app_vertex": bool.
+        #                             "label": str,
+        #                             "app_vertex_label": str
+        #                         }, ...
+        #                     ]
+        #                 }, ...
+        #             ]
+        #         }, ...
+        #     ]
+        # }
+        json_dict = dict()
+        json_dict["identifier"] = partition.identifier
+        json_dict["label"] = partition.pre_vertex.label
+        outgoing = defaultdict(list)
+        pre_splitter = partition.pre_vertex.splitter
+        for pre_m_vertex in pre_splitter.get_out_going_vertices(
+                partition.indentifier):
+            x, y = vertex_xy(pre_m_vertex)
+            outgoing[(x, y)].append(pre_m_vertex.label)
+        outgoing_list = []
+        for (x, y), sources in outgoing.items():
+            outgoing_list.append({"x": x, "y": y, "machine_vertices": sources})
+        json_dict["source_chips"] = outgoing_list
+
+        targets = []
+        for edge in partition.edges:
+            sp = edge.post_vertex.splitter
+            target_dict = dict()
+            target_dict["target_app_vertex"] = edge.post_vertex.label
+            target_m_vertices = list()
+            for m_vertex, sources in sp.get_source_specific_in_coming_vertices(
+                    partition.pre_vertex, partition.identifier):
+                (x, y), (_, p, l) = vertex_xy_and_route(m_vertex)
+                target_m_vertex = {"x": x, "y": y, "p": p, "l": l}
+                source_list = list()
+                for source in sources:
+                    is_app_vtx = isinstance(source, ApplicationVertex)
+                    source_dict = dict()
+                    source_dict["is_app_vertex"] = is_app_vtx
+                    source_dict["label"] = source.label
+                    if is_app_vtx:
+                        source_dict["app_vertex_label"] = source.label
+                    else:
+                        source_dict["app_vertex_label"] = \
+                            source.app_vertex.label
+                    source_list.append(source_dict)
+                target_m_vertex["sources"] = source_list
+                target_m_vertices.append(target_m_vertex)
+            target_dict["target_m_vertices"] = target_m_vertices
+            targets.append(target_dict)
+
+        internal_parts = pre_splitter.get_internal_multicast_partitions()
+        if internal_parts:
+            # Gather the internal sources for each target
+            internal_targets = defaultdict(list)
+            for in_part in internal_parts:
+                src = in_part.pre_vertex
+                for edge in in_part.edges:
+                    tgt = edge.post_vertex
+                    internal_targets[tgt].append(
+                        {"is_app_vertex": False, "label": src.label,
+                         "app_vertex_label": partition.pre_vertex.label})
+
+            int_target_dict = dict()
+            int_target_dict["target_app_vertex"] = partition.pre_vertex.label
+            int_target_m_vertices = list()
+            for int_tgt, srcs in internal_targets.items():
+                (i_x, i_y), (_, i_p, i_l) = vertex_xy_and_route(int_tgt)
+                int_target_m_vertices.append(
+                    {"x": i_x, "y": i_y, "p": i_p, "l": i_l, "sources": srcs})
+            int_target_dict["target_m_vertices"] = int_target_m_vertices
+            targets.append(int_target_dict)
+
+        json_dict["targets"] = targets
 
     def _placements_grouped(
             self, recording_placements: Iterable[Placement]) -> Dict[
@@ -309,7 +423,7 @@ class JavaCaller(object):
                     "p": self._monitor_cores[chip]}
                 if chip in by_chip:
                     json_placements = [
-                        self._json_placement(placement)
+                        self._json_recorded_placement(placement)
                         for placement in by_chip[chip]]
                     if json_placements:
                         json_chip["placements"] = json_placements
@@ -323,7 +437,7 @@ class JavaCaller(object):
 
         return path
 
-    def _write_placements(
+    def _write_recorded_placements(
             self, used_placements: Iterable[Placement], path: str) -> str:
         """
         :param ~pacman.model.placements.Placements placements:
@@ -335,7 +449,7 @@ class JavaCaller(object):
         json_obj: JsonArray = list()
         for placement in used_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
-                json_p = self._json_placement(placement)
+                json_p = self._json_recorded_placement(placement)
                 if json_p:
                     json_obj.append(json_p)
 
@@ -344,6 +458,15 @@ class JavaCaller(object):
             json.dump(json_obj, f)
 
         return path
+
+    def _write_partitions(self):
+        path = os.path.join(
+            FecDataView.get_json_dir_path(), "java_partitions.json")
+        json_obj: JsonArray = list()
+        for partition in get_app_partitions():
+            json_obj.append(self._json_partition(partition))
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(json_obj, f)
 
     def _run_java(self, *args: str) -> int:
         """
