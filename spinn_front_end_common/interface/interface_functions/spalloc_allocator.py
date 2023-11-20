@@ -421,9 +421,9 @@ def _launch_checked_job_old(n_boards: int, spalloc_kwargs: dict) -> Tuple[
                 raise
             connections = job.connections
             if len(connections) < n_boards:
-                logger.warning("boards: {}",
-                             str(connections).replace("{", "[").replace(
-                                 "}", "]"))
+                logger.warning(
+                    "boards: {}",
+                    str(connections).replace("{", "[").replace("}", "]"))
                 raise ValueError("Not enough connections detected")
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("boards: {}",
