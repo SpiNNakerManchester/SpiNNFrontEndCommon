@@ -122,7 +122,7 @@ class ConfigHandler(object):
             "See https://spinnakermanchester.github.io/common_pages/"
             "Algorithms.html.")
 
-    def _adjust_config(self, runtime: Union[int, bool, None]):
+    def _adjust_config(self, runtime: Optional[float]):
         """
         Adjust and checks the configuration based on runtime
 

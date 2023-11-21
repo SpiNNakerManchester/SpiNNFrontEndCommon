@@ -383,7 +383,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run(n_steps, sync_time=0.0)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
 
-    def run(self, run_time: Optional[int], sync_time: float = 0):
+    def run(self, run_time: Optional[float], sync_time: float = 0):
         """
         Run a simulation for a fixed amount of time.
 
@@ -453,7 +453,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             f"{self._data_writer.get_hardware_time_step_us()} us")
         return n_machine_time_steps, total_run_time
 
-    def _run(self, run_time: Optional[int], sync_time: float):
+    def _run(self, run_time: Optional[float], sync_time: float):
         self._data_writer.start_run()
 
         try:
@@ -477,7 +477,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         return threading.get_ident() == threading.main_thread().ident
 
-    def __run(self, run_time: Optional[int], sync_time: float):
+    def __run(self, run_time: Optional[float], sync_time: float):
         """
         The main internal run function.
 
