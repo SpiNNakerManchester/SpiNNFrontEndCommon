@@ -55,13 +55,16 @@ enum sdp_port_commands {
     SDP_SEND_DATA_TO_LOCATION_CMD = 200,
     //! Data In: Received message contains data to write
     SDP_SEND_SEQ_DATA_CMD = 2000,
-    //! Data In: Received message asks for missing sequence numbers
+    //! Data In: Received message asks for missing sequence numbers sent
     SDP_TELL_MISSING_BACK_TO_HOST = 2001,
-    // sent
     //! Data In: Sent message contains missing sequence numbers
     SDP_SEND_MISSING_SEQ_DATA_IN_CMD = 2002,
     //! Data In: Sent message indicates that everything has been received
-    SDP_SEND_FINISHED_DATA_IN_CMD = 2003
+    SDP_SEND_FINISHED_DATA_IN_CMD = 2003,
+    //! Data In: Send from SDRAM address on 0, 0 to target
+    SDP_SEND_FROM_SDRAM_CMD = 2004,
+    //! Data In: Send from SDRAM, re-trigger response
+    SDP_SEND_FROM_SDRAM_CHECK = 2005,
 };
 
 //! values for port numbers this core will respond to
@@ -151,6 +154,16 @@ typedef struct sdp_msg_out_payload_t {
     uint data[ITEMS_PER_MISSING_PACKET];
 } sdp_msg_out_payload_t;
 
+//! SDP message to copy from SDRAM
+typedef struct sdp_copy_msg_t {
+    uint command;              //!< The command of the message
+    uint base_address_local;   //!< The local base address to copy from
+    uint base_address_target;  //!< The target base address to copy to
+    ushort target_x;           //!< The x-coordinate of the target chip
+    ushort target_y;           //!< The y-coordinate of the target chip
+    uint n_values;             //!< The number of values to copy
+} sdp_copy_msg_t;
+
 //! the key that causes data out sequence number to be processed
 static uint32_t new_sequence_key = 0;
 
@@ -187,6 +200,12 @@ static uint32_t position_in_store = 0;
 
 //! SDP message holder for transmissions
 static sdp_msg_pure_data my_msg;
+
+//! If there is a copy in progress (one at a time)
+static bool copy_in_progress = false;
+
+//! The copy that is in progress if any (otherwise ignored)
+static sdp_copy_msg_t copy_msg;
 
 //! human readable definitions of each DSG region in SDRAM
 enum {
@@ -680,6 +699,55 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     }
 }
 
+static void send_from_sdram_check(void) {
+    log_info("Copy progress check...");
+    if (!copy_in_progress) {
+        log_info("Sending OK now!");
+        send_finished_response();
+    }
+}
+
+void do_sdram_sends(UNUSED uint unused0, UNUSED uint unused1) {
+    log_info("Starting copy of %u words from from 0x%08x locally to 0x%08x on %u, %u",
+            copy_msg.n_values, copy_msg.base_address_local, copy_msg.base_address_target,
+            copy_msg.target_x, copy_msg.target_y);
+    if (copy_msg.target_x == 0 && copy_msg.target_y == 0) {
+        copy_data((uint *) copy_msg.base_address_local,
+                (uint *) copy_msg.base_address_target, copy_msg.n_values);
+    } else {
+        chip_x = copy_msg.target_x;
+        chip_y = copy_msg.target_y;
+        process_sdp_message_into_mc_messages((uint *) copy_msg.base_address_local,
+                copy_msg.n_values, true, copy_msg.base_address_target);
+    }
+    log_info("Sending OK response");
+    copy_in_progress = false;
+    send_from_sdram_check();
+}
+
+static void send_from_sdram(const sdp_msg_pure_data *msg) {
+
+    // Can't to if already copying
+    if (copy_in_progress) {
+        log_info("Copy in progress, rejecting");
+        my_msg.data[0] = RC_P2P_BUSY;
+        set_message_length(&(my_msg.data[4]));
+        send_sdp_message();
+        return;
+    }
+    copy_in_progress = true;
+    sdp_copy_msg_t *copy_msg_ptr = (sdp_copy_msg_t *) msg->data;
+    copy_msg = *copy_msg_ptr;
+    log_info("Scheduling copy of %u words from from 0x%08x locally to 0x%08x on %u, %u",
+            copy_msg.n_values, copy_msg.base_address_local, copy_msg.base_address_target,
+            copy_msg.target_x, copy_msg.target_y);
+    spin1_schedule_callback(do_sdram_sends, 0, 0, 1);
+    my_msg.data[0] = RC_OK;
+    set_message_length(&(my_msg.data[4]));
+    send_sdp_message();
+    return;
+}
+
 //! \brief processes SDP messages for the Data In protocol
 //! \param[in] msg: the SDP message
 static void data_in_receive_sdp_data(const sdp_msg_pure_data *msg) {
@@ -699,6 +767,12 @@ static void data_in_receive_sdp_data(const sdp_msg_pure_data *msg) {
     case SDP_TELL_MISSING_BACK_TO_HOST:
         log_debug("Checking for missing");
         process_missing_seq_nums_and_request_retransmission(msg);
+        break;
+    case SDP_SEND_FROM_SDRAM_CMD:
+        send_from_sdram(msg);
+        break;
+    case SDP_SEND_FROM_SDRAM_CHECK:
+        send_from_sdram_check();
         break;
     default:
         log_error("Failed to recognise command id %u", command);
