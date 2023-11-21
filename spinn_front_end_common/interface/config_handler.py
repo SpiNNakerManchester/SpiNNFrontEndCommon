@@ -17,7 +17,7 @@ import logging
 import os
 import shutil
 import traceback
-from typing import Optional, Type, Union
+from typing import Optional, Type
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
