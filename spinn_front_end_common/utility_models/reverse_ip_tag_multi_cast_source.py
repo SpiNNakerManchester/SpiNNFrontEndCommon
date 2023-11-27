@@ -44,7 +44,8 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
 
     def __init__(
             self, n_keys: int, label: Optional[str] = None,
-            max_atoms_per_core: Optional[int, Tuple[int, ...]] = sys.maxsize,
+            max_atoms_per_core: Optional[
+                Union[int, Tuple[int, ...]]] = sys.maxsize,
 
             # Live input parameters
             receive_port: Optional[int] = None,
