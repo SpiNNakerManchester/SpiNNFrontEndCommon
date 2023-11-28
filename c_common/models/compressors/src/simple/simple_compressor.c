@@ -74,7 +74,8 @@ void compress_start(UNUSED uint unused0, UNUSED uint unused1) {
     // Try to load the routing table
     log_debug("try loading tables");
     if (load_routing_table(header->app_id)) {
-        cleanup_and_exit(header);
+        log_info("completed router compressor");
+        malloc_extras_terminate(EXITED_CLEANLY);
     } else {
         // Otherwise give up and exit with an error
         log_error("Failed to minimise routing table to fit %u entries. "
@@ -100,8 +101,7 @@ bool standalone(void) {
 //! \brief the main entrance.
 void c_main(void) {
     log_debug("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
-    malloc_extras_turn_off_safety();
-    malloc_extras_initialise_no_fake_heap_data();
+    malloc_extras_turn_off_print();
 
     // kick-start the process
     spin1_schedule_callback(compress_start, 0, 0, 3);
