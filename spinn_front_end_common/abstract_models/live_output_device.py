@@ -34,3 +34,4 @@ class LiveOutputDevice(object, metaclass=AbstractBase):
 
         :rtype: Dict[MachineVertex, Tuple[int, int]]
         """
+        raise NotImplementedError
