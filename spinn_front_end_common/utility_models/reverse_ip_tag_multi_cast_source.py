@@ -14,7 +14,7 @@
 
 import sys
 import numpy
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 from spinn_utilities.overrides import overrides
 from spinn_machine.tags import IPTag
 from spinnman.messages.eieio import EIEIOPrefix
@@ -44,7 +44,8 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
 
     def __init__(
             self, n_keys: int, label: Optional[str] = None,
-            max_atoms_per_core: int = sys.maxsize,
+            max_atoms_per_core: Optional[
+                Union[int, Tuple[int, ...]]] = sys.maxsize,
 
             # Live input parameters
             receive_port: Optional[int] = None,
@@ -183,7 +184,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             if is_array_list(self.__send_buffer_times):
                 vertex_slice = vertex.vertex_slice
                 send_buffer_times_to_set = self.__send_buffer_times[
-                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+                    vertex_slice.get_raster_ids()]
             vertex.send_buffer_times = send_buffer_times_to_set
 
     def enable_recording(self, new_state: bool = True):

@@ -31,6 +31,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from pacman.model.graphs.common.mdslice import MDSlice
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 if TYPE_CHECKING:
     from spinn_front_end_common.utilities.utility_objs import (
@@ -87,6 +88,11 @@ class LivePacketGatherMachineVertex(
             The source machine vertex
         :param str partition_id: The incoming partition id
         """
+        if (isinstance(m_vertex.vertex_slice, MDSlice) and
+                self._lpg_params.translate_keys):
+            raise NotImplementedError(
+                "Translating the keys of a multi-dimensional slice is not"
+                " supported.")
         self._incoming_sources.append((m_vertex, partition_id))
 
     @property

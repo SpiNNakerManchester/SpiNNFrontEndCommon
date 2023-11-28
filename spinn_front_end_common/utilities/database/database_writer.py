@@ -18,11 +18,11 @@ import os
 from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
-from pacman.utilities.utility_calls import get_field_based_keys
 from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
+from pacman.utilities.utility_calls import get_keys
 from pacman.model.graphs.abstract_edge_partition import AbstractEdgePartition
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -253,7 +253,7 @@ class DatabaseWriter(SQLiteDB):
                 # at which point there is nothing to do here anyway
                 if r_info is not None:
                     vertex_slice = m_vertex.vertex_slice
-                    keys = get_field_based_keys(r_info.key, vertex_slice)
+                    keys = get_keys(r_info.key, vertex_slice)
                     start = vertex_slice.lo_atom
                     atom_keys = [(i, k) for i, k in enumerate(keys, start)]
             m_vertex_id = self.__vertex_to_id[m_vertex]

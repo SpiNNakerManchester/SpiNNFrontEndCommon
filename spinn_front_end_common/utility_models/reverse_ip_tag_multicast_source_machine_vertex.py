@@ -31,7 +31,7 @@ from pacman.model.resources import (
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
-from pacman.utilities.utility_calls import get_field_based_keys
+from pacman.utilities.utility_calls import get_keys
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
@@ -503,7 +503,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         end_time_step = FecDataView.get_current_run_timesteps()
         if first_time_step == end_time_step:
             return
-        keys = get_field_based_keys(key_base, self.vertex_slice)
+        keys = get_keys(key_base, self.vertex_slice)
         for atom in range(self.vertex_slice.n_atoms):
             for tick in sorted(self._send_buffer_times[atom]):
                 if self._is_in_range(tick, first_time_step, end_time_step):
@@ -524,11 +524,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         end_time_step = FecDataView.get_current_run_timesteps()
         if first_time_step == end_time_step:
             return
-        keys = get_field_based_keys(key_base, self.vertex_slice)
-        key_list = [keys[atom] for atom in range(self.vertex_slice.n_atoms)]
+        keys = get_keys(key_base, self.vertex_slice)
         for tick in sorted(self._send_buffer_times):
             if self._is_in_range(tick, first_time_step, end_time_step):
-                self._send_buffer.add_keys(tick, key_list)
+                self._send_buffer.add_keys(tick, keys)
 
     @staticmethod
     def _generate_prefix(virtual_key: int, prefix_type: EIEIOPrefix) -> int:
