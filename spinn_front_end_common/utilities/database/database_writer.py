@@ -271,7 +271,7 @@ class DatabaseWriter(SQLiteDB):
         Add output mappings for devices.
         """
         for device in devices:
-            for m_vertex, atom_keys in device.get_device_output_keys():
+            for m_vertex, atom_keys in device.get_device_output_keys().items():
                 m_vertex_id = self.__vertex_to_id[m_vertex]
                 self.executemany(
                     """
