@@ -8,6 +8,5 @@ var searchData=
   ['common_2dtypedefs_2eh_5',['common-typedefs.h',['../common-typedefs_8h.html',1,'']]],
   ['common_2eh_6',['common.h',['../common_8h.html',1,'']]],
   ['compressor_2eh_7',['compressor.h',['../compressor_8h.html',1,'']]],
-  ['compressor_5fsorter_5fstructs_2eh_8',['compressor_sorter_structs.h',['../compressor__sorter__structs_8h.html',1,'']]],
-  ['constants_2eh_9',['constants.h',['../constants_8h.html',1,'']]]
+  ['constants_2eh_8',['constants.h',['../constants_8h.html',1,'']]]
 ];

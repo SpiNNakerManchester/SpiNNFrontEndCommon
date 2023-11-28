@@ -129,12 +129,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a170cc9f31ebf162f32e3536258976251"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rt__single_8h.html#a170cc9f31ebf162f32e3536258976251">read_table</a> (<a class="el" href="rt__single_8h.html#structheader__t">header_t</a> *header)</td></tr>
 <tr class="memdesc:a170cc9f31ebf162f32e3536258976251"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a new copy of the routing table from SDRAM.  <a href="rt__single_8h.html#a170cc9f31ebf162f32e3536258976251">More...</a><br /></td></tr>
 <tr class="separator:a170cc9f31ebf162f32e3536258976251"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab9c251df329e64d57c69eb63241ba6dd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rt__single_8h.html#ab9c251df329e64d57c69eb63241ba6dd">load_routing_table</a> (uint32_t <a class="el" href="bit__field__sorter__and__searcher_8c.html#ab580a14d287e81d47a1720fb92e2a199">app_id</a>)</td></tr>
+<tr class="memitem:ab9c251df329e64d57c69eb63241ba6dd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rt__single_8h.html#ab9c251df329e64d57c69eb63241ba6dd">load_routing_table</a> (uint32_t app_id)</td></tr>
 <tr class="memdesc:ab9c251df329e64d57c69eb63241ba6dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a routing table to the router.  <a href="rt__single_8h.html#ab9c251df329e64d57c69eb63241ba6dd">More...</a><br /></td></tr>
 <tr class="separator:ab9c251df329e64d57c69eb63241ba6dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a44e81459c3c028d1d4052f8835dfd430"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rt__single_8h.html#a44e81459c3c028d1d4052f8835dfd430">cleanup_and_exit</a> (<a class="el" href="rt__single_8h.html#structheader__t">header_t</a> *header)</td></tr>
-<tr class="memdesc:a44e81459c3c028d1d4052f8835dfd430"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free memory allocated and call <a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#abe0417e22d07fa7bcdcfcc4ae29f7443">spin1_exit()</a> and sets the user0 error code correctly.  <a href="rt__single_8h.html#a44e81459c3c028d1d4052f8835dfd430">More...</a><br /></td></tr>
-<tr class="separator:a44e81459c3c028d1d4052f8835dfd430"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3fbd652e889e3257343cca2c23484e36"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rt__single_8h.html#a3fbd652e889e3257343cca2c23484e36">routing_table_get_entries</a> (uint32_t start_entry, uint32_t n_entries, <a class="el" href="routing__table_8h.html#structentry__t">entry_t</a> *output)</td></tr>
 <tr class="memdesc:a3fbd652e889e3257343cca2c23484e36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a pointer to several entries.  <a href="rt__single_8h.html#a3fbd652e889e3257343cca2c23484e36">More...</a><br /></td></tr>
 <tr class="separator:a3fbd652e889e3257343cca2c23484e36"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -438,34 +435,6 @@ Routing table entries. </td></tr>
 
 </div>
 </div>
-<a id="a44e81459c3c028d1d4052f8835dfd430" name="a44e81459c3c028d1d4052f8835dfd430"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a44e81459c3c028d1d4052f8835dfd430">&#9670;&#160;</a></span>cleanup_and_exit()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cleanup_and_exit </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="rt__single_8h.html#structheader__t">header_t</a> *&#160;</td>
-          <td class="paramname"><em>header</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Free memory allocated and call <a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#abe0417e22d07fa7bcdcfcc4ae29f7443">spin1_exit()</a> and sets the user0 error code correctly. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">header</td><td>the header object </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="rt__single_8h_source.html#l00174">174</a> of file <a class="el" href="rt__single_8h_source.html">rt_single.h</a>.</p>
-
-</div>
-</div>
 <a id="a3fbd652e889e3257343cca2c23484e36" name="a3fbd652e889e3257343cca2c23484e36"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3fbd652e889e3257343cca2c23484e36">&#9670;&#160;</a></span>routing_table_get_entries()</h2>
 
@@ -509,7 +478,7 @@ Routing table entries. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>: Whether the entries are available now, or should be waited for </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="rt__single_8h_source.html#l00190">190</a> of file <a class="el" href="rt__single_8h_source.html">rt_single.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="rt__single_8h_source.html#l00176">176</a> of file <a class="el" href="rt__single_8h_source.html">rt_single.h</a>.</p>
 
 </div>
 </div>
@@ -540,7 +509,7 @@ Routing table entries. </td></tr>
 <p>Is there a DMA currently running? </p>
 <dl class="section return"><dt>Returns</dt><dd>True if there is something transferring now. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="rt__single_8h_source.html#l00203">203</a> of file <a class="el" href="rt__single_8h_source.html">rt_single.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="rt__single_8h_source.html#l00189">189</a> of file <a class="el" href="rt__single_8h_source.html">rt_single.h</a>.</p>
 
 </div>
 </div>
@@ -563,7 +532,7 @@ Routing table entries. </td></tr>
 <p>Waits for the last transfer from routing_table_get_entries to complete. </p>
 <p >Returns immediately if the last transfer is already done </p>
 
-<p class="definition">Definition at line <a class="el" href="rt__single_8h_source.html#l00209">209</a> of file <a class="el" href="rt__single_8h_source.html">rt_single.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="rt__single_8h_source.html#l00195">195</a> of file <a class="el" href="rt__single_8h_source.html">rt_single.h</a>.</p>
 
 </div>
 </div>

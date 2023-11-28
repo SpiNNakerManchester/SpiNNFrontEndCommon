@@ -11,7 +11,5 @@ var searchData=
   ['aliases_5ffind_8',['aliases_find',['../aliases_8h.html#a74aba207b06c352a94709e66aa832af7',1,'aliases.h']]],
   ['aliases_5finit_9',['aliases_init',['../aliases_8h.html#ae26498c61ce8ba636c6575dc8b0fb2cb',1,'aliases.h']]],
   ['aliases_5finsert_10',['aliases_insert',['../aliases_8h.html#a07e8976dfe05cef7b7acda7805d93df6',1,'aliases.h']]],
-  ['aliases_5fremove_11',['aliases_remove',['../aliases_8h.html#ab71f8d3612ebd57fd1d9184571d487b8',1,'aliases.h']]],
-  ['all_5fcompressor_5fprocessors_5fbusy_12',['all_compressor_processors_busy',['../bit__field__sorter__and__searcher_8c.html#a92a4dc5c2b97aa7fb1c4a353e24e459c',1,'bit_field_sorter_and_searcher.c']]],
-  ['all_5fcompressor_5fprocessors_5fdone_13',['all_compressor_processors_done',['../bit__field__sorter__and__searcher_8c.html#a49520fa4fcbd652ababa3ed7e9e002ee',1,'bit_field_sorter_and_searcher.c']]]
+  ['aliases_5fremove_11',['aliases_remove',['../aliases_8h.html#ab71f8d3612ebd57fd1d9184571d487b8',1,'aliases.h']]]
 ];

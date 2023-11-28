@@ -10,14 +10,13 @@ var searchData=
   ['old_5fvector_7',['old_vector',['https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#a4667c4207f78c13d7560b98b7a10e000',1,'event_data_t']]],
   ['one_5fshot_8',['one_shot',['../spinn__extra_8h.html#ab4be0dcd1ba3c178e3e8d17a531f3305',1,'timer_control_t']]],
   ['op_9',['op',['https://spinnakermanchester.github.io/spinnaker_tools/spinn__net_8h.html#afeaafcf6b7308ad506e2dc025226425b',1,'arp_pkt_t']]],
-  ['order_5fbitfields_10',['order_bitfields',['../bit__field__reader_8h.html#aca5e3310aacf901a560d7f137a4b65fd',1,'bit_field_reader.h']]],
-  ['ordered_5fcovering_2eh_11',['ordered_covering.h',['../ordered__covering_8h.html',1,'']]],
-  ['orientation_12',['orientation',['../spinn__extra_8h.html#ac436078ec716ecb052aaf41a24dce747',1,'sdram_chip_t']]],
-  ['output_13',['output',['../profiler_8h.html#aa1de40c7610de956e20c49b09d6dcb19',1,'profiler_state::output()'],['https://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html#ad5144fdb7795f976c20205cdea174a29',1,'_circular_buffer::output()']]],
-  ['output_5fdivider_14',['output_divider',['../spinn__extra_8h.html#a51ac42d5cade309fe5cb322bd1cf8f14',1,'sc_pll_control_t']]],
-  ['output_5fstage_15',['output_stage',['../spinn__extra_8h.html#a1b9d8e529d1705b114c60f3e2e745698',1,'router_status_t']]],
-  ['outputs_16',['outputs',['../spinn__extra_8h.html#a6ae58ccffece3fdf37d899e30f30dcb6',1,'router_t::dump']]],
-  ['overflow_17',['overflow',['../spinn__extra_8h.html#a3f0b7c297016f3df1b82912bed9e768e',1,'router_error_status_t::overflow()'],['../spinn__extra_8h.html#a416d1bca32d313026c8d04d62920907b',1,'router_dump_status_t::overflow()']]],
-  ['overflows_18',['overflows',['https://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html#a28cd4fb34d81bc5ccc7d1be61b255ea5',1,'_circular_buffer']]],
-  ['overrun_19',['overrun',['../spinn__extra_8h.html#a46124955e51ec120323c87dc3e3c6976',1,'comms_tx_control_t']]]
+  ['ordered_5fcovering_2eh_10',['ordered_covering.h',['../ordered__covering_8h.html',1,'']]],
+  ['orientation_11',['orientation',['../spinn__extra_8h.html#ac436078ec716ecb052aaf41a24dce747',1,'sdram_chip_t']]],
+  ['output_12',['output',['https://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html#ad5144fdb7795f976c20205cdea174a29',1,'_circular_buffer::output()'],['../profiler_8h.html#aa1de40c7610de956e20c49b09d6dcb19',1,'profiler_state::output()']]],
+  ['output_5fdivider_13',['output_divider',['../spinn__extra_8h.html#a51ac42d5cade309fe5cb322bd1cf8f14',1,'sc_pll_control_t']]],
+  ['output_5fstage_14',['output_stage',['../spinn__extra_8h.html#a1b9d8e529d1705b114c60f3e2e745698',1,'router_status_t']]],
+  ['outputs_15',['outputs',['../spinn__extra_8h.html#a6ae58ccffece3fdf37d899e30f30dcb6',1,'router_t::dump']]],
+  ['overflow_16',['overflow',['../spinn__extra_8h.html#a3f0b7c297016f3df1b82912bed9e768e',1,'router_error_status_t::overflow()'],['../spinn__extra_8h.html#a416d1bca32d313026c8d04d62920907b',1,'router_dump_status_t::overflow()']]],
+  ['overflows_17',['overflows',['https://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html#a28cd4fb34d81bc5ccc7d1be61b255ea5',1,'_circular_buffer']]],
+  ['overrun_18',['overrun',['../spinn__extra_8h.html#a46124955e51ec120323c87dc3e3c6976',1,'comms_tx_control_t']]]
 ];

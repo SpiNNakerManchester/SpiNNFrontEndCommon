@@ -75,7 +75,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
@@ -91,15 +90,6 @@ $(function() {
 </div>
 <p><a href="malloc__extras_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Data Structures</h2></td></tr>
-<tr class="memitem:structsdram__block"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#structsdram__block">sdram_block</a></td></tr>
-<tr class="memdesc:structsdram__block"><td class="mdescLeft">&#160;</td><td class="mdescRight">An SDRAM block outside the heap.  <a href="malloc__extras_8h.html#structsdram__block">More...</a><br /></td></tr>
-<tr class="separator:structsdram__block"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:structavailable__sdram__blocks"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#structavailable__sdram__blocks">available_sdram_blocks</a></td></tr>
-<tr class="memdesc:structavailable__sdram__blocks"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds host-allocated SDRAM blocks outside the heap.  <a href="malloc__extras_8h.html#structavailable__sdram__blocks">More...</a><br /></td></tr>
-<tr class="separator:structavailable__sdram__blocks"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a3e218828af7ddd3f4cd0d3772562b520"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a3e218828af7ddd3f4cd0d3772562b520">MALLOC</a>&#160;&#160;&#160;<a class="el" href="malloc__extras_8h.html#a46a747129a5efcce20b14cd796db5f06">malloc_extras_malloc</a></td></tr>
@@ -108,10 +98,10 @@ Macros</h2></td></tr>
 <tr class="memitem:a9a8e700d56e7d858108b755ad3edb52e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a9a8e700d56e7d858108b755ad3edb52e">FREE</a>&#160;&#160;&#160;<a class="el" href="malloc__extras_8h.html#aac64fa96c630b0fb9a282f2ba8e60c1c">malloc_extras_free</a></td></tr>
 <tr class="memdesc:a9a8e700d56e7d858108b755ad3edb52e"><td class="mdescLeft">&#160;</td><td class="mdescRight">An easily-insertable name for the memory free.  <a href="malloc__extras_8h.html#a9a8e700d56e7d858108b755ad3edb52e">More...</a><br /></td></tr>
 <tr class="separator:a9a8e700d56e7d858108b755ad3edb52e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3eedd9a2f1693da656a457d59c2ebba0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a3eedd9a2f1693da656a457d59c2ebba0">FREE_MARKED</a>&#160;&#160;&#160;<a class="el" href="malloc__extras_8h.html#abe0f3bdb686ec639ff38487704b0c48b">malloc_extras_free_marked</a></td></tr>
+<tr class="memitem:a3eedd9a2f1693da656a457d59c2ebba0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a3eedd9a2f1693da656a457d59c2ebba0">FREE_MARKED</a>&#160;&#160;&#160;malloc_extras_free_marked</td></tr>
 <tr class="memdesc:a3eedd9a2f1693da656a457d59c2ebba0"><td class="mdescLeft">&#160;</td><td class="mdescRight">An easily-insertable name for the alternate memory free.  <a href="malloc__extras_8h.html#a3eedd9a2f1693da656a457d59c2ebba0">More...</a><br /></td></tr>
 <tr class="separator:a3eedd9a2f1693da656a457d59c2ebba0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52d8f9cf4967316758b7148966fffeef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a52d8f9cf4967316758b7148966fffeef">MALLOC_SDRAM</a>&#160;&#160;&#160;<a class="el" href="malloc__extras_8h.html#a7235f5835bd635ab7191fc98b26e4f9b">malloc_extras_sdram_malloc_wrapper</a></td></tr>
+<tr class="memitem:a52d8f9cf4967316758b7148966fffeef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a52d8f9cf4967316758b7148966fffeef">MALLOC_SDRAM</a>&#160;&#160;&#160;malloc_extras_sdram_malloc_wrapper</td></tr>
 <tr class="memdesc:a52d8f9cf4967316758b7148966fffeef"><td class="mdescLeft">&#160;</td><td class="mdescRight">An easily-insertable name for the memory allocator that uses the large pool.  <a href="malloc__extras_8h.html#a52d8f9cf4967316758b7148966fffeef">More...</a><br /></td></tr>
 <tr class="separator:a52d8f9cf4967316758b7148966fffeef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -131,48 +121,21 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a61b28e08827e6631200d756a30403064"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a61b28e08827e6631200d756a30403064">malloc_extras_turn_off_safety</a> (void)</td></tr>
-<tr class="memdesc:a61b28e08827e6631200d756a30403064"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off safety code if wanted.  <a href="malloc__extras_8h.html#a61b28e08827e6631200d756a30403064">More...</a><br /></td></tr>
-<tr class="separator:a61b28e08827e6631200d756a30403064"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae8efb82bf3bc5b84c80c5acb1a62b6c9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#ae8efb82bf3bc5b84c80c5acb1a62b6c9">malloc_extras_turn_on_print</a> (void)</td></tr>
 <tr class="memdesc:ae8efb82bf3bc5b84c80c5acb1a62b6c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn on printing.  <a href="malloc__extras_8h.html#ae8efb82bf3bc5b84c80c5acb1a62b6c9">More...</a><br /></td></tr>
 <tr class="separator:ae8efb82bf3bc5b84c80c5acb1a62b6c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae354f5a76607da9894cc06a78dc49f46"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#ae354f5a76607da9894cc06a78dc49f46">malloc_extras_turn_off_print</a> (void)</td></tr>
 <tr class="memdesc:ae354f5a76607da9894cc06a78dc49f46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off printing.  <a href="malloc__extras_8h.html#ae354f5a76607da9894cc06a78dc49f46">More...</a><br /></td></tr>
 <tr class="separator:ae354f5a76607da9894cc06a78dc49f46"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac4c30ebfaf350f93b16fc2d02c82c674"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">heap_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#ac4c30ebfaf350f93b16fc2d02c82c674">malloc_extras_get_stolen_heap</a> (void)</td></tr>
-<tr class="memdesc:ac4c30ebfaf350f93b16fc2d02c82c674"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the pointer to the stolen heap.  <a href="malloc__extras_8h.html#ac4c30ebfaf350f93b16fc2d02c82c674">More...</a><br /></td></tr>
-<tr class="separator:ac4c30ebfaf350f93b16fc2d02c82c674"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e49867f1ee0742dd71e2666bd23f14b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a6e49867f1ee0742dd71e2666bd23f14b">malloc_extras_terminate</a> (<a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> result_code)</td></tr>
 <tr class="memdesc:a6e49867f1ee0742dd71e2666bd23f14b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stops execution with a result code.  <a href="malloc__extras_8h.html#a6e49867f1ee0742dd71e2666bd23f14b">More...</a><br /></td></tr>
 <tr class="separator:a6e49867f1ee0742dd71e2666bd23f14b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f742f332e0cf6b776a27813f55feda1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a5f742f332e0cf6b776a27813f55feda1">malloc_extras_check</a> (void *ptr)</td></tr>
-<tr class="memdesc:a5f742f332e0cf6b776a27813f55feda1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks a pointer for safety stuff.  <a href="malloc__extras_8h.html#a5f742f332e0cf6b776a27813f55feda1">More...</a><br /></td></tr>
-<tr class="separator:a5f742f332e0cf6b776a27813f55feda1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a695672411d7b3d27011c0a593e145e18"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a695672411d7b3d27011c0a593e145e18">malloc_extras_check_all_marked</a> (int marker)</td></tr>
-<tr class="memdesc:a695672411d7b3d27011c0a593e145e18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks all <a class="elRef" href="https://spinnakermanchester.github.io/spinn_common/spin-print_8h.html#acf143577800376dd931c059ecc61ba06">malloc()</a>s with a given marker.  <a href="malloc__extras_8h.html#a695672411d7b3d27011c0a593e145e18">More...</a><br /></td></tr>
-<tr class="separator:a695672411d7b3d27011c0a593e145e18"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb3cda3d80001855304b4644975884fe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#abb3cda3d80001855304b4644975884fe">malloc_extras_check_all</a> (void)</td></tr>
-<tr class="memdesc:abb3cda3d80001855304b4644975884fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks all malloc's for overwrites with no marker.  <a href="malloc__extras_8h.html#abb3cda3d80001855304b4644975884fe">More...</a><br /></td></tr>
-<tr class="separator:abb3cda3d80001855304b4644975884fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9912dd31206a004e61ad2d19c0c9734d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a9912dd31206a004e61ad2d19c0c9734d">malloc_extras_initialise_with_fake_heap</a> (<a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">heap_t</a> *heap_location)</td></tr>
-<tr class="memdesc:a9912dd31206a004e61ad2d19c0c9734d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update heap to join in the extra space from another heap.  <a href="malloc__extras_8h.html#a9912dd31206a004e61ad2d19c0c9734d">More...</a><br /></td></tr>
-<tr class="separator:a9912dd31206a004e61ad2d19c0c9734d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1bc937477e0ff1a0d8f6322d4388508b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a1bc937477e0ff1a0d8f6322d4388508b">malloc_extras_initialise_and_build_fake_heap</a> (<a class="el" href="malloc__extras_8h.html#structavailable__sdram__blocks">available_sdram_blocks</a> *sizes_region)</td></tr>
-<tr class="memdesc:a1bc937477e0ff1a0d8f6322d4388508b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds a new heap based off stolen sdram blocks from cores synaptic matrices.  <a href="malloc__extras_8h.html#a1bc937477e0ff1a0d8f6322d4388508b">More...</a><br /></td></tr>
-<tr class="separator:a1bc937477e0ff1a0d8f6322d4388508b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa532d8acede472fb18b8f625b586ee03"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#aa532d8acede472fb18b8f625b586ee03">malloc_extras_initialise_no_fake_heap_data</a> (void)</td></tr>
-<tr class="memdesc:aa532d8acede472fb18b8f625b586ee03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds a new heap with no stolen SDRAM and sets up the malloc tracker.  <a href="malloc__extras_8h.html#aa532d8acede472fb18b8f625b586ee03">More...</a><br /></td></tr>
-<tr class="separator:aa532d8acede472fb18b8f625b586ee03"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe0f3bdb686ec639ff38487704b0c48b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#abe0f3bdb686ec639ff38487704b0c48b">malloc_extras_free_marked</a> (void *ptr, int marker)</td></tr>
-<tr class="memdesc:abe0f3bdb686ec639ff38487704b0c48b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frees the sdram allocated from whatever heap it came from.  <a href="malloc__extras_8h.html#abe0f3bdb686ec639ff38487704b0c48b">More...</a><br /></td></tr>
-<tr class="separator:abe0f3bdb686ec639ff38487704b0c48b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac64fa96c630b0fb9a282f2ba8e60c1c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#aac64fa96c630b0fb9a282f2ba8e60c1c">malloc_extras_free</a> (void *ptr)</td></tr>
 <tr class="memdesc:aac64fa96c630b0fb9a282f2ba8e60c1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frees a pointer without any marker for application code.  <a href="malloc__extras_8h.html#aac64fa96c630b0fb9a282f2ba8e60c1c">More...</a><br /></td></tr>
 <tr class="separator:aac64fa96c630b0fb9a282f2ba8e60c1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7235f5835bd635ab7191fc98b26e4f9b"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a7235f5835bd635ab7191fc98b26e4f9b">malloc_extras_sdram_malloc_wrapper</a> (<a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> bytes)</td></tr>
-<tr class="memdesc:a7235f5835bd635ab7191fc98b26e4f9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mallocs a number of bytes from SDRAM.  <a href="malloc__extras_8h.html#a7235f5835bd635ab7191fc98b26e4f9b">More...</a><br /></td></tr>
-<tr class="separator:a7235f5835bd635ab7191fc98b26e4f9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a4b81760c028ede59839d13e8c1b7d8"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a4a4b81760c028ede59839d13e8c1b7d8">malloc_extras_sdram_malloc</a> (<a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> bytes)</td></tr>
+<tr class="memdesc:a4a4b81760c028ede59839d13e8c1b7d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mallocs a number of bytes from SDRAM.  <a href="malloc__extras_8h.html#a4a4b81760c028ede59839d13e8c1b7d8">More...</a><br /></td></tr>
+<tr class="separator:a4a4b81760c028ede59839d13e8c1b7d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a46a747129a5efcce20b14cd796db5f06"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="malloc__extras_8h.html#a46a747129a5efcce20b14cd796db5f06">malloc_extras_malloc</a> (<a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> bytes)</td></tr>
 <tr class="memdesc:a46a747129a5efcce20b14cd796db5f06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows a search of the 2 heaps available. (DTCM, stolen SDRAM)  <a href="malloc__extras_8h.html#a46a747129a5efcce20b14cd796db5f06">More...</a><br /></td></tr>
 <tr class="separator:a46a747129a5efcce20b14cd796db5f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -184,72 +147,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p >Support for adding debugging information to dynamic allocation. </p>
 
 <p class="definition">Definition in file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
-</div><hr/><h2 class="groupheader">Data Structure Documentation</h2>
-<a name="structsdram__block" id="structsdram__block"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structsdram__block">&#9670;&#160;</a></span>sdram_block</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct sdram_block</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><p >An SDRAM block outside the heap. </p>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00041">41</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="a64356ac915b8271e1a8b4e3d2c8578f1" name="a64356ac915b8271e1a8b4e3d2c8578f1"></a><a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a65f85814a8290f9797005d3b28e7e5fc">uchar</a> *</td>
-<td class="fieldname">
-sdram_base_address</td>
-<td class="fielddoc">
-Base address of where the SDRAM block starts. </td></tr>
-<tr><td class="fieldtype">
-<a id="af58b86962a73640e3b07513e46816c2a" name="af58b86962a73640e3b07513e46816c2a"></a><a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
-<td class="fieldname">
-size</td>
-<td class="fielddoc">
-Size of block in bytes. </td></tr>
-</table>
-
-</div>
-</div>
-<a name="structavailable__sdram__blocks" id="structavailable__sdram__blocks"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structavailable__sdram__blocks">&#9670;&#160;</a></span>available_sdram_blocks</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct available_sdram_blocks</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><p >Holds host-allocated SDRAM blocks outside the heap. </p>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00049">49</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="af11a1f53ca6eb014613878554aa5edae" name="af11a1f53ca6eb014613878554aa5edae"></a>int</td>
-<td class="fieldname">
-n_blocks</td>
-<td class="fielddoc">
-Number of blocks of SDRAM which can be utilised outside of alloc. </td></tr>
-<tr><td class="fieldtype">
-<a id="a06dbb45b3adfdd060638a2156d68f74d" name="a06dbb45b3adfdd060638a2156d68f74d"></a><a class="el" href="malloc__extras_8h.html#structsdram__block">sdram_block</a></td>
-<td class="fieldname">
-blocks[]</td>
-<td class="fielddoc">
-VLA of SDRAM blocks. </td></tr>
-</table>
-
-</div>
-</div>
-<h2 class="groupheader">Macro Definition Documentation</h2>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a3e218828af7ddd3f4cd0d3772562b520" name="a3e218828af7ddd3f4cd0d3772562b520"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3e218828af7ddd3f4cd0d3772562b520">&#9670;&#160;</a></span>MALLOC</h2>
 
@@ -264,7 +162,7 @@ VLA of SDRAM blocks. </td></tr>
 
 <p>An easily-insertable name for the memory allocator. </p>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00145">145</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00077">77</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
 
 </div>
 </div>
@@ -282,7 +180,7 @@ VLA of SDRAM blocks. </td></tr>
 
 <p>An easily-insertable name for the memory free. </p>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00147">147</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00079">79</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
 
 </div>
 </div>
@@ -293,14 +191,14 @@ VLA of SDRAM blocks. </td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define FREE_MARKED&#160;&#160;&#160;<a class="el" href="malloc__extras_8h.html#abe0f3bdb686ec639ff38487704b0c48b">malloc_extras_free_marked</a></td>
+          <td class="memname">#define FREE_MARKED&#160;&#160;&#160;malloc_extras_free_marked</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>An easily-insertable name for the alternate memory free. </p>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00149">149</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00081">81</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
 
 </div>
 </div>
@@ -311,14 +209,14 @@ VLA of SDRAM blocks. </td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MALLOC_SDRAM&#160;&#160;&#160;<a class="el" href="malloc__extras_8h.html#a7235f5835bd635ab7191fc98b26e4f9b">malloc_extras_sdram_malloc_wrapper</a></td>
+          <td class="memname">#define MALLOC_SDRAM&#160;&#160;&#160;malloc_extras_sdram_malloc_wrapper</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>An easily-insertable name for the memory allocator that uses the large pool. </p>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00151">151</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00083">83</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
 
 </div>
 </div>
@@ -354,28 +252,6 @@ VLA of SDRAM blocks. </td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a61b28e08827e6631200d756a30403064" name="a61b28e08827e6631200d756a30403064"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a61b28e08827e6631200d756a30403064">&#9670;&#160;</a></span>malloc_extras_turn_off_safety()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void malloc_extras_turn_off_safety </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Turn off safety code if wanted. </p>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00063">63</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
-
-</div>
-</div>
 <a id="ae8efb82bf3bc5b84c80c5acb1a62b6c9" name="ae8efb82bf3bc5b84c80c5acb1a62b6c9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae8efb82bf3bc5b84c80c5acb1a62b6c9">&#9670;&#160;</a></span>malloc_extras_turn_on_print()</h2>
 
@@ -395,7 +271,7 @@ VLA of SDRAM blocks. </td></tr>
 <p>Turn on printing. </p>
 <dl class="section note"><dt>Note</dt><dd>Printing of allocations can take a lot of IOBUF space. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00067">67</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00046">46</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
@@ -417,30 +293,7 @@ VLA of SDRAM blocks. </td></tr>
 
 <p>Turn off printing. </p>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00071">71</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
-
-</div>
-</div>
-<a id="ac4c30ebfaf350f93b16fc2d02c82c674" name="ac4c30ebfaf350f93b16fc2d02c82c674"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4c30ebfaf350f93b16fc2d02c82c674">&#9670;&#160;</a></span>malloc_extras_get_stolen_heap()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">heap_t</a> * malloc_extras_get_stolen_heap </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Get the pointer to the stolen heap. </p>
-<dl class="section return"><dt>Returns</dt><dd>the heap pointer. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00075">75</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00050">50</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
@@ -468,210 +321,7 @@ VLA of SDRAM blocks. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00082">82</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
-
-</div>
-</div>
-<a id="a5f742f332e0cf6b776a27813f55feda1" name="a5f742f332e0cf6b776a27813f55feda1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f742f332e0cf6b776a27813f55feda1">&#9670;&#160;</a></span>malloc_extras_check()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool malloc_extras_check </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>ptr</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Checks a pointer for safety stuff. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ptr</td><td>the malloc pointer to check for memory overwrites </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true if nothing is broken, false if there was detected overwrites. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00093">93</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
-
-</div>
-</div>
-<a id="a695672411d7b3d27011c0a593e145e18" name="a695672411d7b3d27011c0a593e145e18"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a695672411d7b3d27011c0a593e145e18">&#9670;&#160;</a></span>malloc_extras_check_all_marked()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void malloc_extras_check_all_marked </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>marker</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Checks all <a class="elRef" href="https://spinnakermanchester.github.io/spinn_common/spin-print_8h.html#acf143577800376dd931c059ecc61ba06">malloc()</a>s with a given marker. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">marker</td><td>the numerical marker for this test, allowing easier tracking of where this check was called in the user application code </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00158">158</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
-
-</div>
-</div>
-<a id="abb3cda3d80001855304b4644975884fe" name="abb3cda3d80001855304b4644975884fe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abb3cda3d80001855304b4644975884fe">&#9670;&#160;</a></span>malloc_extras_check_all()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void malloc_extras_check_all </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Checks all malloc's for overwrites with no marker. </p>
-<p >Calls <a class="el" href="malloc__extras_8h.html#a695672411d7b3d27011c0a593e145e18" title="Checks all malloc()s with a given marker.">malloc_extras_check_all_marked()</a>, but does not provide an easy marker to track back to the application user code. </p>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00179">179</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
-
-</div>
-</div>
-<a id="a9912dd31206a004e61ad2d19c0c9734d" name="a9912dd31206a004e61ad2d19c0c9734d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9912dd31206a004e61ad2d19c0c9734d">&#9670;&#160;</a></span>malloc_extras_initialise_with_fake_heap()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool malloc_extras_initialise_with_fake_heap </td>
-          <td>(</td>
-          <td class="paramtype"><a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">heap_t</a> *&#160;</td>
-          <td class="paramname"><em>heap_location</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Update heap to join in the extra space from another heap. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">heap_location</td><td>address where heap is located </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true states the initialisation was successful (or not)</dd></dl>
-<p>sets up trackers for this core if asked. </p><dl class="section note"><dt>Note</dt><dd>DOES NOT REBUILD THE FAKE HEAP! </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00371">371</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
-
-</div>
-</div>
-<a id="a1bc937477e0ff1a0d8f6322d4388508b" name="a1bc937477e0ff1a0d8f6322d4388508b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1bc937477e0ff1a0d8f6322d4388508b">&#9670;&#160;</a></span>malloc_extras_initialise_and_build_fake_heap()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool malloc_extras_initialise_and_build_fake_heap </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="malloc__extras_8h.html#structavailable__sdram__blocks">available_sdram_blocks</a> *&#160;</td>
-          <td class="paramname"><em>sizes_region</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Builds a new heap based off stolen sdram blocks from cores synaptic matrices. </p>
-<p >Needs to merge in the true SDRAM free heap, as otherwise it's impossible to free the block properly. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">sizes_region;</td><td>the sdram address where the free regions exist </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>None </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00387">387</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
-
-</div>
-</div>
-<a id="aa532d8acede472fb18b8f625b586ee03" name="aa532d8acede472fb18b8f625b586ee03"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa532d8acede472fb18b8f625b586ee03">&#9670;&#160;</a></span>malloc_extras_initialise_no_fake_heap_data()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool malloc_extras_initialise_no_fake_heap_data </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Builds a new heap with no stolen SDRAM and sets up the malloc tracker. </p>
-<dl class="section return"><dt>Returns</dt><dd>true is a successful initialisation and false otherwise.</dd></dl>
-<p>Builds a new heap with no stolen SDRAM and sets up the malloc tracker.</p>
-<dl class="section return"><dt>Returns</dt><dd>bool where true is a successful initialisation and false otherwise. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00458">458</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
-
-</div>
-</div>
-<a id="abe0f3bdb686ec639ff38487704b0c48b" name="abe0f3bdb686ec639ff38487704b0c48b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abe0f3bdb686ec639ff38487704b0c48b">&#9670;&#160;</a></span>malloc_extras_free_marked()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void malloc_extras_free_marked </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>ptr</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>marker</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Frees the sdram allocated from whatever heap it came from. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ptr</td><td>the address to free. could be DTCM or SDRAM </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">marker</td><td>the numerical marker for this test, allowing easier tracking of where this check was called in the user application code </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00462">462</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00057">57</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
@@ -699,18 +349,18 @@ VLA of SDRAM blocks. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00506">506</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00068">68</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
-<a id="a7235f5835bd635ab7191fc98b26e4f9b" name="a7235f5835bd635ab7191fc98b26e4f9b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7235f5835bd635ab7191fc98b26e4f9b">&#9670;&#160;</a></span>malloc_extras_sdram_malloc_wrapper()</h2>
+<a id="a4a4b81760c028ede59839d13e8c1b7d8" name="a4a4b81760c028ede59839d13e8c1b7d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a4b81760c028ede59839d13e8c1b7d8">&#9670;&#160;</a></span>malloc_extras_sdram_malloc()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void * malloc_extras_sdram_malloc_wrapper </td>
+          <td class="memname">void * malloc_extras_sdram_malloc </td>
           <td>(</td>
           <td class="paramtype"><a class="elRef" href="https://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>bytes</em></td><td>)</td>
@@ -728,7 +378,7 @@ VLA of SDRAM blocks. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the pointer to the location in SDRAM to use in application code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00601">601</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00084">84</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
@@ -758,7 +408,7 @@ VLA of SDRAM blocks. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>: the address of the block of memory to utilise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00622">622</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00099">99</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>

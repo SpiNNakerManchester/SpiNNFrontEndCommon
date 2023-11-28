@@ -17,6 +17,5 @@ var searchData=
   ['dma_5ftag_5fretransmission_5freading_14',['DMA_TAG_RETRANSMISSION_READING',['../extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045fae3a1a5680add9bd61574b24599ac9185',1,'extra_monitor_support.c']]],
   ['dma_5ftimeout_5fslot_15',['DMA_TIMEOUT_SLOT',['../extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa1375671dff545ffd4c86fac72236812a',1,'extra_monitor_support.c']]],
   ['dma_5ftransfer_5fdouble_5fword_16',['DMA_TRANSFER_DOUBLE_WORD',['../spinn__extra_8h.html#a5c2ddad85d487e726be08ddb773817d9ad720a7515c482145ad04cadb31eb1f5b',1,'spinn_extra.h']]],
-  ['dma_5ftransfer_5fword_17',['DMA_TRANSFER_WORD',['../spinn__extra_8h.html#a5c2ddad85d487e726be08ddb773817d9afd212504b1038a06af1ad365df427e07',1,'spinn_extra.h']]],
-  ['do_5fnot_5fuse_18',['DO_NOT_USE',['../compressor__sorter__structs_8h.html#aa3e340fc51f415aead32fee83ef70de3a3373d705e500da21f936be7ec6b57802',1,'compressor_sorter_structs.h']]]
+  ['dma_5ftransfer_5fword_17',['DMA_TRANSFER_WORD',['../spinn__extra_8h.html#a5c2ddad85d487e726be08ddb773817d9afd212504b1038a06af1ad365df427e07',1,'spinn_extra.h']]]
 ];

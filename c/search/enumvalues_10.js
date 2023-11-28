@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['unused_5fcore_0',['UNUSED_CORE',['../compressor__sorter__structs_8h.html#ac124d280cf92fb450e1e72a58b88253fa488d46012070df0693507cde3473cb37',1,'compressor_sorter_structs.h']]],
-  ['user_1',['USER',['../live__packet__gather_8c.html#ab04a0655cd1e3bcac5e8f48c18df1a57ae2d30a195cee6b2961cc2c23ea4b520b',1,'live_packet_gather.c']]]
+  ['version_5fmask_0',['VERSION_MASK',['../data__specification_8c.html#a61dadd085c1777f559549e05962b2c9ea3bdd0253bec51792b83d9d6603e131af',1,'data_specification.c']]],
+  ['version_5fshift_1',['VERSION_SHIFT',['../data__specification_8c.html#a61dadd085c1777f559549e05962b2c9ea7913873b92ba0d517ed68aa06348b5de',1,'data_specification.c']]]
 ];
