@@ -11,19 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
-from pacman.model.graphs.machine import MachineVertex
+from pacman.model.placements import Placement
+from .abstract_has_associated_binary import AbstractHasAssociatedBinary
+if TYPE_CHECKING:
+    from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 
 
-@require_subclass(MachineVertex)
+@require_subclass(AbstractHasAssociatedBinary)
 class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
-
+    """
+    A machine vertex that generates a data specification that describes what
+    its binary's initialisation data is.
+    """
     __slots__ = ()
 
     @abstractmethod
-    def generate_data_specification(self, spec, placement):
+    def generate_data_specification(
+            self, spec: DataSpecificationGenerator, placement: Placement):
         """
         Generate a data specification.
 
@@ -32,3 +40,4 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
         :param ~pacman.model.placements.Placement placement:
             The placement the vertex is located at
         """
+        raise NotImplementedError

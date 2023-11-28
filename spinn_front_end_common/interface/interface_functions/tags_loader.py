@@ -17,7 +17,7 @@ from spinnman.constants import MAX_TAG_ID
 from spinn_front_end_common.data import FecDataView
 
 
-def tags_loader():
+def tags_loader() -> None:
     """
     Loads tags onto the machine.
     """
@@ -39,6 +39,5 @@ def tags_loader():
         len(iptags) + len(reverse_iptags), "Loading Tags")
     for ip_tag in progress.over(iptags, False):
         transceiver.set_ip_tag(ip_tag)
-    for reverse_ip_tag in progress.over(reverse_iptags, False):
+    for reverse_ip_tag in progress.over(reverse_iptags):
         transceiver.set_reverse_ip_tag(reverse_ip_tag)
-    progress.end()

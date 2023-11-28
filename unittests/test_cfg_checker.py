@@ -21,7 +21,7 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 
 class TestCfgChecker(unittest.TestCase):
 
-    def setUp(cls):
+    def setUp(self):
         unittest_setup()
 
     def test_cfg_checker(self):

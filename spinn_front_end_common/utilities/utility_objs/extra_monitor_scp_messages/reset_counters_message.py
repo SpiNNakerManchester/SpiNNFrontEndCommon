@@ -17,26 +17,24 @@ from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
-from spinn_front_end_common.utilities.constants import SDP_PORTS
+from spinnman.model.enums import SDP_PORTS
 from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
-class ResetCountersMessage(AbstractSCPRequest):
+class ResetCountersMessage(AbstractSCPRequest[CheckOKResponse]):
     """
     An SCP Request to reset the statistics counters of the dropped packet
     reinjection.
     """
+    __slots__ = ()
 
-    __slots__ = []
-
-    def __init__(self, x, y, p):
+    def __init__(self, x: int, y: int, p: int):
         """
         :param int x: The x-coordinate of a chip, between 0 and 255
         :param int y: The y-coordinate of a chip, between 0 and 255
         :param int p:
             The processor running the extra monitor vertex, between 0 and 17
         """
-
         super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_NOT_EXPECTED,
@@ -47,7 +45,7 @@ class ResetCountersMessage(AbstractSCPRequest):
             SCPRequestHeader(command=ReinjectorSCPCommands.RESET_COUNTERS))
 
     @overrides(AbstractSCPRequest.get_scp_response)
-    def get_scp_response(self):
+    def get_scp_response(self) -> CheckOKResponse:
         return CheckOKResponse(
             "Reset dropped packet reinjection counters",
             ReinjectorSCPCommands.RESET_COUNTERS)

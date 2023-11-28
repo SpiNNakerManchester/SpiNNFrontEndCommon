@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import os
 import re
+from sqlite3 import Row
+from typing import Iterable, List, Optional, Tuple, Union
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from .timer_category import TimerCategory
+from spinn_front_end_common.interface.provenance.timer_work import TimerWork
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -41,12 +45,10 @@ class GlobalProvenance(SQLiteDB):
         You can't port to a different database engine without a lot of work.
     """
 
-    __slots__ = [
-        "_database_file"
-    ]
+    __slots__ = ("_database_file", )
 
     @classmethod
-    def get_global_provenace_path(cls):
+    def get_global_provenace_path(cls) -> str:
         """
         Get the path of the current provenance database of the last run
 
@@ -62,7 +64,8 @@ class GlobalProvenance(SQLiteDB):
             FecDataView.get_timestamp_dir_path(),
             "global_provenance.sqlite3")
 
-    def __init__(self, database_file=None, memory=False):
+    def __init__(
+            self, database_file: Optional[str] = None, memory: bool = False):
         """
         :param database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -80,22 +83,21 @@ class GlobalProvenance(SQLiteDB):
         SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE,
                           row_factory=None, text_factory=None)
 
-    def insert_version(self, description, the_value):
+    def insert_version(self, description: str, the_value: str):
         """
         Inserts data into the version_provenance table
 
         :param str description: The package for which the version applies
         :param str the_value: The version to be recorded
         """
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO version_provenance(
-                    description, the_value)
-                VALUES(?, ?)
-                """, [description, the_value])
+        self.execute(
+            """
+            INSERT INTO version_provenance(
+                description, the_value)
+            VALUES(?, ?)
+            """, [description, the_value])
 
-    def insert_category(self, category, machine_on):
+    def insert_category(self, category: TimerCategory, machine_on: bool):
         """
         Inserts category into the category_timer_provenance  returning id
 
@@ -103,64 +105,63 @@ class GlobalProvenance(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO category_timer_provenance(
-                    category, machine_on, n_run, n_loop)
-                VALUES(?, ?, ?, ?)
-                """,
-                [category.category_name, machine_on,
-                 FecDataView.get_run_number(),
-                 FecDataView.get_run_step()])
-            return cur.lastrowid
+        self.execute(
+            """
+            INSERT INTO category_timer_provenance(
+                category, machine_on, n_run, n_loop)
+            VALUES(?, ?, ?, ?)
+            """,
+            [category.category_name, machine_on,
+             FecDataView.get_run_number(),
+             FecDataView.get_run_step()])
+        return self.lastrowid
 
-    def insert_category_timing(self, category_id, timedelta):
+    def insert_category_timing(self, category_id: int, delta: timedelta):
         """
         Inserts run time into the category
 
         :param int category_id: id of the Category finished
-        :param ~datetime.timedelta timedelta: Time to be recorded
+        :param ~datetime.timedelta delta: Time to be recorded
        """
         time_taken = (
-                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
-                (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
+                (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
+                (delta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                UPDATE category_timer_provenance
-                SET
-                    time_taken = ?
-                WHERE category_id = ?
-                """, (time_taken, category_id))
+        self.execute(
+            """
+            UPDATE category_timer_provenance
+            SET
+                time_taken = ?
+            WHERE category_id = ?
+            """, (time_taken, category_id))
 
     def insert_timing(
-            self, category, algorithm, work, timedelta, skip_reason):
+            self, category: int, algorithm: str, work: TimerWork,
+            delta: timedelta, skip_reason: Optional[str]):
         """
         Inserts algorithms run times into the timer_provenance table
 
         :param int category: Category Id of the Algorithm
         :param str algorithm: Algorithm name
         :param TimerWork work: Type of work being done
-        :param ~datetime.timedelta timedelta: Time to be recorded
+        :param ~datetime.timedelta delta: Time to be recorded
         :param skip_reason: The reason the algorithm was skipped or `None` if
             it was not skipped
         :type skip_reason: str or None
         """
         time_taken = (
-                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
-                (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO timer_provenance(
-                    category_id, algorithm, work, time_taken, skip_reason)
-                VALUES(?, ?, ?, ?, ?)
-                """,
-                [category, algorithm, work.work_name, time_taken, skip_reason])
+                (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
+                (delta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
+        self.execute(
+            """
+            INSERT INTO timer_provenance(
+                category_id, algorithm, work, time_taken, skip_reason)
+            VALUES(?, ?, ?, ?, ?)
+            """,
+            [category, algorithm, work.work_name, time_taken, skip_reason])
 
-    def store_log(self, level, message, timestamp=None):
+    def store_log(self, level: int, message: str,
+                  timestamp: Optional[datetime] = None):
         """
         Stores log messages into the database
 
@@ -169,33 +170,33 @@ class GlobalProvenance(SQLiteDB):
         """
         if timestamp is None:
             timestamp = datetime.now()
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO p_log_provenance(
-                    timestamp, level, message)
-                VALUES(?, ?, ?)
-                """,
-                [timestamp, level, message])
+        self.execute(
+            """
+            INSERT INTO p_log_provenance(
+                timestamp, level, message)
+            VALUES(?, ?, ?)
+            """,
+            [timestamp, level, message])
 
-    def _test_log_locked(self, text):
+    def _test_log_locked(self, text: str):
         """
         THIS IS A TESTING METHOD.
 
         This will lock the database and then try to do a log
         """
-        with self.transaction() as cur:
-            # lock the database
-            cur.execute(
-                """
-                INSERT INTO version_provenance(
-                    description, the_value)
-                VALUES("foo", "bar")
-                """)
-            # try logging and storing while locked.
-            logger.warning(text)
+        # lock the database
+        self.execute(
+            """
+            INSERT INTO version_provenance(
+                description, the_value)
+            VALUES("foo", "bar")
+            """)
+        # try logging and storing while locked.
+        logger.warning(text)
 
-    def run_query(self, query, params=()):
+    def run_query(self, query: str,
+                  params: Iterable[Union[str, int, float, None, bytes]] = ()
+                  ) -> List[Row]:
         """
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection
@@ -217,8 +218,6 @@ class GlobalProvenance(SQLiteDB):
         :param ~collections.abc.Iterable(str or int) params:
             The values to replace the ``?`` wildcards with.
             The number and types must match what the query expects
-        :param bool read_only: see :py:meth:`get_database_handle`
-        :param bool use_sqlite_rows: see :py:meth:`get_database_handle`
         :return: A list possibly empty of tuples/rows
             (one for each row in the database)
             where the number and type of the values corresponds to the where
@@ -226,12 +225,11 @@ class GlobalProvenance(SQLiteDB):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
-        with self.transaction() as cur:
-            for row in cur.execute(query, params):
-                results.append(row)
+        for row in self.execute(query, list(params)):
+            results.append(row)
         return results
 
-    def get_timer_provenance(self, algorithm):
+    def get_timer_provenance(self, algorithm: str) -> str:
         """
         Gets the timer provenance item(s) from the last run
 
@@ -252,7 +250,7 @@ class GlobalProvenance(SQLiteDB):
             f"{row[0]}: {row[1]}"
             for row in self.run_query(query, [algorithm]))
 
-    def get_run_times(self):
+    def get_run_times(self) -> str:
         """
         Gets the algorithm running times from the last run. If an algorithm is
         invoked multiple times in the run, its times are summed.
@@ -273,7 +271,7 @@ class GlobalProvenance(SQLiteDB):
             f"{row[0].replace('_', ' ')}: {row[1]} s"
             for row in self.run_query(query))
 
-    def get_run_time_of_BufferExtractor(self):
+    def get_run_time_of_BufferExtractor(self) -> str:
         """
         Gets the buffer extractor provenance item(s) from the last run
 
@@ -284,7 +282,7 @@ class GlobalProvenance(SQLiteDB):
         """
         return self.get_timer_provenance("%BufferExtractor")
 
-    def get_category_timer_sum(self, category):
+    def get_category_timer_sum(self, category: TimerCategory) -> int:
         """
         Get the total runtime for one category of algorithms
 
@@ -306,7 +304,8 @@ class GlobalProvenance(SQLiteDB):
         except IndexError:
             return 0
 
-    def get_category_timer_sums(self, category):
+    def get_category_timer_sums(
+            self, category: TimerCategory) -> Tuple[int, int]:
         """
         Get the runtime for one category of algorithms
         split machine on, machine off
@@ -333,12 +332,12 @@ class GlobalProvenance(SQLiteDB):
             pass
         return on, off
 
-    def get_timer_sum_by_category(self, category):
+    def get_timer_sum_by_category(self, category: TimerCategory) -> int:
         """
         Get the total runtime for one category of algorithms
 
         :param TimerCategory category:
-        :return: total off all run times with this category
+        :return: total of all run times with this category
         :rtype: int
         """
         query = """
@@ -355,7 +354,7 @@ class GlobalProvenance(SQLiteDB):
         except IndexError:
             return 0
 
-    def get_timer_sum_by_work(self, work):
+    def get_timer_sum_by_work(self, work: TimerWork) -> int:
         """
         Get the total runtime for one work type of algorithms
 
@@ -377,7 +376,7 @@ class GlobalProvenance(SQLiteDB):
         except IndexError:
             return 0
 
-    def get_timer_sum_by_algorithm(self, algorithm):
+    def get_timer_sum_by_algorithm(self, algorithm: str) -> int:
         """
         Get the total runtime for one algorithm
 
@@ -399,7 +398,8 @@ class GlobalProvenance(SQLiteDB):
         except IndexError:
             return 0
 
-    def retreive_log_messages(self, min_level=0):
+    def retreive_log_messages(
+            self, min_level: int = 0) -> List[Tuple[int, str]]:
         """
         Retrieves all log messages at or above the min_level
 

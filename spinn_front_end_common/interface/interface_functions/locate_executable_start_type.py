@@ -12,22 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict, cast
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import ExecutableType
+from pacman.model.placements import Placement
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
 
 
-def locate_executable_start_type():
+def locate_executable_start_type() -> Dict[ExecutableType, CoreSubsets]:
     """
     Discovers where applications of particular types need to be launched.
-
     """
-    binary_start_types = dict()
+    binary_start_types: Dict[ExecutableType, CoreSubsets] = dict()
 
     for placement in FecDataView.iterate_placements_by_vertex_type(
             AbstractHasAssociatedBinary):
-        bin_type = placement.vertex.get_binary_start_type()
+        vertex = cast(AbstractHasAssociatedBinary, placement.vertex)
+        bin_type = vertex.get_binary_start_type()
         # update core subset with location of the vertex on the
         # machine
         if bin_type not in binary_start_types:
@@ -39,12 +41,12 @@ def locate_executable_start_type():
     # only got apps with no binary, such as external devices.
     # return no app
     if not binary_start_types:
-        return {ExecutableType.NO_APPLICATION: None}
+        return {ExecutableType.NO_APPLICATION: CoreSubsets()}
 
     return binary_start_types
 
 
-def __add_vertex_to_subset(placement, core_subsets):
+def __add_vertex_to_subset(placement: Placement, core_subsets: CoreSubsets):
     """
     :param ~.Placement placement:
     :param ~.CoreSubsets core_subsets:

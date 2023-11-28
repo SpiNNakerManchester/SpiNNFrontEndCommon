@@ -12,22 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import struct
 import logging
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman.messages.spinnaker_boot import SystemVariableDefinition
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 
 # The fixed point position for drift readings
-DRIFT_FP = 1 << 17
 CLOCK_DRIFT_REPORT = "clock_drift.csv"
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def drift_report():
+def drift_report() -> None:
     """
     A report on the clock drift as reported by each chip
     """
@@ -61,15 +58,17 @@ def drift_report():
     # iterate over ethernet chips and then the chips on that board
     txrx = FecDataView.get_transceiver()
     with open(directory_name, "a", encoding="utf-8") as writer:
-        for eth_chip in eth_chips:
-            if ethernet_only:
-                __write_drift(txrx, eth_chip, writer)
-                progress.update()
-            else:
+        if ethernet_only:
+            for eth_chip in progress.over(eth_chips):
+                drift = txrx.get_clock_drift(eth_chip.x, eth_chip.y)
+                writer.write(f'"{drift}",')
+        else:
+            for eth_chip in eth_chips:
                 last_drift = None
-                for chip in machine.get_chips_by_ethernet(
-                        eth_chip.x, eth_chip.y):
-                    drift = __write_drift(txrx, chip, writer)
+                for chip in progress.over(machine.get_chips_by_ethernet(
+                        eth_chip.x, eth_chip.y), finish_at_end=False):
+                    drift = txrx.get_clock_drift(chip.x, chip.y)
+                    writer.write(f'"{drift}",')
                     if last_drift is None:
                         last_drift = drift
                     elif last_drift != drift:
@@ -78,15 +77,4 @@ def drift_report():
                             " ({} vs {})",
                             eth_chip.ip_address, chip.x, chip.y,
                             drift, last_drift)
-                    progress.update()
         writer.write("\n")
-
-
-def __write_drift(txrx, chip, writer):
-    # pylint: disable=protected-access
-    drift = txrx._get_sv_data(
-        chip.x, chip.y, SystemVariableDefinition.clock_drift)
-    drift = struct.unpack("<i", struct.pack("<I", drift))[0]
-    drift = drift / (1 << 17)
-    writer.write(f'"{drift}",')
-    return drift

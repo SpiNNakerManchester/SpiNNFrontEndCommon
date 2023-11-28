@@ -21,7 +21,7 @@ from spinn_utilities.config_holder import set_config
 from spalloc_client.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 from spinnman.exceptions import SpinnmanIOException
-import spinnman.transceiver as transceiver
+from spinnman.transceiver import create_transceiver_from_hostname
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
@@ -39,6 +39,7 @@ class TestWriteJson(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        set_config("Machine", "version", 5)
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
@@ -50,7 +51,7 @@ class TestWriteJson(unittest.TestCase):
         if (chip1 == chip2):
             return False
         if len(chip1) != len(chip2):
-            raise True
+            return True
         for i in range(len(chip1)):
             if chip1[i] == chip2[i]:
                 continue
@@ -109,9 +110,8 @@ class TestWriteJson(unittest.TestCase):
     def testSpin4(self):
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
-        trans = transceiver.create_transceiver_from_hostname(self.spin4Host, 5)
         try:
-            trans.ensure_board_is_ready()
+            trans = create_transceiver_from_hostname(self.spin4Host)
         except (SpinnmanIOException):
             self.skipTest("Skipping as getting Job failed")
 
@@ -126,10 +126,10 @@ class TestWriteJson(unittest.TestCase):
 
         # Create a machine with Exception
         chip = machine.get_chip_at(1, 1)
-        chip._sdram._size = chip._sdram._size - 100
+        chip._sdram = chip._sdram - 100
         chip._router._n_available_multicast_entries -= 10
         chip = machine.get_chip_at(1, 2)
-        chip._sdram._size = chip._sdram._size - 101
+        chip._sdram = chip._sdram - 101
 
         folder = "spinn4_fiddle"
         self._remove_old_json(folder)
@@ -154,8 +154,7 @@ class TestWriteJson(unittest.TestCase):
         except (JobDestroyedError, ConnectionRefusedError):
             self.skipTest("Skipping as getting Job failed")
 
-        trans = transceiver.create_transceiver_from_hostname(hostname, 5)
-        trans.ensure_board_is_ready()
+        trans = create_transceiver_from_hostname(hostname)
         writer.set_machine(trans.get_machine_details())
 
         m_allocation_controller.close()

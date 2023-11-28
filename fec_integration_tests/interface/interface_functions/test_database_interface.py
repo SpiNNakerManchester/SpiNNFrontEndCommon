@@ -33,7 +33,7 @@ from spinn_front_end_common.utility_models import LivePacketGather
 from spinn_front_end_common.utilities.database import DatabaseReader
 
 
-class TestSplitter(AbstractSplitterCommon):
+class MockSplitter(AbstractSplitterCommon):
     def create_machine_vertices(self, chip_counter):
         pass
 
@@ -56,10 +56,10 @@ class TestSplitter(AbstractSplitterCommon):
         pass
 
 
-class TestAppVertex(ApplicationVertex):
+class MockAppVertex(ApplicationVertex):
     def __init__(self, n_atoms, label):
-        super(TestAppVertex, self).__init__(
-            label=label, splitter=TestSplitter())
+        super(MockAppVertex, self).__init__(
+            label=label, splitter=MockSplitter())
         self.__n_atoms = n_atoms
 
     @property
@@ -104,14 +104,15 @@ def _place_vertices(app_vertex, placements, chips):
 
 def test_database_interface():
     unittest_setup()
+    set_config("Machine", "version", 5)
     set_config("Database", "create_database", "True")
     set_config("Database", "create_routing_info_to_neuron_id_mapping", "True")
 
     writer = FecDataWriter.mock()
     placements = Placements()
 
-    app_vertex_1 = TestAppVertex(100, "test_1")
-    app_vertex_2 = TestAppVertex(200, "test_2")
+    app_vertex_1 = MockAppVertex(100, "test_1")
+    app_vertex_2 = MockAppVertex(200, "test_2")
     writer.add_vertex(app_vertex_1)
     writer.add_vertex(app_vertex_2)
     writer.add_edge(ApplicationEdge(app_vertex_1, app_vertex_2), "Test")
@@ -123,7 +124,7 @@ def test_database_interface():
     writer.add_vertex(lpg_vertex)
     writer.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
 
-    lpg_vertex.splitter.create_vertices(placements)
+    lpg_vertex.splitter.create_sys_vertices(placements)
     _place_vertices(app_vertex_1, placements, [(0, 0)])
     _place_vertices(app_vertex_2, placements, [(0, 1), (1, 1)])
 
@@ -148,17 +149,19 @@ def test_database_interface():
     db_path = database_interface(1000)
     print(db_path)
 
-    reader = DatabaseReader(db_path)
-    assert reader.get_ip_address(0, 0) == writer.get_chip_at(0, 0).ip_address
-    assert all(db_p == placements.get_placement_of_vertex(m_vertex).location
-               for db_p, m_vertex in zip(
-                   reader.get_placements(app_vertex_1.label),
-                   app_vertex_1.machine_vertices))
-    assert reader.get_configuration_parameter_value("runtime") == 1000
-    assert (
-        reader.get_live_output_details(
-            app_vertex_1.label, lpg_vertex.label) ==
-        (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address, tag.tag,
-         tag.destination_x, tag.destination_y))
-    assert reader.get_atom_id_to_key_mapping(app_vertex_1.label)
-    assert reader.get_key_to_atom_id_mapping(app_vertex_1.label)
+    with DatabaseReader(db_path) as reader:
+        assert (reader.get_ip_address(0, 0) ==
+                writer.get_chip_at(0, 0).ip_address)
+        assert all(db_p ==
+                   placements.get_placement_of_vertex(m_vertex).location
+                   for db_p, m_vertex in zip(
+                       reader.get_placements(app_vertex_1.label),
+                       app_vertex_1.machine_vertices))
+        assert reader.get_configuration_parameter_value("runtime") == 1000
+        assert (
+            reader.get_live_output_details(
+                app_vertex_1.label, lpg_vertex.label) ==
+            (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address,
+             tag.tag, tag.destination_x, tag.destination_y))
+        assert reader.get_atom_id_to_key_mapping(app_vertex_1.label)
+        assert reader.get_key_to_atom_id_mapping(app_vertex_1.label)

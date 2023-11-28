@@ -16,13 +16,14 @@ import math
 import logging
 from enum import IntEnum
 import numpy
+from typing import List
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.model.enums import ExecutableType
-from data_specification.enums import DataType
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import VariableSDRAM
+from pacman.model.resources import AbstractSDRAM, VariableSDRAM
+from pacman.model.placements import Placement
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.data import FecDataView
@@ -30,6 +31,7 @@ from spinn_front_end_common.interface.buffer_management import (
     recording_utilities)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
@@ -58,8 +60,7 @@ class ChipPowerMonitorMachineVertex(
         This is an unusual machine vertex, in that it has no associated
         application vertex.
     """
-    __slots__ = [
-        "_sampling_frequency"]
+    __slots__ = ("_sampling_frequency", "__n_samples_per_recording")
 
     class _REGIONS(IntEnum):
         # data regions
@@ -70,7 +71,7 @@ class ChipPowerMonitorMachineVertex(
     #: which channel in the recording region has the recorded samples
     _SAMPLE_RECORDING_CHANNEL = 0
 
-    def __init__(self, label, sampling_frequency):
+    def __init__(self, label: str, sampling_frequency: int):
         """
         :param str label: vertex label
         :param int sampling_frequency: how often to sample, in microseconds
@@ -78,9 +79,11 @@ class ChipPowerMonitorMachineVertex(
         super().__init__(
             label=label, app_vertex=None, vertex_slice=None)
         self._sampling_frequency = sampling_frequency
+        self.__n_samples_per_recording = get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
 
     @property
-    def sampling_frequency(self):
+    def sampling_frequency(self) -> int:
         """
         How often to sample, in microseconds.
 
@@ -90,23 +93,11 @@ class ChipPowerMonitorMachineVertex(
 
     @property
     @overrides(MachineVertex.sdram_required)
-    def sdram_required(self):
-        return self.get_resources(self._sampling_frequency)
-
-    @staticmethod
-    def get_resources(sampling_frequency):
-        """
-        Get the resources used by this vertex.
-
-        :param float sampling_frequency:
-        :rtype: ~pacman.model.resources.VariableSDRAM
-        """
+    def sdram_required(self) -> AbstractSDRAM:
         # The number of sample per step does not have to be an int
         samples_per_step = (FecDataView.get_hardware_time_step_us() /
-                            sampling_frequency)
-        n_samples_per_recording = get_config_int(
-            "EnergyMonitor", "n_samples_per_recording_entry")
-        recording_per_step = (samples_per_step / n_samples_per_recording)
+                            self._sampling_frequency)
+        recording_per_step = samples_per_step / self.__n_samples_per_recording
         max_recording_per_step = math.ceil(recording_per_step)
         overflow_recordings = max_recording_per_step - recording_per_step
         system = SYSTEM_BYTES_REQUIREMENT
@@ -118,14 +109,14 @@ class ChipPowerMonitorMachineVertex(
             fixed_sdram + overflow_recordings * RECORDING_SIZE_PER_ENTRY)
         per_timestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
 
-        return VariableSDRAM(with_overflow, per_timestep)
+        return VariableSDRAM(math.ceil(with_overflow), math.ceil(per_timestep))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
+    def get_binary_file_name(self) -> str:
         return BINARY_FILE_NAME
 
     @staticmethod
-    def binary_file_name():
+    def binary_file_name() -> str:
         """
         Get the filename of the binary.
 
@@ -135,8 +126,8 @@ class ChipPowerMonitorMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec, placement,  # @UnusedVariable
-            ):
+            self, spec: DataSpecificationGenerator,
+            placement: Placement):  # @UnusedVariable
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -147,7 +138,7 @@ class ChipPowerMonitorMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    def _write_configuration_region(self, spec):
+    def _write_configuration_region(self, spec: DataSpecificationGenerator):
         """
         Write the data needed by the C code to configure itself.
 
@@ -155,10 +146,8 @@ class ChipPowerMonitorMachineVertex(
             specification writer
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG)
-        n_samples_per_recording = get_config_int(
-            "EnergyMonitor", "n_samples_per_recording_entry")
-        spec.write_value(n_samples_per_recording, data_type=DataType.UINT32)
-        spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
+        spec.write_value(self.__n_samples_per_recording)
+        spec.write_value(self._sampling_frequency)
 
     def _write_setup_info(self, spec):
         """
@@ -201,11 +190,11 @@ class ChipPowerMonitorMachineVertex(
             label="Recording")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
+    def get_binary_start_type(self) -> ExecutableType:
         return self.binary_start_type()
 
     @staticmethod
-    def binary_start_type():
+    def binary_start_type() -> ExecutableType:
         """
         The type of binary that implements this vertex.
 
@@ -215,28 +204,28 @@ class ChipPowerMonitorMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
-    def get_recording_region_base_address(self, placement):
+    def get_recording_region_base_address(self, placement: Placement):
         return locate_memory_region_for_placement(
             placement, self._REGIONS.RECORDING)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
-    def get_recorded_region_ids(self):
+    def get_recorded_region_ids(self) -> List[int]:
         return [0]
 
-    def _deduce_sdram_requirements_per_timer_tick(self):
+    def _deduce_sdram_requirements_per_timer_tick(self) -> int:
         """
         Deduce SDRAM usage per timer tick.
 
         :return: the SDRAM usage
         :rtype: int
         """
-        recording_time = self._sampling_frequency * get_config_int(
-            "EnergyMonitor", "n_samples_per_recording_entry")
+        recording_time = (
+            self._sampling_frequency * self.__n_samples_per_recording)
         n_entries = math.floor(FecDataView.get_hardware_time_step_us() /
                                recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
-    def get_recorded_data(self, placement):
+    def get_recorded_data(self, placement: Placement) -> numpy.ndarray:
         """
         Get data from SDRAM given placement and buffer manager.
         Also arranges for provenance data to be available.
@@ -256,11 +245,9 @@ class ChipPowerMonitorMachineVertex(
                 "Chip Power monitor has lost data on chip({}, {})",
                 placement.x, placement.y)
 
-        n_samples_per_recording = get_config_int(
-            "EnergyMonitor", "n_samples_per_recording_entry")
         results = (
             numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 18) /
-            n_samples_per_recording)
+            self.__n_samples_per_recording)
         activity_count = int(
             numpy.frombuffer(record_raw, dtype="uint32").sum())
         with ProvenanceWriter() as db:

@@ -32,8 +32,8 @@ from .graph_provenance_gatherer import graph_provenance_gatherer
 from .hbp_allocator import hbp_allocator
 from .host_bit_field_router_compressor import (
     host_based_bit_field_router_compressor)
-from .host_execute_data_specification import (
-    execute_application_data_specs, execute_system_data_specs)
+from .load_data_specification import (
+    load_application_data_specs, load_system_data_specs)
 from .insert_chip_power_monitors_to_graphs import (
     insert_chip_power_monitors_to_graphs)
 from .insert_extra_monitor_vertices_to_graphs import (
@@ -41,7 +41,6 @@ from .insert_extra_monitor_vertices_to_graphs import (
 from .split_lpg_vertices import split_lpg_vertices
 from .load_executable_images import load_app_images, load_sys_images
 from .load_fixed_routes import load_fixed_routes
-from .local_tdma_builder import local_tdma_builder
 from .locate_executable_start_type import locate_executable_start_type
 from .machine_generator import machine_generator
 from .create_notification_protocol import create_notification_protocol
@@ -59,14 +58,14 @@ from .sdram_outgoing_partition_allocator import (
 from .command_sender_adder import add_command_senders
 
 
-__all__ = [
+__all__ = (
     "application_finisher", "application_runner", "chip_io_buf_clearer",
     "chip_io_buf_extractor", "chip_provenance_updater",
     "chip_runtime_updater", "create_notification_protocol",
     "compute_energy_used", "database_interface",
     "reload_dsg_regions",
-    "energy_provenance_reporter", "execute_application_data_specs",
-    "execute_system_data_specs", "FindApplicationChipsUsed",
+    "energy_provenance_reporter", "load_application_data_specs",
+    "load_system_data_specs", "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
     "graph_provenance_gatherer",
     "hbp_allocator", "host_based_bit_field_router_compressor",
@@ -74,7 +73,7 @@ __all__ = [
     "insert_extra_monitor_vertices_to_graphs",
     "split_lpg_vertices",
     "load_app_images", "load_fixed_routes", "load_sys_images",
-    "local_tdma_builder", "locate_executable_start_type",
+    "locate_executable_start_type",
     "machine_generator", "placements_provenance_gatherer",
     "profile_data_gatherer",
     "read_routing_tables_from_machine", "router_provenance_gatherer",
@@ -82,5 +81,4 @@ __all__ = [
     "routing_table_loader", "sdram_outgoing_partition_allocator",
     "spalloc_allocator",
     "system_multicast_routing_generator", "tags_loader",
-    "virtual_machine_generator", "add_command_senders"
-]
+    "virtual_machine_generator", "add_command_senders")

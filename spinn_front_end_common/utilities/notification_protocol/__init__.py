@@ -14,4 +14,4 @@
 
 from .notification_protocol import NotificationProtocol
 
-__all__ = ["NotificationProtocol"]
+__all__ = ("NotificationProtocol", )

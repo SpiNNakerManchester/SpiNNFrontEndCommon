@@ -17,13 +17,12 @@ from spinn_utilities.config_holder import (
     add_default_cfg, clear_cfg_files)
 from spinnman.config_setup import add_spinnman_cfg
 from pacman.config_setup import add_pacman_cfg
-from data_specification.config_setup import add_data_specification_cfg
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 
 BASE_CONFIG_FILE = "spinnaker.cfg"
 
 
-def unittest_setup():
+def unittest_setup() -> None:
     """
     Does all the steps that may be required before a unit test.
 
@@ -40,11 +39,10 @@ def unittest_setup():
     FecDataWriter.mock()
 
 
-def add_spinnaker_cfg():
+def add_spinnaker_cfg() -> None:
     """
     Add the local configuration and all dependent configuration files.
     """
     add_pacman_cfg()  # This add its dependencies too
     add_spinnman_cfg()  # double adds of dependencies ignored
-    add_data_specification_cfg()  # double adds of dependencies ignored
     add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))

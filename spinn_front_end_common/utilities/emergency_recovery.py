@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-
+from typing import List, Optional, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
-from spinn_front_end_common.data import FecDataView
+from pacman.model.placements import Placement
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from .iobuf_extractor import IOBufExtractor
+from spinn_front_end_common.data import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))
+_bad_states = frozenset((CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG))
 
 
-def _emergency_state_check():
-    """
-    :param int app_id: the app id
-    """
+def _emergency_state_check() -> None:
     # pylint: disable=broad-except
     try:
         app_id = FecDataView.get_app_id()
@@ -34,31 +34,29 @@ def _emergency_state_check():
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
         if rte_count or watchdog_count:
-            states = txrx.get_cores_in_state(
-                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
+            states = txrx.get_cpu_infos(
+                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG], True)
             logger.warning(
                 "unexpected core states (rte={}, wdog={})",
                 rte_count, watchdog_count)
-            logger.warning(txrx.get_core_status_string(states))
+            logger.warning(states.get_status_string())
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
-        machine = txrx.get_machine_details()
+        machine = FecDataView.get_machine()
         infos = CPUInfos()
-        errors = list()
+        errors: List[Tuple[int, int, int]] = list()
         for chip in machine.chips:
-            for p in chip.processors:
+            for processor in chip.processors:
+                p = processor.processor_id
                 try:
-                    info = txrx.get_cpu_information_from_core(
-                        chip.x, chip.y, p)
-                    if info.state in (
-                            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):
-                        infos.add_processor(chip.x, chip.y, p, info)
+                    txrx.add_cpu_information_from_core(
+                        infos, chip.x, chip.y, p, _bad_states)
                 except Exception:
                     errors.append((chip.x, chip.y, p))
         if len(infos):
-            logger.warning(txrx.get_core_status_string(infos))
-        if len(len(errors) > 10):
+            logger.warning(infos.get_status_string())
+        if len(errors) > 10:
             logger.warning(
                 "Could not read information from {} cores", len(errors))
         else:
@@ -66,31 +64,30 @@ def _emergency_state_check():
                 "Could not read information from cores {}", errors)
 
 
-def _emergency_iobuf_extract(executable_targets=None):
+def _emergency_iobuf_extract(
+        executable_targets: Optional[ExecutableTargets] = None):
     """
     :param executable_targets:
         The specific targets to extract, or `None` for all
     :type executable_targets: ExecutableTargets or None
     """
-    # pylint: disable=protected-access
     extractor = IOBufExtractor(
         executable_targets,
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
     extractor.extract_iobuf()
 
 
-def emergency_recover_state_from_failure(vertex, placement):
+def emergency_recover_state_from_failure(
+        vertex: AbstractHasAssociatedBinary, placement: Placement):
     """
     Used to get at least *some* information out of a core when something
     goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param AbstractHasAssociatedBinary vertex:
         The vertex to retrieve the IOBUF from if it is suspected as being dead
     :param ~pacman.model.placements.Placement placement:
         Where the vertex is located.
     """
-    # pylint: disable=protected-access
     _emergency_state_check()
     target = ExecutableTargets()
     path = FecDataView.get_executable_path(vertex.get_binary_file_name())
@@ -100,13 +97,10 @@ def emergency_recover_state_from_failure(vertex, placement):
     _emergency_iobuf_extract(target)
 
 
-def emergency_recover_states_from_failure():
+def emergency_recover_states_from_failure() -> None:
     """
     Used to get at least *some* information out of a core when something
     goes badly wrong. Not a replacement for what abstract spinnaker base does.
-
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-        The what/where mapping
     """
     _emergency_state_check()
     _emergency_iobuf_extract()

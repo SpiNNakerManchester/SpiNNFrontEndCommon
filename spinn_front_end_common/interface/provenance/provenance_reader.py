@@ -13,9 +13,17 @@
 # limitations under the License.
 
 import os
+from typing import Iterable, List, Optional, Sequence, Tuple, Union, cast
+from typing_extensions import TypeAlias
+from spinn_utilities.typing.coords import XYP
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
-from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utilities.base_database import (
+    BaseDatabase, _SqliteTypes)
+
+#: Basic types supported natively by SQLite
+_MonitorItem: TypeAlias = Tuple[int, int, _SqliteTypes]
+_RouterItem: TypeAlias = Tuple[int, int, Union[int, float]]
 
 
 class ProvenanceReader(BaseDatabase):
@@ -36,10 +44,10 @@ class ProvenanceReader(BaseDatabase):
         is deleted the class will no longer work.
     """
 
-    __slots__ = ["_provenance_data_path"]
+    __slots__ = ()
 
     @classmethod
-    def get_last_run_database_path(cls):
+    def get_last_run_database_path(cls) -> str:
         """
         Get the path of the current provenance database of the last run.
 
@@ -54,7 +62,7 @@ class ProvenanceReader(BaseDatabase):
         return os.path.join(
             FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
 
-    def __init__(self, provenance_data_path=None):
+    def __init__(self, provenance_data_path: Optional[str] = None):
         """
         Create a wrapper around the database.
 
@@ -68,7 +76,8 @@ class ProvenanceReader(BaseDatabase):
         super().__init__(provenance_data_path, read_only=True,
                          row_factory=None, text_factory=None)
 
-    def run_query(self, query, params=()):
+    def run_query(self, query: str, params: Iterable[_SqliteTypes] = ()
+                  ) -> List[Sequence[_SqliteTypes]]:
         """
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection.
@@ -90,21 +99,15 @@ class ProvenanceReader(BaseDatabase):
         :param ~collections.abc.Iterable(str or int) params:
             The values to replace the ``?`` wildcards with.
             The number and types must match what the query expects
-        :param bool read_only: see :py:meth:`get_database_handle`
-        :param bool use_sqlite_rows: see :py:meth:`get_database_handle`
         :return: A list possibly empty of tuples/rows
             (one for each row in the database)
             where the number and type of the values corresponds to the where
             statement
         :rtype: list(tuple or ~sqlite3.Row)
         """
-        results = []
-        with self.transaction() as cur:
-            for row in cur.execute(query, params):
-                results.append(row)
-        return results
+        return list(self.execute(query, list(params)))
 
-    def cores_with_late_spikes(self):
+    def cores_with_late_spikes(self) -> List[Tuple[int, int, int, int]]:
         """
         Gets the x, y, p and count of the cores where late spikes arrived.
 
@@ -120,9 +123,9 @@ class ProvenanceReader(BaseDatabase):
             WHERE description = 'Number_of_late_spikes'
                 AND the_value > 0
             """
-        return self.run_query(query)
+        return cast(List[Tuple[int, int, int, int]], self.run_query(query))
 
-    def get_provenance_for_router(self, x, y):
+    def get_provenance_for_router(self, x: int, y: int) -> str:
         """
         Gets the provenance item(s) from the last run relating to a chip.
 
@@ -145,10 +148,10 @@ class ProvenanceReader(BaseDatabase):
             ORDER BY description
             """
         return "\n".join(
-            f"{ row[0] }: { row[1] }"
+            f"{ cast(str, row[0]) }: { cast(int, row[1]) }"
             for row in self.run_query(query, [int(x), int(y)]))
 
-    def get_cores_with_provenace(self):
+    def get_cores_with_provenace(self) -> List[XYP]:
         """
         Gets the cores with provenance.
 
@@ -160,14 +163,14 @@ class ProvenanceReader(BaseDatabase):
             FROM core_provenance_view
             group by x, y, p
             """
-        return self.run_query(query)
+        return cast(List[XYP], self.run_query(query))
 
-    def get_router_by_chip(self, description):
+    def get_router_by_chip(self, description: str) -> List[_RouterItem]:
         """
         Gets the router values for a specific item.
 
         :param str description:
-        :return: list of tuples x, y, value)
+        :return: list of tuples (x, y, value)
         :rtype: list(tuple(int, int, float))
         """
         query = """
@@ -177,11 +180,11 @@ class ProvenanceReader(BaseDatabase):
             """
         data = self.run_query(query, [description])
         try:
-            return data
+            return cast(List[_RouterItem], data)
         except IndexError:
-            return None
+            return []
 
-    def get_monitor_by_chip(self, description):
+    def get_monitor_by_chip(self, description: str) -> List[_MonitorItem]:
         """
         Gets the monitor values for a specific item.
 
@@ -196,11 +199,11 @@ class ProvenanceReader(BaseDatabase):
             """
         data = self.run_query(query, [description])
         try:
-            return data
+            return cast(List[_MonitorItem], data)
         except IndexError:
-            return None
+            return []
 
-    def messages(self):
+    def messages(self) -> List[str]:
         """
         List all the provenance messages.
 
@@ -211,10 +214,10 @@ class ProvenanceReader(BaseDatabase):
              SELECT message
              FROM reports
              """
-        return self.run_query(query, [])
+        return [cast(str, msg) for msg, in self.run_query(query, [])]
 
     @staticmethod
-    def demo():
+    def demo() -> None:
         """
         A demonstration of how to use this class.
 
@@ -234,9 +237,9 @@ class ProvenanceReader(BaseDatabase):
                 print(row)
             print("\nCORES WITH LATE SPIKES:")
             print(pr.cores_with_late_spikes())
-            print("\nROUETER (0,0) PROVENANCE:")
+            print("\nROUTER (0,0) PROVENANCE:")
             print(pr.get_provenance_for_router(0, 0))
-            print("\nCORES WITH PROVENACE")
+            print("\nCORES WITH PROVENANCE")
             print(pr.get_cores_with_provenace())
 
 
