@@ -15,7 +15,7 @@
 from spinn_utilities.abstract_base import (
     AbstractBase, abstractmethod)
 from pacman.model.graphs.machine.machine_vertex import MachineVertex
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 
 class LiveOutputDevice(object, metaclass=AbstractBase):
@@ -26,12 +26,13 @@ class LiveOutputDevice(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def get_device_output_keys(self) -> Dict[MachineVertex, Tuple[int, int]]:
+    def get_device_output_keys(self) -> Dict[MachineVertex,
+                                             List[Tuple[int, int]]]:
         """
         Get the atom key mapping to be output for each machine vertex received
         by the device to be output.  Note that the device may change the keys
         as they pass through it, and this needs to be recognized here.
 
-        :rtype: Dict[MachineVertex, Tuple[int, int]]
+        :rtype: Dict[MachineVertex, List[Tuple[int, int]]]
         """
         raise NotImplementedError
