@@ -546,6 +546,7 @@ static void send_finished_response(void) {
     my_msg.length = sizeof(sdp_hdr_t) +
             sizeof(int) * SEND_MISSING_SEQ_HEADER_WORDS;
     send_sdp_message();
+    log_info("Sent finished response");
     log_debug("Sent end flag");
 }
 
