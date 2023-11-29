@@ -30,6 +30,7 @@
 #include <simulation.h>
 #include <debug.h>
 #include <bit_field.h>
+#include <sdp_no_scp.h>
 
 //-----------------------------------------------------------------------------
 // MAGIC NUMBERS
@@ -179,6 +180,9 @@ static uint32_t end_flag_key = 0;
 //! the key that marks an ordinary word within a data out stream
 static uint32_t basic_data_key = 0;
 
+//! the SDP tag to use
+static uint32_t tag = 0;
+
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
 
@@ -197,9 +201,6 @@ static uint32_t data[ITEMS_PER_DATA_PACKET];
 
 //! index into ::data
 static uint32_t position_in_store = 0;
-
-//! SDP message holder for transmissions
-static sdp_msg_pure_data my_msg;
 
 //! If there is a copy in progress (one at a time)
 static bool copy_in_progress = false;
@@ -341,9 +342,24 @@ static void publish_transaction_id_to_user_1(int transaction_id) {
 }
 
 //! \brief sends the SDP message built in the ::my_msg global
-static inline void send_sdp_message(void) {
-    log_debug("sending message of length %u", my_msg.length);
-    while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, SDP_TIMEOUT)) {
+static inline void send_sdp_message(sdp_msg_pure_data *my_msg, uint n_data_words) {
+
+    my_msg->tag = tag;        // IPTag 1
+    my_msg->dest_port = PORT_ETH;        // Ethernet
+    my_msg->dest_addr = sv->eth_addr;    // Nearest Ethernet chip
+
+    // fill in SDP source & flag fields
+    my_msg->flags = 0x07;
+    my_msg->srce_port = 3;
+    my_msg->srce_addr = sv->p2p_addr;
+
+    my_msg->length = sizeof(sdp_hdr_t) + n_data_words * sizeof(uint);
+    if (my_msg->length > ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES) {
+        log_error("bad message length %u", my_msg->length);
+    }
+
+    log_debug("sending message of length %u", my_msg->length);
+    while (!spin1_send_sdp_msg((sdp_msg_t *) my_msg, SDP_TIMEOUT)) {
         log_debug("failed to send SDP message");
         spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
     }
@@ -463,15 +479,6 @@ static inline uint calculate_sdram_address_from_seq_num(uint seq_num) {
             + (DATA_IN_NORMAL_PACKET_WORDS * seq_num * sizeof(uint)));
 }
 
-//! \brief Sets the length of the outbound SDP message in ::my_msg
-//! \param[in] end: Points to the first byte after the content of the message
-static inline void set_message_length(const void *end) {
-    my_msg.length = ((const uint8_t *) end) - &my_msg.flags;
-    if (my_msg.length > ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES) {
-        log_error("bad message length %u", my_msg.length);
-    }
-}
-
 //! \brief handles reading the address, chips and max packets from a
 //! SDP message (command: ::SDP_SEND_DATA_TO_LOCATION_CMD)
 //! \param[in] receive_data_cmd: The message to parse
@@ -540,12 +547,12 @@ static void process_address_data(
 static void send_finished_response(void) {
     // send boundary key, so that monitor knows everything in the previous
     // stream is done
+    sdp_msg_pure_data my_msg;
     sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
     send_mc_message(BOUNDARY_KEY_OFFSET, 0);
     payload->command = SDP_SEND_FINISHED_DATA_IN_CMD;
-    my_msg.length = sizeof(sdp_hdr_t) +
-            sizeof(int) * SEND_MISSING_SEQ_HEADER_WORDS;
-    send_sdp_message();
+    payload->transaction_id = transaction_id;
+    send_sdp_message(&my_msg, SEND_MISSING_SEQ_HEADER_WORDS);
     log_info("Sent finished response");
     log_debug("Sent end flag");
 }
@@ -565,14 +572,11 @@ static void process_missing_seq_nums_and_request_retransmission(
         return;
     }
     if (received_seq_nums_store == NULL &&
-            this_message_transaction_id  == transaction_id) {
+            this_message_transaction_id == transaction_id) {
         log_debug("received tell request when already sent finish. resending");
         send_finished_response();
         return;
     }
-
-    sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
-    payload->transaction_id = transaction_id;
 
     // check that missing seq transmission is actually needed, or
     // have we finished
@@ -583,42 +587,40 @@ static void process_missing_seq_nums_and_request_retransmission(
         return;
     }
 
+    sdp_msg_pure_data my_msg;
+    sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
+    payload->transaction_id = transaction_id;
+
     // sending missing seq nums
     log_debug("Looking for %d missing packets",
             ((int) max_seq_num + 1) - ((int) total_received_seq_nums));
     payload->command = SDP_SEND_MISSING_SEQ_DATA_IN_CMD;
-    const uint *data_start = payload->data;
-    const uint *end_of_buffer = (uint *) (payload + 1);
-    uint *data_ptr = payload->data;
 
     // handle case of all missing
     if (total_received_seq_nums == 0) {
         // send response
-        data_ptr = payload->data;
-        *(data_ptr++) = ALL_MISSING_FLAG;
-        set_message_length(data_ptr);
-        send_sdp_message();
+        payload->data[0] = ALL_MISSING_FLAG;
+        send_sdp_message(&my_msg, SEND_MISSING_SEQ_HEADER_WORDS + 1);
         return;
     }
 
     // handle a random number of missing seqs
+    uint data_index = 0;
     for (uint bit = 0; bit <= max_seq_num; bit++) {
         if (bit_field_test(received_seq_nums_store, bit)) {
             continue;
         }
 
-        *(data_ptr++) = bit;
-        if (data_ptr >= end_of_buffer) {
-            set_message_length(data_ptr);
-            send_sdp_message();
-            data_ptr = payload->data;
+        payload->data[data_index++] = bit;
+        if (data_index >= ITEMS_PER_MISSING_PACKET) {
+            send_sdp_message(&my_msg, data_index + SEND_MISSING_SEQ_HEADER_WORDS);
+            data_index = 0;
         }
     }
 
     // send final message if required
-    if (data_ptr > data_start) {
-        set_message_length(data_ptr);
-        send_sdp_message();
+    if (data_index > 0) {
+        send_sdp_message(&my_msg, data_index + SEND_MISSING_SEQ_HEADER_WORDS);
     }
 }
 
@@ -700,28 +702,34 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     }
 }
 
+static void send_rc_code(uint rc_code) {
+    sdp_msg_pure_data my_msg;
+    my_msg.data[0] = rc_code;
+    send_sdp_message(&my_msg, 1);
+}
+
 static void send_from_sdram_check(void) {
     log_info("Copy progress check...");
     if (!copy_in_progress) {
         log_info("Sending OK now!");
-        send_finished_response();
+        send_rc_code(SDP_SEND_FINISHED_DATA_IN_CMD);
     }
 }
 
 void do_sdram_sends(UNUSED uint unused0, UNUSED uint unused1) {
-    log_info("Starting copy of %u words from from 0x%08x locally to 0x%08x on %u, %u",
+    log_debug("Starting copy of %u words from from 0x%08x locally to 0x%08x on %u, %u",
             copy_msg.n_values, copy_msg.base_address_local, copy_msg.base_address_target,
             copy_msg.target_x, copy_msg.target_y);
     if (copy_msg.target_x == 0 && copy_msg.target_y == 0) {
-        copy_data((uint *) copy_msg.base_address_local,
-                (uint *) copy_msg.base_address_target, copy_msg.n_values);
+        copy_data((uint *) copy_msg.base_address_target,
+                (uint *) copy_msg.base_address_local, copy_msg.n_values);
     } else {
         chip_x = copy_msg.target_x;
         chip_y = copy_msg.target_y;
         process_sdp_message_into_mc_messages((uint *) copy_msg.base_address_local,
                 copy_msg.n_values, true, copy_msg.base_address_target);
     }
-    log_info("Sending OK response");
+    log_debug("Sending OK response");
     copy_in_progress = false;
     send_from_sdram_check();
 }
@@ -730,22 +738,18 @@ static void send_from_sdram(const sdp_msg_pure_data *msg) {
 
     // Can't to if already copying
     if (copy_in_progress) {
-        log_info("Copy in progress, rejecting");
-        my_msg.data[0] = RC_P2P_BUSY;
-        set_message_length(&(my_msg.data[4]));
-        send_sdp_message();
+        log_debug("Copy in progress, rejecting");
+        send_rc_code(RC_P2P_BUSY);
         return;
     }
     copy_in_progress = true;
     sdp_copy_msg_t *copy_msg_ptr = (sdp_copy_msg_t *) msg->data;
     copy_msg = *copy_msg_ptr;
-    log_info("Scheduling copy of %u words from from 0x%08x locally to 0x%08x on %u, %u",
+    log_debug("Scheduling copy of %u words from from 0x%08x locally to 0x%08x on %u, %u",
             copy_msg.n_values, copy_msg.base_address_local, copy_msg.base_address_target,
             copy_msg.target_x, copy_msg.target_y);
     spin1_schedule_callback(do_sdram_sends, 0, 0, 1);
-    my_msg.data[0] = RC_OK;
-    set_message_length(&(my_msg.data[4]));
-    send_sdp_message();
+    send_rc_code(RC_OK);
     return;
 }
 
@@ -863,15 +867,15 @@ static void receive_sdp_message(uint mailbox, uint port) {
 
 //! \brief sends data to the host via SDP (using ::my_msg)
 static void send_data(void) {
+    sdp_msg_pure_data my_msg;
     copy_data(&my_msg.data, data, position_in_store);
-    my_msg.length = sizeof(sdp_hdr_t) + position_in_store * sizeof(uint);
 
     if (seq_num > max_seq_num) {
         log_error("Got a funky seq num in sending; max is %d, received %d",
                 max_seq_num, seq_num);
     }
 
-    send_sdp_message();
+    send_sdp_message(&my_msg, position_in_store);
 
     seq_num++;
     data[SEQ_NUM_LOC] = seq_num;
@@ -957,6 +961,7 @@ static void initialise(void) {
     transaction_id_key = config->transaction_id_key;
     end_flag_key = config->end_flag_key;
     basic_data_key = config->basic_data_key;
+    tag = config->tag_id;
 
     log_info("new seq key = %d, first data key = %d, transaction id key = %d, "
             "end flag key = %d, basic_data_key = %d",
@@ -964,14 +969,6 @@ static void initialise(void) {
             end_flag_key, basic_data_key);
 
     log_info("the tag id being used is %d", config->tag_id);
-    my_msg.tag = config->tag_id;        // IPTag 1
-    my_msg.dest_port = PORT_ETH;        // Ethernet
-    my_msg.dest_addr = sv->eth_addr;    // Nearest Ethernet chip
-
-    // fill in SDP source & flag fields
-    my_msg.flags = 0x07;
-    my_msg.srce_port = 3;
-    my_msg.srce_addr = sv->p2p_addr;
 
     // Set up provenance
     sdram_prov = data_specification_get_region(PROVENANCE_REGION, ds_regions);
