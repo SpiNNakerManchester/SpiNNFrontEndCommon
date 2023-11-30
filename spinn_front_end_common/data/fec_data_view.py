@@ -15,7 +15,7 @@ from __future__ import annotations  # Type checking trickery
 import logging
 import os
 from typing import (
-    Dict, Iterable, Iterator, Optional, Set, Tuple, Union, TYPE_CHECKING)
+    Dict, Iterable, Iterator, Optional, Set, Tuple, Union, List, TYPE_CHECKING)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
@@ -43,6 +43,7 @@ if TYPE_CHECKING:
     from spinn_front_end_common.utilities.notification_protocol import (
         NotificationProtocol)
     from spinn_front_end_common.utility_models import LivePacketGather
+    from spinn_front_end_common.abstract_models import LiveOutputDevice
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _EMPTY_CORE_SUBSETS = CoreSubsets()
@@ -88,6 +89,7 @@ class _FecDataModel(object):
         "_java_caller",
         "_live_packet_recorder_params",
         "_live_output_vertices",
+        "_live_output_devices",
         "_next_sync_signal",
         "_next_ds_reference",
         "_none_labelled_edge_count",
@@ -131,6 +133,7 @@ class _FecDataModel(object):
             LivePacketGatherParameters,
             LivePacketGather]] = None
         self._live_output_vertices: Set[Tuple[ApplicationVertex, str]] = set()
+        self._live_output_devices: List[LiveOutputDevice] = list()
         self._java_caller: Optional[JavaCaller] = None
         self._none_labelled_edge_count = 0
         self._reset_number = 0
@@ -1252,3 +1255,21 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                            cls.__fec_data._next_ds_reference+number)
         cls.__fec_data._next_ds_reference += number
         return list(references)
+
+    @classmethod
+    def add_live_output_device(cls, device: LiveOutputDevice):
+        """
+        Add a live output device.
+
+        :param device: The device to be added
+        """
+        cls.__fec_data._live_output_devices.append(device)
+
+    @classmethod
+    def iterate_live_output_devices(cls) -> Iterable[LiveOutputDevice]:
+        """
+        Iterate over live output devices.
+
+        :rtype: iterable(LiveOutputDevice)
+        """
+        return iter(cls.__fec_data._live_output_devices)
