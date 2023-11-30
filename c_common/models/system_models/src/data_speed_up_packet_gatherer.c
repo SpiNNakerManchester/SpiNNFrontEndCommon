@@ -158,6 +158,7 @@ typedef struct sdp_msg_out_payload_t {
 //! SDP message to copy from SDRAM
 typedef struct sdp_copy_msg_t {
     uint command;              //!< The command of the message
+    uint transaction_id;       //!< The transaction that the message is taking part in
     uint base_address_local;   //!< The local base address to copy from
     uint base_address_target;  //!< The target base address to copy to
     ushort target_x;           //!< The x-coordinate of the target chip
@@ -204,6 +205,8 @@ static uint32_t position_in_store = 0;
 
 //! If there is a copy in progress (one at a time)
 static bool copy_in_progress = false;
+
+static bool copy_msg_valid = false;
 
 //! The copy that is in progress if any (otherwise ignored)
 static sdp_copy_msg_t copy_msg;
@@ -553,7 +556,6 @@ static void send_finished_response(void) {
     payload->command = SDP_SEND_FINISHED_DATA_IN_CMD;
     payload->transaction_id = transaction_id;
     send_sdp_message(&my_msg, SEND_MISSING_SEQ_HEADER_WORDS);
-    log_info("Sent finished response");
     log_debug("Sent end flag");
 }
 
@@ -702,24 +704,26 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     }
 }
 
-static void send_rc_code(uint rc_code) {
+static void send_rc_code(uint rc_code, uint transaction_id) {
     sdp_msg_pure_data my_msg;
     my_msg.data[0] = rc_code;
-    send_sdp_message(&my_msg, 1);
+    my_msg.data[1] = transaction_id;
+    send_sdp_message(&my_msg, 2);
 }
 
-static void send_from_sdram_check(void) {
-    log_info("Copy progress check...");
-    if (!copy_in_progress) {
-        log_info("Sending OK now!");
-        send_rc_code(SDP_SEND_FINISHED_DATA_IN_CMD);
+static void send_from_sdram_check(sdp_copy_msg_t *msg) {
+    log_debug("Copy progress check for transaction %u, potential in progress %u...",
+            msg->transaction_id, copy_msg.transaction_id);
+    if (!copy_in_progress && (msg->transaction_id == copy_msg.transaction_id)) {
+        log_debug("Sending OK now!");
+        send_rc_code(SDP_SEND_FINISHED_DATA_IN_CMD, msg->transaction_id);
     }
 }
 
-void do_sdram_sends(UNUSED uint unused0, UNUSED uint unused1) {
-    log_debug("Starting copy of %u words from from 0x%08x locally to 0x%08x on %u, %u",
+void do_sdram_sends(uint unused0, uint unused1) {
+    log_debug("Starting copy of %u words from from 0x%08x locally to 0x%08x on %u, %u for transaction %u",
             copy_msg.n_values, copy_msg.base_address_local, copy_msg.base_address_target,
-            copy_msg.target_x, copy_msg.target_y);
+            copy_msg.target_x, copy_msg.target_y, copy_msg.transaction_id);
     if (copy_msg.target_x == 0 && copy_msg.target_y == 0) {
         copy_data((uint *) copy_msg.base_address_target,
                 (uint *) copy_msg.base_address_local, copy_msg.n_values);
@@ -729,27 +733,41 @@ void do_sdram_sends(UNUSED uint unused0, UNUSED uint unused1) {
         process_sdp_message_into_mc_messages((uint *) copy_msg.base_address_local,
                 copy_msg.n_values, true, copy_msg.base_address_target);
     }
-    log_debug("Sending OK response");
+    log_debug("Sending OK response for transaction %u", copy_msg.transaction_id);
     copy_in_progress = false;
-    send_from_sdram_check();
+    send_from_sdram_check(&copy_msg);
 }
 
 static void send_from_sdram(const sdp_msg_pure_data *msg) {
+    sdp_copy_msg_t *copy_msg_ptr = (sdp_copy_msg_t *) msg->data;
 
     // Can't to if already copying
     if (copy_in_progress) {
-        log_debug("Copy in progress, rejecting");
-        send_rc_code(RC_P2P_BUSY);
+        if (copy_msg_ptr->transaction_id != copy_msg.transaction_id) {
+            // Trying to start a new transaction = fail
+            log_debug("Copy in progress on transaction %u, rejecting %u",
+                    copy_msg.transaction_id, copy_msg_ptr->transaction_id);
+            send_rc_code(RC_P2P_BUSY, copy_msg_ptr->transaction_id);
+            return;
+        } else {
+            // Trying to start the same transaction = missed finished message
+            log_debug("Resending Done for transaction %u", copy_msg_ptr->transaction_id);
+            send_rc_code(RC_OK, copy_msg_ptr->transaction_id);
+            return;
+        }
+    } else if (copy_msg_valid && copy_msg_ptr->transaction_id == copy_msg.transaction_id) {
+        // Already done it but not recognised!
+        send_from_sdram_check(copy_msg_ptr);
         return;
     }
     copy_in_progress = true;
-    sdp_copy_msg_t *copy_msg_ptr = (sdp_copy_msg_t *) msg->data;
+    copy_msg_valid = true;
     copy_msg = *copy_msg_ptr;
-    log_debug("Scheduling copy of %u words from from 0x%08x locally to 0x%08x on %u, %u",
+    log_debug("Scheduling copy of %u words from from 0x%08x locally to 0x%08x on %u, %u for transaction %u",
             copy_msg.n_values, copy_msg.base_address_local, copy_msg.base_address_target,
-            copy_msg.target_x, copy_msg.target_y);
+            copy_msg.target_x, copy_msg.target_y, copy_msg.transaction_id);
     spin1_schedule_callback(do_sdram_sends, 0, 0, 1);
-    send_rc_code(RC_OK);
+    send_rc_code(RC_OK, copy_msg_ptr->transaction_id);
     return;
 }
 
@@ -777,7 +795,7 @@ static void data_in_receive_sdp_data(const sdp_msg_pure_data *msg) {
         send_from_sdram(msg);
         break;
     case SDP_SEND_FROM_SDRAM_CHECK:
-        send_from_sdram_check();
+        send_from_sdram_check((sdp_copy_msg_t *) msg->data);
         break;
     default:
         log_error("Failed to recognise command id %u", command);
@@ -890,11 +908,11 @@ static void send_data(void) {
 static void receive_data(uint key, uint payload) {
     if (key == new_sequence_key) {
         if (position_in_store != START_OF_DATA) {
-            log_info("sending surplus data from new seq setting");
+            log_debug("sending surplus data from new seq setting");
             send_data();
         }
 
-        log_info("new seq num to set is %d", payload);
+        log_debug("new seq num to set is %d", payload);
         data[SEQ_NUM_LOC] = payload;
         data[TRANSACTION_ID] = data_out_transaction_id;
         seq_num = payload;
