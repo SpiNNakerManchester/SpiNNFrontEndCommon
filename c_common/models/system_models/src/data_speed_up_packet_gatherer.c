@@ -721,7 +721,8 @@ static void send_from_sdram_check(sdp_copy_msg_t *msg) {
 }
 
 void do_sdram_sends(uint unused0, uint unused1) {
-    log_debug("Starting copy of %u words from from 0x%08x locally to 0x%08x on %u, %u for transaction %u",
+    log_debug("Starting copy of %u words from from 0x%08x locally to 0x%08x"
+            " on %u, %u for transaction %u",
             copy_msg.n_values, copy_msg.base_address_local, copy_msg.base_address_target,
             copy_msg.target_x, copy_msg.target_y, copy_msg.transaction_id);
     if (copy_msg.target_x == 0 && copy_msg.target_y == 0) {
@@ -763,7 +764,8 @@ static void send_from_sdram(const sdp_msg_pure_data *msg) {
     copy_in_progress = true;
     copy_msg_valid = true;
     copy_msg = *copy_msg_ptr;
-    log_debug("Scheduling copy of %u words from from 0x%08x locally to 0x%08x on %u, %u for transaction %u",
+    log_debug("Scheduling copy of %u words from from 0x%08x locally to 0x%08x"
+            " on %u, %u for transaction %u",
             copy_msg.n_values, copy_msg.base_address_local, copy_msg.base_address_target,
             copy_msg.target_x, copy_msg.target_y, copy_msg.transaction_id);
     spin1_schedule_callback(do_sdram_sends, 0, 0, 1);
