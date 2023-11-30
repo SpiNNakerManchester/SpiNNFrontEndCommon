@@ -720,7 +720,7 @@ static void send_from_sdram_check(sdp_copy_msg_t *msg) {
     }
 }
 
-void do_sdram_sends(uint unused0, uint unused1) {
+void do_sdram_sends(UNUSED uint unused0, UNUSED uint unused1) {
     log_debug("Starting copy of %u words from from 0x%08x locally to 0x%08x"
             " on %u, %u for transaction %u",
             copy_msg.n_values, copy_msg.base_address_local, copy_msg.base_address_target,
