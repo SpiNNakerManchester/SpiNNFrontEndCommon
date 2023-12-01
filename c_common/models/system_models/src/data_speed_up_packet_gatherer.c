@@ -797,6 +797,7 @@ static void send_data_over_multicast(sdp_msg_t *msg) {
         msg->cmd_rc = RC_OK;
         reflect_sdp_message(msg, 0);
         send_msg(msg);
+        return;
     }
 
     last_sequence = msg->seq;
