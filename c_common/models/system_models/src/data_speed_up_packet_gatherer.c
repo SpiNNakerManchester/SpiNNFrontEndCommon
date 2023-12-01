@@ -808,6 +808,14 @@ static void send_data_over_multicast(sdp_msg_t *msg) {
     uint chip_y = msg->arg2 & 0xFFFF;
     uint n_data_items = msg->arg3;
 
+    if (chip_x >= 8 || chip_y >= 8) {
+        log_error("Chip %u, %u is not valid!", chip_x, chip_y);
+        msg->cmd_rc = RC_ARG;
+        reflect_sdp_message(msg, 0);
+        send_msg(msg);
+        return;
+    }
+
     if (chip_x == 0 && chip_y == 0) {
         copy_data((address_t) address, msg->data, n_data_items);
     } else {
