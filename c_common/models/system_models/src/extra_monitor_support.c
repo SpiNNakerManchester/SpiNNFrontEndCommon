@@ -1185,6 +1185,9 @@ static inline void data_in_process_address(uint data) {
     data_in_first_write_address = data_in_write_address = (address_t) data;
 }
 
+static const uint SDRAM_TOP_UNBUF = SDRAM_BASE_UNBUF + SDRAM_SIZE;
+static const uint SDRAM_TOP_BUF = SDRAM_TOP_UNBUF + SDRAM_SIZE;
+
 //! \brief Writes a word in a stream and advances the write pointer.
 //! \param[in] data: The word to write
 static inline void data_in_process_data(uint data) {
@@ -1192,6 +1195,12 @@ static inline void data_in_process_data(uint data) {
 
     if (data_in_write_address == NULL) {
         io_printf(IO_BUF, "[ERROR] Write address not set when write data received!\n");
+        rt_error(RTE_SWERR);
+    }
+    uint data_addr = (uint) data_in_write_address;
+    if (((data_addr < SDRAM_BASE_BUF) || (data_addr >= SDRAM_TOP_BUF))
+            && ((data_addr < SDRAM_BASE_UNBUF) || (data_addr >= SDRAM_TOP_UNBUF))) {
+        io_printf(IO_BUF, "[ERROR] Write address 0x%08x is outside SDRAM", data_addr);
         rt_error(RTE_SWERR);
     }
     *data_in_write_address = data;
