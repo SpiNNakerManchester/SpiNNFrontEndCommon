@@ -774,7 +774,34 @@ static void reinjection_sdp_command(sdp_msg_t *msg) {
     }
 }
 
+static void send_msg(sdp_msg_t *msg) {
+    while (!spin1_send_sdp_msg(msg, SDP_TIMEOUT)) {
+        log_debug("failed to send SDP message");
+        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+    }
+}
+
+static uint last_sequence = 0xFFFFFFF0;
+
+static bool send_in_progress = false;
+
 static void send_data_over_multicast(sdp_msg_t *msg) {
+    if (send_in_progress) {
+        if (last_sequence != msg->seq) {
+            msg->cmd_rc = RC_BUF;
+            reflect_sdp_message(msg, 0);
+            send_msg(msg);
+        }
+        return;
+    } else if (last_sequence == msg->seq) {
+        msg->cmd_rc = RC_OK;
+        reflect_sdp_message(msg, 0);
+        send_msg(msg);
+    }
+
+    last_sequence = msg->seq;
+    send_in_progress = true;
+
     uint address = msg->arg1;
     uint chip_x = (msg->arg2 >> 16) & 0xFFFF;
     uint chip_y = msg->arg2 & 0xFFFF;
@@ -788,15 +815,12 @@ static void send_data_over_multicast(sdp_msg_t *msg) {
         send_mc_message(BOUNDARY_KEY_OFFSET, 0, chip_x, chip_y);
     }
 
+    send_in_progress = false;
+
     // set message to correct format
     msg->cmd_rc = RC_OK;
-    msg->length = SDP_REPLY_HEADER_LEN;
     reflect_sdp_message(msg, 0);
-
-    while (!spin1_send_sdp_msg(msg, SDP_TIMEOUT)) {
-        log_debug("failed to send SDP message");
-        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
-    }
+    send_msg(msg);
 }
 
 //! \brief processes SDP messages
