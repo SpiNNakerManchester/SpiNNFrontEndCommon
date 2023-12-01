@@ -1200,7 +1200,7 @@ static inline void data_in_process_data(uint data) {
     uint data_addr = (uint) data_in_write_address;
     if (((data_addr < SDRAM_BASE_BUF) || (data_addr >= SDRAM_TOP_BUF))
             && ((data_addr < SDRAM_BASE_UNBUF) || (data_addr >= SDRAM_TOP_UNBUF))) {
-        io_printf(IO_BUF, "[ERROR] Write address 0x%08x is outside SDRAM", data_addr);
+        io_printf(IO_BUF, "[ERROR] Write address 0x%08x is outside SDRAM\n", data_addr);
         rt_error(RTE_SWERR);
     }
     *data_in_write_address = data;
