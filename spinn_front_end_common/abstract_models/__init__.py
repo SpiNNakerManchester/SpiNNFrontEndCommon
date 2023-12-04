@@ -29,6 +29,7 @@ from .abstract_supports_bit_field_routing_compression import (
     AbstractSupportsBitFieldRoutingCompression)
 from .abstract_can_reset import AbstractCanReset
 from .has_custom_atom_key_map import HasCustomAtomKeyMap
+from .live_output_device import LiveOutputDevice
 
 __all__ = ("AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
@@ -38,4 +39,4 @@ __all__ = ("AbstractGeneratesDataSpecification",
            "AbstractVertexWithEdgeToDependentVertices", "AbstractCanReset",
            "AbstractSupportsBitFieldGeneration",
            "AbstractSupportsBitFieldRoutingCompression",
-           "HasCustomAtomKeyMap")
+           "HasCustomAtomKeyMap", "LiveOutputDevice")

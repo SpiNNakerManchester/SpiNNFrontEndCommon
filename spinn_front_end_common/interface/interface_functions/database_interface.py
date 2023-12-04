@@ -90,4 +90,6 @@ def _write_to_db(w: DatabaseWriter, runtime: Optional[float]):
                 else:
                     machine_vertices.add((vertex, part_id))
             w.create_atom_to_event_id_mapping(machine_vertices)
+            w.create_device_atom_event_id_mapping(
+                FecDataView.iterate_live_output_devices())
         p.update()
