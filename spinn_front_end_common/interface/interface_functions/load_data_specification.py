@@ -28,6 +28,7 @@ from spinn_front_end_common.utilities.exceptions import DataSpecException
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _Writer: TypeAlias = Callable[[int, int, int, bytes], Any]
@@ -114,6 +115,12 @@ class _LoadDataSpecification(object):
                     self.__java_app(uses_advanced_monitors)
             else:
                 self.__python_load(is_system, uses_advanced_monitors)
+            if uses_advanced_monitors and get_config_bool(
+                    "Reports", "write_advanced_monitor_iobuf"):
+                extractor = IOBufExtractor(
+                    None, recovery_mode=True,
+                    filename_template="system_iobuf_{}_{}_{}.txt")
+                extractor.extract_iobuf()
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure()
