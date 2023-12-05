@@ -259,12 +259,7 @@ static inline void send_mc_message(key_offsets command, uint payload,
 //! \param[in] key_x: The key x chip to use
 //! \param[in] key_y: The key y chip to use
 static void process_sdp_message_into_mc_messages(
-        const uint *data, uint n_elements, bool set_write_address,
-        uint write_address, uint key_x, uint key_y) {
-    // send mc message with SDRAM location to correct chip
-    if (set_write_address) {
-        send_mc_message(WRITE_ADDR_KEY_OFFSET, write_address, key_x, key_y);
-    }
+        const uint *data, uint n_elements, uint key_x, uint key_y) {
 
     // send mc messages containing rest of sdp data
     for (uint data_index = 0; data_index < n_elements; data_index++) {
@@ -378,27 +373,45 @@ static void send_data_over_multicast(sdp_msg_t *msg) {
     last_sequence = msg->seq;
     send_in_progress = true;
 
-    uint address = msg->arg1;
-    uint chip_x = (msg->arg2 >> 16) & 0xFFFF;
-    uint chip_y = msg->arg2 & 0xFFFF;
-    uint n_data_items = msg->arg3;
+    uint *data = &(msg->arg1);
+    uint length = (msg->length - 12) >> 2;
 
-    if (chip_x >= 8 || chip_y >= 8) {
-        log_error("Chip %u, %u is not valid!", chip_x, chip_y);
-        msg->cmd_rc = RC_ARG;
-        reflect_sdp_message(msg, 0);
-        send_msg(msg);
-        return;
+    while (length > 0) {
+
+        // Read a header
+        uint address = data[0];
+        uint chip_x = (data[1] >> 16) & 0xFFFF;
+        uint chip_y = data[1] & 0xFFFF;
+        uint n_data_items = data[2];
+        data = &(data[3]);
+        length -= 3;
+
+        if (chip_x >= 8 || chip_y >= 8) {
+            log_error("Chip %u, %u is not valid!", chip_x, chip_y);
+            msg->cmd_rc = RC_ARG;
+            reflect_sdp_message(msg, 0);
+            send_msg(msg);
+            return;
+        }
+
+        if (n_data_items > length) {
+            log_error("Not enough data to read %u words from %u remaining",
+                    n_data_items, length);
+            msg->cmd_rc = RC_ARG;
+            reflect_sdp_message(msg, 0);
+            send_msg(msg);
+            return;
+        }
+
+        log_info("Writing using %u words to %u, %u: 0x%08x", n_data_items, chip_x,
+                chip_y, address);
+        send_mc_message(WRITE_ADDR_KEY_OFFSET, address, chip_x, chip_y);
+        process_sdp_message_into_mc_messages(data, n_data_items,
+                    chip_x, chip_y);
+
+        data = &(data[n_data_items]);
+        length -= n_data_items;
     }
-
-    if (chip_x == 0 && chip_y == 0) {
-        copy_data((address_t) address, msg->data, n_data_items);
-    } else {
-        process_sdp_message_into_mc_messages((uint *) msg->data, n_data_items,
-                true, address, chip_x, chip_y);
-        send_mc_message(BOUNDARY_KEY_OFFSET, 0, chip_x, chip_y);
-    }
-
     send_in_progress = false;
 
     // set message to correct format
