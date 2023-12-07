@@ -403,8 +403,8 @@ static void send_data_over_multicast(sdp_msg_t *msg) {
             return;
         }
 
-        log_info("Writing using %u words to %u, %u: 0x%08x", n_data_items, chip_x,
-                chip_y, address);
+        log_debug("Writing using %u words to %u, %u: 0x%08x", n_data_items,
+                chip_x, chip_y, address);
         send_mc_message(WRITE_ADDR_KEY_OFFSET, address, chip_x, chip_y);
         process_sdp_message_into_mc_messages(data, n_data_items,
                     chip_x, chip_y);
