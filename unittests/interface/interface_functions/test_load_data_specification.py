@@ -62,6 +62,10 @@ class _MockTransceiver(Version5Transceiver):
             data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
 
+    @overrides(Version5Transceiver.get_scamp_connection_selector)
+    def get_scamp_connection_selector(self):
+        return None
+
     @overrides(Version5Transceiver.close)
     def close(self):
         pass
