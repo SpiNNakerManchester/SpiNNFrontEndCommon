@@ -746,7 +746,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return [0]
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
-    def get_recording_region_base_address(self, placement) -> int:
+    def get_recording_region_base_address(self, placement: Placement) -> int:
         return locate_memory_region_for_placement(
             placement, self._REGIONS.RECORDING)
 
