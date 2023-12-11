@@ -14,6 +14,7 @@
 
 import numpy
 from numpy import uint8, uint32
+from typing import Optional
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.processes import AbstractMultiConnectionProcess
 from spinnman.messages.scp.impl import CheckOKResponse
@@ -33,7 +34,7 @@ class WriteMemoryUsingMulticastProcess(
     def write_memory_from_bytearray(
             self, x: int, y: int, p: int, target_x: int, target_y: int,
             base_address: int, data: bytes, data_offset: int = 0,
-            n_bytes: int = None, get_sum: bool = False) -> int:
+            n_bytes: Optional[int] = None, get_sum: bool = False) -> int:
         offset = 0
         n_bytes_to_write = n_bytes
         if n_bytes is None:
