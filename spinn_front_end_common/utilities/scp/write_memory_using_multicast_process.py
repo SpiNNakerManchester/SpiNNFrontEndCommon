@@ -36,9 +36,10 @@ class WriteMemoryUsingMulticastProcess(
             base_address: int, data: bytes, data_offset: int = 0,
             n_bytes: Optional[int] = None, get_sum: bool = False) -> int:
         offset = 0
-        n_bytes_to_write = n_bytes
         if n_bytes is None:
             n_bytes_to_write = len(data)
+        else:
+            n_bytes_to_write = n_bytes
         with self._collect_responses():
             while n_bytes_to_write > 0:
                 bytes_to_send = min(n_bytes_to_write, UDP_MESSAGE_MAX_SIZE)
