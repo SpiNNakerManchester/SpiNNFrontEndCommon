@@ -274,6 +274,8 @@ class LiveEventConnection(DatabaseConnection):
             an int atom ID or key, and an int payload which may be None
         :type live_event_callback: callable(str, int, int or None) -> None
         """
+        if self.__receive_labels is None:
+            raise ConfigurationException("no receive labels defined")
         label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
