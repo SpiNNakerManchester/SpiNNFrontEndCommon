@@ -262,7 +262,8 @@ class LiveEventConnection(DatabaseConnection):
             (live_event_callback, translate_key))
 
     def add_receive_no_time_callback(
-            self, label, live_event_callback, translate_key=True):
+            self, label: str, live_event_callback: _RcvCallback,
+            translate_key: bool = True):
         """
         Add a callback for the reception of live events from a vertex.
 
