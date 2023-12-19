@@ -43,11 +43,11 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
         self._binary_start_type = binary_start_type
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
+    def get_binary_file_name(self) -> str:
         return self._binary_file_name
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
+    def get_binary_start_type(self) -> ExecutableType:
         return self._binary_start_type
 
 
@@ -61,7 +61,7 @@ class _TestSimpleAppVertex(AbstractOneAppOneMachineVertex):
 class _TestExecutableFinder(object):
 
     @overrides(ExecutableFinder.get_executable_path)
-    def get_executable_path(self, executable_name):
+    def get_executable_path(self, executable_name: str) -> str:
         return executable_name
 
 
