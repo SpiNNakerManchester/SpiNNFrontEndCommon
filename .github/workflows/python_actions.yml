@@ -26,7 +26,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
 
     steps:
     - name: Checkout
@@ -60,7 +60,7 @@ jobs:
       uses: ./support/actions/pytest
       with:
         tests: unittests fec_integration_tests
-        coverage: ${{ matrix.python-version == 3.8 }}
+        coverage: ${{ matrix.python-version == 3.12 }}
         cover-packages: ${{ env.BASE_PKG }}
         coveralls-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -79,7 +79,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.12]
 
     steps:
     - name: Checkout
