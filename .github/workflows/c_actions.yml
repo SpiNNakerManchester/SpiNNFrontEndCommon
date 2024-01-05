@@ -35,11 +35,11 @@ jobs:
       uses: ./support/actions/apt-get-install
       with:
         packages: doxygen gcc-arm-none-eabi
-    - name: "Prepare: Set up Python 3.8"
+    - name: "Prepare: Set up Python 3.12"
       # Note: Python is needed for spinn_utilities.make_tools when building
       uses: actions/setup-python@v4
       with:
-        python-version: 3.8
+        python-version: 3.12
     - name: "Prepare: Set SPINN_DIRS"
       run: |
         echo "Set SPINN_DIRS to $PWD/spinnaker_tools"
