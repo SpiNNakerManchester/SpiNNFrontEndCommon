@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sized
 import logging
 import os
 import re
-from typing import List, Optional, Pattern, Sequence, Set, Sized, Tuple, Union
+from typing import List, Optional, Pattern, Sequence, Set, Tuple, Union
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar

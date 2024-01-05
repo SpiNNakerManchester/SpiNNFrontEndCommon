@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+from collections.abc import Sized
 from enum import IntEnum
 from typing import (
-    Callable, Dict, Iterable, List, Sequence, Set, Sized, Tuple, Type, TypeVar,
+    Callable, Dict, Iterable, List, Sequence, Set, Tuple, Type, TypeVar,
     TYPE_CHECKING)
 from spinn_utilities.overrides import overrides
 from spinnman.model.enums import ExecutableType
