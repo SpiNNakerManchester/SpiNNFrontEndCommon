@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+from collections.abc import Sized
 import logging
 import os
 import time
 from datetime import timedelta
-from typing import List, Optional, Sized, Union, TYPE_CHECKING
+from typing import List, Optional, Union, TYPE_CHECKING
 from typing_extensions import Literal, Self
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
