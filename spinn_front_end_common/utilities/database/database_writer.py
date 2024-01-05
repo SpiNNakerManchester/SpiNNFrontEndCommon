@@ -18,16 +18,16 @@ import os
 from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
-from pacman.utilities.utility_calls import get_field_based_keys
 from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
+from pacman.utilities.utility_calls import get_keys
 from pacman.model.graphs.abstract_edge_partition import AbstractEdgePartition
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
-    AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
+    AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap, LiveOutputDevice)
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
 if TYPE_CHECKING:
@@ -253,7 +253,7 @@ class DatabaseWriter(SQLiteDB):
                 # at which point there is nothing to do here anyway
                 if r_info is not None:
                     vertex_slice = m_vertex.vertex_slice
-                    keys = get_field_based_keys(r_info.key, vertex_slice)
+                    keys = get_keys(r_info.key, vertex_slice)
                     start = vertex_slice.lo_atom
                     atom_keys = [(i, k) for i, k in enumerate(keys, start)]
             m_vertex_id = self.__vertex_to_id[m_vertex]
@@ -262,8 +262,25 @@ class DatabaseWriter(SQLiteDB):
                 INSERT INTO event_to_atom_mapping(
                     vertex_id, event_id, atom_id)
                 VALUES (?, ?, ?)
-                """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
+                """, ((m_vertex_id, int(key), int(i)) for i, key in atom_keys)
             )
+
+    def create_device_atom_event_id_mapping(
+            self, devices: Iterable[LiveOutputDevice]):
+        """
+        Add output mappings for devices.
+        """
+        for device in devices:
+            for m_vertex, atom_keys in device.get_device_output_keys().items():
+                m_vertex_id = self.__vertex_to_id[m_vertex]
+                self.executemany(
+                    """
+                    INSERT INTO event_to_atom_mapping(
+                        vertex_id, event_id, atom_id)
+                    VALUES (?, ?, ?)
+                    """, ((m_vertex_id, int(key), int(i))
+                          for i, key in atom_keys)
+                )
 
     def _get_machine_lpg_mappings(
             self, part: AbstractEdgePartition) -> Iterable[
