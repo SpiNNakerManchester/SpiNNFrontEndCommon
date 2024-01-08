@@ -148,7 +148,7 @@ class ProvenanceReader(BaseDatabase):
             ORDER BY description
             """
         return "\n".join(
-            f"{ cast(str, row[0]) }: { cast(int, row[1]) }"
+            f"{cast(str, row[0])}: {cast(int, row[1])}"
             for row in self.run_query(query, [int(x), int(y)]))
 
     def get_cores_with_provenace(self) -> List[XYP]:
