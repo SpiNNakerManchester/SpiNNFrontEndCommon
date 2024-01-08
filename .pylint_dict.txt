@@ -13,13 +13,9 @@
 # limitations under the License.
 
 # Our abbreviations/names
-pacman
-spinnman
-spalloc
-eieio
-PyNN
-HBP
 DDL
+eieio
+HBP
 scp
 
 # Our special words
@@ -43,66 +39,71 @@ url
 xy
 
 # Our types
-IPTag
-ReverseIPTag
-IPtagResource
-ApplicationGraph
-MachineGraph
-AbstractVertex
-ApplicationVertex
-MachineVertex
 AbstractEdge
-ApplicationEdge
-MachineEdge
-ExecutableType
-ExecutableTargets
-LivePacketGatherParameters
-LivePacketGatherMachineVertex
-DataSpeedUpPacketGatherMachineVertex
-ExtraMonitorSupportMachineVertex
 AbstractEIEIOMessage
+AbstractMulticastRoutingTable
+AbstractSendsBuffersFromHost
+AbstractVertex
+ApplicationEdge
+ApplicationGraph
+ApplicationVertex
+BMPConnectionData
+BufferedSendingRegion
 CommandSender
-CPUState
+CoreToFill
 CoreSubset
 CoreSubsets
-MultiCastCommand
-ReInjectionStatus
-RouterDiagnostics
-RoutingTableEntry
-MulticastRoutingTable
-AbstractMulticastRoutingTable
-UnCompressedMulticastRoutingTable
+CPUState
+DatabaseReader
 DataSpecificationExecutor
 DataSpecificationGenerator
-CoreToFill
-AbstractSendsBuffersFromHost
-ProgressBar
-IOBuffer
-ProvenanceDataItem
-MulticastRoutingTables
-PacmanConfigurationException
-SDPMessage
-UDPConnection
-SCAMPConnection
-VariableSDRAM
+DataSpeedUpPacketGatherMachineVertex
+DataWritten
 EIEIOPrefix
 EIEIOType
+ExecutableTargets
+ExecutableType
+ExtraMonitorSupportMachineVertex
+IOBuffer
+IPTag
+IPtagResource
+LiveOutputDevice
+LivePacketGatherMachineVertex
+LivePacketGatherParameters
+MachineEdge
+MachineGraph
+MachineVertex
+MultiCastCommand
+MulticastRoutingTable
+MulticastRoutingTables
+PacmanConfigurationException
+ProgressBar
+ProvenanceDataItem
+ReInjectionStatus
+ReverseIPTag
+RouterDiagnostics
+RoutingTableEntry
+SCAMPConnection
+SDPMessage
 SpallocClient
 SpallocJob
-BMPConnectionData
-DatabaseReader
-DataWritten
-BufferedSendingRegion
-SpiNNakerGraphFrontEnd
+UDPConnection
+UnCompressedMulticastRoutingTable
+VariableSDRAM
 
 # Python packages
+pacman
+PyNN
+spalloc
+spinnman
+SpiNNakerGraphFrontEnd
 struct
 
 # Python types
 FileIO
 RawIOBase
-TextIOBase
 Struct
+TextIOBase
 
 # sqlite3.cursor methods mentioned in docs
 fetchone
