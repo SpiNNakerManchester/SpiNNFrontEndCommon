@@ -185,7 +185,7 @@ class SpallocJobController(MachineAllocationController):
         return self.__use_proxy
 
     @overrides(MachineAllocationController.make_report)
-    def make_report(self, filename):
+    def make_report(self, filename: str):
         with open(filename, "w", encoding="utf-8") as report:
             report.write(f"Job: {self._job}")
 
@@ -234,11 +234,12 @@ class _OldSpallocJobController(MachineAllocationController):
             self._job.wait_until_ready()
 
     @overrides(MachineAllocationController.where_is_machine)
-    def where_is_machine(self, chip_x, chip_y):
+    def where_is_machine(
+            self, chip_x: int, chip_y: int) -> Tuple[int, int, int]:
         return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
 
     @overrides(MachineAllocationController._wait)
-    def _wait(self):
+    def _wait(self) -> bool:
         try:
             if self._state != JobState.destroyed:
                 self._state = self._job.wait_for_state_change(self._state)

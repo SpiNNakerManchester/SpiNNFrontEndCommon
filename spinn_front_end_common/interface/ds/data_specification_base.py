@@ -80,7 +80,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
     @abstractmethod
     def reserve_memory_region(
             self, region: int, size: int, label: Optional[str] = None,
-            reference: Optional[int] = None) -> None:
+            reference: Optional[int] = None):
         """
         Insert command to reserve a memory region.
 
@@ -99,7 +99,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
     @abstractmethod
     def reference_memory_region(
-            self, region: int, ref: int, label: Optional[str] = None) -> None:
+            self, region: int, ref: int, label: Optional[str] = None):
         """
         Insert command to reference another memory region.
 

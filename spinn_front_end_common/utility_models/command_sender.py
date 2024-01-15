@@ -19,6 +19,7 @@ from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
+from pacman.model.routing_info import BaseKeyAndMask
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 if TYPE_CHECKING:
     from spinn_front_end_common.utility_models import MultiCastCommand
@@ -76,5 +77,5 @@ class CommandSender(
             self, ApplicationVertex, ApplicationEdge)
 
     @overrides(AbstractOneAppOneMachineVertex.get_fixed_key_and_mask)
-    def get_fixed_key_and_mask(self, partition_id: str):
+    def get_fixed_key_and_mask(self, partition_id: str) -> BaseKeyAndMask:
         return self._machine_vertex.get_fixed_key_and_mask(partition_id)
