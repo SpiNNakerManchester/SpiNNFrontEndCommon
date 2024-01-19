@@ -20,8 +20,6 @@ HBP
 borrowable
 collab
 paramsprecompiled
-malloc
-malloc'ed
 reentrant
 regex
 replacer
