@@ -14,96 +14,49 @@
 
 # Our abbreviations/names
 DDL
-eieio
 HBP
-scp
 
 # Our special words
 borrowable
 collab
-cpu
-iobuf
-iptag
-iptags
-params
-precompiled
+paramsprecompiled
 malloc
 malloc'ed
 reentrant
 regex
 replacer
-sdram
 sql
-txrx
-url
-xy
 
 # Our types
-AbstractEdge
 AbstractEIEIOMessage
-AbstractMulticastRoutingTable
 AbstractSendsBuffersFromHost
-AbstractVertex
-ApplicationEdge
-ApplicationGraph
-ApplicationVertex
-BMPConnectionData
 BufferedSendingRegion
 CommandSender
 CoreToFill
-CoreSubset
-CoreSubsets
-CPUState
 DatabaseReader
 DataSpecificationExecutor
-DataSpecificationGenerator
 DataSpeedUpPacketGatherMachineVertex
 DataWritten
-EIEIOPrefix
-EIEIOType
-ExecutableTargets
-ExecutableType
 ExtraMonitorSupportMachineVertex
-IOBuffer
-IPTag
-IPtagResource
 LiveOutputDevice
 LivePacketGatherMachineVertex
 LivePacketGatherParameters
-MachineEdge
 MachineGraph
-MachineVertex
 MultiCastCommand
-MulticastRoutingTable
-MulticastRoutingTables
 PacmanConfigurationException
-ProgressBar
 ProvenanceDataItem
 ReInjectionStatus
 ReverseIPTag
 RouterDiagnostics
-RoutingTableEntry
-SCAMPConnection
 SDPMessage
 SpallocClient
-SpallocJob
 UDPConnection
 UnCompressedMulticastRoutingTable
-VariableSDRAM
 
 # Python packages
-pacman
-PyNN
-spalloc
-spinnman
-SpiNNakerGraphFrontEnd
-struct
 
 # Python types
-FileIO
-RawIOBase
 Struct
-TextIOBase
 
 # sqlite3.cursor methods mentioned in docs
 fetchone
