@@ -21,6 +21,7 @@ from .reset_counters_message import ResetCountersMessage
 from .set_reinjection_packet_types_message import (
     SetReinjectionPacketTypesMessage)
 from .set_router_timeout_message import SetRouterTimeoutMessage
+from .send_mc_data_message import SendMCDataMessage
 
 __all__ = (
     "ClearReinjectionQueueMessage",
@@ -30,4 +31,5 @@ __all__ = (
     "LoadSystemMCRoutesMessage",
     "ResetCountersMessage",
     "SetReinjectionPacketTypesMessage",
-    "SetRouterTimeoutMessage")
+    "SetRouterTimeoutMessage",
+    "SendMCDataMessage")
