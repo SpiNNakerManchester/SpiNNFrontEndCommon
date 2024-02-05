@@ -15,7 +15,7 @@
 import logging
 from typing import List, Optional
 from concurrent.futures import Future
-from concurrent.futures import ThreadPoolExecutor, wait  # @UnresolvedImport
+from concurrent.futures import ThreadPoolExecutor, wait
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
