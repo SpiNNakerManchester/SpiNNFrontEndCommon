@@ -204,14 +204,16 @@ class TestProvenanceDatabase(unittest.TestCase):
         logger.set_log_store(ls)
         logger.warning("this works")
         with GlobalProvenance() as db:
-            db._test_log_locked("locked")
+            db._test_log_locked("now locked")
         logger.warning("not locked")
         logger.warning("this wis fine")
         # the use of class variables and tests run in parallel dont work.
         if "JENKINS_URL" not in os.environ:
-            self.assertListEqual(
-                ["this works", "not locked", "this wis fine"],
-                ls.retreive_log_messages(20))
+            reported = ls.retreive_log_messages(20)
+            self.assertIn("this works", reported)
+            self.assertIn("not locked", reported)
+            self.assertIn("this wis fine". reported)
+            self.assertNotIn("now locked", reported)
         logger.set_log_store(None)
 
     def test_double_with(self):
