@@ -64,11 +64,6 @@ class _TestExecutableFinder(object):
     def get_executable_path(self, executable_name: str) -> str:
         return executable_name
 
-    @property
-    @overrides(ExecutableFinder.binary_paths)
-    def binary_paths(self) -> str:
-        return "Test so no paths"
-
 
 class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
@@ -107,6 +102,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         self.assertIn((0, 0, 0), test_cores)
         self.assertIn((0, 0, 1), test_2_cores)
         self.assertIn((0, 0, 2), test_2_cores)
+
+        writer._set_executable_finder(ExecutableFinder())
 
     def test_mixed_binaries(self):
         """ Test calling the binary gatherer with mixed executable types
