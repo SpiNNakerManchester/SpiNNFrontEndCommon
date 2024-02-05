@@ -58,6 +58,7 @@ class NotificationProtocol(object):
             "Database", "wait_on_confirmation_timeout")
         self.__wait_pool: Optional[ThreadPoolExecutor] = \
             ThreadPoolExecutor(max_workers=1)
+        # pylint: disable=unsubscriptable-object
         self.__wait_futures: List[Future[None]] = list()
         self.__sent_visualisation_confirmation = False
         # These connections are not used to talk to SpiNNaker boards
