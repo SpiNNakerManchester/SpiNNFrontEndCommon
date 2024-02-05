@@ -212,7 +212,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             reported = ls.retreive_log_messages(20)
             self.assertIn("this works", reported)
             self.assertIn("not locked", reported)
-            self.assertIn("this wis fine". reported)
+            self.assertIn("this wis fine", reported)
             self.assertNotIn("now locked", reported)
         logger.set_log_store(None)
 
