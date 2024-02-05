@@ -315,7 +315,7 @@ class HostBasedBitFieldRouterCompressor(object):
         if self._best_routing_entries:
             for entry in self._best_routing_entries:
                 best_router_table.add_multicast_routing_entry(
-                    entry.to_MulticastRoutingEntry())
+                    entry.to_multicast_routing_entry())
 
         compressed_pacman_router_tables.add_routing_table(best_router_table)
 
@@ -684,7 +684,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # Note: _best_routing_table is a list(), router_table is not
         for entry in self._best_routing_entries:
             index = entry_count & self._LOWER_16_BITS
-            entry_str = format_route(entry.to_MulticastRoutingEntry())
+            entry_str = format_route(entry.to_multicast_routing_entry())
             entry_count += 1
             if entry.defaultable:
                 n_defaultable += 1

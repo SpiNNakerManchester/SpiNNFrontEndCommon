@@ -58,7 +58,7 @@ def write_json_machine(
 
 
 def _progress(progress_bar: bool) -> ProgressBar:
-    # Steps are tojson, validate and writefile
+    # Steps are create json object, validate json and write json to a file
     if progress_bar:
         return ProgressBar(3, "Converting to JSON machine")
     else:

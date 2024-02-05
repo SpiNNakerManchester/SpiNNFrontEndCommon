@@ -543,7 +543,7 @@ def _write_vertex_virtual_keys(
     rinfo = routing_infos.get_routing_info_from_pre_vertex(
         pre_vertex, part_id)
     # Might be None if the partition has no outgoing vertices e.g. a Poisson
-    # source replaced by SDRAM comms
+    # source replaced by SDRAM data passing
     if rinfo is not None:
         f.write(f"Vertex: {pre_vertex}\n")
         f.write("    Partition: {}, Routing Info: {}\n".format(
