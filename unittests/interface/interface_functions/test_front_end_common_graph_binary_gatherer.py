@@ -103,6 +103,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         self.assertIn((0, 0, 1), test_2_cores)
         self.assertIn((0, 0, 2), test_2_cores)
 
+        writer._set_executable_finder(ExecutableFinder())
+
     def test_mixed_binaries(self):
         """ Test calling the binary gatherer with mixed executable types
         """
