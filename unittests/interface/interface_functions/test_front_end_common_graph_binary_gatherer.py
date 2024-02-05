@@ -64,6 +64,11 @@ class _TestExecutableFinder(object):
     def get_executable_path(self, executable_name: str) -> str:
         return executable_name
 
+    @property
+    @overrides(ExecutableFinder.binary_paths)
+    def binary_paths(self) -> str:
+        return "Test so no paths"
+
 
 class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
