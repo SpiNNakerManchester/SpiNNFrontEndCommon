@@ -22,8 +22,6 @@ from typing import (
 from typing_extensions import Literal
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-# import matplotlib.pyplot as plot
-# import seaborn
 
 # The types of router provenance that we'll plot
 ROUTER_PLOTTABLES = (
