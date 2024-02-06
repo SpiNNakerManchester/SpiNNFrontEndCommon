@@ -164,8 +164,7 @@ class LivePacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec: DataSpecificationGenerator,
-            placement: Placement):  # @UnusedVariable
+            self, spec: DataSpecificationGenerator, placement: Placement):
         tags = FecDataView.get_tags().get_ip_tags_for_vertex(self)
         assert tags is not None
 

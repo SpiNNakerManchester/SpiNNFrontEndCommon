@@ -673,8 +673,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec: DataSpecificationGenerator,
-            placement: Placement):  # @UnusedVariable
+            self, spec: DataSpecificationGenerator, placement: Placement):
         self.update_virtual_key()
 
         # Reserve regions

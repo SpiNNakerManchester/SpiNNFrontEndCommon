@@ -126,8 +126,7 @@ class ChipPowerMonitorMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec: DataSpecificationGenerator,
-            placement: Placement):  # @UnusedVariable
+            self, spec: DataSpecificationGenerator, placement: Placement):
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
