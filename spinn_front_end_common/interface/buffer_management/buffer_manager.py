@@ -51,7 +51,7 @@ _MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
     eieio_type=EIEIOType.KEY_32_BIT, is_timestamp=True)
 
 # The number of bytes in each key to be sent
-_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
+_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes
 
 _SDP_MAX_PACKAGE_SIZE = 272
 
