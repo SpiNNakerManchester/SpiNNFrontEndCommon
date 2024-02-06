@@ -16,6 +16,7 @@ import logging
 from threading import Thread
 from typing import Callable, List, Optional, Tuple
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinnman.exceptions import (
     SpinnmanIOException, SpinnmanInvalidPacketException,
     SpinnmanTimeoutException)
@@ -187,6 +188,8 @@ class DatabaseConnection(UDPConnection):
     def __receive_command(self) -> int:
         return EIEIOCommandHeader.from_bytestring(self.receive(), 0).command
 
+    @overrides(UDPConnection.close)
     def close(self) -> None:
+        # pylint: disable=missing-function-docstring
         self.__running = False
         super().close()

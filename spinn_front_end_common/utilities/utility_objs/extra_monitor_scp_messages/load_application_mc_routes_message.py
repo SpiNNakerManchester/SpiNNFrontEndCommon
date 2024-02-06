@@ -47,6 +47,7 @@ class LoadApplicationMCRoutesMessage(AbstractSCPRequest[CheckOKResponse]):
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self) -> CheckOKResponse:
+        # pylint: disable=missing-function-docstring
         return CheckOKResponse(
             "load application multicast routes",
             SpeedupInSCPCommands.LOAD_APPLICATION_MC_ROUTES)

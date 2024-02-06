@@ -46,6 +46,7 @@ class ResetCountersMessage(AbstractSCPRequest[CheckOKResponse]):
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self) -> CheckOKResponse:
+        # pylint: disable=missing-function-docstring
         return CheckOKResponse(
             "Reset dropped packet reinjection counters",
             ReinjectorSCPCommands.RESET_COUNTERS)

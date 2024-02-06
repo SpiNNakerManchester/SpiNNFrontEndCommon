@@ -113,12 +113,14 @@ class LivePacketGatherMachineVertex(
     @property
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> AbstractSDRAM:
+        # pylint: disable=missing-function-docstring
         return ConstantSDRAM(
             self.get_sdram_usage() + self._get_key_translation_sdram())
 
     @property
     @overrides(MachineVertex.iptags)
     def iptags(self) -> List[IPtagResource]:
+        # pylint: disable=missing-function-docstring
         return [self._lpg_params.get_iptag_resource()]
 
     @overrides(

@@ -171,6 +171,7 @@ class CommandSenderMachineVertex(
     @property
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> AbstractSDRAM:
+        # pylint: disable=missing-function-docstring
         sdram = (
             self.get_timed_commands_bytes() +
             self.get_n_command_bytes(self._commands_at_start_resume) +

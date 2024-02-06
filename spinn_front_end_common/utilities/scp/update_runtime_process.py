@@ -54,6 +54,7 @@ class _UpdateRuntimeRequest(AbstractSCPRequest[CheckOKResponse]):
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self) -> CheckOKResponse:
+        # pylint: disable=missing-function-docstring
         return CheckOKResponse(
             "update runtime",
             SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE.value)

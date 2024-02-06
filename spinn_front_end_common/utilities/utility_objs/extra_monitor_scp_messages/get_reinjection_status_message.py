@@ -50,6 +50,7 @@ class GetReinjectionStatusMessage(
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self) -> 'GetReinjectionStatusMessageResponse':
+        # pylint: disable=missing-function-docstring
         return GetReinjectionStatusMessageResponse(
             ReinjectorSCPCommands.GET_STATUS)
 
@@ -67,6 +68,14 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
 
     @overrides(AbstractSCPResponse.read_data_bytestring)
     def read_data_bytestring(self, data: bytes, offset: int):
+        """
+        Reads the bytes and save it as reinjection status.
+
+        :param bytes data:
+        :param int offset:
+        :raises SpinnmanUnexpectedResponseCodeException:
+            If the data does not have include an OK
+        """
         result = self.scp_response_header.result
         if result != SCPResult.RC_OK:
             raise SpinnmanUnexpectedResponseCodeException(
@@ -76,5 +85,6 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
 
     @property
     def reinjection_functionality_status(self) -> ReInjectionStatus:
+        # pylint: disable=missing-function-docstring
         assert self._reinjection_status is not None, "response not yet read"
         return self._reinjection_status

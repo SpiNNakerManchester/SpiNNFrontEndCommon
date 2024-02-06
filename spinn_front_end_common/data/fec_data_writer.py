@@ -87,6 +87,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     @overrides(PacmanDataWriter.finish_run)
     def finish_run(self) -> None:
+        # pylint: disable=missing-function-docstring
         PacmanDataWriter.finish_run(self)
         assert self.__fec_data._run_number is not None
         self.__fec_data._run_number += 1
@@ -590,6 +591,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     @classmethod
     @overrides(FecDataView.add_vertex)
     def add_vertex(cls, vertex: ApplicationVertex):
+        # pylint: disable=missing-function-docstring
         # Avoid the safety check in FecDataView
         PacmanDataWriter.add_vertex(vertex)
 

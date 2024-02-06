@@ -94,6 +94,7 @@ class ChipPowerMonitorMachineVertex(
     @property
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> AbstractSDRAM:
+        # pylint: disable=missing-function-docstring
         # The number of sample per step does not have to be an int
         samples_per_step = (FecDataView.get_hardware_time_step_us() /
                             self._sampling_frequency)

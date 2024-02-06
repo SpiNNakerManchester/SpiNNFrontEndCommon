@@ -59,5 +59,6 @@ class SetRouterTimeoutMessage(AbstractSCPRequest[CheckOKResponse]):
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self) -> CheckOKResponse:
+        # pylint: disable=missing-function-docstring
         return CheckOKResponse("Set router timeout",
                                self.scp_request_header.command)

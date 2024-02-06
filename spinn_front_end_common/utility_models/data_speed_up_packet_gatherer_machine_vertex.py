@@ -342,6 +342,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @property
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> ConstantSDRAM:
+        # pylint: disable=missing-function-docstring
         return ConstantSDRAM(
                 CONFIG_SIZE + SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
                 SIZE_DATA_IN_CHIP_TO_KEY_SPACE + _PROVENANCE_DATA_SIZE)
@@ -349,6 +350,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @property
     @overrides(MachineVertex.iptags)
     def iptags(self) -> List[IPtagResource]:
+        # pylint: disable=missing-function-docstring
         return [IPtagResource(
             port=self._TAG_INITIAL_PORT, strip_sdp=True,
             ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
