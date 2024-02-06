@@ -31,7 +31,7 @@ class LiveOutputDevice(object, metaclass=AbstractBase):
         """
         Get the atom key mapping to be output for each machine vertex received
         by the device to be output.  Note that the device may change the keys
-        as they pass through it, and this needs to be recognized here.
+        as they pass through it, and this needs to be recognised here.
 
         :rtype: Dict[MachineVertex, List[Tuple[int, int]]]
         """

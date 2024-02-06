@@ -57,7 +57,7 @@ if TYPE_CHECKING:
 
 log = FormatAdapter(logging.getLogger(__name__))
 
-# shift by for the destination x coord in the word.
+# shift by for the destination x coordinate in the word.
 DEST_X_SHIFT = 16
 
 TIMEOUT_RETRY_LIMIT = 100
@@ -120,7 +120,7 @@ BYTES_IN_FULL_PACKET_WITH_KEY = (
     WORDS_IN_FULL_PACKET_WITH_KEY * BYTES_PER_WORD)
 
 #: size of data in key space
-#: x, y, key (all ints) for possible 48 chips, plus n chips to read,
+#: x, y, key (all int values) for possible 48 chips, plus n chips to read,
 # the reinjector base key.
 SIZE_DATA_IN_CHIP_TO_KEY_SPACE = ((3 * 48) + 2) * BYTES_PER_WORD
 
@@ -187,7 +187,7 @@ def ceildiv(dividend, divisor) -> int:
     return int(q) + (r != 0)
 
 
-# SDRAM requirement for storing missing SDP packets seq nums
+# SDRAM requirement for storing missing SDP packets seq numbers
 SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
     120.0 * 1024 * BYTES_PER_KB,
     WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD)
@@ -218,13 +218,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_transaction_id",
         # path for the data in report
         "_in_report_path",
-        # ipaddress
+        # IP address
         "_ip_address",
         # store for the last reinjection status
         "_last_status",
-        # the max seq num expected given a data retrieval
+        # the max seq number expected given a data retrieval
         "_max_seq_num",
-        # holder for missing seq nums for data in
+        # holder for missing seq numbers for data in
         "_missing_seq_nums_data_in",
         # holder of data from out
         "_output",
@@ -245,7 +245,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     END_FLAG_KEY = 0xFFFFFFF6
     TRANSACTION_ID_KEY = 0xFFFFFFF5
 
-    #: to use with multicast stuff (reinjection acks have to be fixed route)
+    #: to use with multicast stuff
+    # (reinjection acknowledgements have to be fixed route)
     BASE_MASK = 0xFFFFFFFB
     NEW_SEQ_KEY_OFFSET = 1
     FIRST_DATA_KEY_OFFSET = 2
@@ -269,7 +270,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     _TIMEOUT_PER_RECEIVE_IN_SECONDS = 2
     _TIMEOUT_FOR_SENDING_IN_SECONDS = 0.01
 
-    # end flag for missing seq nums
+    # end flag for missing seq numbers
     _MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
 
     # flag for saying missing all SEQ numbers
@@ -398,7 +399,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.write_value(iptag.tag)
         self._remote_tag = iptag.tag
 
-        # write mc chip key map
+        # write multi cast chip key map
         machine = FecDataView.get_machine()
         spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE)
         chip_xys_on_board = list(machine.get_existing_xys_on_board(
@@ -729,7 +730,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         new_seq_nums = n_word_struct(n_elements).unpack_from(
             data, position)
 
-        # add missing seqs accordingly
+        # add missing sequence numbers accordingly
         seen_last = False
         seen_all = False
         if new_seq_nums[-1] == self._MISSING_SEQ_NUMS_END_FLAG:
@@ -859,7 +860,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # send rest of data
         for seq_num in range(self._max_seq_num or 0):
-            # put in command flag and seq num
+            # put in command flag and seq number
             message, length_to_send = self.__make_data_in_stream_message(
                 data_to_write, seq_num, position_in_data)
             position_in_data += length_to_send
@@ -1189,7 +1190,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         lost_seq_nums.append(len(missing_seq_nums))
         # for seq_num in sorted(seq_nums):
-        #     log.debug("from list I'm missing sequence num {}", seq_num)
+        #     log.debug("from list I'm missing sequence number {}", seq_num)
         if not missing_seq_nums:
             return True
 
@@ -1300,7 +1301,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         is_end_of_stream = (
             first_packet_element & self._LAST_MESSAGE_FLAG_BIT_MASK) != 0
 
-        # check seq num not insane
+        # check seq number not insane
         if seq_num > self._max_seq_num:
             raise ValueError(
                 f"got an insane sequence number. got {seq_num} when "
@@ -1312,7 +1313,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # write data
 
-        # read offset from data is at byte 8. as first 4 is seq num,
+        # read offset from data is at byte 8. as first 4 is seq number,
         # second 4 is transaction id
         true_data_length = (
                 offset + length_of_data - BYTES_FOR_SEQ_AND_TRANSACTION_ID)
@@ -1322,7 +1323,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 offset, true_data_length, data,
                 BYTES_FOR_SEQ_AND_TRANSACTION_ID, length_of_data)
 
-        # add seq num to list
+        # add seq number to list
         seq_nums.add(seq_num)
 
         # if received a last flag on its own, its during retransmission.

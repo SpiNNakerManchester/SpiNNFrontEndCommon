@@ -227,7 +227,7 @@ class HostBasedBitFieldRouterCompressor(object):
     # for router report
     _LOWER_16_BITS = 0xFFFF
 
-    # rob paul to pay sam threshold starting point at 1ms time step
+    # threshold starting point at 1ms time step
     _N_PACKETS_PER_SECOND = 100000
 
     # convert between milliseconds and second

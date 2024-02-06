@@ -222,7 +222,7 @@ class Compression(object):
                 # Write the size of the table
                 table.number_of_entries)
         else:
-            # Mundy's compressor can not be changed so uses it own structure
+            # Mundy compressor can not be changed so uses it own structure
             data += _FOUR_WORDS.pack(
                 FecDataView.get_app_id(),
                 int(self._compress_only_when_needed),

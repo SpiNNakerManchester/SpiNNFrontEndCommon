@@ -37,7 +37,7 @@ MAX_SAFE_BINARY_SIZE = 32 * BYTES_PER_KB
 #: the ITCM max limit for a binary
 MAX_POSSIBLE_BINARY_SIZE = 33 * BYTES_PER_KB
 
-# converts between micro and milli seconds
+# converts between microseconds and milliseconds
 MICRO_TO_MILLISECOND_CONVERSION = 1000.0
 MICRO_TO_SECOND_CONVERSION = 1000000.0  # (1e6)
 

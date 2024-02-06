@@ -14,7 +14,9 @@
 
 # Our abbreviations/names
 DDL
+mundy
 HBP
+Indar's
 
 # Our special words
 borrowable

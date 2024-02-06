@@ -237,7 +237,7 @@ class GlobalProvenance(SQLiteDB):
             The value to LIKE search for in the algorithm column.
             Can be the full name, or have ``%``  and ``_`` wildcards.
         :return:
-            A possibly multiline string with for each row which matches the
+            A possibly multi line string with for each row which matches the
             like a line ``algorithm: value``
         :rtype: str
         """
@@ -256,7 +256,7 @@ class GlobalProvenance(SQLiteDB):
         invoked multiple times in the run, its times are summed.
 
         :return:
-            A possibly multiline string with for each row which matches the
+            A possibly multi line string with for each row which matches the
             like a line ``description_name: time``. The times are in seconds.
         :rtype: str
         """
@@ -276,7 +276,7 @@ class GlobalProvenance(SQLiteDB):
         Gets the buffer extractor provenance item(s) from the last run
 
         :return:
-            A possibly multiline string with for each row which matches the
+            A possibly multi line string with for each row which matches the
             ``LIKE %BufferExtractor``
         :rtype: str
         """
@@ -359,7 +359,7 @@ class GlobalProvenance(SQLiteDB):
         Get the total runtime for one work type of algorithms
 
         :param TimerWork work:
-        :return: total off all runtimes with this category
+        :return: total off all run times with this category
         :rtype: int
         """
         query = """
@@ -381,7 +381,7 @@ class GlobalProvenance(SQLiteDB):
         Get the total runtime for one algorithm
 
         :param str algorithm:
-        :return: total off all runtimes with this algorithm
+        :return: total off all run times with this algorithm
         :rtype: int
         """
         query = """

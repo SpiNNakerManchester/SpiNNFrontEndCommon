@@ -72,7 +72,7 @@ _SCP_DEST_CPU_BYTE = 4
 # The expected flags from a RAW SCP packet in response
 _SCP_RESPONSE_FLAGS = 7
 
-# The expected destination cpu from a RAW SCP packet in respsonse
+# The expected destination cpu from a RAW SCP packet in response
 _SCP_RESPONSE_DEST = 0xFF
 
 

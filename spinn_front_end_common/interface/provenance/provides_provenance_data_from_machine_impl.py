@@ -48,7 +48,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         TRANSMISSION_EVENT_OVERFLOW = 0
         #: The counter of the number of times the callback queue was overloaded
         CALLBACK_QUEUE_OVERLOADED = 1
-        #: The counter of the number of times the DMA queue was overloaded
+        #: The counter of the number of times the direct memory access queue
+        # was overloaded
         DMA_QUEUE_OVERLOADED = 2
         #: The counter of the number of times the user event queue overloaded
         USER_QUEUE_OVERLOADED = 3

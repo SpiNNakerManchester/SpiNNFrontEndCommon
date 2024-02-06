@@ -223,7 +223,7 @@ class _SystemMulticastRoutingGenerator(object):
                 self._add_routing_entry(chip, key, link_ids=[link])
             key += N_KEYS_PER_PARTITION_ID
 
-        # accum links to make a broadcast
+        # accumulate links to make a broadcast
         links_per_chip = defaultdict(list)
         for chip_key in tree:
             chip, link = tree[chip_key]

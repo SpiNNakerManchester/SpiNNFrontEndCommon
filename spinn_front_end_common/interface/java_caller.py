@@ -62,9 +62,9 @@ class JavaCaller(object):
         "_monitor_cores",
         # Flag to indicate if at least one placement is recording
         "_recording",
-        # Dict of ethernet (x, y) and the packetGather IPtago
+        # Dict of Ethernet (x, y) and the packetGather IPtags
         "_gatherer_iptags",
-        # Dict of ethernet (x, y) to the p of the packetGather vertex
+        # Dict of Ethernet (x, y) to the p of the packetGather vertex
         "_gatherer_cores",
         # The location where the latest placement json is written
         "__placement_json",
@@ -118,7 +118,7 @@ class JavaCaller(object):
             parent = os.path.dirname(github_checkout_dir)
             java_spinnaker_path = os.path.join(parent, "JavaSpiNNaker")
         else:
-            # As I don't know how to write pwd and /JavaSpiNNaker to one line
+            # As I don't know how to write this to one line
             indirect_path = os.path.join(
                 java_spinnaker_path, "JavaSpiNNaker")
             if os.path.isdir(indirect_path):

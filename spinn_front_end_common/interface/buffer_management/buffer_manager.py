@@ -332,6 +332,7 @@ class BufferManager(object):
         if (not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             data = EventStopRequest().bytestring
+            # pylint: disable=wrong-spelling-in-comment
             # logger.debug(
             #    "Writing stop message of {} bytes to {} on {}, {}, {}"
             #         len(data), hex(region_base_address),

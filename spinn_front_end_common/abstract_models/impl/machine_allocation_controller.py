@@ -32,7 +32,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
     neatly when the script dies.
     """
     __slots__ = (
-        #: boolean flag for telling this thread when the system has ended
+        #: Boolean flag for telling this thread when the system has ended
         "_exited",
         #: the address of the root board of the allocation
         "__hostname",

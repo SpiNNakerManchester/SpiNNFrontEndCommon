@@ -57,12 +57,13 @@ _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = ((49 * 3) + 1) * BYTES_PER_WORD
 _BIT_SHIFT_TO_MOVE_APP_ID = 24
 
 _ONE_WORD = struct.Struct("<I")
-# typedef struct extra_monitor_provenance_t {
-#     uint n_sdp_packets;
-#     uint n_in_streams;
-#     uint n_out_streams;
-#     uint n_router_changes;
-# } extra_monitor_provenance_t;
+    # pylint: disable=wrong-spelling-in-comment
+    # typedef struct extra_monitor_provenance_t {
+    #     uint n_sdp_packets;
+    #     uint n_in_streams;
+    #     uint n_out_streams;
+    #     uint n_router_changes;
+    # } extra_monitor_provenance_t;
 _PROVENANCE_FORMAT = struct.Struct("<IIII")
 
 # cap for stopping wrap arounds
@@ -300,10 +301,10 @@ class ExtraMonitorSupportMachineVertex(
             # Note that this is inverted! Why... I dunno!
             spec.write_value(int(not value))
 
-        # add the reinjection mc interface
+        # add the reinjection multi cast interface
         router_timeout_keys = \
             FecDataView.get_system_multicast_router_timeout_keys()
-        # Write the base key for multicast comms
+        # Write the base key for multicast communication
         # pylint: disable=unsubscriptable-object
         spec.write_value(router_timeout_keys[
             chip.nearest_ethernet_x, chip.nearest_ethernet_y])

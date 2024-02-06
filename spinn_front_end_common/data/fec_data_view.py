@@ -668,8 +668,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retrieve the data_in_multicast_key_to_chip_map if known.
         Keys are the coordinates of chips.
-        Values are the base keys for multicast comms received by the Data In
-        streaming module of the extra monitor running on those chips.
+        Values are the base keys for multicast communication
+        received by the Data In streaming module
+        of the extra monitor running on those chips.
 
         :rtype: dict(tuple(int,int), int)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -698,7 +699,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retrieve the system_multicast_router_timeout_keys if known.
         Keys are the coordinates of chips.
-        Values are the base keys for multicast comms received by the
+        Values are the base keys for multicast communications received by the
         re-injector module of the extra monitor running on those chips.
 
         :rtype: dict(tuple(int,int), int)
@@ -710,7 +711,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             raise cls._exception("system_multicast_router_timeout_keys")
         return cls.__fec_data._system_multicast_router_timeout_keys
 
-    # ipaddress
+    # IP address
 
     @classmethod
     def has_ipaddress(cls) -> bool:

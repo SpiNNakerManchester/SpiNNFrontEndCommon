@@ -167,7 +167,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         #
         "_raise_keyboard_interrupt",
 
-        # original sys.excepthook Used in exception handling and control c
+        # original value which is used in exception handling and control c
         "__sys_excepthook",
 
         # All beyond this point new for no extractor
@@ -898,7 +898,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Splitter reset", TimerWork.OTHER):
             splitter_reset()
 
-    # Overriden by spynaker to choose an extended algorithm
+    # Overridden by sPyNNaker to choose an extended algorithm
     def _execute_splitter_selector(self) -> None:
         """
         Runs, times and logs the SplitterSelector.
@@ -911,7 +911,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Stub to allow sPyNNaker to add delay supports.
         """
 
-    # Overriden by spynaker to choose a different algorithm
+    # Overridden by sPyNNaker to choose a different algorithm
     def _execute_splitter_partitioner(self) -> None:
         """
         Runs, times and logs the SplitterPartitioner if required.
@@ -1373,9 +1373,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_control_sync(self, do_sync: bool) -> None:
         """
-        Control synchronization on board.
+        Control synchronisation on board.
 
-        :param bool do_sync: Whether to enable synchronization
+        :param bool do_sync: Whether to enable synchronisation
         """
         with FecTimer("Control Sync", TimerWork.CONTROL) as timer:
             if timer.skip_if_virtual_board():
@@ -2089,7 +2089,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer("Create database interface", TimerWork.OTHER):
             # Used to used compressed routing tables if available on host
-            # TODO consider not saving router tabes.
+            # TODO consider not saving router tables.
             self._data_writer.set_database_file_path(
                 database_interface(run_time))
 
@@ -2220,7 +2220,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         except Exception as run_e:
             self._recover_from_error(run_e)
 
-            # reraise exception
+            # re-raise exception
             raise run_e
 
     def _recover_from_error(self, exception: Exception) -> None:

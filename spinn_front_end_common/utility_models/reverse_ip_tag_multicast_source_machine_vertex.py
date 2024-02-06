@@ -137,7 +137,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         INCORRECT_PACKETS = 3
         LATE_PACKETS = 4
 
-    # 13 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
+    # 13 int  (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
     #          5. has key, 6. key, 7. mask, 8. buffer space,
     #          9. send buffer flag before notify, 10. tag,
     #          11. tag destination (y, x), 12. receive SDP port,

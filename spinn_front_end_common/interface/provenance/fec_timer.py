@@ -169,7 +169,7 @@ class FecTimer(object):
         """
         Have to convert to a timedelta for rest of code to read.
 
-        As perf_counter_ns is nano seconds, and time delta lowest is micro,
+        As perf_counter_ns is nanoseconds, and time delta lowest is micro,
         need to convert.
         """
         return timedelta(microseconds=time_diff / _NANO_TO_MICRO)

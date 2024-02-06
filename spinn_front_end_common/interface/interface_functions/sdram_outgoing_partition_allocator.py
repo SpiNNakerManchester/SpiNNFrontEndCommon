@@ -31,7 +31,7 @@ def sdram_outgoing_partition_allocator() -> None:
         transceiver = FecDataView.get_transceiver()
         virtual_usage = None
     else:
-        # Ok if transceiver = None
+        # OK if transceiver = None
         transceiver = None
         virtual_usage = defaultdict(int)
 
