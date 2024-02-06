@@ -29,8 +29,7 @@ from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.data import FecDataView
 from pacman.model.placements import Placement
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
-    import (
-        write_json_machine)  # Argh! Mypy
+    import write_json_machine
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
