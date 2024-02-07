@@ -673,11 +673,11 @@ class HostBasedBitFieldRouterCompressor(object):
         report_out.write("The final routing table entries are as follows:\n\n")
 
         report_out.write(
-            "{: <5s} {: <10s} {: <10s} {: <10s} {: <7s} {}\n".format(
-                "Index", "Key", "Mask", "Route", "Default", "[Cores][Links]"))
+            f'{"Index": <5s} {"Key": <10s} {"Mask": <10s} {"Route": <10s} '
+            f'#{"Default": <7s} [Cores][Links]\n')
         report_out.write(
-            "{:-<5s} {:-<10s} {:-<10s} {:-<10s} {:-<7s} {:-<14s}\n".format(
-                "", "", "", "", "", ""))
+            f"{'':-<5s} {'':-<10s} {'':-<10s} {'':-<10s} "
+            f"{'':-<7s} {'':-<14s}\n")
 
         entry_count = 0
         n_defaultable = 0

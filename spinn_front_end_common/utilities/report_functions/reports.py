@@ -333,15 +333,14 @@ def _write_one_vertex_application_placement(
                               key=lambda vert: vert.vertex_slice.lo_atom)
     for sv in machine_vertices:
         if isinstance(sv, MachineSpiNNakerLinkVertex):
-            f.write("  Slice {} on SpiNNaker Link {}, board {},"
-                    " linked to chip {}\n"
-                    .format(sv.vertex_slice, sv.spinnaker_link_id,
-                            sv.board_address, sv.linked_chip_coordinates))
+            f.write(f"  Slice {sv.vertex_slice} on "
+                    f"SpiNNaker Link {sv.spinnaker_link_id}, "
+                    f"board {sv.board_address}, "
+                    f"linked to chip {sv.linked_chip_coordinates}\n")
         elif isinstance(sv, MachineFPGAVertex):
-            f.write("  Slice {} on FGPA {}, FPGA link {}, board {},"
-                    " linked to chip {}\n"
-                    .format(sv.vertex_slice, sv.fpga_id, sv.fpga_link_id,
-                            sv.board_address, sv.linked_chip_coordinates))
+            f.write(f"  Slice {sv.vertex_slice} on FGPA {sv.fpga_id}, "
+                    f"FPGA link {sv.fpga_link_id}, board {sv.board_address}, "
+                    f"linked to chip {sv.linked_chip_coordinates}\n")
         else:
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
@@ -399,29 +398,27 @@ def _write_one_chip_application_placement(f: TextIO, chip: Chip):
             vertex_label = app_vertex.label
             vertex_model = app_vertex.__class__.__name__
             vertex_atoms = app_vertex.n_atoms
-            f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
-                pro_id, vertex_label, vertex_atoms))
+            f.write(f"  Processor {pro_id}: Vertex: '{vertex_label}', "
+                    f"pop size: {vertex_atoms}\n")
             f.write(f"              Slice: {vertex.vertex_slice}")
             f.write(f"  {vertex.label}\n")
-            f.write("              Model: {}\n".format(vertex_model))
+            f.write(f"              Model: {vertex_model}\n")
         else:
-            f.write("  Processor {}: System Vertex: '{}'\n".format(
-                pro_id, vertex.label))
-            f.write("              Model: {}\n".format(
-                vertex.__class__.__name__))
+            f.write(f"  Processor {pro_id}: System Vertex: '{vertex.label}'\n")
+            f.write(f"              Model: {vertex.__class__.__name__}\n")
 
         sdram = vertex.sdram_required
-        f.write("              SDRAM required: {}; {} per timestep\n\n"
-                .format(sdram.fixed, sdram.per_timestep))
+        f.write(f"              SDRAM required: {sdram.fixed}; "
+                f"{sdram.per_timestep} per timestep\n\n")
         if total_sdram is None:
             total_sdram = sdram
         else:
             total_sdram += sdram
 
     if total_sdram is not None:
-        f.write("Total SDRAM on chip ({} available): {}; {} per-timestep\n\n"
-                .format(chip, total_sdram.fixed,
-                        total_sdram.per_timestep))
+        f.write(f"Total SDRAM on chip ({chip} available): "
+                f"{total_sdram.fixed}; {total_sdram.per_timestep} "
+                f"per-timestep\n\n")
 
 
 def sdram_usage_report_per_chip() -> None:
@@ -479,9 +476,9 @@ def _sdram_usage_report_per_chip_with_timesteps(
                 preamble=f"core ({x},{y},{p})", target=f)
         else:
             f.write(
-                "SDRAM reqs for core ({},{},{}) is {} KB ({} bytes) for {}\n"
-                "".format(x, y, p, int(core_sdram / 1024.0), core_sdram,
-                          placement))
+                f"SDRAM reqs forx core ({x},{y},{p}) is "
+                f"{int(core_sdram / 1024.0)} KB ({core_sdram} bytes)"
+                f" for {placement}\n")
         key = (x, y)
         if key not in used_sdram_by_chip:
             used_sdram_by_chip[key] = core_sdram
@@ -492,12 +489,10 @@ def _sdram_usage_report_per_chip_with_timesteps(
             used_sdram = used_sdram_by_chip[chip.x, chip.y]
             if used_sdram:
                 f.write(
-                    "**** Chip: ({}, {}) has total memory usage of"
-                    " {} KB ({} bytes) out of a max of "
-                    "{} KB ({} bytes)\n\n".format(
-                        chip.x, chip.y,
-                        int(used_sdram / 1024.0), used_sdram,
-                        int(chip.sdram / 1024.0), chip.sdram))
+                    f"**** Chip: ({chip.x}, {chip.y}) has total memory usage "
+                    f"of {int(used_sdram / 1024.0)} KB ({used_sdram} bytes) "
+                    f"out of a max of "
+                    f"{int(chip.sdram / 1024.0)} KB ({chip.sdram} bytes)\n\n")
         except KeyError:
             # Do Nothing
             pass
@@ -546,15 +541,15 @@ def _write_vertex_virtual_keys(
     # source replaced by SDRAM data passing
     if rinfo is not None:
         f.write(f"Vertex: {pre_vertex}\n")
-        f.write("    Partition: {}, Routing Info: {}\n".format(
-            part_id, rinfo.key_and_mask))
+        f.write(f"    Partition: {part_id}, "
+                f"Routing Info: {rinfo.key_and_mask}\n")
         for m_vertex in pre_vertex.splitter.get_out_going_vertices(part_id):
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, part_id)
             if r_info is not None:
-                f.write("    Machine Vertex: {}, Slice: {}, Routing Info: {}\n"
-                        .format(m_vertex, m_vertex.vertex_slice,
-                                r_info.key_and_mask))
+                f.write(f"    Machine Vertex: {m_vertex}, "
+                        f"Slice: {m_vertex.vertex_slice}, "
+                        f"Routing Info: {r_info.key_and_mask}\n")
 
 
 def router_report_from_router_tables() -> None:
@@ -599,19 +594,18 @@ def generate_routing_table(
         ~pacman.model.routing_tables.AbstractMulticastRoutingTable
     :param str top_level_folder:
     """
-    file_name = "routing_table_{}_{}.rpt".format(
-        routing_table.x, routing_table.y)
+    file_name = f"routing_table_{routing_table.x}_{routing_table.y}.rpt"
     file_path = os.path.join(top_level_folder, file_name)
     try:
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write("Router contains {} entries\n".format(
-                routing_table.number_of_entries))
-
-            f.write("{: <5s} {: <10s} {: <10s} {: <10s} {: <7s} {}\n".format(
-                "Index", "Key", "Mask", "Route", "Default", "[Cores][Links]"))
             f.write(
-                "{:-<5s} {:-<10s} {:-<10s} {:-<10s} {:-<7s} {:-<14s}\n".format(
-                    "", "", "", "", "", ""))
+                f"Router contains {routing_table.number_of_entries} entries\n")
+
+            f.write(f'{"Index": <5s} {"Key": <10s} {"Mask": <10s} '
+                    f'{"Route": <10s} {"Default": <7s} {"[Cores][Links]"}\n')
+            f.write(
+                f'{"":-<5s} {"":-<10s} {"":-<10s} '
+                f'{"":-<10s} {"":-<7s} {"":-<14s}\n')
             line_format = "{: >5d} {}\n"
 
             entry_count = 0
@@ -731,8 +725,8 @@ def _search_route(
         source_placement = FecDataView.get_placement_of_vertex(source_vertex)
         x = source_placement.x
         y = source_placement.y
-        text = "        {}:{}:{} -> ".format(
-            source_placement.x, source_placement.y, source_placement.p)
+        text = f"        {source_placement.x}:{source_placement.y}:" \
+               f"{source_placement.p} -> "
 
     text += _recursive_trace_to_destinations(
         machine[x, y], key_and_mask, pre_space="        ")
