@@ -26,7 +26,7 @@ import types
 import requests
 from threading import Condition
 from typing import (
-    Dict, Final, Iterable, Optional, Sequence, Tuple, Type,
+    Dict, Iterable, Optional, Sequence, Tuple, Type,
     TypeVar, Union, cast, final)
 from numpy import __version__ as numpy_version
 
@@ -141,7 +141,7 @@ try:
 except ImportError:
     scipy_version = "scipy not installed"
 
-logger: Final = FormatAdapter(logging.getLogger(__name__))
+logger = FormatAdapter(logging.getLogger(__name__))
 _T = TypeVar("_T")
 
 SHARED_PATH = re.compile(r".*\/shared\/([^\/]+)")
