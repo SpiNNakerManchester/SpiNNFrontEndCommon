@@ -280,4 +280,9 @@ class LivePacketGatherMachineVertex(
 
     @property
     def params(self) -> LivePacketGatherParameters:
+        """
+        The lpg_params as passed into the init.
+
+        :rtype: LivePacketGatherParameters
+        """
         return self._lpg_params

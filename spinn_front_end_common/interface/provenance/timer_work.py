@@ -45,4 +45,9 @@ class TimerWork(Enum):
 
     @property
     def work_name(self) -> str:
+        """
+        The name for this timer distinction.
+
+        :rtype: str
+        """
         return self._work_name

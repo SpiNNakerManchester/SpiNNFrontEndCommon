@@ -50,6 +50,9 @@ SINGLE_PLOTNAME = "Plot.png"
 
 
 class Plotter(ContextManager[SQLiteDB]):
+    """
+    Code to plot provenance data from the database
+    """
     __slots__ = ("cmap", "_db", "__have_insertion_order", "__verbose")
 
     __pyplot: Optional[ModuleType] = None
@@ -94,6 +97,11 @@ class Plotter(ContextManager[SQLiteDB]):
             """, (description, ))
 
     def get_per_chip_prov_types(self) -> FrozenSet[str]:
+        """
+        Get a set of the descriptions available at chip level
+
+        :rtype: set(str)
+        """
         query = """
             SELECT DISTINCT description_name AS "description"
             FROM provenance_view
@@ -104,6 +112,14 @@ class Plotter(ContextManager[SQLiteDB]):
 
     def get_per_chip_prov_details(self, info: str) -> Tuple[
             str, int, int, numpy.ndarray]:
+        """
+        Gets the provenance of a per chip basis
+
+        :param str info:
+            The name of the metadata to sum
+        :return: name, max x, max y and data
+        :rtype: tuple(str, int, int, numpy.ndarray)
+        """
         data = []
         xs = []
         ys = []
@@ -159,6 +175,11 @@ class Plotter(ContextManager[SQLiteDB]):
             """, (description, ))
 
     def get_per_core_prov_types(self) -> FrozenSet[str]:
+        """
+        Get a set of the descriptions available at core level
+
+        :rtype: set(str)
+        """
         query = """
             SELECT DISTINCT description_name AS "description"
             FROM provenance_view
@@ -170,6 +191,14 @@ class Plotter(ContextManager[SQLiteDB]):
 
     def get_sum_chip_prov_details(self, info: str) -> Tuple[
             str, int, int, numpy.ndarray]:
+        """
+        Gets the sum of the provenance
+
+        :param str info:
+            The name of the metadata to sum
+        :return: name, max x, max y and data
+        :rtype: tuple(str, int, int, numpy.ndarray)
+        """
         data: List[Tuple[int, int, Any]] = []
         xs: List[int] = []
         ys: List[int] = []
@@ -203,6 +232,13 @@ class Plotter(ContextManager[SQLiteDB]):
         return cls.__pyplot, cls.__seaborn
 
     def plot_per_core_data(self, key: str, output_filename: str):
+        """
+        Plots the metadata for this key/term to the file at a core level
+
+        :param str key:
+            The name of the metadata to plot, or a unique fragment of it
+        :param str output_filename:
+        """
         plot, seaborn = self.__plotter_apis()
         if self.__verbose:
             print("creating " + output_filename)
@@ -220,6 +256,13 @@ class Plotter(ContextManager[SQLiteDB]):
         plot.close()
 
     def plot_per_chip_data(self, key: str, output_filename: str):
+        """
+        Plots the metadata for this key/term to the file at a chip level
+
+        :param str key:
+            The name of the metadata to plot, or a unique fragment of it
+        :param str output_filename:
+        """
         plot, seaborn = self.__plotter_apis()
         if self.__verbose:
             print("creating " + output_filename)
@@ -238,6 +281,9 @@ class Plotter(ContextManager[SQLiteDB]):
 
 
 def main() -> None:
+    """
+    Generate heat maps from SpiNNaker provenance databases
+    """
     ap = argparse.ArgumentParser(
         description="Generate heat maps from SpiNNaker provenance databases.")
     ap.add_argument("-c", "--colourmap", nargs="?", default="plasma",

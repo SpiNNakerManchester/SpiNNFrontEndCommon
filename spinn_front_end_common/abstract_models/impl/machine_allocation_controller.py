@@ -124,6 +124,11 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         return txrx
 
     def can_create_transceiver(self) -> bool:
+        """
+        Detects if a call to create_transceiver could work.
+
+        :rtype: bool
+        """
         return self.__hostname is not None
 
     def __host(self, chip_x: int, chip_y: int) -> Optional[str]:

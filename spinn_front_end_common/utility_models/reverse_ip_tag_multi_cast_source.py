@@ -190,6 +190,11 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             vertex.send_buffer_times = send_buffer_times_to_set
 
     def enable_recording(self, new_state: bool = True):
+        """
+        Turns on or of the recording for this vertex.
+
+        :param bool new_state: True if recording should be done
+        """
         self._is_recording = new_state
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)

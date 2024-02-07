@@ -593,6 +593,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self.reserve_provenance_data_region(spec)
 
     def update_virtual_key(self) -> None:
+        """
+        Copy the key from the pre vertex as the virtual key if possible.
+        """
         routing_info = FecDataView.get_routing_infos()
         if self._virtual_key is None:
             rinfo = None

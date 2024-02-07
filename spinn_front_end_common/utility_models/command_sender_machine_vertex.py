@@ -63,6 +63,9 @@ class CommandSenderMachineVertex(
 
     # Regions for populations
     class DATA_REGIONS(IntEnum):
+        """
+        The ids for each region of the data this Population used.
+        """
         SYSTEM_REGION = 0
         COMMANDS_WITH_ARBITRARY_TIMES = 1
         COMMANDS_AT_START_RESUME = 2

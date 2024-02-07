@@ -40,6 +40,10 @@ _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
 
 
 class SpallocJobController(MachineAllocationController):
+    """
+    A class to Create and support Transceivers specific for Spalloc.
+    """
+
     __slots__ = (
         # the spalloc job object
         "_job",
@@ -72,6 +76,11 @@ class SpallocJobController(MachineAllocationController):
 
     @property
     def job(self) -> SpallocJob:
+        """
+        The job value passed into the init.
+
+        :rtype: SpallocJob
+        """
         return self._job
 
     @overrides(MachineAllocationController.extend_allocation)

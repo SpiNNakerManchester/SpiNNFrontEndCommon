@@ -453,6 +453,15 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def set_region_pointer(
             self, x: int, y: int, p: int, region_num: int, pointer: int):
+        """
+        Sets the pointer to the start of the address for this x, y, p region.
+
+        :param int x:
+        :param int y:
+        :param int p:
+        :param int region_num:
+        :param int pointer:  start address
+        """
         self.execute(
             """
             UPDATE region

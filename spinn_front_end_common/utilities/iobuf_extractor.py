@@ -16,7 +16,8 @@ from collections.abc import Sized
 import logging
 import os
 import re
-from typing import List, Optional, Pattern, Sequence, Set, Tuple, Union
+from typing import (
+    Iterable, List, Optional, Pattern, Sequence, Set, Tuple, TypeVar, Union)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
@@ -37,10 +38,26 @@ WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
 ENTRY_TEXT = 2
 
+#: :meta private:
+T = TypeVar("T")
+
 
 class _DummyProgress(object):
-    def over(self, values):
-        return values
+    """
+    An alternative to the Progress bar so the over can be called.
+    """
+
+    def over(self, values: Iterable[T]) -> Iterable[T]:
+        """
+        Simple wrapper for the cases where a progress bar is being used
+        to show progress through the iteration over a single collection.
+
+        :param ~collections.abc.Iterable values:
+            The base collection (any iterable) being iterated over
+        :return: The passed in collection unchanged.
+        :rtype: ~collections.abc.Iterable
+        """
+        values
 
 
 class IOBufExtractor(object):

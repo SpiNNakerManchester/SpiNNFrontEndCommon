@@ -163,6 +163,11 @@ class ExtraMonitorSupportMachineVertex(
 
     @property
     def transaction_id(self) -> int:
+        """
+        The current transaction id.
+
+        :rtype: int
+        """
         return self._transaction_id
 
     def update_transaction_id(self) -> None:

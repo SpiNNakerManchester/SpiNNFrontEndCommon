@@ -166,4 +166,9 @@ class LivePacketGather(ApplicationVertex[LivePacketGatherMachineVertex]):
 
     @property
     def params(self) -> LivePacketGatherParameters:
+        """
+        The params value passed into the init.
+
+        :rtype: LivePacketGatherParameters
+        """
         return self.__params

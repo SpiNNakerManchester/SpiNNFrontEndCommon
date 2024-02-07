@@ -94,9 +94,19 @@ class _HBPJobController(MachineAllocationController):
 
     @property
     def power(self) -> bool:
+        """
+        The last power state set.
+
+        :rtype: bool
+        """
         return self._power_on
 
     def set_power(self, power: bool):
+        """
+        Sets the power to the new state.
+
+        :param bool power:
+        """
         self._set_power(self._machine_name, power)
         self._power_on = power
 
