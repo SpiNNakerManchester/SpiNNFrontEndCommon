@@ -121,6 +121,7 @@ class EnergyReport(object):
             "Energy used during the data extraction process is "
             f"{power_used.saving_joules} Joules "
             f"{cls.__report_time(power_used.saving_time_secs)}\n")
+        # pylint: disable=consider-using-f-string
         f.write(
             "Total energy used by the simulation over {} milliseconds is:\n"
             "     {} Joules, or\n"
