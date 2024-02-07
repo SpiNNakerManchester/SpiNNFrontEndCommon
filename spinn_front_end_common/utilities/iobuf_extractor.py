@@ -57,7 +57,7 @@ class _DummyProgress(object):
         :return: The passed in collection unchanged.
         :rtype: ~collections.abc.Iterable
         """
-        values
+        return values
 
 
 class IOBufExtractor(object):
