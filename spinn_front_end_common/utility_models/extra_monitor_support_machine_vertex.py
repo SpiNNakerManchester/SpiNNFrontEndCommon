@@ -63,13 +63,13 @@ _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = ((49 * 3) + 1) * BYTES_PER_WORD
 _BIT_SHIFT_TO_MOVE_APP_ID = 24
 
 _ONE_WORD = struct.Struct("<I")
-    # pylint: disable=wrong-spelling-in-comment
-    # typedef struct extra_monitor_provenance_t {
-    #     uint n_sdp_packets;
-    #     uint n_in_streams;
-    #     uint n_out_streams;
-    #     uint n_router_changes;
-    # } extra_monitor_provenance_t;
+# pylint: disable=wrong-spelling-in-comment
+# typedef struct extra_monitor_provenance_t {
+#     uint n_sdp_packets;
+#     uint n_in_streams;
+#     uint n_out_streams;
+#     uint n_router_changes;
+# } extra_monitor_provenance_t;
 _PROVENANCE_FORMAT = struct.Struct("<IIII")
 
 # cap for stopping wrap arounds
