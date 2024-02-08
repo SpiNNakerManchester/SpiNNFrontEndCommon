@@ -210,7 +210,7 @@ class FecTimer(object):
         If either cfg value is True this methods keep the timer running and
         returns False (did not skip).
 
-        If both cfg values ares False this method records the reason,
+        If both cfg values are False this method records the reason,
         ends the timing and returns True (it skipped).
 
         Typically called if the algorithm should run if either cfg values
@@ -352,7 +352,7 @@ class FecTimer(object):
         """
         Stops all the timing.
 
-        Typically only called during sim.shutdown
+        Typically only called during simulator shutdown
         """
         cls.__stop_category()
         cls._previous = []
