@@ -17,6 +17,7 @@ import numpy
 
 # conversion from words to bytes
 BYTES_PER_WORD = 4
+# pylint: disable=invalid-name
 BYTES_PER_4_WORDS = 16
 BYTES_PER_SHORT = 2
 BYTES_PER_KB = 1024
@@ -104,7 +105,7 @@ DSE_DATA_STRUCT_SIZE = 4 * BYTES_PER_WORD
 
 
 # output buffering operations
-class BUFFERING_OPERATIONS(Enum):
+class BufferingOperations(Enum):
     """
     A listing of what SpiNNaker specific EIEIO commands there are.
     """

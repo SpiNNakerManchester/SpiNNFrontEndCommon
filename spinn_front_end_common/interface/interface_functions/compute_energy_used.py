@@ -49,6 +49,7 @@ MILLIWATTS_FOR_FRAME_IDLE_COST: Final = 0.117
 #: measured from the loading of the column and extrapolated
 MILLIWATTS_PER_FRAME_ACTIVE_COST: Final = 0.154163558
 
+# pylint: disable=invalid-name
 #: measured from the real power meter and timing between the photos
 #: for a day powered off
 MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST: Final = 0.0045833333
