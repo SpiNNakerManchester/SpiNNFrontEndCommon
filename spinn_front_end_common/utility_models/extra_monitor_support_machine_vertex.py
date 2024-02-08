@@ -77,20 +77,20 @@ TRANSACTION_ID_CAP = 0xFFFFFFFF
 _SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * BYTES_PER_WORD
 
 
-class _DSG_REGIONS(IntEnum):
+class _DsgRegions(IntEnum):
     REINJECT_CONFIG = 0
     DATA_OUT_CONFIG = 1
     DATA_IN_CONFIG = 2
     PROVENANCE_AREA = 3
 
 
-class _KEY_OFFSETS(IntEnum):
+class _KeyOffsets(IntEnum):
     ADDRESS_KEY_OFFSET = 0
     DATA_KEY_OFFSET = 1
     BOUNDARY_KEY_OFFSET = 2
 
 
-class _PROV_LABELS(str, Enum):
+class _ProvLabels(str, Enum):
     N_CHANGES = "Number_of_Router_Configuration_Changes"
     N_PACKETS = "Number_of_Relevant_SDP_Messages"
     N_IN_STREAMS = "Number_of_Input_Streamlets"
@@ -278,10 +278,10 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.DataSpecificationGenerator spec: spec file
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.DATA_OUT_CONFIG,
+            region=_DsgRegions.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
             label="data speed-up out config region")
-        spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG)
+        spec.switch_write_focus(_DsgRegions.DATA_OUT_CONFIG)
         spec.write_value(Gatherer.BASE_KEY)
         spec.write_value(Gatherer.NEW_SEQ_KEY)
         spec.write_value(Gatherer.FIRST_DATA_KEY)
@@ -295,11 +295,11 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.Chip chip:
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.REINJECT_CONFIG,
+            region=_DsgRegions.REINJECT_CONFIG,
             size=_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES,
             label="re-injection config region")
 
-        spec.switch_write_focus(_DSG_REGIONS.REINJECT_CONFIG)
+        spec.switch_write_focus(_DsgRegions.REINJECT_CONFIG)
         for value in [
                 self._reinject_multicast, self._reinject_point_to_point,
                 self._reinject_fixed_route,
@@ -322,20 +322,20 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.Chip chip: the chip where this monitor will run
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.DATA_IN_CONFIG,
+            region=_DsgRegions.DATA_IN_CONFIG,
             size=(_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
                   _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES),
             label="data speed-up in config region")
-        spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG)
+        spec.switch_write_focus(_DsgRegions.DATA_IN_CONFIG)
 
         # write address key and data key
         mc_data_chips_to_keys = \
             FecDataView.get_data_in_multicast_key_to_chip_map()
         # pylint: disable=unsubscriptable-object
         base_key = mc_data_chips_to_keys[chip.x, chip.y]
-        spec.write_value(base_key + _KEY_OFFSETS.ADDRESS_KEY_OFFSET)
-        spec.write_value(base_key + _KEY_OFFSETS.DATA_KEY_OFFSET)
-        spec.write_value(base_key + _KEY_OFFSETS.BOUNDARY_KEY_OFFSET)
+        spec.write_value(base_key + _KeyOffsets.ADDRESS_KEY_OFFSET)
+        spec.write_value(base_key + _KeyOffsets.DATA_KEY_OFFSET)
+        spec.write_value(base_key + _KeyOffsets.BOUNDARY_KEY_OFFSET)
 
         # write table entries
         data_in_routing_tables = \
@@ -364,7 +364,7 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.DataSpecificationGenerator spec: spec file
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
+            region=_DsgRegions.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
             label="provenance collection region")
 
     def __provenance_address(self, place: Placement) -> int:
@@ -379,7 +379,7 @@ class ExtraMonitorSupportMachineVertex(
         region_table_addr = txrx.get_region_base_address(
             place.x, place.y, place.p)
         region_entry_addr = get_region_base_address_offset(
-            region_table_addr, _DSG_REGIONS.PROVENANCE_AREA)
+            region_table_addr, _DsgRegions.PROVENANCE_AREA)
         r = txrx.read_word(place.x, place.y, region_entry_addr)
         self.__prov_region = r
         return r
@@ -396,10 +396,10 @@ class ExtraMonitorSupportMachineVertex(
         (n_sdp_packets, n_in_streams, n_out_streams, n_router_changes) = \
             _PROVENANCE_FORMAT.unpack_from(data)
         with ProvenanceWriter() as db:
-            db.insert_monitor(x, y, _PROV_LABELS.N_CHANGES, n_router_changes)
-            db.insert_monitor(x, y, _PROV_LABELS.N_PACKETS, n_sdp_packets)
-            db.insert_monitor(x, y, _PROV_LABELS.N_IN_STREAMS, n_in_streams)
-            db.insert_monitor(x, y, _PROV_LABELS.N_OUT_STREAMS, n_out_streams)
+            db.insert_monitor(x, y, _ProvLabels.N_CHANGES, n_router_changes)
+            db.insert_monitor(x, y, _ProvLabels.N_PACKETS, n_sdp_packets)
+            db.insert_monitor(x, y, _ProvLabels.N_IN_STREAMS, n_in_streams)
+            db.insert_monitor(x, y, _ProvLabels.N_OUT_STREAMS, n_out_streams)
 
     def __recover(self) -> ContextManager[Placement]:
         """

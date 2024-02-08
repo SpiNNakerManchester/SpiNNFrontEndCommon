@@ -125,7 +125,7 @@ BYTES_IN_FULL_PACKET_WITH_KEY = (
 SIZE_DATA_IN_CHIP_TO_KEY_SPACE = ((3 * 48) + 2) * BYTES_PER_WORD
 
 
-class _DATA_REGIONS(IntEnum):
+class _DataRegions(IntEnum):
     """
     DSG data regions.
     """
@@ -134,14 +134,14 @@ class _DATA_REGIONS(IntEnum):
     PROVENANCE_REGION = 2
 
 
-class _PROV_LABELS(str, Enum):
+class _ProvLabels(str, Enum):
     SENT = "Sent_SDP_Packets"
     RECEIVED = "Received_SDP_Packets"
     IN_STREAMS = "Speed_Up_Input_Streams"
     OUT_STREAMS = "Speed_Up_Output_Streams"
 
 
-class DATA_OUT_COMMANDS(IntEnum):
+class _DataOutCommands(IntEnum):
     """
     Command IDs for the SDP packets for data out.
     """
@@ -151,7 +151,7 @@ class DATA_OUT_COMMANDS(IntEnum):
     CLEAR = 2000
 
 
-class DATA_IN_COMMANDS(IntEnum):
+class _DataInCommands(IntEnum):
     """
     Command IDs for the SDP packets for data in.
     """
@@ -385,7 +385,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         base_key = self.BASE_KEY
         transaction_id_key = self.TRANSACTION_ID_KEY
 
-        spec.switch_write_focus(_DATA_REGIONS.CONFIG)
+        spec.switch_write_focus(_DataRegions.CONFIG)
         spec.write_value(new_seq_key)
         spec.write_value(first_data_key)
         spec.write_value(transaction_id_key)
@@ -403,7 +403,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # write multi cast chip key map
         machine = FecDataView.get_machine()
-        spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE)
+        spec.switch_write_focus(_DataRegions.CHIP_TO_KEY_SPACE)
         chip_xys_on_board = list(machine.get_existing_xys_on_board(
             machine[placement.xy]))
 
@@ -444,15 +444,15 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param ~.DataSpecificationGenerator spec: spec file
         """
         spec.reserve_memory_region(
-            region=_DATA_REGIONS.CONFIG,
+            region=_DataRegions.CONFIG,
             size=CONFIG_SIZE,
             label="config")
         spec.reserve_memory_region(
-            region=_DATA_REGIONS.CHIP_TO_KEY_SPACE,
+            region=_DataRegions.CHIP_TO_KEY_SPACE,
             size=SIZE_DATA_IN_CHIP_TO_KEY_SPACE,
             label="mc_key_map")
         spec.reserve_memory_region(
-            region=_DATA_REGIONS.PROVENANCE_REGION,
+            region=_DataRegions.PROVENANCE_REGION,
             size=_PROVENANCE_DATA_SIZE, label="Provenance")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
@@ -667,11 +667,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                             continue
 
                         # Decide what to do with the packet
-                        if cmd == DATA_IN_COMMANDS.RECEIVE_FINISHED:
+                        if cmd == _DataInCommands.RECEIVE_FINISHED:
                             received_confirmation = True
                             break
 
-                        if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA:
+                        if cmd != _DataInCommands.RECEIVE_MISSING_SEQ_DATA:
                             raise ValueError(f"Unknown command {cmd} received")
 
                         # The currently received packet has missing sequence
@@ -816,7 +816,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # create message body
         packet_data = _THREE_WORDS.pack(
-            DATA_IN_COMMANDS.SEND_SEQ_DATA, self._transaction_id,
+            _DataInCommands.SEND_SEQ_DATA, self._transaction_id,
             seq_num) + data_to_write[position:position+packet_data_length]
 
         # return message for sending, and the length in data sent
@@ -830,7 +830,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         connection.send_sdp_message(self.__make_data_in_message(
             _FIVE_WORDS.pack(
-                DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION,
+                _DataInCommands.SEND_DATA_TO_LOCATION,
                 self._transaction_id, start_address, self._coord_word,
                 self._max_seq_num - 1)))
         log.debug(
@@ -843,7 +843,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         connection.send_sdp_message(self.__make_data_in_message(
             _TWO_WORDS.pack(
-                DATA_IN_COMMANDS.SEND_TELL, self._transaction_id)))
+                _DataInCommands.SEND_TELL, self._transaction_id)))
 
     def _send_all_data_based_packets(
             self, data_to_write: bytes, start_address: int,
@@ -1045,7 +1045,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             # send
             connection.send_sdp_message(self.__make_data_out_message(
                 placement, _FOUR_WORDS.pack(
-                    DATA_OUT_COMMANDS.START_SENDING, transaction_id,
+                    _DataOutCommands.START_SENDING, transaction_id,
                     memory_address, length_in_bytes)))
 
             # receive
@@ -1058,7 +1058,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             # Stop anything else getting through (and reduce traffic)
             connection.send_sdp_message(self.__make_data_out_message(
                 placement, _TWO_WORDS.pack(
-                    DATA_OUT_COMMANDS.CLEAR, transaction_id)))
+                    _DataOutCommands.CLEAR, transaction_id)))
 
         end = float(time.time())
         with ProvenanceWriter() as db:
@@ -1228,7 +1228,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # pack flag and n packets
                 _THREE_WORDS.pack_into(
-                    data, 0, DATA_OUT_COMMANDS.START_MISSING_SEQ,
+                    data, 0, _DataOutCommands.START_MISSING_SEQ,
                     transaction_id, n_packets)
 
                 # update state
@@ -1251,7 +1251,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # pack flag
                 _TWO_WORDS.pack_into(
-                    data, offset, DATA_OUT_COMMANDS.MISSING_SEQ,
+                    data, offset, _DataOutCommands.MISSING_SEQ,
                     transaction_id)
                 offset += BYTES_PER_WORD * WORDS_FOR_COMMAND_TRANSACTION
                 length_left_in_packet -= WORDS_FOR_COMMAND_TRANSACTION
@@ -1407,7 +1407,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # Get the provenance region base address
         prov_region_entry_address = get_region_base_address_offset(
-            region_table, _DATA_REGIONS.PROVENANCE_REGION)
+            region_table, _DataRegions.PROVENANCE_REGION)
         return txrx.read_word(x, y, prov_region_entry_address)
 
     @overrides(AbstractProvidesProvenanceDataFromMachine
@@ -1420,7 +1420,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = (
             _FOUR_WORDS.unpack_from(data))
         with ProvenanceWriter() as db:
-            db.insert_core(x, y, p, _PROV_LABELS.SENT, n_sdp_sent)
-            db.insert_core(x, y, p, _PROV_LABELS.RECEIVED, n_sdp_recvd)
-            db.insert_core(x, y, p, _PROV_LABELS.IN_STREAMS, n_in_streams)
-            db.insert_core(x, y, p, _PROV_LABELS.OUT_STREAMS, n_out_streams)
+            db.insert_core(x, y, p, _ProvLabels.SENT, n_sdp_sent)
+            db.insert_core(x, y, p, _ProvLabels.RECEIVED, n_sdp_recvd)
+            db.insert_core(x, y, p, _ProvLabels.IN_STREAMS, n_in_streams)
+            db.insert_core(x, y, p, _ProvLabels.OUT_STREAMS, n_out_streams)

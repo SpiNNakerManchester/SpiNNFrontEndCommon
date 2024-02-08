@@ -123,14 +123,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "_injection_partition_id",
         "_virtual_key", "_mask", "_prefix", "_prefix_type", "_check_keys")
 
-    class _REGIONS(IntEnum):
+    class _Regions(IntEnum):
         SYSTEM = 0
         CONFIGURATION = 1
         RECORDING = 2
         SEND_BUFFER = 3
         PROVENANCE_REGION = 4
 
-    class _PROVENANCE_ITEMS(IntEnum):
+    class _ProvenanceItems(IntEnum):
         N_RECEIVED_PACKETS = 0
         N_SENT_PACKETS = 1
         INCORRECT_KEYS = 2
@@ -331,7 +331,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._send_buffer = BufferedSendingRegion()
         self._send_buffer_times = send_buffer_times
         self._send_buffers = {
-            self._REGIONS.SEND_BUFFER: self._send_buffer
+            self._Regions.SEND_BUFFER: self._send_buffer
         }
 
     def _clear_send_buffer(self) -> None:
@@ -369,7 +369,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self) -> int:
-        return self._REGIONS.PROVENANCE_REGION
+        return self._Regions.PROVENANCE_REGION
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
@@ -567,15 +567,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
-            region=self._REGIONS.SYSTEM,
+            region=self._Regions.SYSTEM,
             size=SIMULATION_N_BYTES, label='SYSTEM')
         spec.reserve_memory_region(
-            region=self._REGIONS.CONFIGURATION,
+            region=self._Regions.CONFIGURATION,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
 
         # Reserve recording buffer regions if required
         spec.reserve_memory_region(
-            region=self._REGIONS.RECORDING,
+            region=self._Regions.RECORDING,
             size=get_recording_header_size(1),
             label="RECORDING")
 
@@ -587,7 +587,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 FecDataView.get_max_run_time_steps())
             if self._send_buffer_size:
                 spec.reserve_memory_region(
-                    region=self._REGIONS.SEND_BUFFER,
+                    region=self._Regions.SEND_BUFFER,
                     size=self._send_buffer_size, label="SEND_BUFFER")
 
         self.reserve_provenance_data_region(spec)
@@ -619,7 +619,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         :param ~.DataSpecificationGenerator spec:
         """
-        spec.switch_write_focus(region=self._REGIONS.CONFIGURATION)
+        spec.switch_write_focus(region=self._Regions.CONFIGURATION)
 
         # Write apply_prefix and prefix and prefix_type
         if self._prefix is None:
@@ -685,12 +685,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._reserve_regions(spec)
 
         # Write the system region
-        spec.switch_write_focus(self._REGIONS.SYSTEM)
+        spec.switch_write_focus(self._Regions.SYSTEM)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name()))
 
         # Write the additional recording information
-        spec.switch_write_focus(self._REGIONS.RECORDING)
+        spec.switch_write_focus(self._Regions.RECORDING)
         recording_size = 0
         if self._is_recording:
             per_timestep = self._recording_sdram_per_timestep(
@@ -752,7 +752,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, placement: Placement) -> int:
         return locate_memory_region_for_placement(
-            placement, self._REGIONS.RECORDING)
+            placement, self._Regions.RECORDING)
 
     @property  # type: ignore[override]
     def send_buffers(self) -> Dict[int, BufferedSendingRegion]:
@@ -794,7 +794,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :return: Size of buffer, in bytes.
         :rtype: int
         """
-        if region == self._REGIONS.SEND_BUFFER:
+        if region == self._Regions.SEND_BUFFER:
             return self._send_buffer_size
         return 0
 
