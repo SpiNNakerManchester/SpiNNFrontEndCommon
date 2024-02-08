@@ -242,7 +242,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
     @overrides(ApplicationVertex.get_fixed_key_and_mask)
     def get_fixed_key_and_mask(
             self, partition_id: str) -> Optional[BaseKeyAndMask]:
-        # pylint: disable=missing-function-docstring
+        # pylint: disable=missing-function-docstring, unused-argument
         if self._eieio_params.virtual_key is None:
             return None
         mask = ReverseIPTagMulticastSourceMachineVertex.calculate_mask(
