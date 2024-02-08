@@ -271,7 +271,7 @@ class GlobalProvenance(SQLiteDB):
             f"{row[0].replace('_', ' ')}: {row[1]} s"
             for row in self.run_query(query))
 
-    def get_run_time_of_BufferExtractor(self) -> str:
+    def get_run_time_of_buffer_extractor(self) -> str:
         """
         Gets the buffer extractor provenance item(s) from the last run
 
