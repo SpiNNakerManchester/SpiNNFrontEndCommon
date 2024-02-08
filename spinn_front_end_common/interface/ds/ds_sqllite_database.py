@@ -49,7 +49,7 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     A database for holding data specification details.
     """
-    __slots__ = ("_init_file")
+    __slots__ = ["_init_file"]
 
     def __init__(self, database_file:  Optional[str] = None):
         """
