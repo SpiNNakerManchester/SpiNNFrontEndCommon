@@ -18,13 +18,16 @@ import os
 import re
 from sqlite3 import Row
 from typing import Iterable, List, Optional, Tuple, Union
+
 from spinn_utilities.log import FormatAdapter
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from .timer_category import TimerCategory
 from spinn_front_end_common.interface.provenance.timer_work import TimerWork
+
+from .timer_category import TimerCategory
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

@@ -32,7 +32,7 @@ pylint --output-format=colorized --disable=R --persistent=no --jobs=1 --rcfile=.
 
 #
 # check one test
-# pylint --enable=unused-argument --output-format=colorized --disable=R --persistent=no --jobs=1 --rcfile=../SupportScripts/actions/pylint/strict_rcfile --spelling-dict=en_GB --spelling-private-dict-file=$dict --disable=all  spinn_front_end_common
+# pylint --enable=consider-iterating-dictionary --output-format=colorized --disable=R --persistent=no --jobs=1 --rcfile=../SupportScripts/actions/pylint/strict_rcfile --spelling-dict=en_GB --spelling-private-dict-file=$dict --disable=all  spinn_front_end_common
 
 # check spelling
 # pylint --enable=invalid-characters-in-docstring,wrong-spelling-in-comment,wrong-spelling-in-docstring  --output-format=colorized --disable=R --persistent=no --jobs=1 --rcfile=../SupportScripts/actions/pylint/strict_rcfile --spelling-dict=en_GB --spelling-private-dict-file=$dict --disable=all  spinn_front_end_common

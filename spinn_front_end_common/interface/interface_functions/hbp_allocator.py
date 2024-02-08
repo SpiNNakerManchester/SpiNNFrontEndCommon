@@ -13,15 +13,19 @@
 # limitations under the License.
 
 import logging
-import requests
 from typing import Optional, Tuple, cast
+
+import requests
+
 from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.json import JsonArray, JsonObject
+
+from pacman.exceptions import PacmanConfigurationException
+
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.data import FecDataView
-from pacman.exceptions import PacmanConfigurationException
 
 
 class _HBPJobController(MachineAllocationController):

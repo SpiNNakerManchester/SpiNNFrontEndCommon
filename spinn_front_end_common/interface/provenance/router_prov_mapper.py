@@ -14,12 +14,14 @@
 
 import argparse
 import os
-import numpy
-import sqlite3
-from types import ModuleType
 from typing import (
     Any, ContextManager, FrozenSet, Iterable, List, Optional, Tuple, cast)
+import sqlite3
+from types import ModuleType
+
+import numpy
 from typing_extensions import Literal
+
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 

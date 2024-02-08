@@ -11,27 +11,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import annotations
+from enum import IntEnum
 import logging
 import math
 import struct
-import numpy
-from numpy.typing import NDArray
-from enum import IntEnum
 from typing import (
     Collection, Dict, List, Optional, Sequence, Union, TYPE_CHECKING)
+
+import numpy
+from numpy.typing import NDArray
 from typing_extensions import TypeGuard
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
+
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
 from spinnman.model.enums import ExecutableType
-from pacman.model.resources import (
-    ReverseIPtagResource, AbstractSDRAM, VariableSDRAM)
+
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
+from pacman.model.resources import (
+    ReverseIPtagResource, AbstractSDRAM, VariableSDRAM)
 from pacman.utilities.utility_calls import get_keys
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
@@ -58,7 +64,9 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.buffer_management.recording_utilities \
     import (get_recording_header_array, get_recording_header_size,
             get_recording_data_constant_size)
+
 from .eieio_parameters import EIEIOParameters
+
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource

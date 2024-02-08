@@ -16,15 +16,21 @@ from enum import Enum, IntEnum
 import logging
 import struct
 from typing import Dict, Iterable, Optional, ContextManager
+
 from typing_extensions import Literal
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.config_holder import get_config_bool
+
 from spinn_machine import Chip, CoreSubsets, MulticastRoutingEntry, Router
+
 from spinnman.model.enums import ExecutableType, UserRegister
+
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import AbstractSDRAM, ConstantSDRAM
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
@@ -38,12 +44,12 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_state_from_failure)
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
-from .data_speed_up_packet_gatherer_machine_vertex import (
-    DataSpeedUpPacketGatherMachineVertex as
-    Gatherer)
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+
+from .data_speed_up_packet_gatherer_machine_vertex import (
+    DataSpeedUpPacketGatherMachineVertex as Gatherer)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
