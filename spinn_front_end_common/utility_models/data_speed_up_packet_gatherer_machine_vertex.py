@@ -20,19 +20,24 @@ import struct
 from enum import Enum, IntEnum
 from typing import (
     Any, BinaryIO, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING)
+
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
+
 from spinn_machine import Chip
+
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.model.enums import (
     CPUState, ExecutableType, SDP_PORTS, UserRegister)
 from spinnman.connections.udp_packet_connections import SCAMPConnection
+
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, IPtagResource
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.helpful_functions import (

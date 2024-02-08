@@ -18,6 +18,7 @@ import logging
 import os
 import subprocess
 from typing import Dict, Iterable, List, Optional, cast
+
 from spinn_utilities.config_holder import (
     get_config_str, get_config_str_or_none)
 from spinn_utilities.log import FormatAdapter
@@ -26,8 +27,9 @@ from spinn_machine import Chip
 from spinn_machine.tags import IPTag
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.model.graphs import AbstractVirtual
-from spinn_front_end_common.data import FecDataView
 from pacman.model.placements import Placement
+
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import write_json_machine
 from spinn_front_end_common.utilities.exceptions import (

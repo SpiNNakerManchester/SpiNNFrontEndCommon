@@ -16,18 +16,22 @@ import logging
 import os
 from typing import (
     Dict, Iterable, Iterator, Optional, Set, Tuple, Union, List, TYPE_CHECKING)
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
+
 from spinn_machine import Chip, CoreSubsets, FixedRouteEntry
 from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.spalloc import SpallocJob
+
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.routing_tables import MulticastRoutingTables
+
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
     from spinn_front_end_common.abstract_models.impl import (
@@ -1002,6 +1006,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         lpg_vertex = cls.__fec_data._live_packet_recorder_params.get(
             live_packet_gatherer_params)
         if lpg_vertex is None:
+            # pylint: disable=import-outside-toplevel
             # UGLY import due to circular reference
             from spinn_front_end_common.utility_models import (
                 LivePacketGather as LPG)

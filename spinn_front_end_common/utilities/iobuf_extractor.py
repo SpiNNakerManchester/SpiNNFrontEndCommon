@@ -18,14 +18,17 @@ import os
 import re
 from typing import (
     Iterable, List, Optional, Pattern, Sequence, Set, Tuple, TypeVar, Union)
+
+from spinn_utilities.config_holder import get_config_str_or_none
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_machine.core_subsets import CoreSubsets
+
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.model.io_buffer import IOBuffer
-from spinn_utilities.config_holder import get_config_str_or_none
 
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (

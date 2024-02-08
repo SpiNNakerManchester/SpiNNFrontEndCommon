@@ -23,14 +23,14 @@ import signal
 import sys
 import threading
 import types
-import requests
 from threading import Condition
 from typing import (
     Dict, Iterable, Optional, Sequence, Tuple, Type,
     TypeVar, Union, cast, final)
-from numpy import __version__ as numpy_version
 
 import ebrains_drive  # type: ignore[import]
+from numpy import __version__ as numpy_version
+import requests
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (

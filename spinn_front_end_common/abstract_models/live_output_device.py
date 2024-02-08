@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict, Tuple, List
 from spinn_utilities.abstract_base import (
     AbstractBase, abstractmethod)
 from pacman.model.graphs.machine.machine_vertex import MachineVertex
-from typing import Dict, Tuple, List
 
 
 class LiveOutputDevice(object, metaclass=AbstractBase):
