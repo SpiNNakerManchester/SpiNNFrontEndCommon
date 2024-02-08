@@ -220,7 +220,7 @@ class Plotter(ContextManager[SQLiteDB]):
     @classmethod
     def __plotter_apis(cls) -> Tuple[ModuleType, ModuleType]:
         # Import here because otherwise CI fails
-        # pylint: disable=import-error
+        # pylint: disable=import-error,import-outside-toplevel
         if not cls.__pyplot:
             import matplotlib.pyplot as plot  # type: ignore[import]
             cls.__pyplot = plot
