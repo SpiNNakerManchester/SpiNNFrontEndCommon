@@ -12,54 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Our abbreviations/names
-DDL
-mundy
-HBP
-Indar's
 
-# Our special words
-borrowable
-collab
-paramsprecompiled
-reentrant
-regex
-replacer
-sql
-
-# Our types
-AbstractEIEIOMessage
-AbstractSendsBuffersFromHost
-BufferedSendingRegion
-CommandSender
-CoreToFill
-DatabaseReader
-DataSpecificationExecutor
-DataSpeedUpPacketGatherMachineVertex
-DataWritten
-ExtraMonitorSupportMachineVertex
-LiveOutputDevice
-LivePacketGatherMachineVertex
-LivePacketGatherParameters
-MachineGraph
-MultiCastCommand
-PacmanConfigurationException
-ProvenanceDataItem
-ReInjectionStatus
-ReverseIPTag
-RouterDiagnostics
-SDPMessage
-SpallocClient
-UDPConnection
-UnCompressedMulticastRoutingTable
-
-# Python packages
-
-# Python types
-Struct
-
-# sqlite3.cursor methods mentioned in docs
-fetchone
-lastrowid
-rowcount
-WAL
+# We use a single exception files for all the main repsitories
+# It can be found at:
+# https://github.com/SpiNNakerManchester/SupportScripts/blob/master/actions/pylint/default_dict.txt
