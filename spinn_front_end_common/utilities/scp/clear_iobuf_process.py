@@ -14,7 +14,6 @@
 
 from functools import partial
 from typing import Optional
-from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets
 from spinnman.messages.sdp import SDPHeader, SDPFlag
@@ -36,9 +35,7 @@ class _ClearIOBUFRequest(AbstractSCPRequest[CheckOKResponse]):
                 command=SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE),
             argument_3=int(True))
 
-    @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self) -> CheckOKResponse:
-        # pylint: disable=missing-function-docstring
         return CheckOKResponse(
             "clear iobuf",
             SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)

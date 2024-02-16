@@ -58,7 +58,6 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest[CheckOKResponse]):
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self) -> CheckOKResponse:
-        # pylint: disable=missing-function-docstring
         return CheckOKResponse(
             "Set reinjected packet types",
             ReinjectorSCPCommands.SET_PACKET_TYPES)

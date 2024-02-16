@@ -387,7 +387,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> AbstractSDRAM:
-        # pylint: disable=missing-function-docstring
         return self.get_sdram_usage(
             self._send_buffer_times, self._is_recording, self._receive_rate,
             self._n_keys)
@@ -395,7 +394,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(MachineVertex.reverse_iptags)
     def reverse_iptags(self) -> List[ReverseIPtagResource]:
-        # pylint: disable=missing-function-docstring
         return self._reverse_iptags
 
     @classmethod

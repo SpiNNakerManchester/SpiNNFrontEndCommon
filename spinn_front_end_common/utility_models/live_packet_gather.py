@@ -67,26 +67,22 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
 
     @overrides(AbstractSplitterCommon.create_machine_vertices)
     def create_machine_vertices(self, chip_counter: ChipCounter):
-        # pylint: disable=missing-function-docstring
         # Skip here, and do later!  This is a special case...
         pass
 
     @overrides(AbstractSplitterCommon.get_in_coming_slices)
     def get_in_coming_slices(self) -> List[Slice]:
-        # pylint: disable=missing-function-docstring
         # There are none!
         return []
 
     @overrides(AbstractSplitterCommon.get_out_going_slices)
     def get_out_going_slices(self) -> List[Slice]:
-        # pylint: disable=missing-function-docstring
         # There are also none (but this should never be a pre-vertex)
         return []
 
     @overrides(AbstractSplitterCommon.get_in_coming_vertices)
     def get_in_coming_vertices(self, partition_id: str) -> Sequence[
             LivePacketGatherMachineVertex]:
-        # pylint: disable=missing-function-docstring, unused-argument
         return tuple(self.governed_app_vertex.machine_vertices)
 
     @overrides(AbstractSplitterCommon.get_source_specific_in_coming_vertices)
@@ -95,7 +91,6 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
             partition_id: str) -> Sequence[Tuple[
                 LivePacketGatherMachineVertex,
                 Sequence[ApplicationVertex[MV]]]]:
-        # pylint: disable=missing-function-docstring
         # Find the nearest placement for the first machine vertex of the source
         m_vertex = next(iter(source_vertex.splitter.get_out_going_vertices(
             partition_id)))
@@ -125,20 +120,17 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
 
     @overrides(AbstractSplitterCommon.get_out_going_vertices)
     def get_out_going_vertices(self, partition_id: str) -> List[MachineVertex]:
-        # pylint: disable=missing-function-docstring, unused-argument
         # There are none!
         return []
 
     @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
     def machine_vertices_for_recording(
             self, variable_to_record: str) -> List[MachineVertex]:
-        # pylint: disable=missing-function-docstring, unused-argument
         # Nothing to record here...
         return []
 
     @overrides(AbstractSplitterCommon.reset_called)
     def reset_called(self) -> None:
-        # pylint: disable=missing-function-docstring
         self.__m_vertices_by_ethernet = dict()
         self.__targeted_lpgs = set()
 
@@ -159,9 +151,7 @@ class LivePacketGather(ApplicationVertex[LivePacketGatherMachineVertex]):
         self.__params = params
 
     @property
-    @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self) -> int:  # type: ignore[override]
-        # pylint: disable=missing-function-docstring
         return 0
 
     @property
