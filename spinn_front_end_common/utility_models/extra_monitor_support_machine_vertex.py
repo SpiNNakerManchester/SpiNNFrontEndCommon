@@ -215,7 +215,6 @@ class ExtraMonitorSupportMachineVertex(
     @property
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> AbstractSDRAM:
-        # pylint: disable=missing-function-docstring
         return ConstantSDRAM(
             _CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES +
             _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +

@@ -78,5 +78,4 @@ class CommandSender(
 
     @overrides(AbstractOneAppOneMachineVertex.get_fixed_key_and_mask)
     def get_fixed_key_and_mask(self, partition_id: str) -> BaseKeyAndMask:
-        # pylint: disable=missing-function-docstring
         return self._machine_vertex.get_fixed_key_and_mask(partition_id)

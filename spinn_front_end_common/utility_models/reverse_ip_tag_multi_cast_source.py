@@ -164,12 +164,10 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
     @property
     @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self) -> int:
-        # pylint: disable=missing-function-docstring
         return self.__n_atoms
 
     @overrides(LegacyPartitionerAPI.get_sdram_used_by_atoms)
     def get_sdram_used_by_atoms(self, vertex_slice: Slice) -> AbstractSDRAM:
-        # pylint: disable=missing-function-docstring
         return ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
             self._filtered_send_buffer_times(vertex_slice),
             self._is_recording, self._eieio_params.receive_rate,
@@ -209,7 +207,6 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             self, vertex_slice: Slice, sdram: AbstractSDRAM,
             label: Optional[str] = None
             ) -> ReverseIPTagMulticastSourceMachineVertex:
-        # pylint: disable=missing-function-docstring
         send_buffer_times = self._filtered_send_buffer_times(vertex_slice)
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             label=label, app_vertex=self, vertex_slice=vertex_slice,
@@ -249,7 +246,6 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
     @overrides(ApplicationVertex.get_fixed_key_and_mask)
     def get_fixed_key_and_mask(
             self, partition_id: str) -> Optional[BaseKeyAndMask]:
-        # pylint: disable=missing-function-docstring, unused-argument
         if self._eieio_params.virtual_key is None:
             return None
         mask = ReverseIPTagMulticastSourceMachineVertex.calculate_mask(
