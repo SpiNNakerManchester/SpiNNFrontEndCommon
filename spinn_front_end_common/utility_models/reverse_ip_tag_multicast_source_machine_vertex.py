@@ -81,7 +81,8 @@ _TWO_SHORTS = struct.Struct("<HH")
 
 # The microseconds per timestep will be divided by this for the max offset
 _MAX_OFFSET_DENOMINATOR = 10
-# The max offset modulo to stop spikes in simple cases moving to the next ts
+# The max offset modulo to stop spikes in simple cases
+# moving to the next timestep
 _MAX_OFFSET_MODULO = 1000
 
 

@@ -76,8 +76,8 @@ TRANSACTION_ID_CAP = 0xFFFFFFFF
 SDP_RETRANSMISSION_HEADER_SIZE = 2
 
 #: size of config region in bytes
-#: 1.new seq key, 2.first data key, 3. transaction id key 4.end flag key,
-# 5.base key, 6.iptag tag
+#: 1.new sequence key, 2.first data key, 3. transaction id key
+# 4.end flag key, 5.base key, 6.iptag tag
 CONFIG_SIZE = 6 * BYTES_PER_WORD
 
 #: items of data a SDP packet can hold when SCP header removed
@@ -92,10 +92,10 @@ TRANSACTION_ID_SIZE_IN_ITEMS = 1
 #: the size in words of the command flag
 COMMAND_SIZE_IN_ITEMS = 1
 
-#: offset for missing seq starts in first packet
+#: offset for missing sequence starts in first packet
 WORDS_FOR_COMMAND_N_MISSING_TRANSACTION = 3
 
-#: offset for missing seq starts in more packet
+#: offset for missing sequence starts in more packet
 WORDS_FOR_COMMAND_TRANSACTION = (
     COMMAND_SIZE_IN_ITEMS + TRANSACTION_ID_SIZE_IN_ITEMS)
 
@@ -193,7 +193,7 @@ def ceildiv(dividend, divisor) -> int:
     return int(q) + (r != 0)
 
 
-# SDRAM requirement for storing missing SDP packets seq numbers
+# SDRAM requirement for storing missing SDP packets sequence numbers
 SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
     120.0 * 1024 * BYTES_PER_KB,
     WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD)
@@ -228,9 +228,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_ip_address",
         # store for the last reinjection status
         "_last_status",
-        # the max seq number expected given a data retrieval
+        # the max sequence number expected given a data retrieval
         "_max_seq_num",
-        # holder for missing seq numbers for data in
+        # holder for missing sequence numbers for data in
         "_missing_seq_nums_data_in",
         # holder of data from out
         "_output",
@@ -276,10 +276,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     _TIMEOUT_PER_RECEIVE_IN_SECONDS = 2
     _TIMEOUT_FOR_SENDING_IN_SECONDS = 0.01
 
-    # end flag for missing seq numbers
+    # end flag for missing sequence numbers
     _MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
 
-    # flag for saying missing all SEQ numbers
+    # flag for saying missing all sequence numbers
     FLAG_FOR_MISSING_ALL_SEQUENCES = 0xFFFFFFFE
 
     _ADDRESS_PACKET_BYTE_FORMAT = struct.Struct(
@@ -766,7 +766,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         missing_seqs_as_list = list(missing)
         missing_seqs_as_list.sort()
 
-        # send seq data
+        # send sequence data
         for missing_seq_num in missing_seqs_as_list:
             message, _length = self.__make_data_in_stream_message(
                 data_to_write, missing_seq_num, None)
@@ -866,14 +866,14 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # send rest of data
         for seq_num in range(self._max_seq_num or 0):
-            # put in command flag and seq number
+            # put in command flag and sequence number
             message, length_to_send = self.__make_data_in_stream_message(
                 data_to_write, seq_num, position_in_data)
             position_in_data += length_to_send
 
             # send the message
             self.__throttled_send(message, connection)
-            log.debug("sent seq {} of {} bytes", seq_num, length_to_send)
+            log.debug("sent sequence {} of {} bytes", seq_num, length_to_send)
 
         # check for end flag
         self.__send_tell_flag(connection)
@@ -1307,7 +1307,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         is_end_of_stream = (
             first_packet_element & self._LAST_MESSAGE_FLAG_BIT_MASK) != 0
 
-        # check seq number not insane
+        # check sequence number not insane
         if seq_num > self._max_seq_num:
             raise ValueError(
                 f"got an insane sequence number. got {seq_num} when "
@@ -1319,7 +1319,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # write data
 
-        # read offset from data is at byte 8. as first 4 is seq number,
+        # read offset from data is at byte 8. as first 4 is sequence number,
         # second 4 is transaction id
         true_data_length = (
                 offset + length_of_data - BYTES_FOR_SEQ_AND_TRANSACTION_ID)
@@ -1329,7 +1329,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 offset, true_data_length, data,
                 BYTES_FOR_SEQ_AND_TRANSACTION_ID, length_of_data)
 
-        # add seq number to list
+        # add sequence number to list
         seq_nums.add(seq_num)
 
         # if received a last flag on its own, its during retransmission.

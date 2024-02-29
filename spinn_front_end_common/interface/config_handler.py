@@ -183,7 +183,7 @@ class ConfigHandler(object):
             pass
 
     def _set_up_report_specifics(self) -> None:
-        # clear and clean out folders considered not useful anymore
+        # clear and clean out folders considered not useful any more
         report_dir_path = self._data_writer.get_report_dir_path()
         if os.listdir(report_dir_path):
             self._remove_excess_folders(

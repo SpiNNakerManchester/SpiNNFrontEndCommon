@@ -53,9 +53,9 @@ class JavaCaller(object):
     """
     __slots__ = (
         "_chip_by_ethernet",
-        # The call to get java to work. Including the path if required.
+        # The call to get Java to work. Including the path if required.
         "_java_call",
-        # The location of the java jar file
+        # The location of the Java jar file
         "_jar_file",
         # The location where the machine json is written
         "_machine_json_path",

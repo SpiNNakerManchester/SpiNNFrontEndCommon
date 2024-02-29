@@ -54,8 +54,8 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
 log = FormatAdapter(logging.getLogger(__name__))
 
 _CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
-#: 1.new seq key, 2.first data key, 3. transaction id key 4.end flag key,
-# 5.base key
+#: 1.new sequence key, 2.first data key, 3. transaction id key
+# 4.end flag key, 5.base key
 _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
 _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * BYTES_PER_KB
 _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 3 * BYTES_PER_WORD
