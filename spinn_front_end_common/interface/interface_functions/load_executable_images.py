@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Callable
+from typing import Callable, Final
+import logging
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState, ExecutableType
@@ -23,10 +25,12 @@ from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
+from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 # 10 seconds is lots of time to wait for the application to become ready!
 _APP_READY_TIMEOUT = 10.0
 _running_state = frozenset([CPUState.RUNNING])
+logger: Final = FormatAdapter(logging.getLogger(__name__))
 
 
 def load_app_images() -> None:
@@ -73,8 +77,13 @@ def _load_images(
             progress.update()
     except Exception as e:
         try:
-            FecDataView.get_transceiver().stop_application(
-                FecDataView.get_app_id())
+
+            transceiver = FecDataView.get_transceiver()
+            unsuccessful_cores = transceiver.get_cpu_infos(
+                    cores.all_core_subsets, [CPUState.READY], False)
+            logger.error(unsuccessful_cores.get_status_string())
+            IOBufExtractor().extract_iobuf()
+            transceiver.stop_application(FecDataView.get_app_id())
         except SpinnmanException:
             # Ignore this, this was just an attempt at recovery
             pass
