@@ -390,7 +390,7 @@ def _write_one_chip_application_placement(f: TextIO, chip: Chip):
     for placement in FecDataView.iterate_placements_on_core(chip.x, chip.y):
         if not written_header:
             f.write(f"**** Chip: ({chip.x}, {chip.y})\n")
-            f.write(f"Application cores: {len(list(chip.processors))}\n")
+            f.write(f"Application cores: {chip.n_processors}\n")
             written_header = True
         pro_id = placement.p
         vertex = placement.vertex

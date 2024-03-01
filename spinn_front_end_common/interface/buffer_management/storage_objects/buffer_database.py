@@ -277,8 +277,7 @@ class BufferDatabase(BaseDatabase):
             self._set_core_name(
                 placement.x, placement.y, placement.p, placement.vertex.label)
         for chip in FecDataView.get_machine().chips:
-            for processor in chip.processors:
-                if processor.is_monitor:
+            for processor in chip.monitor_processors:
                     self._set_core_name(
                         chip.x, chip.y, processor.processor_id,
                         f"SCAMP(OS)_{chip.x}:{chip.y}")
