@@ -24,7 +24,7 @@ _HEADER_SIZE = EIEIODataHeader.get_header_size(
     EIEIOType.KEY_32_BIT, is_payload_base=True)
 
 # The number of bytes in each key to be sent
-_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
+_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes
 
 # The number of keys allowed (different from the actual number as there is
 #  an additional header)

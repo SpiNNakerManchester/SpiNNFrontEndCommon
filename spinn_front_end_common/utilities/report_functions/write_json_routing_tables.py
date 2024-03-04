@@ -32,7 +32,7 @@ def write_json_routing_tables(router_tables: MulticastRoutingTables) -> str:
     """
     file_path = os.path.join(
         FecDataView.get_json_dir_path(), _ROUTING_TABLES_FILENAME)
-    # Steps are tojson, validate and writefile
+    # Steps are create json object, validate json and write json to a file
     with ProgressBar(3, "Converting to JSON RouterTables") as progress:
         json_obj = to_json(router_tables)
 

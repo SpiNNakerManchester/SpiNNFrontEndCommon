@@ -13,10 +13,12 @@
 # limitations under the License.
 
 import logging
-import numpy
 import math
-import scipy.stats  # type: ignore[import]
 from typing import Dict, Iterable, Mapping, Tuple
+
+import numpy
+import scipy.stats  # type: ignore[import]
+
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 

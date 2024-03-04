@@ -11,27 +11,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import annotations
+from enum import IntEnum
 import logging
 import math
 import struct
-import numpy
-from numpy.typing import NDArray
-from enum import IntEnum
 from typing import (
     Collection, Dict, List, Optional, Sequence, Union, TYPE_CHECKING)
+
+import numpy
+from numpy.typing import NDArray
 from typing_extensions import TypeGuard
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
+
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
 from spinnman.model.enums import ExecutableType
-from pacman.model.resources import (
-    ReverseIPtagResource, AbstractSDRAM, VariableSDRAM)
+
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
+from pacman.model.resources import (
+    ReverseIPtagResource, AbstractSDRAM, VariableSDRAM)
 from pacman.utilities.utility_calls import get_keys
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
@@ -58,7 +64,9 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.buffer_management.recording_utilities \
     import (get_recording_header_array, get_recording_header_size,
             get_recording_data_constant_size)
+
 from .eieio_parameters import EIEIOParameters
+
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
@@ -73,7 +81,8 @@ _TWO_SHORTS = struct.Struct("<HH")
 
 # The microseconds per timestep will be divided by this for the max offset
 _MAX_OFFSET_DENOMINATOR = 10
-# The max offset modulo to stop spikes in simple cases moving to the next ts
+# The max offset modulo to stop spikes in simple cases
+# moving to the next timestep
 _MAX_OFFSET_MODULO = 1000
 
 
@@ -123,21 +132,21 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "_injection_partition_id",
         "_virtual_key", "_mask", "_prefix", "_prefix_type", "_check_keys")
 
-    class _REGIONS(IntEnum):
+    class _Regions(IntEnum):
         SYSTEM = 0
         CONFIGURATION = 1
         RECORDING = 2
         SEND_BUFFER = 3
         PROVENANCE_REGION = 4
 
-    class _PROVENANCE_ITEMS(IntEnum):
+    class _ProvenanceItems(IntEnum):
         N_RECEIVED_PACKETS = 0
         N_SENT_PACKETS = 1
         INCORRECT_KEYS = 2
         INCORRECT_PACKETS = 3
         LATE_PACKETS = 4
 
-    # 13 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
+    # 13 int  (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
     #          5. has key, 6. key, 7. mask, 8. buffer space,
     #          9. send buffer flag before notify, 10. tag,
     #          11. tag destination (y, x), 12. receive SDP port,
@@ -331,7 +340,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._send_buffer = BufferedSendingRegion()
         self._send_buffer_times = send_buffer_times
         self._send_buffers = {
-            self._REGIONS.SEND_BUFFER: self._send_buffer
+            self._Regions.SEND_BUFFER: self._send_buffer
         }
 
     def _clear_send_buffer(self) -> None:
@@ -369,7 +378,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self) -> int:
-        return self._REGIONS.PROVENANCE_REGION
+        return self._Regions.PROVENANCE_REGION
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
@@ -565,15 +574,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
-            region=self._REGIONS.SYSTEM,
+            region=self._Regions.SYSTEM,
             size=SIMULATION_N_BYTES, label='SYSTEM')
         spec.reserve_memory_region(
-            region=self._REGIONS.CONFIGURATION,
+            region=self._Regions.CONFIGURATION,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
 
         # Reserve recording buffer regions if required
         spec.reserve_memory_region(
-            region=self._REGIONS.RECORDING,
+            region=self._Regions.RECORDING,
             size=get_recording_header_size(1),
             label="RECORDING")
 
@@ -585,12 +594,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 FecDataView.get_max_run_time_steps())
             if self._send_buffer_size:
                 spec.reserve_memory_region(
-                    region=self._REGIONS.SEND_BUFFER,
+                    region=self._Regions.SEND_BUFFER,
                     size=self._send_buffer_size, label="SEND_BUFFER")
 
         self.reserve_provenance_data_region(spec)
 
     def update_virtual_key(self) -> None:
+        """
+        Copy the key from the pre vertex as the virtual key if possible.
+        """
         routing_info = FecDataView.get_routing_infos()
         if self._virtual_key is None:
             rinfo = None
@@ -614,7 +626,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         :param ~.DataSpecificationGenerator spec:
         """
-        spec.switch_write_focus(region=self._REGIONS.CONFIGURATION)
+        spec.switch_write_focus(region=self._Regions.CONFIGURATION)
 
         # Write apply_prefix and prefix and prefix_type
         if self._prefix is None:
@@ -673,20 +685,19 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec: DataSpecificationGenerator,
-            placement: Placement):  # @UnusedVariable
+            self, spec: DataSpecificationGenerator, placement: Placement):
         self.update_virtual_key()
 
         # Reserve regions
         self._reserve_regions(spec)
 
         # Write the system region
-        spec.switch_write_focus(self._REGIONS.SYSTEM)
+        spec.switch_write_focus(self._Regions.SYSTEM)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name()))
 
         # Write the additional recording information
-        spec.switch_write_focus(self._REGIONS.RECORDING)
+        spec.switch_write_focus(self._Regions.RECORDING)
         recording_size = 0
         if self._is_recording:
             per_timestep = self._recording_sdram_per_timestep(
@@ -748,7 +759,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, placement: Placement) -> int:
         return locate_memory_region_for_placement(
-            placement, self._REGIONS.RECORDING)
+            placement, self._Regions.RECORDING)
 
     @property  # type: ignore[override]
     def send_buffers(self) -> Dict[int, BufferedSendingRegion]:
@@ -790,7 +801,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :return: Size of buffer, in bytes.
         :rtype: int
         """
-        if region == self._REGIONS.SEND_BUFFER:
+        if region == self._Regions.SEND_BUFFER:
             return self._send_buffer_size
         return 0
 
