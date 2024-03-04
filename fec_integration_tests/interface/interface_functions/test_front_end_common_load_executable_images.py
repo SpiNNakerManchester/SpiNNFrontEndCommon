@@ -39,8 +39,7 @@ class _MockTransceiver(MockableTransceiver):
     def execute_flood(
             self, core_subsets: CoreSubsets,
             executable: Union[BinaryIO, bytes, str], app_id: int, *,
-            n_bytes: Optional[int] = None, wait: bool = False
-            ):  # @UnusedVariable
+            n_bytes: Optional[int] = None, wait: bool = False):
         for core_subset in core_subsets.core_subsets:
             x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
@@ -52,8 +51,7 @@ class _MockTransceiver(MockableTransceiver):
     @overrides(MockableTransceiver.get_core_state_count)
     def get_core_state_count(
             self, app_id: int, state: CPUState,
-            xys: Optional[Iterable[Tuple[int, int]]] = None
-            ) -> int:  # @UnusedVariable
+            xys: Optional[Iterable[Tuple[int, int]]] = None) -> int:
         return self._n_cores_in_app[app_id]
 
 
