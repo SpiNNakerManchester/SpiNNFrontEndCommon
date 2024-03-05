@@ -13,17 +13,22 @@
 # limitations under the License.
 
 from typing import Sequence, Tuple
+
 from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
+
 from spinnman.transceiver import Transceiver
+
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset)
-from .abstract_provides_provenance_data_from_machine import (
-    AbstractProvidesProvenanceDataFromMachine)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
+
+from .abstract_provides_provenance_data_from_machine import (
+    AbstractProvidesProvenanceDataFromMachine)
 from .provenance_writer import ProvenanceWriter
 # mypy: disable-error-code=empty-body
 

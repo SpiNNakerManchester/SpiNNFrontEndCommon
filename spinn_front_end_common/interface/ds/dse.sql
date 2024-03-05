@@ -21,7 +21,7 @@ PRAGMA main.synchronous = OFF;
 PRAGMA foreign_keys = ON;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table describing the ethernets.
+-- A table describing the Ethernets.
 CREATE TABLE IF NOT EXISTS ethernet(
     ethernet_x INTEGER NOT NULL,
     ethernet_y INTEGER NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS ethernet(
     PRIMARY KEY (ethernet_x, ethernet_y));
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table describing the chips and their ethernet.
+-- A table describing the chips and their Ethernet.
 CREATE TABlE IF NOT EXISTS chip(
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,

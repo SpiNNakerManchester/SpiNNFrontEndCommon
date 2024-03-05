@@ -75,8 +75,9 @@ class DatabaseConnection(UDPConnection):
         super().__init__(
             local_host=local_host, local_port=local_port,
             remote_host=None, remote_port=None)
-        thread = Thread(name="SpyNNakerDatabaseConnection:{}:{}".format(
-            self.local_ip_address, self.local_port), target=self.__run)
+        thread = Thread(name=f"SpyNNakerDatabaseConnection:"
+                             f"{self.local_ip_address}:{self.local_port}",
+                        target=self.__run)
         self.__database_callbacks: List[_DBCB] = list()
         self.__start_resume_callback = start_resume_callback_function
         self.__pause_and_stop_callback = stop_pause_callback_function

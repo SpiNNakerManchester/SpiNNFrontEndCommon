@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy
 from typing import Optional, Sequence, TextIO, Union
+
+import numpy
+
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_front_end_common.utilities.exceptions import DataSpecException
+
 from .data_type import DataType
 from .ds_sqllite_database import DsSqlliteDatabase
-from spinn_front_end_common.utilities.exceptions import DataSpecException
+
 BYTES_PER_WORD = 4
 
 

@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy
 from typing import List, Optional, Union
 from dataclasses import dataclass
+
+import numpy
+
 from spinnman.messages.eieio import EIEIOPrefix
 from spinnman.model.enums import SDP_PORTS
+
 _SendBufferTimes = Optional[Union[numpy.ndarray, List[numpy.ndarray]]]
 
 

@@ -72,7 +72,7 @@ _SCP_DEST_CPU_BYTE = 4
 # The expected flags from a RAW SCP packet in response
 _SCP_RESPONSE_FLAGS = 7
 
-# The expected destination cpu from a RAW SCP packet in repsonse
+# The expected destination cpu from a RAW SCP packet in response
 _SCP_RESPONSE_DEST = 0xFF
 
 
@@ -187,6 +187,11 @@ class LiveEventConnection(DatabaseConnection):
         self.__scp_response_received: Optional[bytes] = None
 
     def add_send_label(self, label: str):
+        """
+        Adds a send label.
+
+        :param str label:
+        """
         if self.__send_labels is None:
             self.__send_labels = list()
         if label not in self.__send_labels:
@@ -197,6 +202,11 @@ class LiveEventConnection(DatabaseConnection):
             self.__init_callbacks[label] = list()
 
     def add_receive_label(self, label: str):
+        """
+        Adds a receive label is possible.
+
+        :param str label:
+        """
         if self.__live_packet_gather_label is None:
             raise ConfigurationException(
                 "no live packet gather label given; "

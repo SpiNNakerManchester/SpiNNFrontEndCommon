@@ -35,7 +35,7 @@ class LogStoreDB(LogStore):
                 db.store_log(level, message, timestamp)
         except sqlite3.OperationalError as ex:
             if "database is locked" in ex.args:
-                # Ok ignore this one
+                # OK ignore this one
                 # DO NOT log this error here or you will loop forever!
                 return
             # all others are bad

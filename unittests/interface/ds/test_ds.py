@@ -130,7 +130,7 @@ class TestDataSpecification(unittest.TestCase):
 
             # check reloading
             dsr = DataSpecificationReloader(0, 1, 2, db)
-            # ok to repeat serve as long as the size is the same
+            # OK to repeat serve as long as the size is the same
             dsr.reserve_memory_region(10, 123456, "different_name")
             # But the wrong size foes BOOM!
             with self.assertRaises(DataSpecException):

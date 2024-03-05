@@ -16,15 +16,21 @@ from enum import Enum, IntEnum
 import logging
 import struct
 from typing import Dict, Iterable, Optional, ContextManager
+
 from typing_extensions import Literal
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.config_holder import get_config_bool
+
 from spinn_machine import Chip, CoreSubsets, MulticastRoutingEntry, Router
+
 from spinnman.model.enums import ExecutableType, UserRegister
+
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import AbstractSDRAM, ConstantSDRAM
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
@@ -38,18 +44,18 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_state_from_failure)
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
-from .data_speed_up_packet_gatherer_machine_vertex import (
-    DataSpeedUpPacketGatherMachineVertex as
-    Gatherer)
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 
+from .data_speed_up_packet_gatherer_machine_vertex import (
+    DataSpeedUpPacketGatherMachineVertex as Gatherer)
+
 log = FormatAdapter(logging.getLogger(__name__))
 
 _CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
-#: 1.new seq key, 2.first data key, 3. transaction id key 4.end flag key,
-# 5.base key
+#: 1.new sequence key, 2.first data key, 3. transaction id key
+# 4.end flag key, 5.base key
 _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
 _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * BYTES_PER_KB
 _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 3 * BYTES_PER_WORD
@@ -57,6 +63,7 @@ _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = ((49 * 3) + 1) * BYTES_PER_WORD
 _BIT_SHIFT_TO_MOVE_APP_ID = 24
 
 _ONE_WORD = struct.Struct("<I")
+# pylint: disable=wrong-spelling-in-comment
 # typedef struct extra_monitor_provenance_t {
 #     uint n_sdp_packets;
 #     uint n_in_streams;
@@ -76,20 +83,20 @@ TRANSACTION_ID_CAP = 0xFFFFFFFF
 _SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * BYTES_PER_WORD
 
 
-class _DSG_REGIONS(IntEnum):
+class _DsgRegions(IntEnum):
     REINJECT_CONFIG = 0
     DATA_OUT_CONFIG = 1
     DATA_IN_CONFIG = 2
     PROVENANCE_AREA = 3
 
 
-class _KEY_OFFSETS(IntEnum):
+class _KeyOffsets(IntEnum):
     ADDRESS_KEY_OFFSET = 0
     DATA_KEY_OFFSET = 1
     BOUNDARY_KEY_OFFSET = 2
 
 
-class _PROV_LABELS(str, Enum):
+class _ProvLabels(str, Enum):
     N_CHANGES = "Number_of_Router_Configuration_Changes"
     N_PACKETS = "Number_of_Relevant_SDP_Messages"
     N_IN_STREAMS = "Number_of_Input_Streamlets"
@@ -162,6 +169,11 @@ class ExtraMonitorSupportMachineVertex(
 
     @property
     def transaction_id(self) -> int:
+        """
+        The current transaction id.
+
+        :rtype: int
+        """
         return self._transaction_id
 
     def update_transaction_id(self) -> None:
@@ -271,10 +283,10 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.DataSpecificationGenerator spec: spec file
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.DATA_OUT_CONFIG,
+            region=_DsgRegions.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
             label="data speed-up out config region")
-        spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG)
+        spec.switch_write_focus(_DsgRegions.DATA_OUT_CONFIG)
         spec.write_value(Gatherer.BASE_KEY)
         spec.write_value(Gatherer.NEW_SEQ_KEY)
         spec.write_value(Gatherer.FIRST_DATA_KEY)
@@ -288,11 +300,11 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.Chip chip:
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.REINJECT_CONFIG,
+            region=_DsgRegions.REINJECT_CONFIG,
             size=_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES,
             label="re-injection config region")
 
-        spec.switch_write_focus(_DSG_REGIONS.REINJECT_CONFIG)
+        spec.switch_write_focus(_DsgRegions.REINJECT_CONFIG)
         for value in [
                 self._reinject_multicast, self._reinject_point_to_point,
                 self._reinject_fixed_route,
@@ -300,10 +312,10 @@ class ExtraMonitorSupportMachineVertex(
             # Note that this is inverted! Why... I dunno!
             spec.write_value(int(not value))
 
-        # add the reinjection mc interface
+        # add the reinjection multi cast interface
         router_timeout_keys = \
             FecDataView.get_system_multicast_router_timeout_keys()
-        # Write the base key for multicast comms
+        # Write the base key for multicast communication
         # pylint: disable=unsubscriptable-object
         spec.write_value(router_timeout_keys[
             chip.nearest_ethernet_x, chip.nearest_ethernet_y])
@@ -315,20 +327,20 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.Chip chip: the chip where this monitor will run
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.DATA_IN_CONFIG,
+            region=_DsgRegions.DATA_IN_CONFIG,
             size=(_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
                   _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES),
             label="data speed-up in config region")
-        spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG)
+        spec.switch_write_focus(_DsgRegions.DATA_IN_CONFIG)
 
         # write address key and data key
         mc_data_chips_to_keys = \
             FecDataView.get_data_in_multicast_key_to_chip_map()
         # pylint: disable=unsubscriptable-object
         base_key = mc_data_chips_to_keys[chip.x, chip.y]
-        spec.write_value(base_key + _KEY_OFFSETS.ADDRESS_KEY_OFFSET)
-        spec.write_value(base_key + _KEY_OFFSETS.DATA_KEY_OFFSET)
-        spec.write_value(base_key + _KEY_OFFSETS.BOUNDARY_KEY_OFFSET)
+        spec.write_value(base_key + _KeyOffsets.ADDRESS_KEY_OFFSET)
+        spec.write_value(base_key + _KeyOffsets.DATA_KEY_OFFSET)
+        spec.write_value(base_key + _KeyOffsets.BOUNDARY_KEY_OFFSET)
 
         # write table entries
         data_in_routing_tables = \
@@ -357,7 +369,7 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.DataSpecificationGenerator spec: spec file
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
+            region=_DsgRegions.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
             label="provenance collection region")
 
     def __provenance_address(self, place: Placement) -> int:
@@ -372,7 +384,7 @@ class ExtraMonitorSupportMachineVertex(
         region_table_addr = txrx.get_region_base_address(
             place.x, place.y, place.p)
         region_entry_addr = get_region_base_address_offset(
-            region_table_addr, _DSG_REGIONS.PROVENANCE_AREA)
+            region_table_addr, _DsgRegions.PROVENANCE_AREA)
         r = txrx.read_word(place.x, place.y, region_entry_addr)
         self.__prov_region = r
         return r
@@ -389,10 +401,10 @@ class ExtraMonitorSupportMachineVertex(
         (n_sdp_packets, n_in_streams, n_out_streams, n_router_changes) = \
             _PROVENANCE_FORMAT.unpack_from(data)
         with ProvenanceWriter() as db:
-            db.insert_monitor(x, y, _PROV_LABELS.N_CHANGES, n_router_changes)
-            db.insert_monitor(x, y, _PROV_LABELS.N_PACKETS, n_sdp_packets)
-            db.insert_monitor(x, y, _PROV_LABELS.N_IN_STREAMS, n_in_streams)
-            db.insert_monitor(x, y, _PROV_LABELS.N_OUT_STREAMS, n_out_streams)
+            db.insert_monitor(x, y, _ProvLabels.N_CHANGES, n_router_changes)
+            db.insert_monitor(x, y, _ProvLabels.N_PACKETS, n_sdp_packets)
+            db.insert_monitor(x, y, _ProvLabels.N_IN_STREAMS, n_in_streams)
+            db.insert_monitor(x, y, _ProvLabels.N_OUT_STREAMS, n_out_streams)
 
     def __recover(self) -> ContextManager[Placement]:
         """

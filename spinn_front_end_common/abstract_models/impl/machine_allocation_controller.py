@@ -32,7 +32,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
     neatly when the script dies.
     """
     __slots__ = (
-        #: boolean flag for telling this thread when the system has ended
+        #: Boolean flag for telling this thread when the system has ended
         "_exited",
         #: the address of the root board of the allocation
         "__hostname",
@@ -124,6 +124,11 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         return txrx
 
     def can_create_transceiver(self) -> bool:
+        """
+        Detects if a call to create_transceiver could work.
+
+        :rtype: bool
+        """
         return self.__hostname is not None
 
     def __host(self, chip_x: int, chip_y: int) -> Optional[str]:

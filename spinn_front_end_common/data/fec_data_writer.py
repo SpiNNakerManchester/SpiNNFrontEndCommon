@@ -530,7 +530,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 if not isinstance(
                         vertex, DataSpeedUpPacketGatherMachineVertex):
                     raise self.__gatherer_map_error()
-                break  # assume if first is ok all are
+                break  # assume if first is OK all are
         except Exception as ex:  # pylint: disable=broad-except
             raise self.__gatherer_map_error() from ex
         self.__fec_data._gatherer_map = gatherer_map
@@ -557,7 +557,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                     raise self.__monitor_map_error()
                 if not isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     raise self.__monitor_map_error()
-                break  # assume if first is ok all are
+                break  # assume if first is OK all are
         except TypeError:
             raise
         except Exception as ex:  # pylint: disable=broad-except

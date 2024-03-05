@@ -227,7 +227,7 @@ class HostBasedBitFieldRouterCompressor(object):
     # for router report
     _LOWER_16_BITS = 0xFFFF
 
-    # rob paul to pay sam threshold starting point at 1ms time step
+    # threshold starting point at 1ms time step
     _N_PACKETS_PER_SECOND = 100000
 
     # convert between milliseconds and second
@@ -315,7 +315,7 @@ class HostBasedBitFieldRouterCompressor(object):
         if self._best_routing_entries:
             for entry in self._best_routing_entries:
                 best_router_table.add_multicast_routing_entry(
-                    entry.to_MulticastRoutingEntry())
+                    entry.to_multicast_routing_entry())
 
         compressed_pacman_router_tables.add_routing_table(best_router_table)
 
@@ -673,18 +673,18 @@ class HostBasedBitFieldRouterCompressor(object):
         report_out.write("The final routing table entries are as follows:\n\n")
 
         report_out.write(
-            "{: <5s} {: <10s} {: <10s} {: <10s} {: <7s} {}\n".format(
-                "Index", "Key", "Mask", "Route", "Default", "[Cores][Links]"))
+            f'{"Index": <5s} {"Key": <10s} {"Mask": <10s} {"Route": <10s} '
+            f'#{"Default": <7s} [Cores][Links]\n')
         report_out.write(
-            "{:-<5s} {:-<10s} {:-<10s} {:-<10s} {:-<7s} {:-<14s}\n".format(
-                "", "", "", "", "", ""))
+            f"{'':-<5s} {'':-<10s} {'':-<10s} {'':-<10s} "
+            f"{'':-<7s} {'':-<14s}\n")
 
         entry_count = 0
         n_defaultable = 0
         # Note: _best_routing_table is a list(), router_table is not
         for entry in self._best_routing_entries:
             index = entry_count & self._LOWER_16_BITS
-            entry_str = format_route(entry.to_MulticastRoutingEntry())
+            entry_str = format_route(entry.to_multicast_routing_entry())
             entry_count += 1
             if entry.defaultable:
                 n_defaultable += 1

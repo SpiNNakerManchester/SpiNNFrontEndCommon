@@ -220,8 +220,8 @@ void simulation_dma_transfer_done_callback_off(uint tag);
 //!                            or not (false)
 void simulation_set_uses_timer(bool sim_uses_timer);
 
-//! \brief sets the simulation to enter a synchronization barrier repeatedly
-//!        during the simulation.  The synchronization message must be sent
+//! \brief sets the simulation to enter a synchronisation barrier repeatedly
+//!        during the simulation.  The synchronisation message must be sent
 //!        from the host.  Note simulation_is_finished() must be used each
 //!        timestep to cause the pause to happen.
 //! \param[in] n_steps: The number of steps of simulation between synchronisations
