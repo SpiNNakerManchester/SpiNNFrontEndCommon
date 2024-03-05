@@ -223,10 +223,20 @@ class ReInjectionStatus(object):
 
     @property
     def links_dropped_from(self) -> Sequence[int]:
+        """
+        Ids of links where packets where dropped / reinjected
+
+        :rtype: list(int)
+        """
         return [
             link for link in range(6) if self._link_proc_bits & (1 << link)]
 
     @property
     def processors_dropped_from(self) -> Sequence[int]:
+        """
+        Ids of processors which failed to accept packets.
+
+        :rtype: list(int)
+        """
         return [
             p for p in range(18) if self._link_proc_bits & (1 << p + 6)]

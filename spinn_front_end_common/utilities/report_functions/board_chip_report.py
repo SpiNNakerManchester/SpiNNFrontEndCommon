@@ -35,7 +35,7 @@ def board_chip_report() -> None:
         len(machine.ethernet_connected_chips),
         "Writing the board chip report")
 
-    # iterate over ethernet chips and then the chips on that board
+    # iterate over Ethernet chips and then the chips on that board
     with open(directory_name, "w", encoding="utf-8") as writer:
         _write_report(writer, machine, progress_bar)
 

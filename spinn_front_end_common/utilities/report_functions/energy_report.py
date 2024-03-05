@@ -121,6 +121,7 @@ class EnergyReport(object):
             "Energy used during the data extraction process is "
             f"{power_used.saving_joules} Joules "
             f"{cls.__report_time(power_used.saving_time_secs)}\n")
+        # pylint: disable=consider-using-f-string
         f.write(
             "Total energy used by the simulation over {} milliseconds is:\n"
             "     {} Joules, or\n"
@@ -213,7 +214,7 @@ class EnergyReport(object):
         # if not spalloc, then could be any type of board
         if (is_config_none("Machine", "spalloc_server") and
                 is_config_none("Machine", "remote_spinnaker_url")):
-            # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
+            # if a spinn2 or spinn3 (4 chip boards) then they have no FPGAs
             if version in (2, 3):
                 f.write(
                     f"A SpiNN-{version} board does not contain any FPGA's, "
@@ -226,14 +227,14 @@ class EnergyReport(object):
                     "SpiNNaker machine.")
 
             # if a spinn4 or spinn5 board, need to verify if wrap-arounds
-            # are there, if not then assume fpgas are turned off.
+            # are there, if not then assume FPGAs are turned off.
             if power_used.num_fpgas == 0:
-                # no active fpgas
+                # no active FPGAs
                 f.write(
                     f"The FPGA's on the SpiNN-{version} board are turned off "
                     f"and therefore the energy used by the FPGA is 0\n")
                 return
-            # active fpgas; fall through to shared main part report
+            # active FPGAs; fall through to shared main part report
 
         # print out as needed for spalloc and non-spalloc versions
         if version is None:

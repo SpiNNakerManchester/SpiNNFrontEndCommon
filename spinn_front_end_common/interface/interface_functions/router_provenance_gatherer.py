@@ -28,7 +28,10 @@ from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def router_provenance_gatherer():
+def router_provenance_gatherer() -> None:
+    """
+    Gathers diagnostics from the routers.
+    """
     _RouterProvenanceGatherer().add_router_provenance_data()
 
 

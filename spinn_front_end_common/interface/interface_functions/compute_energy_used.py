@@ -49,6 +49,7 @@ MILLIWATTS_FOR_FRAME_IDLE_COST: Final = 0.117
 #: measured from the loading of the column and extrapolated
 MILLIWATTS_PER_FRAME_ACTIVE_COST: Final = 0.154163558
 
+# pylint: disable=invalid-name
 #: measured from the real power meter and timing between the photos
 #: for a day powered off
 MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST: Final = 0.0045833333
@@ -56,7 +57,7 @@ MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST: Final = 0.0045833333
 # TODO needs filling in
 MILLIWATTS_PER_UNBOXED_48_CHIP_FRAME_IDLE_COST: Final = 0.01666667
 
-# TODO verify this is correct when doing multiboard comms
+# TODO verify this is correct when doing multi board communications
 N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
@@ -252,17 +253,17 @@ def _calculate_fpga_energy(
     # if not spalloc, then could be any type of board
     if (is_config_none("Machine", "spalloc_server") and
             is_config_none("Machine", "remote_spinnaker_url")):
-        # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
+        # if a spinn2 or spinn3 (4 chip boards) then they have no FPGAs
         if machine.n_chips <= 4:
             return 0, 0
 
         # if the spinn4 or spinn5 board, need to verify if wrap-arounds
-        # are there, if not then assume fpgas are turned off.
+        # are there, if not then assume FPGAs are turned off.
 
-        # how many fpgas are active
+        # how many FPGAs are active
         total_fpgas = __board_n_operational_fpgas(
             machine.ethernet_connected_chips[0])
-        # active fpgas
+        # active FPGAs
         if total_fpgas == 0:
             return 0, 0
     else:  # spalloc machine, need to check each board
@@ -363,7 +364,7 @@ def _calculate_loading_energy(
 
     # min between chips that are active and fixed monitor, as when 1
     # chip is used its one monitor, if more than 1 chip,
-    # the ethernet connected chip and the monitor handling the read/write
+    # the Ethernet connected chip and the monitor handling the read/write
     # this is checked by min
     n_monitors_active = min(N_MONITORS_ACTIVE_DURING_COMMS, n_monitors)
     energy_cost = (
@@ -412,7 +413,7 @@ def _calculate_data_extraction_energy(
 
         # min between chips that are active and fixed monitor, as when 1
         # chip is used its one monitor, if more than 1 chip,
-        # the ethernet connected chip and the monitor handling the read/write
+        # the Ethernet connected chip and the monitor handling the read/write
         # this is checked by min
         energy_cost = (
             total_time_ms *
@@ -456,7 +457,7 @@ def _calculate_power_down_energy(
     :return: energy in joules
     :rtype: float
     """
-    # if spalloc or hbp
+    # if spalloc or HBP
     if FecDataView.has_allocation_controller():
         return time * n_frames * MILLIWATTS_FOR_FRAME_IDLE_COST
     # if 4 chip

@@ -15,15 +15,20 @@
 import math
 import logging
 from enum import IntEnum
-import numpy
 from typing import List
+
+import numpy
+
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
+
 from spinnman.model.enums import ExecutableType
+
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import AbstractSDRAM, VariableSDRAM
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.data import FecDataView
@@ -126,8 +131,7 @@ class ChipPowerMonitorMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec: DataSpecificationGenerator,
-            placement: Placement):  # @UnusedVariable
+            self, spec: DataSpecificationGenerator, placement: Placement):
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:

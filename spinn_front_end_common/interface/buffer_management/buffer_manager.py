@@ -51,7 +51,7 @@ _MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
     eieio_type=EIEIOType.KEY_32_BIT, is_timestamp=True)
 
 # The number of bytes in each key to be sent
-_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
+_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes
 
 _SDP_MAX_PACKAGE_SIZE = 272
 
@@ -332,6 +332,7 @@ class BufferManager(object):
         if (not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             data = EventStopRequest().bytestring
+            # pylint: disable=wrong-spelling-in-comment
             # logger.debug(
             #    "Writing stop message of {} bytes to {} on {}, {}, {}"
             #         len(data), hex(region_base_address),
