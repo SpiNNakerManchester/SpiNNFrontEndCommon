@@ -38,11 +38,7 @@ def virtual_machine_generator() -> Machine:
     json_path = get_config_str_or_none("Machine", "json_path")
     if json_path is None:
         assert width is not None and height is not None
-        n_cores = FecDataView.get_machine_version().max_cores_per_chip
-        machine = virtual_machine(
-            width=width, height=height,
-            n_cpus_per_chip=n_cores,
-            validate=True)
+        machine = virtual_machine(width=width, height=height, validate=True)
     else:
         if (height is not None or width is not None or
                 version is not None or
