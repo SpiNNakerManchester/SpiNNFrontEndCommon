@@ -190,9 +190,8 @@ class Compression(object):
             processor = routing_table.chip.get_first_none_monitor_processor()
 
             # add to the core subsets
-            if processor:
-                core_subsets.add_processor(
-                    routing_table.x, routing_table.y, processor.processor_id)
+            core_subsets.add_processor(
+                routing_table.x, routing_table.y, processor.processor_id)
 
         # build executable targets
         executable_targets = ExecutableTargets()
