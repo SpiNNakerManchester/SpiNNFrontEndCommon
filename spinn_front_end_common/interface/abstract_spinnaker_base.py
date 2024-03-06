@@ -930,7 +930,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            self._data_writer.add_monitor_all_chips(
+            self._data_writer.add_system_all_chips(
                 insert_chip_power_monitors_to_graphs(system_placements))
 
     @final
@@ -952,7 +952,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.set_monitor_map(monitor_map)
         # Pick one, the first one
         for mon in monitor_map.values():
-            self._data_writer.add_monitor_all_chips(mon)
+            self._data_writer.add_system_all_chips(mon)
             break
 
     def _report_partitioner(self) -> None:
