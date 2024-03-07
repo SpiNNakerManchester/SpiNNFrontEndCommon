@@ -42,4 +42,9 @@ class TimerCategory(Enum):
 
     @property
     def category_name(self) -> str:
+        """
+        The category name as passed into the init.
+
+        :rtype: str
+        """
         return self._category_name

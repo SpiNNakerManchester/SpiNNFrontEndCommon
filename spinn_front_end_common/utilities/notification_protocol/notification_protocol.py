@@ -15,7 +15,7 @@
 import logging
 from typing import List, Optional
 from concurrent.futures import Future
-from concurrent.futures import ThreadPoolExecutor, wait  # @UnresolvedImport
+from concurrent.futures import ThreadPoolExecutor, wait
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
@@ -58,6 +58,7 @@ class NotificationProtocol(object):
             "Database", "wait_on_confirmation_timeout")
         self.__wait_pool: Optional[ThreadPoolExecutor] = \
             ThreadPoolExecutor(max_workers=1)
+        # pylint: disable=unsubscriptable-object
         self.__wait_futures: List[Future[None]] = list()
         self.__sent_visualisation_confirmation = False
         # These connections are not used to talk to SpiNNaker boards
@@ -149,7 +150,6 @@ class NotificationProtocol(object):
         database has been written. Message also includes the path to the
         database
         """
-        # noinspection PyBroadException
         try:
             self.__do_read_notify(FecDataView.get_database_file_path())
         except Exception:  # pylint: disable=broad-except
@@ -165,7 +165,6 @@ class NotificationProtocol(object):
             "** Notifying external sources that the database is ready for "
             "reading **")
 
-        # noinspection PyBroadException
         for c in self.__database_message_connections:
             try:
                 c.send_eieio_message(message)

@@ -16,19 +16,23 @@ import logging
 import os
 from typing import (
     Dict, Iterable, Iterator, Optional, Set, Tuple, Union, List, TYPE_CHECKING)
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
+
 from spinn_machine import Chip, CoreSubsets, FixedRouteEntry
 from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.spalloc import SpallocJob
+
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.routing_tables import MulticastRoutingTables
+
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
     from spinn_front_end_common.abstract_models.impl import (
@@ -670,8 +674,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retrieve the data_in_multicast_key_to_chip_map if known.
         Keys are the coordinates of chips.
-        Values are the base keys for multicast comms received by the Data In
-        streaming module of the extra monitor running on those chips.
+        Values are the base keys for multicast communication
+        received by the Data In streaming module
+        of the extra monitor running on those chips.
 
         :rtype: dict(tuple(int,int), int)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -700,7 +705,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retrieve the system_multicast_router_timeout_keys if known.
         Keys are the coordinates of chips.
-        Values are the base keys for multicast comms received by the
+        Values are the base keys for multicast communications received by the
         re-injector module of the extra monitor running on those chips.
 
         :rtype: dict(tuple(int,int), int)
@@ -712,7 +717,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             raise cls._exception("system_multicast_router_timeout_keys")
         return cls.__fec_data._system_multicast_router_timeout_keys
 
-    # ipaddress
+    # IP address
 
     @classmethod
     def has_ipaddress(cls) -> bool:
@@ -1003,6 +1008,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         lpg_vertex = cls.__fec_data._live_packet_recorder_params.get(
             live_packet_gatherer_params)
         if lpg_vertex is None:
+            # pylint: disable=import-outside-toplevel
             # UGLY import due to circular reference
             from spinn_front_end_common.utility_models import (
                 LivePacketGather as LPG)

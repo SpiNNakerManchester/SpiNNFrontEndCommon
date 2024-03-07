@@ -17,6 +17,7 @@ import numpy
 
 # conversion from words to bytes
 BYTES_PER_WORD = 4
+# pylint: disable=invalid-name
 BYTES_PER_4_WORDS = 16
 BYTES_PER_SHORT = 2
 BYTES_PER_KB = 1024
@@ -37,7 +38,7 @@ MAX_SAFE_BINARY_SIZE = 32 * BYTES_PER_KB
 #: the ITCM max limit for a binary
 MAX_POSSIBLE_BINARY_SIZE = 33 * BYTES_PER_KB
 
-# converts between micro and milli seconds
+# converts between microseconds and milliseconds
 MICRO_TO_MILLISECOND_CONVERSION = 1000.0
 MICRO_TO_SECOND_CONVERSION = 1000000.0  # (1e6)
 
@@ -104,7 +105,7 @@ DSE_DATA_STRUCT_SIZE = 4 * BYTES_PER_WORD
 
 
 # output buffering operations
-class BUFFERING_OPERATIONS(Enum):
+class BufferingOperations(Enum):
     """
     A listing of what SpiNNaker specific EIEIO commands there are.
     """

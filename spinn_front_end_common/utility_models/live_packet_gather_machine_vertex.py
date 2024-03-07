@@ -15,12 +15,17 @@ from __future__ import annotations
 from enum import IntEnum
 import struct
 from typing import List, Optional, Sequence, Tuple, TYPE_CHECKING
+
 from spinn_utilities.overrides import overrides
 from spinn_machine.tags import IPTag
+
+from spinnman.model.enums import ExecutableType
+
+from pacman.model.graphs.common.mdslice import MDSlice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import AbstractSDRAM, ConstantSDRAM, IPtagResource
 from pacman.model.placements import Placement
-from spinnman.model.enums import ExecutableType
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
@@ -31,8 +36,8 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from pacman.model.graphs.common.mdslice import MDSlice
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+
 if TYPE_CHECKING:
     from spinn_front_end_common.utilities.utility_objs import (
         LivePacketGatherParameters)
@@ -164,8 +169,7 @@ class LivePacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec: DataSpecificationGenerator,
-            placement: Placement):  # @UnusedVariable
+            self, spec: DataSpecificationGenerator, placement: Placement):
         tags = FecDataView.get_tags().get_ip_tags_for_vertex(self)
         assert tags is not None
 
@@ -279,4 +283,9 @@ class LivePacketGatherMachineVertex(
 
     @property
     def params(self) -> LivePacketGatherParameters:
+        """
+        The lpg_params as passed into the init.
+
+        :rtype: LivePacketGatherParameters
+        """
         return self._lpg_params

@@ -55,7 +55,7 @@ def drift_report() -> None:
     # create the progress bar for end users
     progress = ProgressBar(n_chips, "Writing clock drift report")
 
-    # iterate over ethernet chips and then the chips on that board
+    # iterate over Ethernet chips and then the chips on that board
     txrx = FecDataView.get_transceiver()
     with open(directory_name, "a", encoding="utf-8") as writer:
         if ethernet_only:

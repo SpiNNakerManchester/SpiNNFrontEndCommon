@@ -18,13 +18,16 @@ import os
 import re
 from sqlite3 import Row
 from typing import Iterable, List, Optional, Tuple, Union
+
 from spinn_utilities.log import FormatAdapter
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from .timer_category import TimerCategory
 from spinn_front_end_common.interface.provenance.timer_work import TimerWork
+
+from .timer_category import TimerCategory
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -237,7 +240,7 @@ class GlobalProvenance(SQLiteDB):
             The value to LIKE search for in the algorithm column.
             Can be the full name, or have ``%``  and ``_`` wildcards.
         :return:
-            A possibly multiline string with for each row which matches the
+            A possibly multi line string with for each row which matches the
             like a line ``algorithm: value``
         :rtype: str
         """
@@ -256,7 +259,7 @@ class GlobalProvenance(SQLiteDB):
         invoked multiple times in the run, its times are summed.
 
         :return:
-            A possibly multiline string with for each row which matches the
+            A possibly multi line string with for each row which matches the
             like a line ``description_name: time``. The times are in seconds.
         :rtype: str
         """
@@ -271,12 +274,12 @@ class GlobalProvenance(SQLiteDB):
             f"{row[0].replace('_', ' ')}: {row[1]} s"
             for row in self.run_query(query))
 
-    def get_run_time_of_BufferExtractor(self) -> str:
+    def get_run_time_of_buffer_extractor(self) -> str:
         """
         Gets the buffer extractor provenance item(s) from the last run
 
         :return:
-            A possibly multiline string with for each row which matches the
+            A possibly multi line string with for each row which matches the
             ``LIKE %BufferExtractor``
         :rtype: str
         """
@@ -359,7 +362,7 @@ class GlobalProvenance(SQLiteDB):
         Get the total runtime for one work type of algorithms
 
         :param TimerWork work:
-        :return: total off all runtimes with this category
+        :return: total off all run times with this category
         :rtype: int
         """
         query = """
@@ -381,7 +384,7 @@ class GlobalProvenance(SQLiteDB):
         Get the total runtime for one algorithm
 
         :param str algorithm:
-        :return: total off all runtimes with this algorithm
+        :return: total off all run times with this algorithm
         :rtype: int
         """
         query = """

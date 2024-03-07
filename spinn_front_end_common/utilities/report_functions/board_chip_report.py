@@ -35,7 +35,7 @@ def board_chip_report() -> None:
         len(machine.ethernet_connected_chips),
         "Writing the board chip report")
 
-    # iterate over ethernet chips and then the chips on that board
+    # iterate over Ethernet chips and then the chips on that board
     with open(directory_name, "w", encoding="utf-8") as writer:
         _write_report(writer, machine, progress_bar)
 
@@ -60,8 +60,8 @@ def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
                     f"({x}, {y}, P: {chip.get_physical_core_id(0)})")
                 n_cores = FecDataView.get_machine_version().max_cores_per_chip
                 down_procs = set(range(n_cores))
-                for proc in chip.processors:
-                    down_procs.remove(proc.processor_id)
+                for p in chip.all_processor_ids:
+                    down_procs.remove(p)
                 for p in down_procs:
                     phys_p = chip.get_physical_core_id(p)
                     core = p
