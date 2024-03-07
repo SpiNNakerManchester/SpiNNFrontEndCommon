@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Callable, Final
+from typing import Callable
 import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -30,7 +30,7 @@ from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 # 10 seconds is lots of time to wait for the application to become ready!
 _APP_READY_TIMEOUT = 10.0
 _running_state = frozenset([CPUState.RUNNING])
-logger: Final = FormatAdapter(logging.getLogger(__name__))
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def load_app_images() -> None:
