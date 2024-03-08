@@ -30,7 +30,6 @@ from spinnman.spalloc import SpallocJob
 
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
-from pacman.model.graphs.machine import MachineVertex
 from pacman.model.routing_tables import MulticastRoutingTables
 
 if TYPE_CHECKING:
@@ -140,8 +139,7 @@ class _FecDataModel(object):
         self._live_packet_recorder_params: Optional[Dict[
             LivePacketGatherParameters,
             LivePacketGather]] = None
-        self._live_output_vertices: Set[
-            Tuple[Union[ApplicationVertex, MachineVertex], str]] = set()
+        self._live_output_vertices: Set[Tuple[ApplicationVertex, str]] = set()
         self._live_output_devices: List[LiveOutputDevice] = list()
         self._java_caller: Optional[JavaCaller] = None
         self._n_boards_required: Optional[int] = None
@@ -1295,8 +1293,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def add_live_output_vertex(
-            cls, vertex: Union[ApplicationVertex, MachineVertex],
-            partition_id: str):
+            cls, vertex: ApplicationVertex, partition_id: str):
         """
         Add a vertex that is to be output live, and so wants its atom IDs
         recorded in the database.
@@ -1309,8 +1306,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def iterate_live_output_vertices(
-            cls) -> Iterable[Tuple[Union[ApplicationVertex, MachineVertex],
-                                   str]]:
+            cls) -> Iterable[Tuple[ApplicationVertex, str]]:
         """
         Get an iterator over the live output vertices and partition IDs.
 
