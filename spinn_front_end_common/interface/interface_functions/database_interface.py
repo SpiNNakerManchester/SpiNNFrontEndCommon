@@ -19,7 +19,6 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.database import DatabaseWriter
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
