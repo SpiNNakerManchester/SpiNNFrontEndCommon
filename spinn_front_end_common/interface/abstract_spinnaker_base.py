@@ -959,6 +959,23 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             partitioner_report()
 
+    @property
+    def get_number_of_available_cores_on_machine(self) -> int:
+        """
+        The number of available cores on the machine after taking
+        into account preallocated resources.
+        :return: number of available cores
+        :rtype: int
+        """
+        machine = self._data_writer.get_machine()
+        # get cores of machine
+        cores = machine.total_available_user_cores
+        ethernets = len(machine.ethernet_connected_chips)
+        cores -= ((machine.n_chips - ethernets) *
+                  self._data_writer.get_all_monitor_cores())
+        cores -= ethernets * self._data_writer.get_ethernet_monitor_cores()
+        return cores
+
     def _execute_application_placer(self, system_placements: Placements):
         """
         Runs, times and logs the Application Placer.

@@ -25,7 +25,8 @@ from spinn_utilities.config_holder import (
 from spinn_front_end_common.interface.interface_functions.\
     insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
 from spinn_front_end_common.interface.interface_functions.\
-    insert_extra_monitor_vertices_to_graphs import sample_monitor_vertex
+    insert_extra_monitor_vertices_to_graphs import (
+    sample_monitor_vertex, sample_speedup_vertex)
 from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -132,11 +133,14 @@ class ConfigHandler(object):
         Reserves the sizes for the system vertices
         """
         if get_config_bool("Reports", "write_energy_report"):
-            self._data_writer.add_sample_system_vertex(
+            self._data_writer.add_sample_monitor_vertex(
                 sample_chip_power_monitor())
         if (get_config_bool("Machine", "enable_advanced_monitor_support")
                 or get_config_bool("Machine", "enable_reinjection")):
-             self._data_writer.add_sample_system_vertex(sample_monitor_vertex())
+             self._data_writer.add_sample_monitor_vertex(
+                 sample_monitor_vertex(), True)
+             self._data_writer.add_sample_monitor_vertex(
+                 sample_speedup_vertex(), True)
 
     def _adjust_config(self, runtime: Optional[float]):
         """
