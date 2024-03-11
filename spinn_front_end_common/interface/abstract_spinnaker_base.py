@@ -107,6 +107,10 @@ from spinn_front_end_common.interface.interface_functions import (
     system_multicast_routing_generator,
     tags_loader, virtual_machine_generator, add_command_senders)
 from spinn_front_end_common.interface.interface_functions.\
+    insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
+from spinn_front_end_common.interface.interface_functions.\
+    insert_extra_monitor_vertices_to_graphs import sample_monitor_vertex
+from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.provenance import (
@@ -911,6 +915,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         Stub to allow sPyNNaker to add delay supports.
         """
 
+    def _reserve_system_vertices(self):
+        """
+        Reserves the sizes for the system vertices
+        """
+        if get_config_bool("Reports", "write_energy_report"):
+            self._data_writer.add_monitor_all_chips(
+                sample_chip_power_monitor())
+        if (get_config_bool("Machine", "enable_advanced_monitor_support")
+                or get_config_bool("Machine", "enable_reinjection")):
+             self._data_writer.add_monitor_all_chips(sample_monitor_vertex())
+
     # Overridden by sPyNNaker to choose a different algorithm
     def _execute_splitter_partitioner(self) -> None:
         """
@@ -930,8 +945,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            self._data_writer.add_monitor_all_chips(
-                insert_chip_power_monitors_to_graphs(system_placements))
+            insert_chip_power_monitors_to_graphs(system_placements)
 
     @final
     def _execute_insert_extra_monitor_vertices(
@@ -950,10 +964,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
-        # Pick one, the first one
-        for mon in monitor_map.values():
-            self._data_writer.add_monitor_all_chips(mon)
-            break
 
     def _report_partitioner(self) -> None:
         """
@@ -1397,6 +1407,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_splitter_reset()
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
+        self._reserve_system_vertices()
 
         self._execute_splitter_partitioner()
         allocator_data = self._execute_allocator(total_run_time)
@@ -2438,30 +2449,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _do_stop_workflow(self) -> None:
         self._execute_application_finisher()
         self._do_extract_from_machine()
-
-    @property
-    def get_number_of_available_cores_on_machine(self) -> int:
-        """
-        The number of available cores on the machine after taking
-        into account preallocated resources.
-
-        :return: number of available cores
-        :rtype: int
-        """
-        machine = self._data_writer.get_machine()
-        # get cores of machine
-        cores = machine.total_available_user_cores
-        take_into_account_chip_power_monitor = get_config_bool(
-            "Reports", "write_energy_report")
-        if take_into_account_chip_power_monitor:
-            cores -= machine.n_chips
-        take_into_account_extra_monitor_cores = (
-            get_config_bool("Machine", "enable_advanced_monitor_support") or
-            get_config_bool("Machine", "enable_reinjection"))
-        if take_into_account_extra_monitor_cores:
-            cores -= machine.n_chips
-            cores -= len(machine.ethernet_connected_chips)
-        return cores
 
     def stop_run(self) -> None:
         """

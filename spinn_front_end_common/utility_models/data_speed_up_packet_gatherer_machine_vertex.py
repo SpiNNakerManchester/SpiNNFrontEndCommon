@@ -222,8 +222,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_coord_word",
         # transaction id
         "_transaction_id",
-        # path for the data in report
-        "_in_report_path",
         # IP address
         "_ip_address",
         # store for the last reinjection status
@@ -239,8 +237,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         # Count of the runs for provenance data
         "_run",
         "_remote_tag",
-        # path to the data out report
-        "_out_report_path",
         # data holder for output
         "_view")
 
@@ -322,12 +318,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         # local provenance storage
         self._run = 0
         self.__placement: Optional[Placement] = None
-
-        # create report if it doesn't already exist
-
-        dir_path = FecDataView.get_run_dir_path()
-        self._out_report_path = os.path.join(dir_path, self.OUT_REPORT_NAME)
-        self._in_report_path = os.path.join(dir_path, self.IN_REPORT_NAME)
 
         # Stored reinjection status for resetting timeouts
         self._last_status: Optional[ReInjectionStatus] = None
@@ -480,8 +470,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param list(set(int)) missing_seq_nums:
             the set of missing sequence numbers per data transmission attempt
         """
-        if not os.path.isfile(self._in_report_path):
-            with open(self._in_report_path, "w", encoding="utf-8") as writer:
+        dir_path = FecDataView.get_run_dir_path()
+        in_report_path = os.path.join(dir_path, self.IN_REPORT_NAME)
+        if not os.path.isfile(in_report_path):
+            with open(in_report_path, "w", encoding="utf-8") as writer:
                 writer.write(
                     "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
                     " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
@@ -498,7 +490,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         else:
             mbs = megabits / (float(time_took_ms) / 100000.0)
 
-        with open(self._in_report_path, "a", encoding="utf-8") as writer:
+        with open(in_report_path, "a", encoding="utf-8") as writer:
             writer.write(
                 f"{x}\t\t {y}\t\t {address_written_to}\t\t {data_size}\t\t"
                 f"\t\t {time_took_ms}\t\t\t {mbs}\t\t {missing_seq_nums}\n")
@@ -1159,7 +1151,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             The placement that we have been routing data out from
         """
         routers_used = self.__describe_fixed_route_from(placement)
-        with open(self._out_report_path, "a", encoding="utf-8") as writer:
+        dir_path = FecDataView.get_run_dir_path()
+        out_report_path = os.path.join(dir_path, self.OUT_REPORT_NAME)
+        with open(out_report_path, "a", encoding="utf-8") as writer:
             writer.write(
                 f"[{placement.x}:{placement.y}:{placement.p}] "
                 f"= {routers_used}\n")

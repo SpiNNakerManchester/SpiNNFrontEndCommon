@@ -22,6 +22,15 @@ from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement)
 
 
+def sample_speedup_vertex():
+    return DataSpeedUpPacketGatherMachineVertex(
+        x=-1, y=-1, ip_address="sample")
+
+
+def sample_monitor_vertex():
+    return ExtraMonitorSupportMachineVertex()
+
+
 def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
         Dict[Chip, DataSpeedUpPacketGatherMachineVertex],
         Dict[Chip, ExtraMonitorSupportMachineVertex]]:

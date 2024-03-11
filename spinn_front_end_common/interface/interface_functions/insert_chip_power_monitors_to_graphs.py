@@ -21,6 +21,20 @@ from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement)
 
 
+def sample_chip_power_monitor() -> ChipPowerMonitorMachineVertex:
+    """
+    Creates an unplaced sample of the Vertex's used.
+
+    This vertex should only be used for size estimates.
+
+    :rtype: ChipPowerMonitorMachineVertex
+    """
+    sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
+    return ChipPowerMonitorMachineVertex(
+        "Sample ChipPowerMonitorMachineVertex",
+        sampling_frequency=sampling_frequency)
+
+
 def insert_chip_power_monitors_to_graphs(
         placements: Placements) -> ChipPowerMonitorMachineVertex:
     """
@@ -35,8 +49,6 @@ def insert_chip_power_monitors_to_graphs(
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
-    vertex = ChipPowerMonitorMachineVertex(
-        "No Chips", sampling_frequency=sampling_frequency)
 
     for chip in progress.over(machine.chips):
         vertex = ChipPowerMonitorMachineVertex(
@@ -44,5 +56,3 @@ def insert_chip_power_monitors_to_graphs(
             sampling_frequency=sampling_frequency)
         p = pick_core_for_system_placement(placements, chip)
         placements.add_placement(Placement(vertex, chip.x, chip.y, p))
-    # return any one of the Vertices created
-    return vertex
