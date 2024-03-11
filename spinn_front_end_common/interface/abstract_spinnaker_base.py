@@ -107,10 +107,6 @@ from spinn_front_end_common.interface.interface_functions import (
     system_multicast_routing_generator,
     tags_loader, virtual_machine_generator, add_command_senders)
 from spinn_front_end_common.interface.interface_functions.\
-    insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
-from spinn_front_end_common.interface.interface_functions.\
-    insert_extra_monitor_vertices_to_graphs import sample_monitor_vertex
-from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.provenance import (
@@ -915,17 +911,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Stub to allow sPyNNaker to add delay supports.
         """
 
-    def _reserve_system_vertices(self):
-        """
-        Reserves the sizes for the system vertices
-        """
-        if get_config_bool("Reports", "write_energy_report"):
-            self._data_writer.add_monitor_all_chips(
-                sample_chip_power_monitor())
-        if (get_config_bool("Machine", "enable_advanced_monitor_support")
-                or get_config_bool("Machine", "enable_reinjection")):
-             self._data_writer.add_monitor_all_chips(sample_monitor_vertex())
-
     # Overridden by sPyNNaker to choose a different algorithm
     def _execute_splitter_partitioner(self) -> None:
         """
@@ -1407,7 +1392,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_splitter_reset()
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
-        self._reserve_system_vertices()
 
         self._execute_splitter_partitioner()
         allocator_data = self._execute_allocator(total_run_time)
