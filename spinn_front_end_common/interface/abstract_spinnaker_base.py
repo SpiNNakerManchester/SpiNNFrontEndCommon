@@ -932,8 +932,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            self._data_writer.add_monitor_all_chips(
-                insert_chip_power_monitors_to_graphs(system_placements))
+            insert_chip_power_monitors_to_graphs(system_placements)
 
     @final
     def _execute_insert_extra_monitor_vertices(
@@ -952,10 +951,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
-        # Pick one, the first one
-        for mon in monitor_map.values():
-            self._data_writer.add_monitor_all_chips(mon)
-            break
 
     def _report_partitioner(self) -> None:
         """
@@ -965,6 +960,24 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false("Reports", "write_partitioner_reports"):
                 return
             partitioner_report()
+
+    @property
+    def get_number_of_available_cores_on_machine(self) -> int:
+        """
+        The number of available cores on the machine after taking
+        into account preallocated resources.
+
+        :return: number of available cores
+        :rtype: int
+        """
+        machine = self._data_writer.get_machine()
+        # get cores of machine
+        cores = machine.total_available_user_cores
+        ethernets = len(machine.ethernet_connected_chips)
+        cores -= ((machine.n_chips - ethernets) *
+                  self._data_writer.get_all_monitor_cores())
+        cores -= ethernets * self._data_writer.get_ethernet_monitor_cores()
+        return cores
 
     def _execute_application_placer(self, system_placements: Placements):
         """
@@ -2452,30 +2465,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _do_stop_workflow(self) -> None:
         self._execute_application_finisher()
         self._do_extract_from_machine()
-
-    @property
-    def get_number_of_available_cores_on_machine(self) -> int:
-        """
-        The number of available cores on the machine after taking
-        into account preallocated resources.
-
-        :return: number of available cores
-        :rtype: int
-        """
-        machine = self._data_writer.get_machine()
-        # get cores of machine
-        cores = machine.total_available_user_cores
-        take_into_account_chip_power_monitor = get_config_bool(
-            "Reports", "write_energy_report")
-        if take_into_account_chip_power_monitor:
-            cores -= machine.n_chips
-        take_into_account_extra_monitor_cores = (
-            get_config_bool("Machine", "enable_advanced_monitor_support") or
-            get_config_bool("Machine", "enable_reinjection"))
-        if take_into_account_extra_monitor_cores:
-            cores -= machine.n_chips
-            cores -= len(machine.ethernet_connected_chips)
-        return cores
 
     def stop_run(self) -> None:
         """
