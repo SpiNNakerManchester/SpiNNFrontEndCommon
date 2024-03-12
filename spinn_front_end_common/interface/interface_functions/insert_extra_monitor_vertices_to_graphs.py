@@ -22,12 +22,18 @@ from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement)
 
 
-def sample_speedup_vertex():
+def sample_speedup_vertex() -> DataSpeedUpPacketGatherMachineVertex:
+    """
+    Vertex to be added to every Ethernet chip
+    """
     return DataSpeedUpPacketGatherMachineVertex(
         x=-1, y=-1, ip_address="sample")
 
 
-def sample_monitor_vertex():
+def sample_monitor_vertex() -> ExtraMonitorSupportMachineVertex:
+    """
+    Vertex to be added to every Chip
+    """
     return ExtraMonitorSupportMachineVertex()
 
 
