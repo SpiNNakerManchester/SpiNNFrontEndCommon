@@ -22,6 +22,11 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
     get_config_str, get_config_str_list, set_config)
+from spinn_front_end_common.interface.interface_functions.\
+    insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
+from spinn_front_end_common.interface.interface_functions.\
+    insert_extra_monitor_vertices_to_graphs import (
+        sample_monitor_vertex, sample_speedup_vertex)
 from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -69,6 +74,7 @@ class ConfigHandler(object):
         # set up machine targeted data
         self._debug_configs()
         self._previous_handler()
+        self._reserve_system_vertices()
 
     def _debug_configs(self) -> None:
         """
@@ -121,6 +127,20 @@ class ConfigHandler(object):
             f"cfg setting {option} is no longer supported! "
             "See https://spinnakermanchester.github.io/common_pages/"
             "Algorithms.html.")
+
+    def _reserve_system_vertices(self):
+        """
+        Reserves the sizes for the system vertices
+        """
+        if get_config_bool("Reports", "write_energy_report"):
+            self._data_writer.add_sample_monitor_vertex(
+                sample_chip_power_monitor(), True)
+        if (get_config_bool("Machine", "enable_advanced_monitor_support")
+                or get_config_bool("Machine", "enable_reinjection")):
+            self._data_writer.add_sample_monitor_vertex(
+                sample_monitor_vertex(), True)
+            self._data_writer.add_sample_monitor_vertex(
+                sample_speedup_vertex(), False)
 
     def _adjust_config(self, runtime: Optional[float]):
         """
