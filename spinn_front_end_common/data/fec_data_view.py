@@ -471,7 +471,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             If the hardware_time_step is currently unavailable
         """
         if cls.__fec_data._hardware_time_step_us is None:
-            raise cls._exception("ardware_time_step_us")
+            raise cls._exception("hardware_time_step_us")
         return cls.__fec_data._hardware_time_step_us
 
     # time scale factor
