@@ -35,14 +35,11 @@ def sample_chip_power_monitor() -> ChipPowerMonitorMachineVertex:
         sampling_frequency=sampling_frequency)
 
 
-def insert_chip_power_monitors_to_graphs(
-        placements: Placements) -> ChipPowerMonitorMachineVertex:
+def insert_chip_power_monitors_to_graphs(placements: Placements):
     """
     Adds chip power monitors into a given graph.
 
     :param ~pacman.model.placements.Placements placements:
-    :return: One of the Vertices added
-    :rtype: ChipPowerMonitorMachineVertex
     """
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     machine = FecDataView.get_machine()
