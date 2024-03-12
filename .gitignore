@@ -33,3 +33,4 @@ lastfailed
 .dbeaver/
 ._dbeaver/
 test_output
+/.mypy_cache/
