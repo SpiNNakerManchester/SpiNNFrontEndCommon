@@ -134,13 +134,13 @@ class ConfigHandler(object):
         """
         if get_config_bool("Reports", "write_energy_report"):
             self._data_writer.add_sample_monitor_vertex(
-                sample_chip_power_monitor())
+                sample_chip_power_monitor(), True)
         if (get_config_bool("Machine", "enable_advanced_monitor_support")
                 or get_config_bool("Machine", "enable_reinjection")):
             self._data_writer.add_sample_monitor_vertex(
                 sample_monitor_vertex(), True)
             self._data_writer.add_sample_monitor_vertex(
-                sample_speedup_vertex(), True)
+                sample_speedup_vertex(), False)
 
     def _adjust_config(self, runtime: Optional[float]):
         """
