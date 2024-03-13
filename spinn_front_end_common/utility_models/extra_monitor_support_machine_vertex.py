@@ -361,7 +361,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         assert self._app_id is not None
         route = self._app_id << _BIT_SHIFT_TO_MOVE_APP_ID
-        route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
+        route |= entry.spinnaker_route
         return route
 
     def _generate_provenance_area(self, spec: DataSpecificationGenerator):

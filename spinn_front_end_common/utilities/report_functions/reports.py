@@ -131,7 +131,6 @@ def _do_router_summary_report(
     :return: RouterSummary
     """
     time_date_string = time.strftime("%c")
-    convert = Router.convert_routing_table_entry_to_spinnaker_route
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             f.write("        Routing Summary Report\n")
@@ -155,7 +154,7 @@ def _do_router_summary_report(
                     for entry in table.multicast_routing_entries:
                         if not entry.processor_ids:
                             link_only += 1
-                        spinnaker_routes.add(convert(entry))
+                        spinnaker_routes.add(entry.spinnaker_route)
                     f.write(
                         f"Chip {x}:{y} has {entries} entries of which "
                         f"{defaultable} are defaultable and {link_only} link "
