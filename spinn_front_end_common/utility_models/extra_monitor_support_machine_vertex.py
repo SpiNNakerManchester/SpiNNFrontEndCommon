@@ -23,7 +23,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.config_holder import get_config_bool
 
-from spinn_machine import Chip, CoreSubsets, MulticastRoutingEntry, Router
+from spinn_machine import Chip, CoreSubsets, MulticastRoutingEntry
 
 from spinnman.model.enums import ExecutableType, UserRegister
 

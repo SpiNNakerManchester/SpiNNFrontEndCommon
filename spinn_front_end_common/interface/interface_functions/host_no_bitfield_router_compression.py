@@ -19,7 +19,7 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
-from spinn_machine import CoreSubsets, Router
+from spinn_machine import CoreSubsets
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState, ExecutableType, UserRegister
 from pacman.model.routing_tables import AbstractMulticastRoutingTable

@@ -21,7 +21,7 @@ from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 
-from spinn_machine import Chip, MulticastRoutingEntry, Router
+from spinn_machine import Chip, MulticastRoutingEntry
 
 from pacman.model.graphs.application import (
     ApplicationEdgePartition, ApplicationVertex)
