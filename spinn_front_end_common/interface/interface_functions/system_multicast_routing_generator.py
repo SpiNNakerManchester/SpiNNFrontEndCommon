@@ -190,15 +190,9 @@ class _SystemMulticastRoutingGenerator(object):
         if table is None:
             table = UnCompressedMulticastRoutingTable(chip.x, chip.y)
             self._routing_tables.add_routing_table(table)
-        if processor_id is None:
-            processor_ids = []
-        else:
-            processor_ids = [processor_id]
-        if link_ids is None:
-            link_ids = []
         entry = MulticastRoutingEntry(
             routing_entry_key=key, mask=ROUTING_MASK,
-            processor_ids=processor_ids, link_ids=link_ids, defaultable=False)
+            processor_ids=processor_id, link_ids=link_ids, defaultable=False)
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(
