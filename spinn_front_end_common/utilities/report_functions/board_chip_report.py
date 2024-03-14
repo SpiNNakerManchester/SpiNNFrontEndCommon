@@ -15,7 +15,8 @@
 import os
 from typing import List, TextIO, Tuple
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import Machine, Router
+from spinn_machine import Machine
+from spinn_machine.constants import MAX_LINKS_PER_ROUTER
 from spinn_front_end_common.data import FecDataView
 
 #: The name of the report that :py:func:`board_chip_report` writes.
@@ -70,7 +71,7 @@ def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
                     down_cores.append((l_x, l_y, core, e_chip.ip_address))
             else:
                 down_chips.append((l_x, l_y, e_chip.ip_address))
-            for link in range(Router.MAX_LINKS_PER_ROUTER):
+            for link in range(MAX_LINKS_PER_ROUTER):
                 if not machine.is_link_at(x, y, link):
                     down_links.append((l_x, l_y, link, e_chip.ip_address))
 
