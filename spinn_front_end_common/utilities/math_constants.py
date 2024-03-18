@@ -16,6 +16,7 @@
 random math constants
 """
 
+# pylint: disable=wrong-spelling-in-comment, invalid-name
 # Scaling factors for FP arithmetic, see Xin Jin et al. (2008)
 LOG_P1 = 8.0
 LOG_P2 = 16.0

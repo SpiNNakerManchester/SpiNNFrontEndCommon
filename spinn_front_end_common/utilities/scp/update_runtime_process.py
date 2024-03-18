@@ -53,7 +53,7 @@ class _UpdateRuntimeRequest(AbstractSCPRequest[CheckOKResponse]):
             data=struct.pack("<I", int(n_sync_steps)))
 
     @overrides(AbstractSCPRequest.get_scp_response)
-    def get_scp_response(self):
+    def get_scp_response(self) -> CheckOKResponse:
         return CheckOKResponse(
             "update runtime",
             SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE.value)

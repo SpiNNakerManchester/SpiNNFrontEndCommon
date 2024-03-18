@@ -70,7 +70,9 @@ jobs:
       uses: ./support/actions/pylint
       with:
         package: ${{ env.BASE_PKG }}
+        exitcheck: 31 # Action fails on any message
         language: en_GB
+        rcfile: global_strict
     - name: Lint with mypy
       run: mypy $BASE_PKG
 

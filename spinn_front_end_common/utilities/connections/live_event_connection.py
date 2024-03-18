@@ -72,7 +72,7 @@ _SCP_DEST_CPU_BYTE = 4
 # The expected flags from a RAW SCP packet in response
 _SCP_RESPONSE_FLAGS = 7
 
-# The expected destination cpu from a RAW SCP packet in repsonse
+# The expected destination cpu from a RAW SCP packet in response
 _SCP_RESPONSE_DEST = 0xFF
 
 
@@ -187,6 +187,11 @@ class LiveEventConnection(DatabaseConnection):
         self.__scp_response_received: Optional[bytes] = None
 
     def add_send_label(self, label: str):
+        """
+        Adds a send label.
+
+        :param str label:
+        """
         if self.__send_labels is None:
             self.__send_labels = list()
         if label not in self.__send_labels:
@@ -197,6 +202,11 @@ class LiveEventConnection(DatabaseConnection):
             self.__init_callbacks[label] = list()
 
     def add_receive_label(self, label: str):
+        """
+        Adds a receive label is possible.
+
+        :param str label:
+        """
         if self.__live_packet_gather_label is None:
             raise ConfigurationException(
                 "no live packet gather label given; "
@@ -262,7 +272,8 @@ class LiveEventConnection(DatabaseConnection):
             (live_event_callback, translate_key))
 
     def add_receive_no_time_callback(
-            self, label, live_event_callback, translate_key=True):
+            self, label: str, live_event_callback: _RcvCallback,
+            translate_key: bool = True):
         """
         Add a callback for the reception of live events from a vertex.
 
@@ -273,6 +284,8 @@ class LiveEventConnection(DatabaseConnection):
             an int atom ID or key, and an int payload which may be None
         :type live_event_callback: callable(str, int, int or None) -> None
         """
+        if self.__receive_labels is None:
+            raise ConfigurationException("no receive labels defined")
         label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
