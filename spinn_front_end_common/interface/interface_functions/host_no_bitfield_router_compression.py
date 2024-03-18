@@ -186,12 +186,10 @@ class Compression(object):
         # build core subsets
         core_subsets = CoreSubsets()
         for routing_table in self._routing_tables.routing_tables:
-            # get the first non-monitor core
-            processor = routing_table.chip.get_first_none_monitor_processor()
-
             # add to the core subsets
             core_subsets.add_processor(
-                routing_table.x, routing_table.y, processor.processor_id)
+                routing_table.x, routing_table.y,
+                routing_table.chip.placable_processors_ids[0])
 
         # build executable targets
         executable_targets = ExecutableTargets()
