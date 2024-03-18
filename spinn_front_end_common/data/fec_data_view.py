@@ -1233,6 +1233,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             The vertex to add
         :param str partition_id: The partition to get the IDs of
         """
+        if not isinstance(vertex, ApplicationVertex):
+            raise NotImplementedError(
+                "You only need to add ApplicationVertices")
         cls.__fec_data._live_output_vertices.add((vertex, partition_id))
 
     @classmethod

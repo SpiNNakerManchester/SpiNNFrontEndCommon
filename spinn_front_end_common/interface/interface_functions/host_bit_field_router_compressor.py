@@ -587,7 +587,7 @@ class HostBasedBitFieldRouterCompressor(object):
         compressor = _PairCompressor(ordered=True)
         compressed_entries = compressor.compress_table(router_table)
         chip = FecDataView.get_chip_at(router_table.x, router_table.y)
-        if len(compressed_entries) > chip.n_user_processors:
+        if len(compressed_entries) > chip.n_placable_processors:
             raise MinimisationFailedError(
                 f"Compression failed as {len(compressed_entries)} "
                 f"entries found")
