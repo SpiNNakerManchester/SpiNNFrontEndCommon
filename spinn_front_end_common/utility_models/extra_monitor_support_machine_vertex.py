@@ -23,7 +23,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.config_holder import get_config_bool
 
-from spinn_machine import Chip, CoreSubsets, MulticastRoutingEntry, Router
+from spinn_machine import Chip, CoreSubsets, MulticastRoutingEntry
 
 from spinnman.model.enums import ExecutableType, UserRegister
 
@@ -361,7 +361,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         assert self._app_id is not None
         route = self._app_id << _BIT_SHIFT_TO_MOVE_APP_ID
-        route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
+        route |= entry.spinnaker_route
         return route
 
     def _generate_provenance_area(self, spec: DataSpecificationGenerator):

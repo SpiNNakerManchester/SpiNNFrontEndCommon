@@ -19,7 +19,7 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
-from spinn_machine import CoreSubsets, Router
+from spinn_machine import CoreSubsets
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState, ExecutableType, UserRegister
 from pacman.model.routing_tables import AbstractMulticastRoutingTable
@@ -230,6 +230,6 @@ class Compression(object):
         for entry in table.multicast_routing_entries:
             data += _FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
-                Router.convert_routing_table_entry_to_spinnaker_route(entry),
+                entry.spinnaker_route,
                 get_defaultable_source_id(entry))
         return bytearray(data)
