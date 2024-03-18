@@ -1487,6 +1487,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     graph_binary_gatherer())
             except KeyError:
                 if get_config_bool("Machine", "virtual_board"):
+                    # Github actions have no binaries
                     logger.warning(
                         "Ignoring executable not found as using virtual")
                     timer.error("executable not found and virtual board")
