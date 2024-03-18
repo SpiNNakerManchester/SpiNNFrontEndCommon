@@ -97,7 +97,7 @@ class Compression(object):
         self._binary_path = binary_path
         self._compress_as_much_as_possible = get_config_bool(
             "Mapping", "router_table_compress_as_far_as_possible")
-        # Only used by mundy compressor we can not rebuild
+        # Only used by Mundy compressor we can not rebuild
         self._compress_only_when_needed = None
         self._routing_tables = FecDataView.get_precompressed()
         self._progresses_text = progress_text
@@ -186,13 +186,10 @@ class Compression(object):
         # build core subsets
         core_subsets = CoreSubsets()
         for routing_table in self._routing_tables.routing_tables:
-            # get the first non-monitor core
-            processor = routing_table.chip.get_first_none_monitor_processor()
-
             # add to the core subsets
-            if processor:
-                core_subsets.add_processor(
-                    routing_table.x, routing_table.y, processor.processor_id)
+            core_subsets.add_processor(
+                routing_table.x, routing_table.y,
+                routing_table.chip.placable_processors_ids[0])
 
         # build executable targets
         executable_targets = ExecutableTargets()
@@ -222,7 +219,7 @@ class Compression(object):
                 # Write the size of the table
                 table.number_of_entries)
         else:
-            # Mundy's compressor can not be changed so uses it own structure
+            # Mundy compressor can not be changed so uses it own structure
             data += _FOUR_WORDS.pack(
                 FecDataView.get_app_id(),
                 int(self._compress_only_when_needed),

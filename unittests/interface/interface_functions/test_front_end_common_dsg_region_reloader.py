@@ -14,6 +14,7 @@
 
 import unittest
 import numpy
+from typing import BinaryIO, Optional, Sequence, Tuple, Union
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 from spinnman.model.enums import ExecutableType
@@ -28,7 +29,8 @@ from spinn_front_end_common.interface.interface_functions import (
 from pacman.model.graphs.machine import (SimpleMachineVertex)
 from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 from spinnman.model import CPUInfo
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.interface.ds import (
+    DataSpecificationGenerator, DataSpecificationReloader, DsSqlliteDatabase)
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 # test specific stuff
@@ -61,15 +63,16 @@ class _TestMachineVertex(
         self._requires_regions_to_be_reloaded = True
 
     @overrides(AbstractRewritesDataSpecification.reload_required)
-    def reload_required(self):
+    def reload_required(self) -> bool:
         return self._requires_regions_to_be_reloaded
 
     @overrides(AbstractRewritesDataSpecification.set_reload_required)
-    def set_reload_required(self, new_value):
+    def set_reload_required(self, new_value: bool):
         self._requires_regions_to_be_reloaded = new_value
 
     @overrides(AbstractRewritesDataSpecification.regenerate_data_specification)
-    def regenerate_data_specification(self, spec, placement):
+    def regenerate_data_specification(
+            self, spec: DataSpecificationReloader, placement: Placement):
         global regenerate_call_count
         for region_id, size, data in reload_region_data[placement.p]:
             spec.reserve_memory_region(region_id, size)
@@ -79,15 +82,16 @@ class _TestMachineVertex(
         regenerate_call_count += 1
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
+    def get_binary_file_name(self) -> str:
         raise NotImplementedError()
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
+    def get_binary_start_type(self) -> ExecutableType:
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
+    def generate_data_specification(
+            self, spec: DataSpecificationGenerator, placement: Placement):
         raise NotImplementedError()
 
 
@@ -100,7 +104,7 @@ class _MockCPUInfo(object):
 
     @property
     @overrides(CPUInfo.user)
-    def user(self):
+    def user(self) -> Sequence[int]:
         return [self._user_0]
 
 
@@ -113,8 +117,11 @@ class _MockTransceiver(MockableTransceiver):
         self._regions_rewritten = list()
 
     @overrides(MockableTransceiver.write_memory)
-    def write_memory(self, x, y, base_address, data, *,
-                     n_bytes=None, offset=0, cpu=0, get_sum=False):
+    def write_memory(
+            self, x: int, y: int, base_address: int,
+            data: Union[BinaryIO, bytes, int, str], *,
+            n_bytes: Optional[int] = None, offset: int = 0, cpu: int = 0,
+            get_sum: bool = False) -> Tuple[int, int]:
         self._regions_rewritten.append((base_address, data))
 
 

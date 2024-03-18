@@ -13,20 +13,25 @@
 # limitations under the License.
 
 import logging
-import numpy
 import os
 import sqlite3
 from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
+
+import numpy
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XYP
+
 from spinnman.model.enums import ExecutableType
 from spinnman.spalloc.spalloc_job import SpallocJob
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_BYTE_SIZE)
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+
 if TYPE_CHECKING:
     from spinn_front_end_common.interface.interface_functions.\
         spalloc_allocator import SpallocJobController  # @UnusedImport
@@ -44,7 +49,7 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     A database for holding data specification details.
     """
-    __slots__ = ("_init_file")
+    __slots__ = ["_init_file"]
 
     def __init__(self, database_file:  Optional[str] = None):
         """
@@ -453,6 +458,15 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def set_region_pointer(
             self, x: int, y: int, p: int, region_num: int, pointer: int):
+        """
+        Sets the pointer to the start of the address for this x, y, p region.
+
+        :param int x:
+        :param int y:
+        :param int p:
+        :param int region_num:
+        :param int pointer:  start address
+        """
         self.execute(
             """
             UPDATE region

@@ -36,6 +36,9 @@ def add_command_senders(system_placements: Placements) -> List[CommandSender]:
 
 
 class CommandSenderAdder(object):
+    """
+    Code to add CommandSender vertices and their placements.
+    """
     __slots__ = (
         "__command_sender_for_chip",
         "__general_command_sender",

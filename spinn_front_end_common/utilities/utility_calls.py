@@ -209,5 +209,5 @@ def pick_core_for_system_placement(
     :return: a core that a system placement could be put on
     :rtype: int
     """
-    cores = [p.processor_id for p in chip.processors if not p.is_monitor]
+    cores = chip.placable_processors_ids
     return cores[system_placements.n_placements_on_chip(chip.x, chip.y)]

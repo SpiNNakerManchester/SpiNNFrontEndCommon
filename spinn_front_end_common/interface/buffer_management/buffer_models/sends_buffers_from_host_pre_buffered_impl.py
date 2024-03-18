@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Collection, Dict
+
 from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
-from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
+
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedSendingRegion
+from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
+
 # mypy: disable-error-code=empty-body
 
 

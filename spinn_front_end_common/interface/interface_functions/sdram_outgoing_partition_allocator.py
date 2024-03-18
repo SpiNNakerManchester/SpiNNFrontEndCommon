@@ -25,13 +25,16 @@ from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
 
 
 def sdram_outgoing_partition_allocator() -> None:
+    """
+    Goes through all vertices to see if sdram has to be allocated.
+    """
     virtual_usage: Optional[Dict[XY, int]]
     transceiver: Optional[Transceiver]
     if FecDataView.has_transceiver():
         transceiver = FecDataView.get_transceiver()
         virtual_usage = None
     else:
-        # Ok if transceiver = None
+        # OK if transceiver = None
         transceiver = None
         virtual_usage = defaultdict(int)
 
