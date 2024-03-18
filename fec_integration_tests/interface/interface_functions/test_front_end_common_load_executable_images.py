@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import BinaryIO, Iterable, Optional, Tuple, Union
 import unittest
 from collections import defaultdict
 from spinn_utilities.overrides import overrides
+from spinn_machine import CoreSubsets
 from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import ExecutableType
+from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
@@ -35,8 +37,9 @@ class _MockTransceiver(MockableTransceiver):
 
     @overrides(MockableTransceiver.execute_flood)
     def execute_flood(
-            self, core_subsets, executable, app_id, *,
-            n_bytes=None, wait=False, is_filename=False):  # @UnusedVariable
+            self, core_subsets: CoreSubsets,
+            executable: Union[BinaryIO, bytes, str], app_id: int, *,
+            n_bytes: Optional[int] = None, wait: bool = False):
         for core_subset in core_subsets.core_subsets:
             x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
@@ -46,7 +49,9 @@ class _MockTransceiver(MockableTransceiver):
         self._n_cores_in_app[app_id] += len(core_subsets)
 
     @overrides(MockableTransceiver.get_core_state_count)
-    def get_core_state_count(self, app_id, state, xys=None):  # @UnusedVariable
+    def get_core_state_count(
+            self, app_id: int, state: CPUState,
+            xys: Optional[Iterable[Tuple[int, int]]] = None) -> int:
         return self._n_cores_in_app[app_id]
 
 

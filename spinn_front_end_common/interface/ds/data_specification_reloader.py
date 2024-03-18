@@ -40,7 +40,8 @@ class DataSpecificationReloader(DataSpecificationBase):
                 "reference unexpected during reload")
 
     @overrides(DataSpecificationBase.reference_memory_region)
-    def reference_memory_region(self, region, ref, label=None):
+    def reference_memory_region(
+            self, region: int, ref: int, label: Optional[str] = None):
         raise NotImplementedError(
             "reference_memory_region unexpected during reload")
 

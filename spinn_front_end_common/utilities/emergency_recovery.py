@@ -13,13 +13,17 @@
 # limitations under the License.
 import logging
 from typing import List, Optional, Tuple
+
 from spinn_utilities.log import FormatAdapter
+
 from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
+
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from .iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.data import FecDataView
+from .iobuf_extractor import IOBufExtractor
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _bad_states = frozenset((CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG))
@@ -47,8 +51,7 @@ def _emergency_state_check() -> None:
         infos = CPUInfos()
         errors: List[Tuple[int, int, int]] = list()
         for chip in machine.chips:
-            for processor in chip.processors:
-                p = processor.processor_id
+            for p in chip.all_processor_ids:
                 try:
                     txrx.add_cpu_information_from_core(
                         infos, chip.x, chip.y, p, _bad_states)

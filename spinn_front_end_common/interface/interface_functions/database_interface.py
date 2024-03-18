@@ -19,7 +19,6 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.database import DatabaseWriter
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
@@ -82,13 +81,10 @@ def _write_to_db(w: DatabaseWriter, runtime: Optional[float]):
             machine_vertices.update(lpg_source_machine_vertices)
             live_vertices = FecDataView.iterate_live_output_vertices()
             for vertex, part_id in live_vertices:
-                if isinstance(vertex, ApplicationVertex):
-                    machine_vertices.update(
-                        (m_vertex, part_id)
-                        for m_vertex in vertex.splitter.get_out_going_vertices(
-                            part_id))
-                else:
-                    machine_vertices.add((vertex, part_id))
+                machine_vertices.update(
+                    (m_vertex, part_id)
+                    for m_vertex in vertex.splitter.get_out_going_vertices(
+                        part_id))
             w.create_atom_to_event_id_mapping(machine_vertices)
             w.create_device_atom_event_id_mapping(
                 FecDataView.iterate_live_output_devices())

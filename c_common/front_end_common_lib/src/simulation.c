@@ -66,10 +66,10 @@ static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 //! Whether the simulation uses the timer or not (default true)
 static bool uses_timer = true;
 
-//! The number of steps to run before synchronization
+//! The number of steps to run before synchronisation
 static uint32_t n_sync_steps;
 
-//! The number simulation timestep at the next synchronization
+//! The number simulation timestep at the next synchronisation
 static uint32_t next_sync_step;
 
 //! \brief Store basic provenance data

@@ -17,13 +17,18 @@ from enum import IntEnum
 from typing import (
     Callable, Dict, Iterable, List, Sequence, Set, Tuple, Type, TypeVar,
     TYPE_CHECKING)
+
 from spinn_utilities.overrides import overrides
+
 from spinnman.model.enums import ExecutableType
+
+from pacman.model.graphs.abstract_edge import AbstractEdge
 from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
 from pacman.model.placements import Placement
 from pacman.model.resources import AbstractSDRAM, ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
+
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
@@ -34,7 +39,6 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from pacman.model.graphs.abstract_edge import AbstractEdge
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 if TYPE_CHECKING:
     from .command_sender import CommandSender
@@ -62,7 +66,10 @@ class CommandSenderMachineVertex(
         "_vertex_to_key_map")
 
     # Regions for populations
-    class DATA_REGIONS(IntEnum):
+    class DataRegions(IntEnum):
+        """
+        The ids for each region of the data this Population used.
+        """
         SYSTEM_REGION = 0
         COMMANDS_WITH_ARBITRARY_TIMES = 1
         COMMANDS_AT_START_RESUME = 2
@@ -161,7 +168,7 @@ class CommandSenderMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self) -> int:
-        return self.DATA_REGIONS.PROVENANCE_REGION
+        return self.DataRegions.PROVENANCE_REGION
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
@@ -188,7 +195,7 @@ class CommandSenderMachineVertex(
         routing_infos = FecDataView.get_routing_infos()
         av = self.app_vertex
         assert av is not None
-        for mc_key in self._keys_to_partition_id.keys():
+        for mc_key in self._keys_to_partition_id:
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
                 av, self._keys_to_partition_id[mc_key])
             if allocated_mc_key != mc_key:
@@ -213,21 +220,21 @@ class CommandSenderMachineVertex(
 
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
-        spec.switch_write_focus(self.DATA_REGIONS.SYSTEM_REGION)
+        spec.switch_write_focus(self.DataRegions.SYSTEM_REGION)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name()))
 
         # write commands to spec for timed commands
         spec.switch_write_focus(
-            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES)
+            region=self.DataRegions.COMMANDS_WITH_ARBITRARY_TIMES)
         self._write_timed_commands(self._timed_commands, spec)
 
         # write commands fired off during a start or resume
-        spec.switch_write_focus(self.DATA_REGIONS.COMMANDS_AT_START_RESUME)
+        spec.switch_write_focus(self.DataRegions.COMMANDS_AT_START_RESUME)
         self._write_basic_commands(self._commands_at_start_resume, spec)
 
         # write commands fired off during a pause or end
-        spec.switch_write_focus(self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE)
+        spec.switch_write_focus(self.DataRegions.COMMANDS_AT_STOP_PAUSE)
         self._write_basic_commands(self._commands_at_pause_stop, spec)
 
         # End-of-Spec:
@@ -298,19 +305,19 @@ class CommandSenderMachineVertex(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self.DATA_REGIONS.SYSTEM_REGION,
+            region=self.DataRegions.SYSTEM_REGION,
             size=SIMULATION_N_BYTES, label='system')
 
         spec.reserve_memory_region(
-            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES,
+            region=self.DataRegions.COMMANDS_WITH_ARBITRARY_TIMES,
             size=time_command_size, label='commands with arbitrary times')
 
         spec.reserve_memory_region(
-            region=self.DATA_REGIONS.COMMANDS_AT_START_RESUME,
+            region=self.DataRegions.COMMANDS_AT_START_RESUME,
             size=start_command_size, label='commands with start resume times')
 
         spec.reserve_memory_region(
-            region=self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE,
+            region=self.DataRegions.COMMANDS_AT_STOP_PAUSE,
             size=end_command_size, label='commands with stop pause times')
 
         self.reserve_provenance_data_region(spec)

@@ -14,6 +14,7 @@
 
 from sqlite3 import IntegrityError
 import struct
+from typing import BinaryIO, Optional, Tuple, Union
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
@@ -50,20 +51,24 @@ class _MockTransceiver(Version5Transceiver):
         return self._regions_written
 
     @overrides(Version5Transceiver.malloc_sdram)
-    def malloc_sdram(self,  x, y, size, app_id, tag=None):
+    def malloc_sdram(
+            self, x: int, y: int, size: int, app_id: int, tag: int = 0) -> int:
         address = self._next_address
         self._next_address += size
         return address
 
     @overrides(Version5Transceiver.write_memory)
-    def write_memory(self, x, y, base_address, data, *,
-                     n_bytes=None, offset=0, cpu=0, get_sum=False):
+    def write_memory(
+            self, x: int, y: int, base_address: int,
+            data: Union[BinaryIO, bytes, int, str], *,
+            n_bytes: Optional[int] = None, offset: int = 0, cpu: int = 0,
+            get_sum: bool = False) -> Tuple[int, int]:
         if isinstance(data, int):
             data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
 
     @overrides(Version5Transceiver.close)
-    def close(self):
+    def close(self) -> None:
         pass
 
 
@@ -75,11 +80,11 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
         self._binary_start_type = binary_start_type
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
+    def get_binary_file_name(self) -> str:
         return self._binary_file_name
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
+    def get_binary_start_type(self) -> ExecutableType:
         return self._binary_start_type
 
 

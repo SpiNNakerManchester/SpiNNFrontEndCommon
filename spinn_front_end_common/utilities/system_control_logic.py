@@ -36,7 +36,7 @@ def run_system_application(
         timeout: Optional[float] = None):
     """
     Executes the given _system_ application.
-    Used for on-chip expanders, compressors, etc.
+    Used for on-chip expander, compressors, etc.
 
     :param ~spinnman.model.ExecutableTargets executable_cores:
         the cores to run the executable on.
