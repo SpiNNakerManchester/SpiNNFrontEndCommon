@@ -210,4 +210,4 @@ def pick_core_for_system_placement(
     :rtype: int
     """
     cores = chip.placable_processors_ids
-    return cores[system_placements.n_placements_on_chip(chip.x, chip.y)]
+    return cores[system_placements.n_placements_on_chip(chip)]

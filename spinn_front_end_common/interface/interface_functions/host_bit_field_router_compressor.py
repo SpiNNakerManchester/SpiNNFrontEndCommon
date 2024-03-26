@@ -267,7 +267,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # locate the bitfields in a chip level scope
         base_addresses: Dict[int, int] = dict()
         for placement in FecDataView.iterate_placements_by_xy_and_type(
-                chip_x, chip_y, AbstractSupportsBitFieldRoutingCompression):
+                (chip_x, chip_y), AbstractSupportsBitFieldRoutingCompression):
             vertex = cast(
                 AbstractSupportsBitFieldRoutingCompression, placement.vertex)
             base_addresses[placement.p] = vertex.bit_field_base_address(
