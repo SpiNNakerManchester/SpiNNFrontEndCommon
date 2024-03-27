@@ -61,9 +61,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.fixed_route_router import fixed_route_router
 from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import place_application_graph
-from pacman.operations.router_algorithms import (
-    basic_dijkstra_routing, ner_route, ner_route_traffic_aware,
-    route_application_graph)
+from pacman.operations.router_algorithms import route_application_graph
 from pacman.operations.router_compressors import (
     pair_compressor, range_compressor)
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
@@ -1076,47 +1074,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             write_json_placements()
 
     @final
-    def _execute_ner_route_traffic_aware(self) -> None:
-        """
-        Runs, times and logs the NerRouteTrafficAware.
-
-        Sets the "routing_table_by_partition" data if called
-
-        .. note::
-            Calling of this method is based on the configuration router value
-        """
-        with FecTimer("Ner route traffic aware", TimerWork.OTHER):
-            self._data_writer.set_routing_table_by_partition(
-                ner_route_traffic_aware())
-
-    @final
-    def _execute_ner_route(self) -> None:
-        """
-        Runs, times and logs the NerRoute.
-
-        Sets the "routing_table_by_partition" data
-
-        .. note::
-            Calling of this method is based on the configuration router value
-        """
-        with FecTimer("Ner route", TimerWork.OTHER):
-            self._data_writer.set_routing_table_by_partition(ner_route())
-
-    @final
-    def _execute_basic_dijkstra_routing(self) -> None:
-        """
-        Runs, times and logs the BasicDijkstraRouting.
-
-        Sets the "routing_table_by_partition" data if called
-
-        .. note::
-            Calling of this method is based on the configuration router value
-        """
-        with FecTimer("Basic dijkstra routing", TimerWork.OTHER):
-            self._data_writer.set_routing_table_by_partition(
-                basic_dijkstra_routing())
-
-    @final
     def _execute_application_router(self) -> None:
         """
         Runs, times and logs the ApplicationRouter.
@@ -1145,12 +1102,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if the configuration router value is unexpected
         """
         name = get_config_str("Mapping", "router")
-        if name == "BasicDijkstraRouting":
-            return self._execute_basic_dijkstra_routing()
-        if name == "NerRoute":
-            return self._execute_ner_route()
-        if name == "NerRouteTrafficAware":
-            return self._execute_ner_route_traffic_aware()
         if name == "ApplicationRouter":
             return self._execute_application_router()
         if "," in name:
