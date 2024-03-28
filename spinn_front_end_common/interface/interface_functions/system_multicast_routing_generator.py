@@ -200,7 +200,7 @@ class _SystemMulticastRoutingGenerator(object):
                 processor_ids=processor_ids, link_ids=link_ids,
                 defaultable=False)
         entry = MulticastRoutingEntry(
-            routing_entry_key=key, mask=ROUTING_MASK,
+            key=key, mask=ROUTING_MASK,
             routing_entry=routing_entry)
         table.add_multicast_routing_entry(entry)
 

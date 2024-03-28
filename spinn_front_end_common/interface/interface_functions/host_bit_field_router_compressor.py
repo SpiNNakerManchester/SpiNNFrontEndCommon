@@ -30,7 +30,6 @@ from pacman.model.routing_tables import (
     AbstractMulticastRoutingTable, MulticastRoutingTables,
     UnCompressedMulticastRoutingTable, CompressedMulticastRoutingTable)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
-from pacman.operations.router_compressors import RTEntry
 from pacman.operations.router_compressors.pair_compressor import (
     _PairCompressor)
 from spinn_front_end_common.abstract_models import (
@@ -249,7 +248,7 @@ class HostBasedBitFieldRouterCompressor(object):
         :param dict(Chip,dict(int,int)) most_costly_cores:
             Map of chip to processors to count of incoming on processor
         """
-        self._best_routing_entries: List[RTEntry] = []
+        self._best_routing_entries: List[MulticastRoutingEntry] = []
         self._best_midpoint = -1
         self._bit_fields_by_key: Dict[int, List[_BitFieldData]] = {}
         self._compression_attempts: Dict[int, str] = dict()
@@ -354,7 +353,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # go through the routing tables and convert when needed
         for original_entry in router_table.multicast_routing_entries:
-            base_key = original_entry.routing_entry_key
+            base_key = original_entry.key
             if base_key not in self._bit_fields_by_key:
                 continue
             n_neurons = self.__key_atom_map[base_key]
@@ -378,7 +377,7 @@ class HostBasedBitFieldRouterCompressor(object):
                         for processor_id in original_entry.processor_ids
                         if core_map[processor_id][neuron]))
                 new_table.add_multicast_routing_entry(MulticastRoutingEntry(
-                    routing_entry_key=base_key + neuron,
+                    key=base_key + neuron,
                     mask=self._NEURON_LEVEL_MASK, entry=routing_entry))
 
         # return the bitfield tables and the reduced original table
@@ -573,7 +572,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def _run_algorithm(
             self, router_table: AbstractMulticastRoutingTable
-            ) -> List[RTEntry]:
+            ) -> List[MulticastRoutingEntry]:
         """
         Attempts to covert the mega router tables into 1 router table.
 
