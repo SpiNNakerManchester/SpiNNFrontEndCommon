@@ -22,7 +22,7 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.ordered_set import OrderedSet
-from spinn_machine import MulticastRoutingEntry, Chip
+from spinn_machine import Chip, MulticastRoutingEntry, RoutingEntry
 from pacman.exceptions import (
     PacmanAlgorithmFailedToGenerateOutputsException,
     PacmanElementAllocationException, MinimisationFailedError)
@@ -372,13 +372,14 @@ class HostBasedBitFieldRouterCompressor(object):
             # Add an Entry for each neuron
             for neuron in range(n_neurons):
                 # build new entry for this neuron and add to table
-                new_table.add_multicast_routing_entry(MulticastRoutingEntry(
-                    routing_entry_key=base_key + neuron,
-                    mask=self._NEURON_LEVEL_MASK, link_ids=entry_links,
+                routing_entry = RoutingEntry(link_ids=entry_links,
                     defaultable=False, processor_ids=(
                         processor_id
                         for processor_id in original_entry.processor_ids
-                        if core_map[processor_id][neuron])))
+                        if core_map[processor_id][neuron]))
+                new_table.add_multicast_routing_entry(MulticastRoutingEntry(
+                    routing_entry_key=base_key + neuron,
+                    mask=self._NEURON_LEVEL_MASK, entry=routing_entry))
 
         # return the bitfield tables and the reduced original table
         return new_table

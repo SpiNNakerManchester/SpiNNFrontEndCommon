@@ -20,7 +20,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
 from spinn_utilities.progress_bar import ProgressBar
 
-from spinn_machine import MulticastRoutingEntry, Chip
+from spinn_machine import Chip, MulticastRoutingEntry, RoutingEntry
 
 from pacman.exceptions import (PacmanRoutingException)
 from pacman.model.routing_tables import (
@@ -196,9 +196,12 @@ class _SystemMulticastRoutingGenerator(object):
             processor_ids = [processor_id]
         if link_ids is None:
             link_ids = []
+            routing_entry = RoutingEntry(
+                processor_ids=processor_ids, link_ids=link_ids,
+                defaultable=False)
         entry = MulticastRoutingEntry(
             routing_entry_key=key, mask=ROUTING_MASK,
-            processor_ids=processor_ids, link_ids=link_ids, defaultable=False)
+            routing_entry=routing_entry)
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(
