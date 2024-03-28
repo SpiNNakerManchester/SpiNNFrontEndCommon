@@ -350,7 +350,7 @@ class ExtraMonitorSupportMachineVertex(
         assert table is not None
         spec.write_value(table.number_of_entries)
         for entry in table.multicast_routing_entries:
-            spec.write_value(entry.routing_entry_key)
+            spec.write_value(entry.key)
             spec.write_value(entry.mask)
             spec.write_value(self.__encode_route(entry))
 

@@ -790,6 +790,6 @@ def _locate_routing_entry(
     """
     if current_router is not None:
         for entry in current_router.multicast_routing_entries:
-            if entry.mask & key == entry.routing_entry_key:
+            if entry.mask & key == entry.key:
                 return entry
     return None
