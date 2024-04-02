@@ -379,7 +379,7 @@ class HostBasedBitFieldRouterCompressor(object):
                     defaultable=False, processor_ids=processor_ids)
                 new_table.add_multicast_routing_entry(MulticastRoutingEntry(
                     key=base_key + neuron,
-                    mask=self._NEURON_LEVEL_MASK, entry=routing_entry))
+                    mask=self._NEURON_LEVEL_MASK, routing_entry=routing_entry))
 
         # return the bitfield tables and the reduced original table
         return new_table
@@ -581,7 +581,7 @@ class HostBasedBitFieldRouterCompressor(object):
             the set of router tables that together need to
             be merged into 1 router table
         :return: compressor router table
-        :rtype: list(~.RoutingTableEntry)
+        :rtype: list(MulticastRoutingEntry)
         :throws MinimisationFailedError: if it fails to
             compress to the correct length.
         """
