@@ -108,7 +108,7 @@ class TestDataSpecification(unittest.TestCase):
 
     def test_bad_ethernet(self):
         router = Router([], 123)
-        bad = Chip(10, 10, 15, router, 100, 8, 8)
+        bad = Chip(10, 10, [0], range(1, 15), router, 100, 8, 8)
         FecDataView.get_machine().add_chip(bad)
         vertex = _TestVertexWithBinary(
             "bad", ExecutableType.SYSTEM)
