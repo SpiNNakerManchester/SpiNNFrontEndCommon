@@ -370,7 +370,7 @@ class HostBasedBitFieldRouterCompressor(object):
             # Add an Entry for each neuron
             for neuron in range(n_neurons):
                 # build new entry for this neuron and add to table
-                processor_ids = (
+                processor_ids: Tuple[int] = (
                     processor_id
                     for processor_id in original_entry.processor_ids
                     if core_map[processor_id][neuron])
