@@ -197,7 +197,7 @@ class _SystemMulticastRoutingGenerator(object):
         if link_ids is None:
             link_ids = []
         routing_entry = RoutingEntry(
-            processor_ids=processor_ids, link_ids=link_ids, defaultable=False)
+            processor_ids=processor_ids, link_ids=link_ids)
         entry = MulticastRoutingEntry(
             key=key, mask=ROUTING_MASK,
             routing_entry=routing_entry)
