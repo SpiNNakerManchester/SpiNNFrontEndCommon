@@ -375,8 +375,9 @@ class HostBasedBitFieldRouterCompressor(object):
                     processor_id
                     for processor_id in original_entry.processor_ids
                     if core_map[processor_id][neuron])
-                routing_entry = RoutingEntry(link_ids=entry_links,
-                    defaultable=False, processor_ids=processor_ids)
+                routing_entry = RoutingEntry(
+                    link_ids=entry_links, defaultable=False,
+                    processor_ids=processor_ids)
                 new_table.add_multicast_routing_entry(MulticastRoutingEntry(
                     key=base_key + neuron,
                     mask=self._NEURON_LEVEL_MASK, routing_entry=routing_entry))
