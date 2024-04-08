@@ -43,7 +43,9 @@ class TestInsertLPGs(unittest.TestCase):
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
         writer = FecDataWriter.mock()
-        writer.set_machine(virtual_machine(width=12, height=12))
+        version = writer.get_machine_version()
+        width, height = version.size_from_n_boards(3)
+        writer.set_machine(virtual_machine(width, height))
 
         default_params = {
             'use_prefix': False,

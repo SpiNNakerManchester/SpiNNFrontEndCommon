@@ -85,7 +85,10 @@ class TestDataSpecification(unittest.TestCase):
                 DataSpecificationGenerator(0, 1, 2, vertex2, db)
 
     def test_core_infos(self):
-        FecDataWriter.mock().set_machine(virtual_machine(16, 16))
+        writer = FecDataWriter.mock()
+        version = writer.get_machine_version()
+        width, height = version.size_from_n_boards(3)
+        writer.set_machine(virtual_machine(width, height))
         with DsSqlliteDatabase() as db:
             self.assertEqual([], db.get_core_infos(True))
             s1 = _TestVertexWithBinary("S1", ExecutableType.SYSTEM)
