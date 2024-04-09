@@ -17,7 +17,7 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 from spinn_machine import Chip, Router
-from spinn_machine.virtual_machine import virtual_machine
+from spinn_machine.virtual_machine import virtual_machine_by_min_size
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
@@ -86,9 +86,7 @@ class TestDataSpecification(unittest.TestCase):
 
     def test_core_infos(self):
         writer = FecDataWriter.mock()
-        version = writer.get_machine_version()
-        width, height = version.size_from_n_boards(3)
-        writer.set_machine(virtual_machine(width, height))
+        writer.set_machine(virtual_machine_by_min_size(9, 9))
         with DsSqlliteDatabase() as db:
             self.assertEqual([], db.get_core_infos(True))
             s1 = _TestVertexWithBinary("S1", ExecutableType.SYSTEM)

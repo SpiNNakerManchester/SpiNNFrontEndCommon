@@ -14,7 +14,7 @@
 
 import unittest
 from spinn_utilities.config_holder import set_config
-from spinn_machine import virtual_machine
+from spinn_machine import virtual_machine_by_boards
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placements
@@ -42,10 +42,7 @@ class TestInsertLPGs(unittest.TestCase):
         set_config("Machine", "version", 5)
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
-        writer = FecDataWriter.mock()
-        version = writer.get_machine_version()
-        width, height = version.size_from_n_boards(3)
-        writer.set_machine(virtual_machine(width, height))
+        FecDataWriter.mock().set_machine(virtual_machine_by_boards(3))
 
         default_params = {
             'use_prefix': False,
