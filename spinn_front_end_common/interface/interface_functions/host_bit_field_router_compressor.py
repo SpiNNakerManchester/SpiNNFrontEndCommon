@@ -580,7 +580,7 @@ class HostBasedBitFieldRouterCompressor(object):
             the set of router tables that together need to
             be merged into 1 router table
         :return: compressor router table
-        :rtype: list(~.RoutingTableEntry)
+        :rtype: list(RTEntry)
         :throws MinimisationFailedError: if it fails to
             compress to the correct length.
         """
