@@ -14,7 +14,7 @@
 
 import unittest
 from spinn_utilities.config_holder import set_config
-from spinn_machine import virtual_machine_by_boards
+from spinn_machine.virtual_machine import virtual_machine_by_boards
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placements
