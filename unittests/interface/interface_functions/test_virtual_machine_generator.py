@@ -23,7 +23,6 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 class TestVirtualMachineGenerator(unittest.TestCase):
 
-
     def setUp(self):
         unittest_setup()
 
