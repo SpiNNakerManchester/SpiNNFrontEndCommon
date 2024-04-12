@@ -46,7 +46,7 @@ class TestVirtualMachineGenerator(unittest.TestCase):
         set_config("Machine", "version", 5)
         set_config("Machine", "virtual_board", "True")
         # Called by sim.setup
-        FecDataWriter.mock().set_n_chips_in_graph(None, 100)
+        FecDataWriter.mock().set_n_chips_in_graph(100)
         machine = virtual_machine_generator()
         self.assertEqual(3, len(machine.ethernet_connected_chips))
 
