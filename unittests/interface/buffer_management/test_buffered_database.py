@@ -15,7 +15,7 @@
 import unittest
 import os
 from spinn_utilities.config_holder import set_config
-from spinn_machine.version import ANY_VERSION, BIG_MACHINE
+from spinn_machine.version.version_strings import VersionStrings
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placement, Placements
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
@@ -30,7 +30,7 @@ class TestBufferedDatabase(unittest.TestCase):
         unittest_setup()
 
     def test_use_database(self):
-        set_config("Machine", "version", ANY_VERSION)
+        set_config("Machine", "versions", VersionStrings.ANY.value)
         f = BufferDatabase.default_database_file()
         self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
@@ -52,7 +52,7 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertTrue(os.path.isfile(f), "DB still exists")
 
     def test_placements(self):
-        set_config("Machine", "version", BIG_MACHINE)
+        set_config("Machine", "versions", VersionStrings.BIG.value)
         writer = FecDataWriter.mock()
         info = Placements([])
         p1 = Placement(SimpleMachineVertex(None, label="V1"), 1, 2, 3)

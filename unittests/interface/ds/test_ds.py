@@ -17,8 +17,7 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 from spinn_machine import Chip, Router
-from spinn_machine.version import (
-    ANY_VERSION, FOUR_PLUS_CHIPS, MULTIPLE_BOARDS)
+from spinn_machine.version.version_strings import VersionStrings
 from spinn_machine.virtual_machine import virtual_machine_by_min_size
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
@@ -54,10 +53,9 @@ class TestDataSpecification(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
-        set_config("Machine", "version", 201)
 
     def test_init(self):
-        set_config("Machine", "version", FOUR_PLUS_CHIPS)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.value)
         vertex1 = _TestVertexWithBinary(
             "off_board__system", ExecutableType.SYSTEM)
         with DsSqlliteDatabase() as db:
@@ -65,14 +63,14 @@ class TestDataSpecification(unittest.TestCase):
             DataSpecificationReloader(0, 1, 2, db)
 
     def test_none_ds_vertex(self):
-        set_config("Machine", "version", FOUR_PLUS_CHIPS)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.value)
         vertex = SimpleMachineVertex(0)
         with DsSqlliteDatabase() as db:
             with self.assertRaises(AttributeError):
                 DataSpecificationGenerator(0, 1, 2, vertex, db)
 
     def test_bad_x_y_ds_vertex(self):
-        set_config("Machine", "version", ANY_VERSION)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.value)
         vertex = _TestVertexWithBinary(
             "off_board__system", ExecutableType.SYSTEM)
         width, height = FecDataView.get_machine_version().board_shape
@@ -82,7 +80,7 @@ class TestDataSpecification(unittest.TestCase):
                 DataSpecificationGenerator(width, height, 2, vertex, db)
 
     def test_repeat_x_y_ds_vertex(self):
-        set_config("Machine", "version", FOUR_PLUS_CHIPS)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.value)
         vertex1 = _TestVertexWithBinary(
             "v1", ExecutableType.SYSTEM)
         vertex2 = _TestVertexWithBinary(
@@ -93,7 +91,7 @@ class TestDataSpecification(unittest.TestCase):
                 DataSpecificationGenerator(0, 1, 2, vertex2, db)
 
     def test_core_infos(self):
-        set_config("Machine", "version", MULTIPLE_BOARDS)
+        set_config("Machine", "versions", VersionStrings.MULTIPLE_BOARDS.value)
         writer = FecDataWriter.mock()
         writer.set_machine(virtual_machine_by_min_size(9, 9))
         with DsSqlliteDatabase() as db:
@@ -117,7 +115,7 @@ class TestDataSpecification(unittest.TestCase):
             self.assertEqual(app_infos, db.get_core_infos(False))
 
     def test_bad_ethernet(self):
-        set_config("Machine", "version", ANY_VERSION)
+        set_config("Machine", "versions", VersionStrings.ANY.value)
         router = Router([], 123)
         width, height = FecDataView.get_machine_version().board_shape
         bad = Chip(width, height, 15, router, 100, 8, 8)
@@ -129,7 +127,7 @@ class TestDataSpecification(unittest.TestCase):
                 DataSpecificationGenerator(width, height, 2, vertex, db)
 
     def test_reserve_memory_region(self):
-        set_config("Machine", "version", FOUR_PLUS_CHIPS)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.value)
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.SYSTEM)
         with DsSqlliteDatabase() as db:
@@ -171,11 +169,11 @@ class TestDataSpecification(unittest.TestCase):
             self.assertEqual(0, db.get_total_regions_size(0, 1, 3))
 
     def test_switch_write_focus(self):
-        set_config("Machine", "version", FOUR_PLUS_CHIPS)
+        set_config("Machine", "versions", VersionStrings.ANY.value)
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.SYSTEM)
         with DsSqlliteDatabase() as db:
-            dsg = DataSpecificationGenerator(0, 1, 2, vertex, db)
+            dsg = DataSpecificationGenerator(0, 0, 2, vertex, db)
             dsg.reserve_memory_region(10, 123456, "test_region")
             dsg.switch_write_focus(10)
             # check internal fields used later are correct
@@ -185,7 +183,7 @@ class TestDataSpecification(unittest.TestCase):
                 dsg.switch_write_focus(8)
 
     def test_pointers(self):
-        set_config("Machine", "version", FOUR_PLUS_CHIPS)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.value)
         # You can use a reference before defining it
         vertex = _TestVertexWithBinary(
             "binary1", ExecutableType.SYSTEM)
@@ -251,7 +249,7 @@ class TestDataSpecification(unittest.TestCase):
                 db.get_region_pointer(1, 2, 3, 9)
 
     def test_write(self):
-        set_config("Machine", "version", FOUR_PLUS_CHIPS)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.value)
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.SYSTEM)
 
@@ -304,7 +302,7 @@ class TestDataSpecification(unittest.TestCase):
                     0, 1, 4, 5, bytearray(b'\x0c\x00\x00\x00'), "test")
 
     def test_ds_cores(self):
-        set_config("Machine", "version", FOUR_PLUS_CHIPS)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.value)
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.SYSTEM)
         with DsSqlliteDatabase() as db:
@@ -322,7 +320,7 @@ class TestDataSpecification(unittest.TestCase):
         self.assertIn((1, 0, 3), cores)
 
     def test_memory_to_write(self):
-        set_config("Machine", "version", FOUR_PLUS_CHIPS)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.value)
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.SYSTEM)
         with DsSqlliteDatabase() as db:

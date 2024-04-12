@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from spinn_utilities.config_holder import set_config
-from spinn_machine.version import ANY_VERSION
+from spinn_machine.version.version_strings import VersionStrings
 from spinn_machine.tags.iptag import IPTag
 from pacman.model.graphs.application import ApplicationVertex, ApplicationEdge
 from pacman.model.graphs.machine import SimpleMachineVertex
@@ -116,7 +116,7 @@ def _place_vertices(app_vertexes, placements):
 
 def test_database_interface():
     unittest_setup()
-    set_config("Machine", "version", ANY_VERSION)
+    set_config("Machine", "versions", VersionStrings.ANY.value)
     set_config("Database", "create_database", "True")
     set_config("Database", "create_routing_info_to_neuron_id_mapping", "True")
 

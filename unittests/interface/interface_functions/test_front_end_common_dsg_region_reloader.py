@@ -17,7 +17,7 @@ import numpy
 from typing import BinaryIO, Optional, Sequence, Tuple, Union
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
-from spinn_machine.version import ANY_VERSION
+from spinn_machine.version.version_strings import VersionStrings
 from spinnman.model.enums import ExecutableType
 from pacman.model.placements import Placements, Placement
 from spinn_front_end_common.abstract_models import (
@@ -130,7 +130,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
-        set_config("Machine", "version", ANY_VERSION)
+        set_config("Machine", "versions", VersionStrings.ANY.value)
 
     def test_with_good_sizes(self):
         """ Test that an application vertex's data is rewritten correctly
