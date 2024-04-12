@@ -629,7 +629,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return cls.__fec_data._n_chips_required
         if cls.__fec_data._n_chips_in_graph:
             return cls.__fec_data._n_chips_in_graph
-        raise cls._exception("n_chips_requiredr")
+        raise cls._exception("n_chips_required")
 
     @classmethod
     def has_n_chips_needed(cls) -> bool:
