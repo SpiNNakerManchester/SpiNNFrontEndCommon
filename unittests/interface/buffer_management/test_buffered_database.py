@@ -30,7 +30,7 @@ class TestBufferedDatabase(unittest.TestCase):
         unittest_setup()
 
     def test_use_database(self):
-        set_config("Machine", "versions", VersionStrings.ANY.value)
+        set_config("Machine", "versions", VersionStrings.ANY.text)
         f = BufferDatabase.default_database_file()
         self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
@@ -52,7 +52,7 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertTrue(os.path.isfile(f), "DB still exists")
 
     def test_placements(self):
-        set_config("Machine", "versions", VersionStrings.BIG.value)
+        set_config("Machine", "versions", VersionStrings.BIG.text)
         writer = FecDataWriter.mock()
         info = Placements([])
         p1 = Placement(SimpleMachineVertex(None, label="V1"), 1, 2, 3)
