@@ -16,7 +16,10 @@ import logging
 from spinn_utilities.config_holder import (
     get_config_int, get_config_str_or_none, is_config_none)
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import json_machine, virtual_machine, Machine
+from spinn_machine import json_machine, Machine
+from spinn_machine.virtual_machine import (
+    virtual_machine, virtual_machine_by_chips)
+from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -28,15 +31,20 @@ def virtual_machine_generator() -> Machine:
     :rtype: ~spinn_machine.Machine
     :raises Exception: If given bad arguments
     """
-    height = get_config_int("Machine", "height")
-    width = get_config_int("Machine", "width")
 
     json_path = get_config_str_or_none("Machine", "json_path")
     if json_path is None:
-        assert width is not None and height is not None
-        machine = virtual_machine(width=width, height=height, validate=True)
+        if is_config_none("Machine", "width") and \
+                is_config_none("Machine", "height"):
+            n_chips = FecDataView.get_n_chips_needed()
+            machine = virtual_machine_by_chips((n_chips))
+        else:
+            height = get_config_int("Machine", "height")
+            width = get_config_int("Machine", "width")
+            machine = virtual_machine(width=width, height=height, validate=True)
     else:
-        if (height is not None or width is not None or
+        if (not is_config_none("Machine", "width") or
+                not is_config_none("Machine", "height") or
                 not is_config_none("Machine", "down_chips") or
                 not is_config_none("Machine", "down_cores") or
                 not is_config_none("Machine", "down_links")):
