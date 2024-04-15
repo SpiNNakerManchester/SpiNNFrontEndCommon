@@ -43,9 +43,9 @@ class TestWriteJson(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        set_config("Machine", "down_chips", None)
-        set_config("Machine", "down_cores", None)
-        set_config("Machine", "down_links", None)
+        set_config("Machine", "down_chips", "None")
+        set_config("Machine", "down_cores", "None")
+        set_config("Machine", "down_links", "None")
 
     def _chips_differ(self, chip1, chip2):
         if (chip1 == chip2):
