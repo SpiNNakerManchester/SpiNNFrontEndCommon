@@ -23,7 +23,7 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
-from spinn_machine import Chip, FixedRouteEntry, CoreSubsets
+from spinn_machine import Chip, CoreSubsets, RoutingEntry
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
@@ -432,11 +432,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._ipaddress = ip_address
 
     def set_fixed_routes(
-            self, fixed_routes: Dict[Tuple[int, int], FixedRouteEntry]):
+            self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]):
         """
         :param fixed_routes:
         :type fixed_routes:
-            dict((int, int), ~spinn_machine.FixedRouteEntry)
+            dict((int, int), ~spinn_machine.RoutingEntry)
         """
         if not isinstance(fixed_routes, dict):
             raise TypeError("fixed_routes must be a dict")
