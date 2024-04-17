@@ -229,7 +229,7 @@ class Compression(object):
 
         for entry in table.multicast_routing_entries:
             data += _FOUR_WORDS.pack(
-                entry.routing_entry_key, entry.mask,
+                entry.key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
                 get_defaultable_source_id(entry))
         return bytearray(data)
