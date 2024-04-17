@@ -21,7 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
 
-from spinn_machine import Chip, CoreSubsets, FixedRouteEntry
+from spinn_machine import Chip, CoreSubsets, RoutingEntry
 from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
@@ -165,7 +165,7 @@ class _FecDataModel(object):
         self._ds_database_path: Optional[str] = None
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
-        self._fixed_routes: Optional[Dict[XY, FixedRouteEntry]] = None
+        self._fixed_routes: Optional[Dict[XY, RoutingEntry]] = None
         self._gatherer_map: \
             Optional[Dict[Chip, DataSpeedUpPacketGatherMachineVertex]] = None
         self._ipaddress: Optional[str] = None
@@ -674,11 +674,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # fixed_routes
     @classmethod
-    def get_fixed_routes(cls) -> Dict[XY, FixedRouteEntry]:
+    def get_fixed_routes(cls) -> Dict[XY, RoutingEntry]:
         """
         Gets the fixed routes if they have been created.
 
-        :rtype: dict((int, int), ~spinn_machine.FixedRouteEntry)
+        :rtype: dict((int, int), ~spinn_machine.RoutingEntry)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the fixed_routes is currently unavailable
         """
