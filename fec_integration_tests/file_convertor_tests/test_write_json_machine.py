@@ -19,7 +19,6 @@ import sys
 import unittest
 from spinn_utilities.config_holder import set_config
 from spalloc_client.job import JobDestroyedError
-from spinn_utilities.ping import Ping
 from spinnman.exceptions import (
     SpinnmanIOException, SpinnmanGenericProcessException)
 from spinnman.transceiver import create_transceiver_from_hostname
@@ -140,8 +139,6 @@ class TestWriteJson(unittest.TestCase):
         trans.close()
 
     def testSpin2(self):
-        if not Ping.host_is_reachable(self.spalloc):
-            raise unittest.SkipTest(self.spalloc + " appears to be down")
         set_config(
             "Machine", "spalloc_user", "Integration testing OK to kill")
         set_config("Machine", "spalloc_server", self.spalloc)
@@ -154,9 +151,15 @@ class TestWriteJson(unittest.TestCase):
                 spalloc_allocator()
         except (JobDestroyedError, ConnectionRefusedError):
             self.skipTest("Skipping as getting Job failed")
+        try:
+            trans = create_transceiver_from_hostname(hostname)
+        except (SpinnmanIOException):
+            self.skipTest("Skipping as create_transceiver failed")
 
-        trans = create_transceiver_from_hostname(hostname)
-        writer.set_machine(trans.get_machine_details())
+        try:
+            writer.set_machine(trans.get_machine_details())
+        except (SpinnmanGenericProcessException):
+            self.skipTest("Skipping as getting machine_details failed")
 
         m_allocation_controller.close()
 
