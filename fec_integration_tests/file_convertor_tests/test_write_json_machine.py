@@ -109,8 +109,6 @@ class TestWriteJson(unittest.TestCase):
                 os.remove(json_file)
 
     def testSpin4(self):
-        #if not Ping.host_is_reachable(self.spin4Host):
-        #    raise unittest.SkipTest(self.spin4Host + " appears to be down")
         try:
             trans = create_transceiver_from_hostname(self.spin4Host)
         except (SpinnmanIOException):
