@@ -15,10 +15,10 @@ var searchData=
   ['watchdog_5fstatus_5ft_12',['watchdog_status_t',['../spinn__extra_8h.html#structwatchdog__status__t',1,'']]],
   ['wfi_2eh_13',['wfi.h',['../wfi_8h.html',1,'']]],
   ['whole_5fvalue_14',['whole_value',['../spinn__extra_8h.html#a68c63d6dde47eb233b8ebe0a543264e4',1,'watchdog_lock_t']]],
-  ['width_15',['width',['../spinn__extra_8h.html#a35bb194cc117ecd1b93505eb4a4c4707',1,'dma_description_t::width()'],['../spinn__extra_8h.html#a9c182990ee4b8139bdebee255528e887',1,'sdram_status_t::width()']]],
+  ['width_15',['width',['../spinn__extra_8h.html#a35bb194cc117ecd1b93505eb4a4c4707',1,'dma_description_t::width'],['../spinn__extra_8h.html#a9c182990ee4b8139bdebee255528e887',1,'sdram_status_t::width']]],
   ['with_5fpayload_5fbuffer_16',['with_payload_buffer',['../live__packet__gather_8c.html#abadd6fad1a586f95ded2bde05611c848',1,'live_packet_gather.c']]],
   ['without_5fpayload_5fbuffer_17',['without_payload_buffer',['../live__packet__gather_8c.html#a5672e37e363e98e6053064ec9532cb7d',1,'live_packet_gather.c']]],
-  ['word_18',['word',['../spinn__extra_8h.html#ae6f49933af04518d7c9099a416e0f5f3',1,'sdram_dll_user_config1_t::word()'],['../spinn__extra_8h.html#abd44bd7b57cf4adf241fa26709d1ff24',1,'router_packet_header_t::word()']]],
+  ['word_18',['word',['../spinn__extra_8h.html#ae6f49933af04518d7c9099a416e0f5f3',1,'sdram_dll_user_config1_t::word'],['../spinn__extra_8h.html#abd44bd7b57cf4adf241fa26709d1ff24',1,'router_packet_header_t::word']]],
   ['word_5fcount_19',['word_count',['https://spinnakermanchester.github.io/spinnaker_tools/scamp-nn_8c.html#a165a654f9ee80e4914812059eb3fb0b6',1,'nn_desc_t']]],
   ['word_5flen_20',['word_len',['https://spinnakermanchester.github.io/spinnaker_tools/scamp-nn_8c.html#a9ad07d17db5e08f888b85b1ea5d2abdd',1,'nn_desc_t']]],
   ['word_5fto_5fbyte_5fmultiplier_21',['WORD_TO_BYTE_MULTIPLIER',['../constants_8h.html#aa7c305fcc94cd72f61ca2798848f031f',1,'constants.h']]],
@@ -33,5 +33,6 @@ var searchData=
   ['write_5fprovenance_30',['write_provenance',['../command__sender__multicast__source_8c.html#a80c27c90dd9a215a33ddabf05ee06d04',1,'command_sender_multicast_source.c']]],
   ['write_5fshort_31',['write_short',['../live__packet__gather_8c.html#ac3f1477bdad4aa157138f3e59addd756',1,'live_packet_gather.c']]],
   ['write_5fword_32',['write_word',['../live__packet__gather_8c.html#ae60986adea3f6ccef173be3cc274b75e',1,'live_packet_gather.c']]],
-  ['writeback_5ferrors_33',['writeBack_errors',['https://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#a689818b3513defad5446ffbab1357872',1,'diagnostics_t']]]
+  ['writeback_5ferrors_33',['writeBack_errors',['https://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#a689818b3513defad5446ffbab1357872',1,'diagnostics_t']]],
+  ['writing_20c_20code_20for_20spinnaker_34',['Tips for writing C code for spinnaker',['../md_README.html',1,'']]]
 ];

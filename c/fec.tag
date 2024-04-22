@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile doxygen_version="1.9.5">
+<tagfile doxygen_version="1.9.8">
   <compound kind="file">
     <name>buffered_eieio_defs.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>buffered__eieio__defs_8h.html</filename>
     <member kind="define">
       <type>#define</type>
@@ -101,7 +101,7 @@
   </compound>
   <compound kind="file">
     <name>common-typedefs.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>common-typedefs_8h.html</filename>
     <member kind="define">
       <type>#define</type>
@@ -148,9 +148,9 @@
   </compound>
   <compound kind="file">
     <name>data_specification.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>data__specification_8h.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="yes" imported="no">common-typedefs.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="yes" import="no" module="no" objc="no">common-typedefs.h</includes>
     <class kind="struct">region_desc_t</class>
     <class kind="struct">data_specification_metadata_t</class>
     <member kind="function">
@@ -177,7 +177,7 @@
   </compound>
   <compound kind="file">
     <name>debug.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>debug_8h.html</filename>
     <member kind="define">
       <type>#define</type>
@@ -259,9 +259,9 @@
   </compound>
   <compound kind="file">
     <name>eieio.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>eieio_8h.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" import="no" module="no" objc="no">common-typedefs.h</includes>
     <class kind="union">eieio_header_bitfields</class>
     <class kind="struct">eieio_header_bitfields.__unnamed1__</class>
     <class kind="struct">eieio_header_bitfields.__unnamed3__</class>
@@ -416,7 +416,7 @@
   </compound>
   <compound kind="file">
     <name>filter_info.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>filter__info_8h.html</filename>
     <class kind="struct">filter_info_t</class>
     <class kind="struct">filter_region_t</class>
@@ -445,17 +445,17 @@
   </compound>
   <compound kind="file">
     <name>key_atom_map.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>key__atom__map_8h.html</filename>
     <class kind="struct">key_atom_pair_t</class>
     <class kind="struct">key_atom_data_t</class>
   </compound>
   <compound kind="file">
     <name>malloc_extras.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>malloc__extras_8h.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" import="no" module="no" objc="no">common-typedefs.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
     <member kind="define">
       <type>#define</type>
       <name>MALLOC</name>
@@ -573,7 +573,7 @@
   </compound>
   <compound kind="file">
     <name>profiler.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>profiler_8h.html</filename>
     <class kind="struct">profiler_region</class>
     <class kind="struct">profiler_state</class>
@@ -636,10 +636,10 @@
   </compound>
   <compound kind="file">
     <name>recording.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>recording_8h.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
-    <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" imported="no">buffered_eieio_defs.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" import="no" module="no" objc="no">common-typedefs.h</includes>
+    <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" import="no" module="no" objc="no">buffered_eieio_defs.h</includes>
     <member kind="typedef">
       <type>uint8_t</type>
       <name>channel_index_t</name>
@@ -678,7 +678,7 @@
   </compound>
   <compound kind="file">
     <name>sdp_no_scp.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>sdp__no__scp_8h.html</filename>
     <class kind="struct">sdp_msg_pure_data</class>
     <member kind="enumvalue">
@@ -696,9 +696,9 @@
   </compound>
   <compound kind="file">
     <name>simulation.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>simulation_8h.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="yes" imported="no">common-typedefs.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="yes" import="no" module="no" objc="no">common-typedefs.h</includes>
     <class kind="struct">simulation_config</class>
     <class kind="struct">simulation_provenance</class>
     <member kind="define">
@@ -889,7 +889,7 @@
   </compound>
   <compound kind="file">
     <name>spinn_extra.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>spinn__extra_8h.html</filename>
     <class kind="union">vic_mask_t</class>
     <class kind="struct">vic_mask_t::interrupt_bits</class>
@@ -1611,9 +1611,9 @@
   </compound>
   <compound kind="file">
     <name>tdma_processing.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>tdma__processing_8h.html</filename>
-    <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" imported="no">spinn_extra.h</includes>
+    <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" import="no" module="no" objc="no">spinn_extra.h</includes>
     <class kind="struct">tdma_parameters</class>
     <member kind="function" static="yes">
       <type>static uint32_t</type>
@@ -1688,7 +1688,7 @@
   </compound>
   <compound kind="file">
     <name>wfi.h</name>
-    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
+    <path>front_end_common_lib/include/</path>
     <filename>wfi_8h.html</filename>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -1700,10 +1700,10 @@
   </compound>
   <compound kind="file">
     <name>data_specification.c</name>
-    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
+    <path>front_end_common_lib/src/</path>
     <filename>data__specification_8c.html</filename>
-    <includes id="data__specification_8h" name="data_specification.h" local="yes" imported="no">data_specification.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <includes id="data__specification_8h" name="data_specification.h" local="yes" import="no" module="no" objc="no">data_specification.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
     <member kind="enumvalue">
       <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
       <anchorfile>data__specification_8c.html</anchorfile>
@@ -1752,10 +1752,10 @@
   </compound>
   <compound kind="file">
     <name>profiler.c</name>
-    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
+    <path>front_end_common_lib/src/</path>
     <filename>profiler_8c.html</filename>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="profiler_8h" name="profiler.h" local="no" imported="no">profiler.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="profiler_8h" name="profiler.h" local="no" import="no" module="no" objc="no">profiler.h</includes>
     <member kind="function">
       <type>void</type>
       <name>profiler_init</name>
@@ -1780,13 +1780,13 @@
   </compound>
   <compound kind="file">
     <name>recording.c</name>
-    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
+    <path>front_end_common_lib/src/</path>
     <filename>recording_8c.html</filename>
-    <includes id="recording_8h" name="recording.h" local="no" imported="no">recording.h</includes>
-    <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
-    <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" imported="no">buffered_eieio_defs.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
+    <includes id="recording_8h" name="recording.h" local="no" import="no" module="no" objc="no">recording.h</includes>
+    <includes id="simulation_8h" name="simulation.h" local="no" import="no" module="no" objc="no">simulation.h</includes>
+    <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" import="no" module="no" objc="no">buffered_eieio_defs.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="wfi_8h" name="wfi.h" local="no" import="no" module="no" objc="no">wfi.h</includes>
     <class kind="struct">recording_channel_t</class>
     <class kind="struct">recording_region_t</class>
     <class kind="struct">recording_regions_t</class>
@@ -1863,11 +1863,11 @@
   </compound>
   <compound kind="file">
     <name>simulation.c</name>
-    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
+    <path>front_end_common_lib/src/</path>
     <filename>simulation_8c.html</filename>
-    <includes id="simulation_8h" name="simulation.h" local="yes" imported="no">simulation.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
+    <includes id="simulation_8h" name="simulation.h" local="yes" import="no" module="no" objc="no">simulation.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="wfi_8h" name="wfi.h" local="no" import="no" module="no" objc="no">wfi.h</includes>
     <member kind="function">
       <type>uint</type>
       <name>resume_wait</name>
@@ -2144,10 +2144,10 @@
   </compound>
   <compound kind="file">
     <name>tdma_processing.c</name>
-    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
+    <path>front_end_common_lib/src/</path>
     <filename>tdma__processing_8c.html</filename>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="tdma__processing_8h" name="tdma_processing.h" local="no" imported="no">tdma_processing.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="tdma__processing_8h" name="tdma_processing.h" local="no" import="no" module="no" objc="no">tdma_processing.h</includes>
     <member kind="function">
       <type>bool</type>
       <name>tdma_processing_initialise</name>
@@ -2193,13 +2193,13 @@
   </compound>
   <compound kind="file">
     <name>chip_power_monitor.c</name>
-    <path>/github/workspace/c_common/models/chip_power_monitor/src/</path>
+    <path>models/chip_power_monitor/src/</path>
     <filename>chip__power__monitor_8c.html</filename>
-    <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" imported="no">spinn_extra.h</includes>
-    <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
-    <includes id="recording_8h" name="recording.h" local="no" imported="no">recording.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
+    <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" import="no" module="no" objc="no">spinn_extra.h</includes>
+    <includes id="simulation_8h" name="simulation.h" local="no" import="no" module="no" objc="no">simulation.h</includes>
+    <includes id="recording_8h" name="recording.h" local="no" import="no" module="no" objc="no">recording.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="data__specification_8h" name="data_specification.h" local="no" import="no" module="no" objc="no">data_specification.h</includes>
     <class kind="struct">sample_params</class>
     <member kind="define">
       <type>#define</type>
@@ -2394,12 +2394,12 @@
   </compound>
   <compound kind="file">
     <name>command_sender_multicast_source.c</name>
-    <path>/github/workspace/c_common/models/command_sender_multicast_source/src/</path>
+    <path>models/command_sender_multicast_source/src/</path>
     <filename>command__sender__multicast__source_8c.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
-    <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" import="no" module="no" objc="no">common-typedefs.h</includes>
+    <includes id="data__specification_8h" name="data_specification.h" local="no" import="no" module="no" objc="no">data_specification.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="simulation_8h" name="simulation.h" local="no" import="no" module="no" objc="no">simulation.h</includes>
     <class kind="struct">command</class>
     <class kind="struct">timed_command</class>
     <class kind="struct">command_list</class>
@@ -2624,7 +2624,7 @@
   </compound>
   <compound kind="file">
     <name>constants.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/common/</path>
+    <path>models/compressors/src/common/</path>
     <filename>constants_8h.html</filename>
     <member kind="define">
       <type>#define</type>
@@ -2706,7 +2706,7 @@
   </compound>
   <compound kind="file">
     <name>minimise.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/common/</path>
+    <path>models/compressors/src/common/</path>
     <filename>minimise_8h.html</filename>
     <member kind="function">
       <type>bool</type>
@@ -2725,7 +2725,7 @@
   </compound>
   <compound kind="file">
     <name>routing_table.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/common/</path>
+    <path>models/compressors/src/common/</path>
     <filename>routing__table_8h.html</filename>
     <class kind="struct">key_mask_t</class>
     <class kind="struct">entry_t</class>
@@ -2817,12 +2817,12 @@
   </compound>
   <compound kind="file">
     <name>compressor.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/compressor_includes/</path>
+    <path>models/compressors/src/compressor_includes/</path>
     <filename>compressor_8h.html</filename>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="ordered__covering_8h" name="ordered_covering.h" local="yes" imported="no">ordered_covering_includes/ordered_covering.h</includes>
-    <includes id="remove__default__routes_8h" name="remove_default_routes.h" local="yes" imported="no">remove_default_routes.h</includes>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="ordered__covering_8h" name="ordered_covering.h" local="yes" import="no" module="no" objc="no">ordered_covering_includes/ordered_covering.h</includes>
+    <includes id="remove__default__routes_8h" name="remove_default_routes.h" local="yes" import="no" module="no" objc="no">remove_default_routes.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">../common/routing_table.h</includes>
     <member kind="function">
       <type>bool</type>
       <name>run_compressor</name>
@@ -2833,11 +2833,11 @@
   </compound>
   <compound kind="file">
     <name>pair_minimize.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/compressor_includes/</path>
+    <path>models/compressors/src/compressor_includes/</path>
     <filename>pair__minimize_8h.html</filename>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
-    <includes id="minimise_8h" name="minimise.h" local="yes" imported="no">common/minimise.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">../common/routing_table.h</includes>
+    <includes id="minimise_8h" name="minimise.h" local="yes" import="no" module="no" objc="no">common/minimise.h</includes>
     <member kind="define">
       <type>#define</type>
       <name>MAX_NUM_ROUTES</name>
@@ -2946,10 +2946,10 @@
   </compound>
   <compound kind="file">
     <name>remove_default_routes.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/compressor_includes/</path>
+    <path>models/compressors/src/compressor_includes/</path>
     <filename>remove__default__routes_8h.html</filename>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">../common/routing_table.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
     <member kind="define">
       <type>#define</type>
       <name>LINK_MASK</name>
@@ -2967,11 +2967,11 @@
   </compound>
   <compound kind="file">
     <name>aliases.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/ordered_covering_includes/</path>
+    <path>models/compressors/src/ordered_covering_includes/</path>
     <filename>aliases_8h.html</filename>
-    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" import="no" module="no" objc="no">malloc_extras.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">../common/routing_table.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
     <class kind="struct">alias_element_t</class>
     <class kind="struct">alias_list_t</class>
     <class kind="union">a_key_t</class>
@@ -3057,11 +3057,11 @@
   </compound>
   <compound kind="file">
     <name>bit_set.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/ordered_covering_includes/</path>
+    <path>models/compressors/src/ordered_covering_includes/</path>
     <filename>bit__set_8h.html</filename>
-    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
-    <includes id="constants_8h" name="constants.h" local="yes" imported="no">../common/constants.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" import="no" module="no" objc="no">malloc_extras.h</includes>
+    <includes id="constants_8h" name="constants.h" local="yes" import="no" module="no" objc="no">../common/constants.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
     <class kind="struct">bit_set_t</class>
     <member kind="function">
       <type>bool</type>
@@ -3136,10 +3136,10 @@
   </compound>
   <compound kind="file">
     <name>merge.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/ordered_covering_includes/</path>
+    <path>models/compressors/src/ordered_covering_includes/</path>
     <filename>merge_8h.html</filename>
-    <includes id="bit__set_8h" name="bit_set.h" local="yes" imported="no">bit_set.h</includes>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
+    <includes id="bit__set_8h" name="bit_set.h" local="yes" import="no" module="no" objc="no">bit_set.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">../common/routing_table.h</includes>
     <class kind="struct">merge_t</class>
     <member kind="define">
       <type>#define</type>
@@ -3221,14 +3221,14 @@
   </compound>
   <compound kind="file">
     <name>ordered_covering.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/ordered_covering_includes/</path>
+    <path>models/compressors/src/ordered_covering_includes/</path>
     <filename>ordered__covering_8h.html</filename>
-    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="aliases_8h" name="aliases.h" local="yes" imported="no">aliases.h</includes>
-    <includes id="bit__set_8h" name="bit_set.h" local="yes" imported="no">bit_set.h</includes>
-    <includes id="merge_8h" name="merge.h" local="yes" imported="no">merge.h</includes>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
+    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" import="no" module="no" objc="no">malloc_extras.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="aliases_8h" name="aliases.h" local="yes" import="no" module="no" objc="no">aliases.h</includes>
+    <includes id="bit__set_8h" name="bit_set.h" local="yes" import="no" module="no" objc="no">bit_set.h</includes>
+    <includes id="merge_8h" name="merge.h" local="yes" import="no" module="no" objc="no">merge.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">../common/routing_table.h</includes>
     <member kind="function" static="yes">
       <type>static unsigned int</type>
       <name>oc_get_insertion_point</name>
@@ -3274,11 +3274,11 @@
   </compound>
   <compound kind="file">
     <name>rt_single.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/simple/</path>
+    <path>models/compressors/src/simple/</path>
     <filename>rt__single_8h.html</filename>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" import="no" module="no" objc="no">malloc_extras.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">../common/routing_table.h</includes>
     <class kind="struct">header_t</class>
     <member kind="define">
       <type>#define</type>
@@ -3381,12 +3381,12 @@
   </compound>
   <compound kind="file">
     <name>simple_compressor.c</name>
-    <path>/github/workspace/c_common/models/compressors/src/simple/</path>
+    <path>models/compressors/src/simple/</path>
     <filename>simple__compressor_8c.html</filename>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
-    <includes id="compressor_8h" name="compressor.h" local="yes" imported="no">compressor_includes/compressor.h</includes>
-    <includes id="rt__single_8h" name="rt_single.h" local="yes" imported="no">rt_single.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" import="no" module="no" objc="no">malloc_extras.h</includes>
+    <includes id="compressor_8h" name="compressor.h" local="yes" import="no" module="no" objc="no">compressor_includes/compressor.h</includes>
+    <includes id="rt__single_8h" name="rt_single.h" local="yes" import="no" module="no" objc="no">rt_single.h</includes>
     <member kind="function">
       <type>void</type>
       <name>compress_start</name>
@@ -3411,10 +3411,10 @@
   </compound>
   <compound kind="file">
     <name>unordered_remove_default_routes.h</name>
-    <path>/github/workspace/c_common/models/compressors/src/simple/</path>
+    <path>models/compressors/src/simple/</path>
     <filename>unordered__remove__default__routes_8h.html</filename>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">routing_table.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">routing_table.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
     <member kind="define">
       <type>#define</type>
       <name>LINK_MASK</name>
@@ -3432,13 +3432,13 @@
   </compound>
   <compound kind="file">
     <name>live_packet_gather.c</name>
-    <path>/github/workspace/c_common/models/live_packet_gather/src/</path>
+    <path>models/live_packet_gather/src/</path>
     <filename>live__packet__gather_8c.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
-    <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
-    <includes id="eieio_8h" name="eieio.h" local="no" imported="no">eieio.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" import="no" module="no" objc="no">common-typedefs.h</includes>
+    <includes id="data__specification_8h" name="data_specification.h" local="no" import="no" module="no" objc="no">data_specification.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="simulation_8h" name="simulation.h" local="no" import="no" module="no" objc="no">simulation.h</includes>
+    <includes id="eieio_8h" name="eieio.h" local="no" import="no" module="no" objc="no">eieio.h</includes>
     <class kind="struct">lpg_provenance_data_t</class>
     <class kind="struct">key_translation_entry</class>
     <class kind="struct">lpg_config</class>
@@ -3762,16 +3762,16 @@
   </compound>
   <compound kind="file">
     <name>reverse_iptag_multicast_source.c</name>
-    <path>/github/workspace/c_common/models/reverse_iptag_multicast_source/src/</path>
+    <path>models/reverse_iptag_multicast_source/src/</path>
     <filename>reverse__iptag__multicast__source_8c.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
-    <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
-    <includes id="eieio_8h" name="eieio.h" local="no" imported="no">eieio.h</includes>
-    <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" imported="no">buffered_eieio_defs.h</includes>
-    <includes id="recording_8h" name="recording.h" local="yes" imported="no">recording.h</includes>
-    <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" import="no" module="no" objc="no">common-typedefs.h</includes>
+    <includes id="data__specification_8h" name="data_specification.h" local="no" import="no" module="no" objc="no">data_specification.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
+    <includes id="simulation_8h" name="simulation.h" local="no" import="no" module="no" objc="no">simulation.h</includes>
+    <includes id="eieio_8h" name="eieio.h" local="no" import="no" module="no" objc="no">eieio.h</includes>
+    <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" import="no" module="no" objc="no">buffered_eieio_defs.h</includes>
+    <includes id="recording_8h" name="recording.h" local="yes" import="no" module="no" objc="no">recording.h</includes>
+    <includes id="wfi_8h" name="wfi.h" local="no" import="no" module="no" objc="no">wfi.h</includes>
     <class kind="struct">config</class>
     <class kind="struct">ripmcs_provenance_t</class>
     <class kind="struct">recorded_packet_t</class>
@@ -4297,10 +4297,10 @@
   </compound>
   <compound kind="file">
     <name>common.h</name>
-    <path>/github/workspace/c_common/models/system_models/src/</path>
+    <path>models/system_models/src/</path>
     <filename>common_8h.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
-    <includes id="sdp__no__scp_8h" name="sdp_no_scp.h" local="no" imported="no">sdp_no_scp.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" import="no" module="no" objc="no">common-typedefs.h</includes>
+    <includes id="sdp__no__scp_8h" name="sdp_no_scp.h" local="no" import="no" module="no" objc="no">sdp_no_scp.h</includes>
     <member kind="define">
       <type>#define</type>
       <name>SDP_REPLY_HEADER_LEN</name>
@@ -4427,13 +4427,13 @@
   </compound>
   <compound kind="file">
     <name>data_speed_up_packet_gatherer.c</name>
-    <path>/github/workspace/c_common/models/system_models/src/</path>
+    <path>models/system_models/src/</path>
     <filename>data__speed__up__packet__gatherer_8c.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
-    <includes id="common_8h" name="common.h" local="yes" imported="no">common.h</includes>
-    <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
-    <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
-    <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" import="no" module="no" objc="no">common-typedefs.h</includes>
+    <includes id="common_8h" name="common.h" local="yes" import="no" module="no" objc="no">common.h</includes>
+    <includes id="data__specification_8h" name="data_specification.h" local="no" import="no" module="no" objc="no">data_specification.h</includes>
+    <includes id="simulation_8h" name="simulation.h" local="no" import="no" module="no" objc="no">simulation.h</includes>
+    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
     <class kind="struct">receive_data_to_location_msg_t</class>
     <class kind="struct">receive_seq_data_msg_t</class>
     <class kind="struct">sdp_msg_out_payload_t</class>
@@ -4993,13 +4993,13 @@
   </compound>
   <compound kind="file">
     <name>extra_monitor_support.c</name>
-    <path>/github/workspace/c_common/models/system_models/src/</path>
+    <path>models/system_models/src/</path>
     <filename>extra__monitor__support_8c.html</filename>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
-    <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" imported="no">spinn_extra.h</includes>
-    <includes id="common_8h" name="common.h" local="yes" imported="no">common.h</includes>
-    <includes id="data__specification_8h" name="data_specification.h" local="yes" imported="no">data_specification.h</includes>
-    <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" import="no" module="no" objc="no">common-typedefs.h</includes>
+    <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" import="no" module="no" objc="no">spinn_extra.h</includes>
+    <includes id="common_8h" name="common.h" local="yes" import="no" module="no" objc="no">common.h</includes>
+    <includes id="data__specification_8h" name="data_specification.h" local="yes" import="no" module="no" objc="no">data_specification.h</includes>
+    <includes id="wfi_8h" name="wfi.h" local="no" import="no" module="no" objc="no">wfi.h</includes>
     <class kind="struct">dumped_packet_t</class>
     <class kind="struct">sdp_data_out_t</class>
     <class kind="struct">router_entry_t</class>
@@ -5283,18 +5283,6 @@
       <anchor>a6ec726dd66cc535a8c294d17c2b49259</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
-      <name>REINJECTION_PORT</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a6ec726dd66cc535a8c294d17c2b49259a77a1e708bd0b0d34c85f975dc22dcc15</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPEED_UP_IN_PORT</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a6ec726dd66cc535a8c294d17c2b49259a7e00386fbc2123b9ace81f5ad95c9da2</anchor>
-      <arglist></arglist>
-    </member>
     <member kind="enumeration">
       <type></type>
       <name>data_spec_regions</name>
@@ -5356,24 +5344,6 @@
       <name>callback_priorities</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
       <anchor>a65b19dabf5283c1ea37df964ca25e964</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>command__sender__multicast__source_8c.html</anchorfile>
-      <anchor>a65b19dabf5283c1ea37df964ca25e964ad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>command__sender__multicast__source_8c.html</anchorfile>
-      <anchor>a65b19dabf5283c1ea37df964ca25e964a6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>command__sender__multicast__source_8c.html</anchorfile>
-      <anchor>a65b19dabf5283c1ea37df964ca25e964a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
       <arglist></arglist>
     </member>
     <member kind="function">
