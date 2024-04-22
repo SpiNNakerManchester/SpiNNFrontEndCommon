@@ -21,6 +21,7 @@ from spinn_utilities.data.data_status import DataStatus
 from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
+from spinn_machine.version.version_strings import VersionStrings
 from spinnman.messages.scp.enums.signal import Signal
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.model import ExecutableTargets
@@ -495,7 +496,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_gatherer_map(self):
         writer = FecDataWriter.mock()
-        set_config("Machine", "version", 5)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_gatherer_by_xy(0, 0)
         with self.assertRaises(DataNotYetAvialable):
@@ -544,7 +545,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_monitor_map(self):
         writer = FecDataWriter.mock()
-        set_config("Machine", "version", 5)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
         self.assertFalse(FecDataView.has_monitors())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_monitor_by_xy(0, 0)

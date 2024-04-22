@@ -18,6 +18,7 @@ from typing import BinaryIO, Optional, Tuple, Union
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
+from spinn_machine.version.version_strings import VersionStrings
 from spinnman.transceiver.version5transceiver import Version5Transceiver
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
@@ -93,9 +94,9 @@ class TestLoadDataSpecification(unittest.TestCase):
     def setUp(self):
         unittest_setup()
         set_config("Machine", "enable_advanced_monitor_support", "False")
-        set_config("Machine", "version", 5)
 
     def test_call(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
@@ -162,6 +163,7 @@ class TestLoadDataSpecification(unittest.TestCase):
                              header_and_table_size + 16)
 
     def test_multi_spec_with_references(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
@@ -235,6 +237,7 @@ class TestLoadDataSpecification(unittest.TestCase):
         self.assertEqual(header_data[2][2 * 3], header_data[1][2 * 3])
 
     def test_multispec_with_reference_error(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
@@ -262,6 +265,7 @@ class TestLoadDataSpecification(unittest.TestCase):
             load_application_data_specs()
 
     def test_multispec_with_double_reference(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
@@ -275,6 +279,7 @@ class TestLoadDataSpecification(unittest.TestCase):
                 spec.reserve_memory_region(1, 12, reference=1)
 
     def test_multispec_with_wrong_chip_reference(self):
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
