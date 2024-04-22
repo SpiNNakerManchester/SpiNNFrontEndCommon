@@ -389,7 +389,7 @@ def _write_one_chip_application_placement(f: TextIO, chip: Chip):
     """
     written_header = False
     total_sdram = None
-    for placement in FecDataView.iterate_placements_on_core(chip.x, chip.y):
+    for placement in FecDataView.iterate_placements_on_core(chip):
         if not written_header:
             f.write(f"**** Chip: ({chip.x}, {chip.y})\n")
             f.write(f"Application cores: {chip.n_processors}\n")
@@ -790,6 +790,6 @@ def _locate_routing_entry(
     """
     if current_router is not None:
         for entry in current_router.multicast_routing_entries:
-            if entry.mask & key == entry.routing_entry_key:
+            if entry.mask & key == entry.key:
                 return entry
     return None
