@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from spinn_utilities.config_holder import set_config
+from spinn_machine.version.version_strings import VersionStrings
 from spinn_machine.tags.iptag import IPTag
 from pacman.model.graphs.application import ApplicationVertex, ApplicationEdge
 from pacman.model.graphs.machine import SimpleMachineVertex
@@ -23,6 +24,7 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.tags.tags import Tags
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.graphs.common.slice import Slice
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     database_interface)
@@ -90,21 +92,31 @@ def _add_rinfo(
             partition_id, m_vertex, i))
 
 
-def _place_vertices(app_vertex, placements, chips):
-    chip_iter = iter(chips)
-    x, y = next(chip_iter)
-    to_go = 14
-    for m_vertex in app_vertex.machine_vertices:
-        if to_go == 0:
-            x, y = next(chip_iter)
-            to_go = 14
-        placements.add_placement(Placement(m_vertex, x, y, 16 - to_go))
-        to_go -= 1
+def _place_vertices(app_vertexes, placements):
+    machine = FecDataView.get_machine()
+    chips = machine.chips
+    chip = next(chips)
+    x, y = chip
+    placable_processors_ids = chip.placable_processors_ids
+    i = 0
+    for app_vertex in app_vertexes:
+        for m_vertex in app_vertex.machine_vertices:
+            while placements.is_processor_occupied(
+                    x, y, placable_processors_ids[i]):
+                i += 1
+                if i >= len(placable_processors_ids):
+                    chip = next(chips)
+                    x, y = chip
+                    placable_processors_ids = chip.placable_processors_ids
+                    i = 0
+            placements.add_placement(
+                Placement(m_vertex, x, y, placable_processors_ids[i]))
+    return placements
 
 
 def test_database_interface():
     unittest_setup()
-    set_config("Machine", "version", 5)
+    set_config("Machine", "versions", VersionStrings.ANY.text)
     set_config("Database", "create_database", "True")
     set_config("Database", "create_routing_info_to_neuron_id_mapping", "True")
 
@@ -125,8 +137,8 @@ def test_database_interface():
     writer.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
 
     lpg_vertex.splitter.create_sys_vertices(placements)
-    _place_vertices(app_vertex_1, placements, [(0, 0)])
-    _place_vertices(app_vertex_2, placements, [(0, 1), (1, 1)])
+
+    _place_vertices([app_vertex_1, app_vertex_2], placements)
 
     writer.set_placements(placements)
     lpg_vertex.splitter.get_source_specific_in_coming_vertices(
