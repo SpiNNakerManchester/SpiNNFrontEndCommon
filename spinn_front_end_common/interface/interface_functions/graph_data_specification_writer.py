@@ -175,6 +175,7 @@ class _GraphDataSpecificationWriter(object):
 
         # creating the error message which contains the memory usage of
         # what each core within the chip uses and its original estimate.
+        # pylint: disable=consider-using-f-string
         memory_usage = "\n".join(
             "    {}: {} (total={}, estimated={})".format(
                 vert, region_size, total_est_size,

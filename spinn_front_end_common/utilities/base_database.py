@@ -68,6 +68,11 @@ class BaseDatabase(SQLiteDB):
 
     @classmethod
     def default_database_file(cls) -> str:
+        """
+        The path to the stand place the data.sqlite3 file will be stored
+
+        :rtype: str
+        """
         return os.path.join(FecDataView.get_run_dir_path(),
                             f"data{FecDataView.get_reset_str()}.sqlite3")
 

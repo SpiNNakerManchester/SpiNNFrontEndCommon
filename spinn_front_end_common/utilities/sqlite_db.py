@@ -44,7 +44,7 @@ class SQLiteDB(object):
     for how to do parameter binding.
 
     .. note::
-        If you plan to use the WAL journaling mode for the DB, you are
+        If you plan to use the WAL journal mode for the DB, you are
         *recommended* to set this up in the DDL file via::
 
             PRAGMA journal_mode=WAL;

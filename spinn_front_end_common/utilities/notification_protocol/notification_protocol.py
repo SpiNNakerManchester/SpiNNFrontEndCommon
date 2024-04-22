@@ -16,7 +16,8 @@ import logging
 from typing import List, Optional
 from concurrent.futures import Future
 from concurrent.futures import ThreadPoolExecutor, wait
-from spinn_utilities.config_holder import get_config_bool, get_config_int
+from spinn_utilities.config_holder import (
+    get_config_bool, get_config_int_or_none)
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
@@ -54,7 +55,7 @@ class NotificationProtocol(object):
         # has been read before starting the simulation
         self.__wait_for_read_confirmation = get_config_bool(
             "Database", "wait_on_confirmation")
-        self.__wait_for_read_timeout = get_config_int(
+        self.__wait_for_read_timeout = get_config_int_or_none(
             "Database", "wait_on_confirmation_timeout")
         self.__wait_pool: Optional[ThreadPoolExecutor] = \
             ThreadPoolExecutor(max_workers=1)
@@ -150,7 +151,6 @@ class NotificationProtocol(object):
         database has been written. Message also includes the path to the
         database
         """
-        # noinspection PyBroadException
         try:
             self.__do_read_notify(FecDataView.get_database_file_path())
         except Exception:  # pylint: disable=broad-except
@@ -166,7 +166,6 @@ class NotificationProtocol(object):
             "** Notifying external sources that the database is ready for "
             "reading **")
 
-        # noinspection PyBroadException
         for c in self.__database_message_connections:
             try:
                 c.send_eieio_message(message)

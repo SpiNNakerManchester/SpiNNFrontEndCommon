@@ -11,35 +11,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from contextlib import AbstractContextManager, ExitStack
 import logging
 import math
 from typing import ContextManager, Dict, Tuple, Optional, Union, cast
+
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_str_or_none, get_config_str_list)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
 from spinn_utilities.config_holder import get_config_int, get_config_str
+
 from spalloc_client import Job  # type: ignore[import]
 from spalloc_client.states import JobState  # type: ignore[import]
+
+from spinnman.connections.udp_packet_connections import (
+    SCAMPConnection, EIEIOConnection)
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
     is_server_address, SpallocClient, SpallocJob, SpallocState)
+from spinnman.transceiver import Transceiver
+
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
-from spinnman.transceiver import Transceiver
-from spinnman.connections.udp_packet_connections import (
-    SCAMPConnection, EIEIOConnection)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
 
 
 class SpallocJobController(MachineAllocationController):
+    """
+    A class to Create and support Transceivers specific for Spalloc.
+    """
+
     __slots__ = (
         # the spalloc job object
         "_job",
@@ -72,6 +81,11 @@ class SpallocJobController(MachineAllocationController):
 
     @property
     def job(self) -> SpallocJob:
+        """
+        The job value passed into the init.
+
+        :rtype: SpallocJob
+        """
         return self._job
 
     @overrides(MachineAllocationController.extend_allocation)

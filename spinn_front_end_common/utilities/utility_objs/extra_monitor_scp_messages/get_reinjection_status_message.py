@@ -76,5 +76,11 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
 
     @property
     def reinjection_functionality_status(self) -> ReInjectionStatus:
+        """
+        Gets the reinjection functionality status
+
+        :rtype: ReInjectionStatus
+        :raises AssertError: If not yet read
+        """
         assert self._reinjection_status is not None, "response not yet read"
         return self._reinjection_status

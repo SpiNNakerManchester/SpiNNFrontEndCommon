@@ -23,14 +23,14 @@ import signal
 import sys
 import threading
 import types
-import requests
 from threading import Condition
 from typing import (
-    Dict, Final, Iterable, Optional, Sequence, Tuple, Type,
+    Dict, Iterable, Optional, Sequence, Tuple, Type,
     TypeVar, Union, cast, final)
-from numpy import __version__ as numpy_version
 
 import ebrains_drive  # type: ignore[import]
+from numpy import __version__ as numpy_version
+import requests
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
@@ -61,9 +61,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.fixed_route_router import fixed_route_router
 from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import place_application_graph
-from pacman.operations.router_algorithms import (
-    basic_dijkstra_routing, ner_route, ner_route_traffic_aware,
-    route_application_graph)
+from pacman.operations.router_algorithms import route_application_graph
 from pacman.operations.router_compressors import (
     pair_compressor, range_compressor)
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
@@ -141,7 +139,7 @@ try:
 except ImportError:
     scipy_version = "scipy not installed"
 
-logger: Final = FormatAdapter(logging.getLogger(__name__))
+logger = FormatAdapter(logging.getLogger(__name__))
 _T = TypeVar("_T")
 
 SHARED_PATH = re.compile(r".*\/shared\/([^\/]+)")
@@ -167,7 +165,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         #
         "_raise_keyboard_interrupt",
 
-        # original sys.excepthook Used in exception handling and control c
+        # original value which is used in exception handling and control c
         "__sys_excepthook",
 
         # All beyond this point new for no extractor
@@ -898,7 +896,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Splitter reset", TimerWork.OTHER):
             splitter_reset()
 
-    # Overriden by spynaker to choose an extended algorithm
+    # Overridden by sPyNNaker to choose an extended algorithm
     def _execute_splitter_selector(self) -> None:
         """
         Runs, times and logs the SplitterSelector.
@@ -911,7 +909,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Stub to allow sPyNNaker to add delay supports.
         """
 
-    # Overriden by spynaker to choose a different algorithm
+    # Overridden by sPyNNaker to choose a different algorithm
     def _execute_splitter_partitioner(self) -> None:
         """
         Runs, times and logs the SplitterPartitioner if required.
@@ -930,8 +928,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            self._data_writer.add_monitor_all_chips(
-                insert_chip_power_monitors_to_graphs(system_placements))
+            insert_chip_power_monitors_to_graphs(system_placements)
 
     @final
     def _execute_insert_extra_monitor_vertices(
@@ -950,10 +947,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
-        # Pick one, the first one
-        for mon in monitor_map.values():
-            self._data_writer.add_monitor_all_chips(mon)
-            break
 
     def _report_partitioner(self) -> None:
         """
@@ -963,6 +956,24 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false("Reports", "write_partitioner_reports"):
                 return
             partitioner_report()
+
+    @property
+    def get_number_of_available_cores_on_machine(self) -> int:
+        """
+        The number of available cores on the machine after taking
+        into account preallocated resources.
+
+        :return: number of available cores
+        :rtype: int
+        """
+        machine = self._data_writer.get_machine()
+        # get cores of machine
+        cores = machine.total_available_user_cores
+        ethernets = len(machine.ethernet_connected_chips)
+        cores -= ((machine.n_chips - ethernets) *
+                  self._data_writer.get_all_monitor_cores())
+        cores -= ethernets * self._data_writer.get_ethernet_monitor_cores()
+        return cores
 
     def _execute_application_placer(self, system_placements: Placements):
         """
@@ -1063,47 +1074,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             write_json_placements()
 
     @final
-    def _execute_ner_route_traffic_aware(self) -> None:
-        """
-        Runs, times and logs the NerRouteTrafficAware.
-
-        Sets the "routing_table_by_partition" data if called
-
-        .. note::
-            Calling of this method is based on the configuration router value
-        """
-        with FecTimer("Ner route traffic aware", TimerWork.OTHER):
-            self._data_writer.set_routing_table_by_partition(
-                ner_route_traffic_aware())
-
-    @final
-    def _execute_ner_route(self) -> None:
-        """
-        Runs, times and logs the NerRoute.
-
-        Sets the "routing_table_by_partition" data
-
-        .. note::
-            Calling of this method is based on the configuration router value
-        """
-        with FecTimer("Ner route", TimerWork.OTHER):
-            self._data_writer.set_routing_table_by_partition(ner_route())
-
-    @final
-    def _execute_basic_dijkstra_routing(self) -> None:
-        """
-        Runs, times and logs the BasicDijkstraRouting.
-
-        Sets the "routing_table_by_partition" data if called
-
-        .. note::
-            Calling of this method is based on the configuration router value
-        """
-        with FecTimer("Basic dijkstra routing", TimerWork.OTHER):
-            self._data_writer.set_routing_table_by_partition(
-                basic_dijkstra_routing())
-
-    @final
     def _execute_application_router(self) -> None:
         """
         Runs, times and logs the ApplicationRouter.
@@ -1132,12 +1102,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if the configuration router value is unexpected
         """
         name = get_config_str("Mapping", "router")
-        if name == "BasicDijkstraRouting":
-            return self._execute_basic_dijkstra_routing()
-        if name == "NerRoute":
-            return self._execute_ner_route()
-        if name == "NerRouteTrafficAware":
-            return self._execute_ner_route_traffic_aware()
         if name == "ApplicationRouter":
             return self._execute_application_router()
         if "," in name:
@@ -1373,9 +1337,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_control_sync(self, do_sync: bool) -> None:
         """
-        Control synchronization on board.
+        Control synchronisation on board.
 
-        :param bool do_sync: Whether to enable synchronization
+        :param bool do_sync: Whether to enable synchronisation
         """
         with FecTimer("Control Sync", TimerWork.CONTROL) as timer:
             if timer.skip_if_virtual_board():
@@ -2089,7 +2053,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer("Create database interface", TimerWork.OTHER):
             # Used to used compressed routing tables if available on host
-            # TODO consider not saving router tabes.
+            # TODO consider not saving router tables.
             self._data_writer.set_database_file_path(
                 database_interface(run_time))
 
@@ -2220,7 +2184,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         except Exception as run_e:
             self._recover_from_error(run_e)
 
-            # reraise exception
+            # re-raise exception
             raise run_e
 
     def _recover_from_error(self, exception: Exception) -> None:
@@ -2438,30 +2402,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _do_stop_workflow(self) -> None:
         self._execute_application_finisher()
         self._do_extract_from_machine()
-
-    @property
-    def get_number_of_available_cores_on_machine(self) -> int:
-        """
-        The number of available cores on the machine after taking
-        into account preallocated resources.
-
-        :return: number of available cores
-        :rtype: int
-        """
-        machine = self._data_writer.get_machine()
-        # get cores of machine
-        cores = machine.total_available_user_cores
-        take_into_account_chip_power_monitor = get_config_bool(
-            "Reports", "write_energy_report")
-        if take_into_account_chip_power_monitor:
-            cores -= machine.n_chips
-        take_into_account_extra_monitor_cores = (
-            get_config_bool("Machine", "enable_advanced_monitor_support") or
-            get_config_bool("Machine", "enable_reinjection"))
-        if take_into_account_extra_monitor_cores:
-            cores -= machine.n_chips
-            cores -= len(machine.ethernet_connected_chips)
-        return cores
 
     def stop_run(self) -> None:
         """

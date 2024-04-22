@@ -273,17 +273,28 @@ class BufferDatabase(BaseDatabase):
                 """, (core_name, x, y, p))
 
     def store_vertex_labels(self) -> None:
+        """
+        Goes though all placement an monitor cores to set a label.
+        """
         for placement in FecDataView.iterate_placemements():
             self._set_core_name(
                 placement.x, placement.y, placement.p, placement.vertex.label)
         for chip in FecDataView.get_machine().chips:
-            for processor in chip.processors:
-                if processor.is_monitor:
-                    self._set_core_name(
-                        chip.x, chip.y, processor.processor_id,
-                        f"SCAMP(OS)_{chip.x}:{chip.y}")
+            for p in chip.scamp_processors_ids:
+                self._set_core_name(
+                    chip.x, chip.y, p, f"SCAMP(OS)_{chip.x}:{chip.y}")
 
     def get_core_name(self, x: int, y: int, p: int) -> Optional[str]:
+        """
+        Gets the label (typically vertex label) for this core.
+
+        Returns None if the core at x, y, p is not known.
+
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
+        :rtype: str or None
+        """
         for row in self.execute(
                 """
                 SELECT core_name

@@ -39,7 +39,6 @@ class TestWriteJson(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
-        set_config("Machine", "version", 5)
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
@@ -142,7 +141,7 @@ class TestWriteJson(unittest.TestCase):
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
         set_config(
-            "Machine", "spalloc_user", "Integration testing ok to kill")
+            "Machine", "spalloc_user", "Integration testing OK to kill")
         set_config("Machine", "spalloc_server", self.spalloc)
         set_config("Machine", "spalloc_port", self.spin2Port)
 

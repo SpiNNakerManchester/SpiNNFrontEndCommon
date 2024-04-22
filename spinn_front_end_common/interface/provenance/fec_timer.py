@@ -61,6 +61,11 @@ class FecTimer(object):
 
     @classmethod
     def setup(cls, simulator: AbstractSpinnakerBase):
+        """
+        Checks and saves cfg values so they don't have to be read each time
+
+        :param AbstractSpinnakerBase simulator: Not actually used
+        """
         # pylint: disable=global-statement, protected-access
         cls._simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
@@ -97,12 +102,31 @@ class FecTimer(object):
                     time_taken, skip_reason)
 
     def skip(self, reason: str):
+        """
+        Records that the algorithms is being skipped and ends the timer.
+
+        :param str reason: Why the algorithm is being skipped
+        """
         message = f"{self._algorithm} skipped as {reason}"
         time_taken = self._stop_timer()
         self._insert_timing(time_taken, reason)
         self._report(message)
 
     def skip_if_has_not_run(self) -> bool:
+        """
+        Skips if the simulation has not run.
+
+        If the simulation has run used this methods
+        keep the timer running and returns False (did not skip).
+
+        If there was no run this method records the reason,
+        ends the timing and returns True (it skipped).
+
+        Currently not used as a better check is skip_if_empty on the data
+        needed for the algorithm.
+
+        :rtype: bool
+        """
         if FecDataView.is_ran_ever():
             return False
         else:
@@ -110,6 +134,19 @@ class FecTimer(object):
             return True
 
     def skip_if_virtual_board(self) -> bool:
+        """
+        Skips if a virtual board is being used.
+
+        If a real board is being used this methods
+        keep the timer running and returns False (did not skip).
+
+        If a virtual board is being used this method records the reason,
+        ends the timing and returns True (it skipped).
+
+        Typically called for algorithms that require a real board to run.
+
+        :rtype: bool
+        """
         if get_config_bool("Machine", "virtual_board"):
             self.skip("virtual_board")
             return True
@@ -118,6 +155,19 @@ class FecTimer(object):
 
     def skip_if_empty(self, value: Optional[
             Union[bool, int, str, Sized]], name: str) -> bool:
+        """
+        Skips if the value is one that evaluates to False.
+
+        If the value is considered True (if value) this methods
+        keep the timer running and returns False (did not skip).
+
+        If the value is False this method records the reason,
+        ends the timing and returns True (it skipped).
+
+        :param value: Value to check if True
+        :param str name: Name to record for that value if skipping
+        :rtype: bool
+        """
         if value:
             return False
         if value is None:
@@ -129,6 +179,23 @@ class FecTimer(object):
         return True
 
     def skip_if_cfg_false(self, section: str, option: str) -> bool:
+        """
+        Skips if a Boolean cfg values is False.
+
+        If this cfg value is True this methods keep the timer running and
+        returns False (did not skip).
+
+        If the cfg value is False this method records the reason,
+        ends the timing and returns True (it skipped).
+
+        Typically called if the algorithm should run if the cfg value
+        is set True.
+
+        :param str section: Section level to be applied to both options
+        :param str option1: One of the options to check
+        :param str option2: The other option to check
+        :rtype: bool
+        """
         if get_config_bool(section, option):
             return False
         else:
@@ -137,6 +204,23 @@ class FecTimer(object):
 
     def skip_if_cfgs_false(
             self, section: str, option1: str, option2: str) -> bool:
+        """
+        Skips if two Boolean cfg values are both False.
+
+        If either cfg value is True this methods keep the timer running and
+        returns False (did not skip).
+
+        If both cfg values are False this method records the reason,
+        ends the timing and returns True (it skipped).
+
+        Typically called if the algorithm should run if either cfg values
+        is set True.
+
+        :param str section: Section level to be applied to both options
+        :param str option1: One of the options to check
+        :param str option2: The other option to check
+        :rtype: bool
+        """
         if get_config_bool(section, option1):
             return False
         elif get_config_bool(section, option2):
@@ -146,6 +230,11 @@ class FecTimer(object):
             return True
 
     def error(self, reason: str):
+        """
+         Ends an algorithm timing and records that it failed.
+
+        :param str reason: What caused the error
+        """
         time_taken = self._stop_timer()
         message = f"{self._algorithm} failed after {time_taken} as {reason}"
         self._insert_timing(time_taken, reason)
@@ -169,7 +258,7 @@ class FecTimer(object):
         """
         Have to convert to a timedelta for rest of code to read.
 
-        As perf_counter_ns is nano seconds, and time delta lowest is micro,
+        As perf_counter_ns is nanoseconds, and time delta lowest is micro,
         need to convert.
         """
         return timedelta(microseconds=time_diff / _NANO_TO_MICRO)
@@ -260,6 +349,11 @@ class FecTimer(object):
 
     @classmethod
     def stop_category_timing(cls) -> None:
+        """
+        Stops all the timing.
+
+        Typically only called during simulator shutdown
+        """
         cls.__stop_category()
         cls._previous = []
         cls._category = None

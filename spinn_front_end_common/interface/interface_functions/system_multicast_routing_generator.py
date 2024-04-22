@@ -11,16 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from collections import defaultdict
 import logging
 from typing import Dict, Tuple, Set, Optional, cast
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
+from spinn_utilities.progress_bar import ProgressBar
+
+from spinn_machine import Chip, MulticastRoutingEntry, RoutingEntry
+
 from pacman.exceptions import (PacmanRoutingException)
 from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable)
-from spinn_machine import MulticastRoutingEntry, Chip
-from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_front_end_common.data import FecDataView
 
 # ADDRESS_KEY, DATA_KEY, BOUNDARY_KEY
@@ -191,9 +196,11 @@ class _SystemMulticastRoutingGenerator(object):
             processor_ids = [processor_id]
         if link_ids is None:
             link_ids = []
+        routing_entry = RoutingEntry(
+            processor_ids=processor_ids, link_ids=link_ids)
         entry = MulticastRoutingEntry(
-            routing_entry_key=key, mask=ROUTING_MASK,
-            processor_ids=processor_ids, link_ids=link_ids, defaultable=False)
+            key=key, mask=ROUTING_MASK,
+            routing_entry=routing_entry)
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(
@@ -223,7 +230,7 @@ class _SystemMulticastRoutingGenerator(object):
                 self._add_routing_entry(chip, key, link_ids=[link])
             key += N_KEYS_PER_PARTITION_ID
 
-        # accum links to make a broadcast
+        # accumulate links to make a broadcast
         links_per_chip = defaultdict(list)
         for chip_key in tree:
             chip, link = tree[chip_key]

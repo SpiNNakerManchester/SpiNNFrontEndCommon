@@ -16,18 +16,22 @@ import logging
 import os
 from typing import (
     Dict, Iterable, Iterator, Optional, Set, Tuple, Union, List, TYPE_CHECKING)
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
-from spinn_machine import Chip, CoreSubsets, FixedRouteEntry
+
+from spinn_machine import Chip, CoreSubsets, RoutingEntry
 from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.spalloc import SpallocJob
+
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.routing_tables import MulticastRoutingTables
+
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
     from spinn_front_end_common.abstract_models.impl import (
@@ -166,7 +170,7 @@ class _FecDataModel(object):
         self._ds_database_path: Optional[str] = None
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
-        self._fixed_routes: Optional[Dict[XY, FixedRouteEntry]] = None
+        self._fixed_routes: Optional[Dict[XY, RoutingEntry]] = None
         self._gatherer_map: \
             Optional[Dict[Chip, DataSpeedUpPacketGatherMachineVertex]] = None
         self._ipaddress: Optional[str] = None
@@ -467,7 +471,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             If the hardware_time_step is currently unavailable
         """
         if cls.__fec_data._hardware_time_step_us is None:
-            raise cls._exception("ardware_time_step_us")
+            raise cls._exception("hardware_time_step_us")
         return cls.__fec_data._hardware_time_step_us
 
     # time scale factor
@@ -625,7 +629,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return cls.__fec_data._n_chips_required
         if cls.__fec_data._n_chips_in_graph:
             return cls.__fec_data._n_chips_in_graph
-        raise cls._exception("n_chips_requiredr")
+        raise cls._exception("n_chips_required")
 
     @classmethod
     def has_n_chips_needed(cls) -> bool:
@@ -668,8 +672,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retrieve the data_in_multicast_key_to_chip_map if known.
         Keys are the coordinates of chips.
-        Values are the base keys for multicast comms received by the Data In
-        streaming module of the extra monitor running on those chips.
+        Values are the base keys for multicast communication
+        received by the Data In streaming module
+        of the extra monitor running on those chips.
 
         :rtype: dict(tuple(int,int), int)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -698,7 +703,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retrieve the system_multicast_router_timeout_keys if known.
         Keys are the coordinates of chips.
-        Values are the base keys for multicast comms received by the
+        Values are the base keys for multicast communications received by the
         re-injector module of the extra monitor running on those chips.
 
         :rtype: dict(tuple(int,int), int)
@@ -710,7 +715,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             raise cls._exception("system_multicast_router_timeout_keys")
         return cls.__fec_data._system_multicast_router_timeout_keys
 
-    # ipaddress
+    # IP address
 
     @classmethod
     def has_ipaddress(cls) -> bool:
@@ -738,11 +743,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # fixed_routes
     @classmethod
-    def get_fixed_routes(cls) -> Dict[XY, FixedRouteEntry]:
+    def get_fixed_routes(cls) -> Dict[XY, RoutingEntry]:
         """
         Gets the fixed routes if they have been created.
 
-        :rtype: dict((int, int), ~spinn_machine.FixedRouteEntry)
+        :rtype: dict((int, int), ~spinn_machine.RoutingEntry)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the fixed_routes is currently unavailable
         """
@@ -1001,6 +1006,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         lpg_vertex = cls.__fec_data._live_packet_recorder_params.get(
             live_packet_gatherer_params)
         if lpg_vertex is None:
+            # pylint: disable=import-outside-toplevel
             # UGLY import due to circular reference
             from spinn_front_end_common.utility_models import (
                 LivePacketGather as LPG)
@@ -1296,6 +1302,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             The vertex to add
         :param str partition_id: The partition to get the IDs of
         """
+        if not isinstance(vertex, ApplicationVertex):
+            raise NotImplementedError(
+                "You only need to add ApplicationVertices")
         cls.__fec_data._live_output_vertices.add((vertex, partition_id))
 
     @classmethod
