@@ -17,7 +17,7 @@ import logging
 import os
 import time
 from datetime import timedelta
-from typing import List, Optional, Union, TYPE_CHECKING
+from typing import List, Optional, Tuple, Union, TYPE_CHECKING
 from typing_extensions import Literal, Self
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
@@ -227,6 +227,32 @@ class FecTimer(object):
             return False
         else:
             self.skip(f"cfg {section}:{option1} and {option2} are False")
+            return True
+
+    def skip_all_cfgs_false(
+            self, pairs: List[Tuple[str, str]], reason: str) -> bool:
+        """
+        Skips if two Boolean cfg values are both False.
+
+        If either cfg value is True this methods keep the timer running and
+        returns False (did not skip).
+
+        If both cfg values are False this method records the reason,
+        ends the timing and returns True (it skipped).
+
+        Typically called if the algorithm should run if either cfg values
+        is set True.
+
+        :param str section: Section level to be applied to both options
+        :param list((str, str) pairs: section, options pairs to check
+        :param str reason: Reason to record for the skip
+        :rtype: bool
+        """
+        for section, option in pairs:
+            if get_config_bool(section, option):
+                return False
+        else:
+            self.skip(reason)
             return True
 
     def error(self, reason: str):
