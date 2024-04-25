@@ -251,9 +251,8 @@ class FecTimer(object):
         for section, option in pairs:
             if get_config_bool(section, option):
                 return False
-        else:
-            self.skip(reason)
-            return True
+        self.skip(reason)
+        return True
 
     def error(self, reason: str):
         """
