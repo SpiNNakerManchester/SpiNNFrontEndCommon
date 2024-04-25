@@ -121,11 +121,15 @@ class ConfigHandler(object):
         self._error_on_previous("application_to_machine_graph_algorithms")
         self._error_on_previous("machine_graph_to_machine_algorithms")
         self._error_on_previous("machine_graph_to_virtual_machine_algorithms")
-        self._replaced_cfg("Reports", "write_routing_table_reports", "write_uncompressed")
-        self._replaced_cfg("Reports", "write_routing_tables_from_machine_reports",
+        self._replaced_cfg("Reports",
+                           "write_routing_table_reports", "write_uncompressed")
+        self._replaced_cfg("Reports",
+                           "write_routing_tables_from_machine_reports",
                            "write_compressed, write_compression_comparison,"
                            " and write_compression_summary")
-        self._replaced_cfg("Reports", "write_routing_compression_checker_report", "run_compression_checker")
+        self._replaced_cfg("Reports",
+                           "write_routing_compression_checker_report",
+                           "run_compression_checker")
 
     def _error_on_previous(self, option) -> None:
         try:

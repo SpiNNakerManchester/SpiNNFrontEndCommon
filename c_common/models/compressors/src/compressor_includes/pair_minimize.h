@@ -116,7 +116,8 @@ static inline bool find_merge_optimised(int left, int index) {
      #if LOG_LEVEL >= LOG_DEBUG
         for (int check = remaining_index; check < routing_table_get_n_entries(); check++) {
             const entry_t *check_entry = routing_table_get_entry(check);
-            log_debug("%d %08x %08x %d", check, check_entry->key_mask.key, check_entry->key_mask.mask, check_entry->route);
+            log_debug("%d %08x %08x %d", check, check_entry->key_mask.key,
+                      check_entry->key_mask.mask, check_entry->route);
         }
     #endif // LOG_LEVEL >= LOG_DEBUG
 
@@ -155,7 +156,8 @@ static inline bool find_merge_optimised(int left, int index) {
         entry_t *entries = route_cache[cache];
         log_debug("to check %d", n_items);
         for (uint32_t i = 0; i < n_items; i++) {
-            log_debug("%d %08x %08x %d", i + remaining_index, entries[i].key_mask.key, entries[i].key_mask.mask,  entries[i].route);
+            log_debug("%d %08x %08x %d", i + remaining_index, entries[i].key_mask.key,
+                      entries[i].key_mask.mask,  entries[i].route);
             if (key_mask_intersect(entries[i].key_mask, merged.key_mask)) {
                 if (dma_in_progress) {
                     routing_table_wait_for_last_transfer();
