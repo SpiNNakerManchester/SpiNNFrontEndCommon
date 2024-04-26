@@ -57,13 +57,14 @@ def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
             if machine.is_chip_at(x, y):
                 chip = machine[x, y]
                 existing_chips.append(
-                    f"({x}, {y}, P: {chip.get_physical_core_id(0)})")
+                    f"({x}, {y}, "
+                    f"P: {FecDataView.get_physical_core_id((x, y), 0)})")
                 n_cores = FecDataView.get_machine_version().max_cores_per_chip
                 down_procs = set(range(n_cores))
                 for p in chip.all_processor_ids:
                     down_procs.remove(p)
                 for p in down_procs:
-                    phys_p = chip.get_physical_core_id(p)
+                    phys_p = FecDataView.get_physical_core_id((x, y), p)
                     core = p
                     if phys_p is not None:
                         core = -phys_p
