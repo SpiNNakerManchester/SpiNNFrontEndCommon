@@ -57,7 +57,8 @@ def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
             if machine.is_chip_at(x, y):
                 chip = machine[x, y]
                 existing_chips.append(
-                    f"({x}, {y}, {FecDataView.get_physical_string((x, y), 0)})")
+                    f"({x}, {y}, "
+                    f"{FecDataView.get_physical_string((x, y), 0)})")
                 n_cores = FecDataView.get_machine_version().max_cores_per_chip
                 down_procs = set(range(n_cores))
                 for p in chip.all_processor_ids:
