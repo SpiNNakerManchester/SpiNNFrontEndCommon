@@ -48,7 +48,7 @@ def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
     """
     down_links: List[Tuple[int, int, int, str]] = []
     down_chips: List[Tuple[int, int, str]] = []
-    down_cores: List[Tuple[int, int, int, str]] = []
+    down_cores: List[Tuple[int, int, str, str]] = []
     for e_chip in progress_bar.over(machine.ethernet_connected_chips):
         assert e_chip.ip_address is not None
         existing_chips: List[str] = []
@@ -66,7 +66,7 @@ def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
                 for p in down_procs:
                     phys_p = FecDataView.get_physical_string((x, y), p)
                     if not phys_p:   # ""
-                        phys_p = p
+                        phys_p = str(-p)
                     down_cores.append((l_x, l_y, phys_p, e_chip.ip_address))
             else:
                 down_chips.append((l_x, l_y, e_chip.ip_address))
