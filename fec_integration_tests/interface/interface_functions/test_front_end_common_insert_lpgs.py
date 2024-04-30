@@ -40,7 +40,7 @@ class TestInsertLPGs(unittest.TestCase):
     """
     def setUp(self):
         unittest_setup()
-        set_config("Machine", "versions", VersionStrings.MULTIPLE_BOARDS.text)
+        set_config("Machine", "versions", VersionStrings.BIG.text)
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
         writer = FecDataWriter.mock()

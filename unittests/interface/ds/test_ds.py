@@ -91,7 +91,7 @@ class TestDataSpecification(unittest.TestCase):
                 DataSpecificationGenerator(0, 1, 2, vertex2, db)
 
     def test_core_infos(self):
-        set_config("Machine", "versions", VersionStrings.MULTIPLE_BOARDS.text)
+        set_config("Machine", "versions", VersionStrings.BIG.text)
         writer = FecDataWriter.mock()
         writer.set_machine(virtual_machine_by_min_size(9, 9))
         with DsSqlliteDatabase() as db:
