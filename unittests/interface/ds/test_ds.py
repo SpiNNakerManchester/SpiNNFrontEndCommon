@@ -118,7 +118,7 @@ class TestDataSpecification(unittest.TestCase):
         set_config("Machine", "versions", VersionStrings.ANY.text)
         router = Router([], 123)
         width, height = FecDataView.get_machine_version().board_shape
-        bad = Chip(width, height, 15, router, 100, 8, 8)
+        bad = Chip(width, height, [0], range(1, 15), router, 100, 8, 8)
         FecDataView.get_machine().add_chip(bad)
         vertex = _TestVertexWithBinary(
             "bad", ExecutableType.SYSTEM)
