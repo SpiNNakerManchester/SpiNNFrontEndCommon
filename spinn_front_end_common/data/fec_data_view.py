@@ -1059,6 +1059,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Number of ExtraMonitorSupportMachineVertexs.
 
+        This is the total number of monitors NOT the number per chip.
+
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the monitors are currently unavailable
@@ -1137,6 +1139,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def get_n_gathers(cls) -> int:
         """
         Number of DataSpeedUpPacketGatherMachineVertex(s).
+
+        This is the total number of gathers NOT the number per chip
 
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:

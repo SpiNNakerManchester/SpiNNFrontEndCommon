@@ -91,7 +91,7 @@ class TestDataSpecification(unittest.TestCase):
                 DataSpecificationGenerator(0, 1, 2, vertex2, db)
 
     def test_core_infos(self):
-        set_config("Machine", "versions", VersionStrings.MULTIPLE_BOARDS.text)
+        set_config("Machine", "versions", VersionStrings.BIG.text)
         writer = FecDataWriter.mock()
         writer.set_machine(virtual_machine_by_min_size(9, 9))
         with DsSqlliteDatabase() as db:
@@ -118,7 +118,7 @@ class TestDataSpecification(unittest.TestCase):
         set_config("Machine", "versions", VersionStrings.ANY.text)
         router = Router([], 123)
         width, height = FecDataView.get_machine_version().board_shape
-        bad = Chip(width, height, 15, router, 100, 8, 8)
+        bad = Chip(width, height, [0], range(1, 15), router, 100, 8, 8)
         FecDataView.get_machine().add_chip(bad)
         vertex = _TestVertexWithBinary(
             "bad", ExecutableType.SYSTEM)
