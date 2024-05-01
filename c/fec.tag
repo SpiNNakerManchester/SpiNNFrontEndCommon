@@ -1610,83 +1610,6 @@
     </member>
   </compound>
   <compound kind="file">
-    <name>tdma_processing.h</name>
-    <path>front_end_common_lib/include/</path>
-    <filename>tdma__processing_8h.html</filename>
-    <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" import="no" module="no" objc="no">spinn_extra.h</includes>
-    <class kind="struct">tdma_parameters</class>
-    <member kind="function" static="yes">
-      <type>static uint32_t</type>
-      <name>tdma_processing_times_behind</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>a30e08eae313538f845e41b03ac17d73f</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>tdma_processing_initialise</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>ad0929e2003419c0a55a9dee02cf7fcc4</anchor>
-      <arglist>(void **address)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>tdma_processing_reset_phase</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>a1b71fe9689b33f0b22e26e32847d5ce8</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>send_packet</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>a44b5e21ccb4a93cbb8acd4c84470ebb6</anchor>
-      <arglist>(uint32_t key, uint32_t payload, uint32_t with_payload)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>tdma_processing_send_packet</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>a077df65fe3710db3cf654a60b224713e</anchor>
-      <arglist>(uint32_t transmission_key, uint32_t payload, uint32_t with_payload, uint32_t timer_count)</arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>n_tdma_behind_times</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>a63ece3bd490cbc3ecadcb68c70ab8ea8</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>tdma_latest_send</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>a967acb4d83e6cf773f45fed48fe3307a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>tdma_waits</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>a26318a16cde432a923f35ba88da5e04d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>tdma_expected_time</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>a74d260b09c26c12e2dce38bd5eef3111</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>tdma_parameters</type>
-      <name>tdma_params</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>af16ed01d37a52d0f4b7d71f4e303e05c</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="file">
     <name>wfi.h</name>
     <path>front_end_common_lib/include/</path>
     <filename>wfi_8h.html</filename>
@@ -2139,55 +2062,6 @@
       <name>next_sync_step</name>
       <anchorfile>simulation_8c.html</anchorfile>
       <anchor>a5b77e4cda1979070114549b0d5be9fdd</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="file">
-    <name>tdma_processing.c</name>
-    <path>front_end_common_lib/src/</path>
-    <filename>tdma__processing_8c.html</filename>
-    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
-    <includes id="tdma__processing_8h" name="tdma_processing.h" local="no" import="no" module="no" objc="no">tdma_processing.h</includes>
-    <member kind="function">
-      <type>bool</type>
-      <name>tdma_processing_initialise</name>
-      <anchorfile>tdma__processing_8c.html</anchorfile>
-      <anchor>ad0929e2003419c0a55a9dee02cf7fcc4</anchor>
-      <arglist>(void **address)</arglist>
-    </member>
-    <member kind="variable">
-      <type>tdma_parameters</type>
-      <name>tdma_params</name>
-      <anchorfile>tdma__processing_8c.html</anchorfile>
-      <anchor>af16ed01d37a52d0f4b7d71f4e303e05c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>tdma_expected_time</name>
-      <anchorfile>tdma__processing_8c.html</anchorfile>
-      <anchor>a74d260b09c26c12e2dce38bd5eef3111</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>n_tdma_behind_times</name>
-      <anchorfile>tdma__processing_8c.html</anchorfile>
-      <anchor>a63ece3bd490cbc3ecadcb68c70ab8ea8</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>tdma_latest_send</name>
-      <anchorfile>tdma__processing_8c.html</anchorfile>
-      <anchor>a967acb4d83e6cf773f45fed48fe3307a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>tdma_waits</name>
-      <anchorfile>tdma__processing_8c.html</anchorfile>
-      <anchor>a26318a16cde432a923f35ba88da5e04d</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -11243,32 +11117,6 @@
       <anchorfile>routing__table_8h.html</anchorfile>
       <anchor>a78c84fd4064e0f3cf4b77a1874209e60</anchor>
       <arglist>[]</arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>tdma_parameters</name>
-    <filename>tdma__processing_8h.html</filename>
-    <anchor>structtdma__parameters</anchor>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>initial_expected_time</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>a85254842d6a5da05835cbc451634148e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>min_expected_time</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>ac60ba696399388f408a56e7317053d54</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>time_between_sends</name>
-      <anchorfile>tdma__processing_8h.html</anchorfile>
-      <anchor>aed10a61170e26c48c4fd95a68027d098</anchor>
-      <arglist></arglist>
     </member>
   </compound>
   <compound kind="struct">
