@@ -2735,6 +2735,13 @@
     </member>
     <member kind="function" static="yes">
       <type>static bool</type>
+      <name>find_merge_optimised</name>
+      <anchorfile>pair__minimize_8h.html</anchorfile>
+      <anchor>a999843f3c4beac1aa2ace2f545f223c7</anchor>
+      <arglist>(int left, int index)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static bool</type>
       <name>find_merge</name>
       <anchorfile>pair__minimize_8h.html</anchorfile>
       <anchor>a11ec55dc2c1cce5a726cc4c3e6e9f386</anchor>
