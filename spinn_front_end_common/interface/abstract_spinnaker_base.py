@@ -1444,27 +1444,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 raise
 
     @final
-    def _execute_host_bitfield_compressor(self) -> Optional[
-            MulticastRoutingTables]:
-        """
-        Runs, times and logs the HostBasedBitFieldRouterCompressor
-
-        .. note::
-            Calling of this method is based on the configuration compressor or
-            virtual_compressor value
-
-        :return: Compressed routing tables
-        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
-        """
-        with FecTimer("Host based bitfield router compressor",
-                      TimerWork.OTHER) as timer:
-            if timer.skip_if_virtual_board():
-                return None
-            self._multicast_routes_loaded = False
-            compressed = host_based_bit_field_router_compressor()
-            return compressed
-
-    @final
     def _execute_ordered_covering_compressor(self) -> MulticastRoutingTables:
         """
         Runs, times and logs the OrderedCoveringCompressor.
