@@ -92,8 +92,7 @@ from spinn_front_end_common.interface.interface_functions import (
     reload_dsg_regions, energy_provenance_reporter,
     load_application_data_specs, load_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
-    graph_provenance_gatherer,
-    host_based_bit_field_router_compressor, hbp_allocator,
+    graph_provenance_gatherer, hbp_allocator,
     insert_chip_power_monitors_to_graphs,
     insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
@@ -1640,39 +1639,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # delay compression until later
         return None
 
-    def _do_delayed_compression(
-            self, name: str,
-            compressed: Optional[MulticastRoutingTables]) -> Optional[
-                MulticastRoutingTables]:
-        """
-        Run compression that must be delayed until later.
-
-        .. note::
-            This method is the entry point for adding a new compressor that
-            can not run at the normal place
-
-        :param str name: Name of a compressor
-        :return: CompressedRoutingTables (likely to be `None`),
-            RouterCompressorProvenanceItems (may be an empty list)
-        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables or None
-        :raise ConfigurationException: if the name is not expected
-        """
-        if self._multicast_routes_loaded or compressed:
-            # Already compressed
-            return compressed
-        # overridden in spy to handle:
-        # SpynnakerMachineBitFieldOrderedCoveringCompressor
-        # SpynnakerMachineBitFieldPairRouterCompressor
-
-        if name == "HostBasedBitFieldRouterCompressor":
-            return self._execute_host_bitfield_compressor()
-        if "," in name:
-            raise ConfigurationException(
-                "Only a single algorithm is supported for compressor")
-
-        raise ConfigurationException(
-            f"Unexpected cfg setting compressor: {name}")
-
     @final
     def _execute_load_routing_tables(
             self, compressed: Optional[MulticastRoutingTables]) -> None:
@@ -1885,7 +1851,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_load_application_data_specification()
 
         self._do_extra_load_algorithms()
-        compressed = self._do_delayed_compression(compressor, compressed)
         self._execute_load_routing_tables(compressed)
         self._report_bit_field_compressor()
 
