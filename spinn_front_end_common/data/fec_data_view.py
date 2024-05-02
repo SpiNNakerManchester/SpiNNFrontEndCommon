@@ -21,7 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
 
-from spinn_machine import Chip, CoreSubsets, FixedRouteEntry
+from spinn_machine import Chip, CoreSubsets, RoutingEntry
 from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
@@ -170,7 +170,7 @@ class _FecDataModel(object):
         self._ds_database_path: Optional[str] = None
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
-        self._fixed_routes: Optional[Dict[XY, FixedRouteEntry]] = None
+        self._fixed_routes: Optional[Dict[XY, RoutingEntry]] = None
         self._gatherer_map: \
             Optional[Dict[Chip, DataSpeedUpPacketGatherMachineVertex]] = None
         self._ipaddress: Optional[str] = None
@@ -629,7 +629,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return cls.__fec_data._n_chips_required
         if cls.__fec_data._n_chips_in_graph:
             return cls.__fec_data._n_chips_in_graph
-        raise cls._exception("n_chips_requiredr")
+        raise cls._exception("n_chips_required")
 
     @classmethod
     def has_n_chips_needed(cls) -> bool:
@@ -743,11 +743,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # fixed_routes
     @classmethod
-    def get_fixed_routes(cls) -> Dict[XY, FixedRouteEntry]:
+    def get_fixed_routes(cls) -> Dict[XY, RoutingEntry]:
         """
         Gets the fixed routes if they have been created.
 
-        :rtype: dict((int, int), ~spinn_machine.FixedRouteEntry)
+        :rtype: dict((int, int), ~spinn_machine.RoutingEntry)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the fixed_routes is currently unavailable
         """
@@ -1128,6 +1128,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Number of ExtraMonitorSupportMachineVertexs.
 
+        This is the total number of monitors NOT the number per chip.
+
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the monitors are currently unavailable
@@ -1206,6 +1208,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def get_n_gathers(cls) -> int:
         """
         Number of DataSpeedUpPacketGatherMachineVertex(s).
+
+        This is the total number of gathers NOT the number per chip
 
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:

@@ -61,9 +61,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.fixed_route_router import fixed_route_router
 from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import place_application_graph
-from pacman.operations.router_algorithms import (
-    basic_dijkstra_routing, ner_route, ner_route_traffic_aware,
-    route_application_graph)
+from pacman.operations.router_algorithms import route_application_graph
 from pacman.operations.router_compressors import (
     pair_compressor, range_compressor)
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
@@ -117,9 +115,10 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
-    fixed_route_from_machine_report, memory_map_on_host_report,
+    fixed_route_from_machine_report,
+    generate_routing_compression_checker_report, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
-    routing_table_from_machine_report, tags_from_machine_report,
+    tags_from_machine_report,
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
@@ -1076,47 +1075,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             write_json_placements()
 
     @final
-    def _execute_ner_route_traffic_aware(self) -> None:
-        """
-        Runs, times and logs the NerRouteTrafficAware.
-
-        Sets the "routing_table_by_partition" data if called
-
-        .. note::
-            Calling of this method is based on the configuration router value
-        """
-        with FecTimer("Ner route traffic aware", TimerWork.OTHER):
-            self._data_writer.set_routing_table_by_partition(
-                ner_route_traffic_aware())
-
-    @final
-    def _execute_ner_route(self) -> None:
-        """
-        Runs, times and logs the NerRoute.
-
-        Sets the "routing_table_by_partition" data
-
-        .. note::
-            Calling of this method is based on the configuration router value
-        """
-        with FecTimer("Ner route", TimerWork.OTHER):
-            self._data_writer.set_routing_table_by_partition(ner_route())
-
-    @final
-    def _execute_basic_dijkstra_routing(self) -> None:
-        """
-        Runs, times and logs the BasicDijkstraRouting.
-
-        Sets the "routing_table_by_partition" data if called
-
-        .. note::
-            Calling of this method is based on the configuration router value
-        """
-        with FecTimer("Basic dijkstra routing", TimerWork.OTHER):
-            self._data_writer.set_routing_table_by_partition(
-                basic_dijkstra_routing())
-
-    @final
     def _execute_application_router(self) -> None:
         """
         Runs, times and logs the ApplicationRouter.
@@ -1145,12 +1103,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if the configuration router value is unexpected
         """
         name = get_config_str("Mapping", "router")
-        if name == "BasicDijkstraRouting":
-            return self._execute_basic_dijkstra_routing()
-        if name == "NerRoute":
-            return self._execute_ner_route()
-        if name == "NerRouteTrafficAware":
-            return self._execute_ner_route_traffic_aware()
         if name == "ApplicationRouter":
             return self._execute_application_router()
         if "," in name:
@@ -1747,7 +1699,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Uncompressed routing table report",
                       TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_table_reports"):
+                    "Reports", "write_uncompressed"):
                 return
             router_report_from_router_tables()
 
@@ -1870,11 +1822,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type compressed: ~.MulticastRoutingTables or None
         """
         with FecTimer("Compressor report", TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_table_reports"):
-                return
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_tables_from_machine_reports"):
+            if timer.skip_all_cfgs_false(
+                    [("Reports", "write_compressed"),
+                     ("Reports", "write_compression_comparison"),
+                     ("Reports", "write_compression_summary"),
+                     ("Mapping", "run_compression_checker")],
+                    "No reports need compressed routing tables"):
                 return
 
             if compressed is None:
@@ -1882,10 +1835,16 @@ class AbstractSpinnakerBase(ConfigHandler):
                     return
                 compressed = read_routing_tables_from_machine()
 
-            router_report_from_compressed_router_tables(compressed)
-            generate_comparison_router_report(compressed)
-            router_compressed_summary_report(compressed)
-            routing_table_from_machine_report(compressed)
+            if get_config_bool("Reports", "write_compressed"):
+                router_report_from_compressed_router_tables(compressed)
+            if get_config_bool("Reports", "write_compression_comparison"):
+                generate_comparison_router_report(compressed)
+            if get_config_bool("Reports", "write_compression_summary"):
+                router_compressed_summary_report(compressed)
+            if get_config_bool("Mapping", "run_compression_checker"):
+                routing_tables = self._data_writer.get_uncompressed()
+                generate_routing_compression_checker_report(
+                    routing_tables, compressed)
 
     def _report_fixed_routes(self) -> None:
         """
