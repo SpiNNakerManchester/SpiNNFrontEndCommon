@@ -45,7 +45,8 @@ _DEBUG_ENABLE_OPTS = frozenset([
     "reportsenabled",
     "cleariobufduringrun", "extractiobuf"])
 _DEBUG_MAPPING_OPTS = frozenset([
-    "routertablecompressasfaraspossible", "runcompressionchecker"])
+    "routertablecompressasfaraspossible", "runcompressionchecker",
+    "validateroutesuncompressed"])
 _REPORT_DISABLE_OPTS = frozenset([
     "cleariobufduringrun", "extractiobuf"])
 
