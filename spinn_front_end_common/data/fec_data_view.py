@@ -629,7 +629,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return cls.__fec_data._n_chips_required
         if cls.__fec_data._n_chips_in_graph:
             return cls.__fec_data._n_chips_in_graph
-        raise cls._exception("n_chips_requiredr")
+        raise cls._exception("n_chips_required")
 
     @classmethod
     def has_n_chips_needed(cls) -> bool:
@@ -1128,6 +1128,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Number of ExtraMonitorSupportMachineVertexs.
 
+        This is the total number of monitors NOT the number per chip.
+
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the monitors are currently unavailable
@@ -1206,6 +1208,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def get_n_gathers(cls) -> int:
         """
         Number of DataSpeedUpPacketGatherMachineVertex(s).
+
+        This is the total number of gathers NOT the number per chip
 
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:

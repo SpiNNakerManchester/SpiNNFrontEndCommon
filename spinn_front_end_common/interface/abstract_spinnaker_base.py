@@ -115,9 +115,10 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
-    fixed_route_from_machine_report, memory_map_on_host_report,
+    fixed_route_from_machine_report,
+    generate_routing_compression_checker_report, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
-    routing_table_from_machine_report, tags_from_machine_report,
+    tags_from_machine_report,
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
@@ -1697,7 +1698,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Uncompressed routing table report",
                       TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_table_reports"):
+                    "Reports", "write_uncompressed"):
                 return
             router_report_from_router_tables()
 
@@ -1820,11 +1821,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type compressed: ~.MulticastRoutingTables or None
         """
         with FecTimer("Compressor report", TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_table_reports"):
-                return
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_tables_from_machine_reports"):
+            if timer.skip_all_cfgs_false(
+                    [("Reports", "write_compressed"),
+                     ("Reports", "write_compression_comparison"),
+                     ("Reports", "write_compression_summary"),
+                     ("Mapping", "run_compression_checker")],
+                    "No reports need compressed routing tables"):
                 return
 
             if compressed is None:
@@ -1832,10 +1834,16 @@ class AbstractSpinnakerBase(ConfigHandler):
                     return
                 compressed = read_routing_tables_from_machine()
 
-            router_report_from_compressed_router_tables(compressed)
-            generate_comparison_router_report(compressed)
-            router_compressed_summary_report(compressed)
-            routing_table_from_machine_report(compressed)
+            if get_config_bool("Reports", "write_compressed"):
+                router_report_from_compressed_router_tables(compressed)
+            if get_config_bool("Reports", "write_compression_comparison"):
+                generate_comparison_router_report(compressed)
+            if get_config_bool("Reports", "write_compression_summary"):
+                router_compressed_summary_report(compressed)
+            if get_config_bool("Mapping", "run_compression_checker"):
+                routing_tables = self._data_writer.get_uncompressed()
+                generate_routing_compression_checker_report(
+                    routing_tables, compressed)
 
     def _report_fixed_routes(self) -> None:
         """
