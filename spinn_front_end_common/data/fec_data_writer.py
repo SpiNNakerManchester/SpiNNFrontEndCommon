@@ -370,59 +370,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._data_in_multicast_routing_tables = routing_tables
         self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
 
-    def set_n_required(self, n_boards_required: Optional[int],
-                       n_chips_required: Optional[int]):
-        """
-        Sets (if not `None`) the number of boards/chips requested by the user.
-
-        :param n_boards_required:
-            `None` or the number of boards requested by the user
-        :type n_boards_required: int or None
-        :param n_chips_required:
-            `None` or the number of chips requested by the user
-        :type n_chips_required: int or None
-        """
-        if n_boards_required is None:
-            if n_chips_required is None:
-                return
-            elif not isinstance(n_chips_required, int):
-                raise TypeError("n_chips_required must be an int (or None)")
-            if n_chips_required <= 0:
-                raise ConfigurationException(
-                    "n_chips_required must be positive and not "
-                    f"{n_chips_required}")
-        else:
-            if n_chips_required is not None:
-                raise ConfigurationException(
-                    "Illegal call with both both param provided as "
-                    f"{n_boards_required}, {n_chips_required}")
-            if not isinstance(n_boards_required, int):
-                raise TypeError("n_boards_required must be an int (or None)")
-            if n_boards_required <= 0:
-                raise ConfigurationException(
-                    "n_boards_required must be positive and not "
-                    f"{n_boards_required}")
-        if self.__fec_data._n_boards_required is not None or \
-                self.__fec_data._n_chips_required is not None:
-            raise ConfigurationException(
-                "Illegal second call to set_n_required")
-        self.__fec_data._n_boards_required = n_boards_required
-        self.__fec_data._n_chips_required = n_chips_required
-
-    def set_n_chips_in_graph(self, n_chips_in_graph: int):
-        """
-        Sets the number of chips needed by the graph.
-
-        :param int n_chips_in_graph:
-        """
-        if not isinstance(n_chips_in_graph, int):
-            raise TypeError("n_chips_in_graph must be an int (or None)")
-        if n_chips_in_graph <= 0:
-            raise ConfigurationException(
-                "n_chips_in_graph must be positive and not "
-                f"{n_chips_in_graph}")
-        self.__fec_data._n_chips_in_graph = n_chips_in_graph
-
     def set_ipaddress(self, ip_address: str):
         """
         :param str ip_address:
