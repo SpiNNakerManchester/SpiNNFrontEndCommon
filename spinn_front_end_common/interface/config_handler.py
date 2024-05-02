@@ -109,12 +109,6 @@ class ConfigHandler(object):
                         logger.info(
                             "As reportsEnabled == \"False\", [Reports] {} "
                             "has been set to False", option)
-        if get_config_bool("Machine", "virtual_board"):
-            # TODO handle in the execute methods
-            if get_config_bool("Reports", "write_energy_report"):
-                set_config("Reports", "write_energy_report", "False")
-                logger.info("[Reports]write_energy_report has been set to "
-                            "False as using virtual boards")
 
     def _previous_handler(self) -> None:
         self._error_on_previous("loading_algorithms")
