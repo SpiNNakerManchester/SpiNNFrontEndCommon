@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from contextlib import AbstractContextManager, ExitStack
+from contextlib import ExitStack
 import logging
 import math
 from typing import ContextManager, Dict, Tuple, Optional, Union, cast
@@ -55,25 +55,19 @@ class SpallocJobController(MachineAllocationController):
         # the current job's old state
         "_state",
         "__client",
-        "__closer",
         "__use_proxy"
     )
 
     def __init__(
-            self, client: SpallocClient, job: SpallocJob,
-            task: AbstractContextManager, use_proxy: bool):
+            self, client: SpallocClient, job: SpallocJob, use_proxy: bool):
         """
         :param ~spinnman.spalloc.SpallocClient client:
         :param ~spinnman.spalloc.SpallocJob job:
-        :param task:
-        :type task:
-            ~spinn_utilities.abstract_context_manager.AbstractContextManager
         :param bool use_proxy:
         """
         if job is None:
             raise TypeError("must have a real job")
         self.__client = client
-        self.__closer = task
         self._job = job
         self._state = job.get_state()
         self.__use_proxy = use_proxy
@@ -94,7 +88,6 @@ class SpallocJobController(MachineAllocationController):
         pass
 
     def __stop(self) -> None:
-        self.__closer.__exit__(None, None, None)
         self._job.destroy()
         self.__client.close()
 
@@ -365,8 +358,6 @@ def _allocate_job_new(
         stack.enter_context(cast(ContextManager[SpallocClient], client))
         job = client.create_job(n_boards, spalloc_machine)
         stack.enter_context(job)
-        task = job.launch_keepalive_task()
-        stack.enter_context(task)
         job.wait_until_ready()
         connections = job.get_connections()
         with ProvenanceWriter() as db:
@@ -377,7 +368,7 @@ def _allocate_job_new(
                 "boards: {}",
                 str(connections).replace("{", "[").replace("}", "]"))
         allocation_controller = SpallocJobController(
-            client, job, task, use_proxy or False)
+            client, job, use_proxy or False)
         # Success! We don't want to close the client, job or task now;
         # the allocation controller now owns them.
         stack.pop_all()
