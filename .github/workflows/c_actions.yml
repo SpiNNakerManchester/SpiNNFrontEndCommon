@@ -95,4 +95,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: log.sqlite3
-        path: "$PWD/SpiNNUtils/spinn_utilities/make_tools/logs.sqlite3"
+        path: ./SpiNNUtils/spinn_utilities/make_tools/logs.sqlite3
