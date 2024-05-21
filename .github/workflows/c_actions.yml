@@ -54,6 +54,7 @@ jobs:
       run: |
         echo "Set SPINN_DIRS to $PWD/spinnaker_tools"
         echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
+        echo "C_LOGS_DICT=./logs.sqlite3" >> $GITHUB_ENV
 
     - name: "Prepare: Checkout SpiNNaker C Dependencies"
       uses: ./support/actions/install-spinn-deps
@@ -95,4 +96,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: log.sqlite3
-        path: ./SpiNNUtils/spinn_utilities/make_tools/logs.sqlite3
+        path: ./logs.sqlite3
