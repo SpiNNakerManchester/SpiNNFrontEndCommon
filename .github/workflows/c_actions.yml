@@ -50,11 +50,10 @@ jobs:
       with:
         packages: doxygen gcc-arm-none-eabi
 
-    - name: "Prepare: Set SPINN_DIRS"
+    - name: "Prepare: Set Environment variables
       run: |
-        echo "Set SPINN_DIRS to $PWD/spinnaker_tools"
         echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
-        echo "C_LOGS_DICT=spinn_front_end_common/common_model_binaries/logs.sqlite3" >> $GITHUB_ENV
+        echo "C_LOGS_DICT=$PWD/spinn_front_end_common/common_model_binaries/logs.sqlite3" >> $GITHUB_ENV
 
     - name: "Prepare: Checkout SpiNNaker C Dependencies"
       uses: ./support/actions/install-spinn-deps
