@@ -89,4 +89,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: fec_binaries
-        path: spinn_front_end_common/common_model_binaries/*.(aplx|sqlite3)
+        path: |
+          spinn_front_end_common/common_model_binaries/*.aplx
+          spinn_front_end_common/common_model_binaries/logs.sqlite3
