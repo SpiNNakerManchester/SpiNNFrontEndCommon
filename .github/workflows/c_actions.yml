@@ -50,7 +50,7 @@ jobs:
       with:
         packages: doxygen gcc-arm-none-eabi
 
-    - name: "Prepare: Set Environment variables
+    - name: "Prepare: Set Environment variables"
       run: |
         echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
         echo "C_LOGS_DICT=$PWD/spinn_front_end_common/common_model_binaries/logs.sqlite3" >> $GITHUB_ENV
