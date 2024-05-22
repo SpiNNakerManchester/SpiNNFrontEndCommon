@@ -226,7 +226,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
         if self._size < length:
             raise DataSpecException(
-                f"Region size is {self._size} "
+                f"Region {self._region_num} size is {self._size} "
                 f"so unable to write {length} bytes")
         if length % 4 != 0:
             raise NotImplementedError(

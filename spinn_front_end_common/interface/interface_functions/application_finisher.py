@@ -14,12 +14,16 @@
 
 import struct
 import time
+import logging
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableFailedToStopException)
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 _ONE_WORD = struct.Struct("<I")
 
@@ -54,6 +58,11 @@ def application_finisher() -> None:
                 app_id, CPUState.WATCHDOG)
 
             if processors_rte > 0 or processors_watchdogged > 0:
+                cpu_infos = txrx.get_cpu_infos(
+                    all_core_subsets,
+                    [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG], True)
+                logger.error(cpu_infos.get_status_string())
+
                 raise ExecutableFailedToStopException(
                     f"{processors_rte + processors_watchdogged} of "
                     f"{total_processors} processors went into an error state "
