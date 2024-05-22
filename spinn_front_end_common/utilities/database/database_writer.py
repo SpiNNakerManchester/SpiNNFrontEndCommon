@@ -241,7 +241,7 @@ class DatabaseWriter(SQLiteDB):
         # This could happen if there are no LPGs
         if machine_vertices is None:
             return
-        key_vertices = dict()
+        key_vertices: Dict[int, MachineVertex] = dict()
         for (m_vertex, partition_id) in machine_vertices:
             atom_keys: Iterable[Tuple[int, int]] = ()
             if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):
