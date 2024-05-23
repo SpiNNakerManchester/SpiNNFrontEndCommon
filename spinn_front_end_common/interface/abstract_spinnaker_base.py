@@ -213,7 +213,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
 
-        if "EXTERNAL_BINARIES" in os.environ:
+        if "SPINNAKER_EXTERNAL_BINARIES" in os.environ:
              #self._data_writer.register_binary_search_path(os.path.join(
              #   os.path.expanduser("~"), os.environ["EXTERNAL_BINARIES"]))
              #self._data_writer.register_binary_search_path(
