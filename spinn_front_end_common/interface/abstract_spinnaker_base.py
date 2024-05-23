@@ -214,8 +214,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             os.path.dirname(common_model_binaries.__file__))
 
         if "EXTERNAL_BINARIES" in os.environ:
-             self._data_writer.register_binary_search_path(os.path.join(
-                os.path.expanduser("~"), os.environ["EXTERNAL_BINARIES"]))
+             #self._data_writer.register_binary_search_path(os.path.join(
+             #   os.path.expanduser("~"), os.environ["EXTERNAL_BINARIES"]))
+             self._data_writer.register_binary_search_path(
+                 os.path.abspath(os.environ["EXTERNAL_BINARIES"]))
 
         self._data_writer.set_machine_generator(self._get_machine)
         FecTimer.end_category(TimerCategory.SETTING_UP)
