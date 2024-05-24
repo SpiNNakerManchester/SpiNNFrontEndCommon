@@ -216,7 +216,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         external_binaries = get_config_str_or_none(
             "Mapping", "external_binaries")
         if external_binaries is not None:
-             self._data_writer.register_binary_search_path(external_binaries)
+            self._data_writer.register_binary_search_path(external_binaries)
 
         self._data_writer.set_machine_generator(self._get_machine)
         FecTimer.end_category(TimerCategory.SETTING_UP)
