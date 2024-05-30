@@ -30,6 +30,7 @@ jobs:
         checkout_dependencies: spinnaker_tools spinn_common
         install_dependencies: SpiNNUtils
         install_module: false
+        install_check_tools: false
         ubuntu_packages: doxygen gcc-arm-none-eabi
         check_tools: skip
 
