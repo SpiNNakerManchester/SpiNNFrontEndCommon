@@ -23,48 +23,25 @@ jobs:
     timeout-minutes: 5
 
     steps:
-    - name: "Prepare: Checkout"
-      uses: actions/checkout@v4
-
-    - name: "Prepare: Checkout SupportScripts"
-      uses: actions/checkout@v4
+    - name: Prepare
+      uses: SpiNNakerManchester/SupportScripts/actions/prepare@main
       with:
-        repository: SpiNNakerManchester/SupportScripts
-        path: support
-
-    - name: "Prepare: Set up Python 3.12"
-      # Note: Python is needed for spinn_utilities.make_tools when building
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.12
-
-    - name: "Prepare: Install SpiNNUtils"
-      uses: ./support/actions/install-spinn-deps
-      with:
-        # Note: SpiNNUtils needed for spinn_utilities.make_tools
-        repositories: SpiNNUtils
-        install: true
-
-    - name: "Prepare: Install Ubuntu dependencies"
-      uses: ./support/actions/apt-get-install
-      with:
-        packages: doxygen gcc-arm-none-eabi
+        python-version: "3.12"
+        checkout_dependencies: spinnaker_tools spinn_common
+        intall_dependenciess: SpiNNUtils
+        ubuntu_packages: doxygen gcc-arm-none-eabi
+        check_tools: skip
 
     - name: "Prepare: Set Environment variables"
       run: |
         echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
         echo "C_LOGS_DICT=$PWD/spinn_front_end_common/common_model_binaries/logs.sqlite3" >> $GITHUB_ENV
 
-    - name: "Prepare: Checkout SpiNNaker C Dependencies"
-      uses: ./support/actions/install-spinn-deps
-      with:
-        repositories: spinnaker_tools spinn_common
-        install: false
-
     - name: "Check: Lint C lib code using Vera++"
       uses: ./support/actions/vera
       with:
         base-dir: c_common/front_end_common_lib
+
     - name: "Check: Lint C binary code using Vera++"
       uses: ./support/actions/vera
       with:
@@ -92,3 +69,4 @@ jobs:
         path: |
           spinn_front_end_common/common_model_binaries/*.aplx
           spinn_front_end_common/common_model_binaries/logs.sqlite3
+        retention-days: 5
