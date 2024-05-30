@@ -28,7 +28,7 @@ jobs:
       with:
         python-version: "3.12"
         checkout_dependencies: spinnaker_tools spinn_common
-        intall_dependenciess: SpiNNUtils
+        install_dependencies: SpiNNUtils
         install_python: false
         ubuntu_packages: doxygen gcc-arm-none-eabi
         check_tools: skip
