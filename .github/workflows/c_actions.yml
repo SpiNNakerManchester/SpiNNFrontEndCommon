@@ -39,12 +39,12 @@ jobs:
         echo "C_LOGS_DICT=$PWD/spinn_front_end_common/common_model_binaries/logs.sqlite3" >> $GITHUB_ENV
 
     - name: "Check: Lint C lib code using Vera++"
-      uses: ./support/actions/vera
+      uses: SpiNNakerManchester/SupportScripts/actions/vera@main
       with:
         base-dir: c_common/front_end_common_lib
 
     - name: "Check: Lint C binary code using Vera++"
-      uses: ./support/actions/vera
+      uses: SpiNNakerManchester/SupportScripts/actions/vera/@main
       with:
         base-dir: c_common/models
 
