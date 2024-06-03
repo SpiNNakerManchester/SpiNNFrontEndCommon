@@ -22,9 +22,11 @@ jobs:
   call:
     uses: SpiNNakerManchester/SupportScripts/.github/workflows/python_checks.yml@main
     with:
-      base-package: spinn_front_end_common
       dependencies: SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
       test_directories: unittests fec_integration_tests
+      coverage-package: spinn_front_end_common
       flake8-packages: spinn_front_end_common unittests fec_integration_tests
+      pylint-packages: spinn_front_end_common
+      mypy-packages: spinn_front_end_common
       check_prereleases: false
     secrets: inherit
