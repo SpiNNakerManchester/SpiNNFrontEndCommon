@@ -28,5 +28,4 @@ jobs:
       flake8-packages: spinn_front_end_common unittests fec_integration_tests
       pylint-packages: spinn_front_end_common
       mypy-packages: spinn_front_end_common
-      check_prereleases: false
     secrets: inherit
