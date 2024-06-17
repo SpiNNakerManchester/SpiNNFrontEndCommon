@@ -23,46 +23,28 @@ jobs:
     timeout-minutes: 5
 
     steps:
-    - name: "Prepare: Checkout"
-      uses: actions/checkout@v4
-    - name: "Prepare: Checkout SupportScripts"
-      uses: actions/checkout@v4
+    - name: Prepare
+      uses: SpiNNakerManchester/SupportScripts/actions/prepare@main
       with:
-        repository: SpiNNakerManchester/SupportScripts
-        path: support
+        python-version: "3.12"
+        checkout_dependencies: spinnaker_tools spinn_common
+        install_dependencies: SpiNNUtils
+        install_module: false
+        install_check_tools: false
+        ubuntu_packages: doxygen gcc-arm-none-eabi
 
-    - name: "Prepare: Install Ubuntu dependencies"
-      uses: ./support/actions/apt-get-install
-      with:
-        packages: doxygen gcc-arm-none-eabi
-    - name: "Prepare: Set up Python 3.12"
-      # Note: Python is needed for spinn_utilities.make_tools when building
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.12
-    - name: "Prepare: Set SPINN_DIRS"
+    - name: "Prepare: Set Environment variables"
       run: |
-        echo "Set SPINN_DIRS to $PWD/spinnaker_tools"
         echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
-    - name: "Prepare: Checkout SpiNNaker C Dependencies"
-      uses: ./support/actions/install-spinn-deps
-      with:
-        repositories: spinnaker_tools spinn_common
-        install: false
-
-    - name: "Prepare: Install SpiNNUtils"
-      uses: ./support/actions/install-spinn-deps
-      with:
-        # Note: SpiNNUtils needed for spinn_utilities.make_tools
-        repositories: SpiNNUtils
-        install: true
+        echo "C_LOGS_DICT=$PWD/spinn_front_end_common/common_model_binaries/logs.sqlite3" >> $GITHUB_ENV
 
     - name: "Check: Lint C lib code using Vera++"
-      uses: ./support/actions/vera
+      uses: SpiNNakerManchester/SupportScripts/actions/vera@main
       with:
         base-dir: c_common/front_end_common_lib
+
     - name: "Check: Lint C binary code using Vera++"
-      uses: ./support/actions/vera
+      uses: SpiNNakerManchester/SupportScripts/actions/vera/@main
       with:
         base-dir: c_common/models
 
@@ -70,6 +52,7 @@ jobs:
       run: |
         make -C $SPINN_DIRS
         make -C spinn_common install
+
     - name: "Check: Build C code"
       run: make
       working-directory: c_common
@@ -79,3 +62,12 @@ jobs:
     - name: "Check: Build documentation"
       run: make doxysetup doxygen
       working-directory: c_common
+
+    - name: Upload binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: fec_binaries
+        path: |
+          spinn_front_end_common/common_model_binaries/*.aplx
+          spinn_front_end_common/common_model_binaries/logs.sqlite3
+        retention-days: 5
