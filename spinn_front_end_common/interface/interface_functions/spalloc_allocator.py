@@ -22,7 +22,8 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
-from spinn_utilities.config_holder import get_config_int, get_config_str
+from spinn_utilities.config_holder import (
+    get_config_int, get_config_str, set_config)
 
 from spalloc_client import Job  # type: ignore[import]
 from spalloc_client.states import JobState  # type: ignore[import]
@@ -312,13 +313,12 @@ def spalloc_allocator(
         if n_boards - n_boards_float < 0.5:
             n_boards += 1
 
-    if is_server_address(spalloc_server):
-        host, connections, mac = _allocate_job_new(
-            spalloc_server, n_boards, bearer_token, group, collab,
-            int(nmpi_job) if nmpi_job is not None else None,
-            nmpi_user)
-    else:
-        host, connections, mac = _allocate_job_old(spalloc_server, n_boards)
+    if not is_server_address(spalloc_server):
+        set_config("Machine", "spalloc_use_proxy", False)
+    host, connections, mac = _allocate_job_new(
+        spalloc_server, n_boards, bearer_token, group, collab,
+        int(nmpi_job) if nmpi_job is not None else None,
+        nmpi_user)
     return (host, _MACHINE_VERSION, None, False, False, connections, mac)
 
 
