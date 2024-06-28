@@ -243,7 +243,10 @@ def spalloc_allocator(
             n_boards += 1
 
     if not is_server_address(spalloc_server):
-        set_config("Machine", "spalloc_use_proxy", "False")
+        if spalloc_server.lower() in ["spinnaker.cs.man.ac.uk", "10.11.192.11"]:
+            set_config("Machine", "spalloc_use_proxy", "False")
+            set_config("Machine", "spalloc_server",
+                       "https://hack:hack@spinnaker.cs.man.ac.uk/spalloc/")
     host, connections, mac = _allocate_job_new(
         spalloc_server, n_boards, bearer_token, group, collab,
         int(nmpi_job) if nmpi_job is not None else None,
