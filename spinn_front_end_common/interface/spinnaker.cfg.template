@@ -17,7 +17,7 @@ spalloc_group = None
 
 # If using virtual_board both width and height must be set
 virtual_board = False
-# Allowed values pairs are (2,2)  (8,8)   (n*12,m*12)  and (n*12+4, m*12+4)
+# Allowed values pairs are (1,1) (2,2)  (8,8)   (n*12,m*12)  and (n*12+4, m*12+4)
 width = None
 height = None
 
