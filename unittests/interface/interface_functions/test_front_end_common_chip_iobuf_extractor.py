@@ -37,6 +37,7 @@ class _PretendTransceiver(MockableTransceiver):
     @overrides(MockableTransceiver.get_iobuf)
     def get_iobuf(self, core_subsets: Optional[CoreSubsets] = None
                   ) -> Iterable[IOBuffer]:
+        assert core_subsets is not None
         for iobuf in self._iobuffers:
             if core_subsets.is_core(iobuf.x, iobuf.y, iobuf.p):
                 yield iobuf
