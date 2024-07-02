@@ -126,6 +126,7 @@ class _MockTransceiver(MockableTransceiver):
         self._regions_rewritten.append((base_address, data))
         return (-1, -1)
 
+
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
     def setUp(self):
