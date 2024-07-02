@@ -30,5 +30,4 @@ class TestCfgChecker(unittest.TestCase):
         fec_dir = spinn_front_end_common.__path__[0]
         local = os.path.join(parent, "fec_local_tests")
         fec_it = os.path.join(parent, "fec_integration_tests")
-        run_config_checks(directories=[
-            fec_dir, local, fec_it, unittests])
+        run_config_checks(directories=[fec_dir, local, fec_it, unittests])
