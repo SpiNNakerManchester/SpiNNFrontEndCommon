@@ -124,7 +124,7 @@ class _MockTransceiver(MockableTransceiver):
             n_bytes: Optional[int] = None, offset: int = 0, cpu: int = 0,
             get_sum: bool = False) -> Tuple[int, int]:
         self._regions_rewritten.append((base_address, data))
-
+        return (-1, -1)
 
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
