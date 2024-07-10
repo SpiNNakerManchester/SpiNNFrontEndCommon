@@ -36,7 +36,8 @@ from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 logger = FormatAdapter(logging.getLogger(__name__))
 _Writer: TypeAlias = Callable[[int, int, int, bytes], Any]
 
-MONITOR_CUTOFF = 100
+MONITOR_CUTOFF = 20000
+
 
 def load_system_data_specs() -> None:
     """
@@ -150,7 +151,7 @@ class _LoadDataSpecification(object):
             transceiver = FecDataView.get_transceiver()
             direct_writer: _Writer = transceiver.write_memory
             # for the uses_advanced_monitors = false case
-            monitor_writer: _Writer  = direct_writer
+            monitor_writer: _Writer = direct_writer
             core_infos = ds_database.get_core_infos(is_system)
             if is_system:
                 type_str = "system"
