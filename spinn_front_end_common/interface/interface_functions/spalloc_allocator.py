@@ -15,6 +15,7 @@
 from contextlib import ExitStack
 import logging
 import math
+# pylint: disable=no-name-in-module
 from typing import ContextManager, Dict, Tuple, Optional, Union, cast
 
 from spinn_utilities.config_holder import (
