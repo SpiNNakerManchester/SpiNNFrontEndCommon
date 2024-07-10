@@ -36,6 +36,7 @@ from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 logger = FormatAdapter(logging.getLogger(__name__))
 _Writer: TypeAlias = Callable[[int, int, int, bytes], Any]
 
+MONITOR_CUTOFF = 100
 
 def load_system_data_specs() -> None:
     """
@@ -147,7 +148,9 @@ class _LoadDataSpecification(object):
             # allocate and set user 0 before loading data
 
             transceiver = FecDataView.get_transceiver()
-            writer: _Writer = transceiver.write_memory
+            direct_writer: _Writer = transceiver.write_memory
+            # for the uses_advanced_monitors = false case
+            monitor_writer: _Writer  = direct_writer
             core_infos = ds_database.get_core_infos(is_system)
             if is_system:
                 type_str = "system"
@@ -165,8 +168,9 @@ class _LoadDataSpecification(object):
             for x, y, p, eth_x, eth_y in progress.over(core_infos):
                 if uses_advanced_monitors:
                     gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
-                    writer = gatherer.send_data_into_spinnaker
-                written = self.__python_load_core(ds_database, x, y, p, writer)
+                    monitor_writer = gatherer.send_data_into_spinnaker
+                written = self.__python_load_core(
+                    ds_database, x, y, p, direct_writer, monitor_writer)
                 to_write = ds_database.get_memory_to_write(x, y, p)
                 if written != to_write:
                     raise DataSpecException(
@@ -197,7 +201,7 @@ class _LoadDataSpecification(object):
 
     def __python_load_core(
             self, ds_database: DsSqlliteDatabase, x: int, y: int, p: int,
-            writer: _Writer) -> int:
+            direct_writer: _Writer, monitor_writer: _Writer) -> int:
         written = 0
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
@@ -209,7 +213,10 @@ class _LoadDataSpecification(object):
                 if content is None:
                     continue
 
-                writer(x, y, pointer, content)
+                if len(content) < MONITOR_CUTOFF:
+                    direct_writer(x, y, pointer, content)
+                else:
+                    monitor_writer(x, y, pointer, content)
                 n_bytes = len(content)
                 written += n_bytes
                 if n_bytes % BYTES_PER_WORD != 0:
@@ -233,7 +240,10 @@ class _LoadDataSpecification(object):
             (header, pointer_table.view("uint32"))).tobytes()
         if base_address is None:
             logger.warning("here")
-        writer(x, y, base_address, to_write)
+        if len(to_write) < MONITOR_CUTOFF:
+            direct_writer(x, y, base_address, to_write)
+        else:
+            monitor_writer(x, y, base_address, to_write)
         written += len(to_write)
         return written
 
