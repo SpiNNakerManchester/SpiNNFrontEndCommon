@@ -245,8 +245,8 @@ class DatabaseWriter(SQLiteDB):
         for (m_vertex, partition_id) in machine_vertices:
             atom_keys: Iterable[Tuple[int, int]] = ()
             if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):
-                atom_keys = m_vertex.app_vertex.get_atom_key_map(
-                    m_vertex, partition_id, routing_infos)
+                atom_keys = list(m_vertex.app_vertex.get_atom_key_map(
+                    m_vertex, partition_id, routing_infos))
             else:
                 r_info = routing_infos.get_routing_info_from_pre_vertex(
                     m_vertex, partition_id)
