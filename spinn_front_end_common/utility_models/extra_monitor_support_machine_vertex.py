@@ -15,6 +15,7 @@ from __future__ import annotations
 from enum import Enum, IntEnum
 import logging
 import struct
+# pylint: disable=no-name-in-module
 from typing import Dict, Iterable, Optional, ContextManager
 
 from typing_extensions import Literal

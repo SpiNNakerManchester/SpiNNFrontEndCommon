@@ -14,6 +14,7 @@
 
 import argparse
 import os
+# pylint: disable=no-name-in-module
 from typing import (
     Any, ContextManager, FrozenSet, Iterable, List, Optional, Tuple, cast)
 import sqlite3

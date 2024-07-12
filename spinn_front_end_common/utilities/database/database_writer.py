@@ -241,11 +241,12 @@ class DatabaseWriter(SQLiteDB):
         # This could happen if there are no LPGs
         if machine_vertices is None:
             return
+        key_vertices: Dict[int, MachineVertex] = dict()
         for (m_vertex, partition_id) in machine_vertices:
             atom_keys: Iterable[Tuple[int, int]] = ()
             if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):
-                atom_keys = m_vertex.app_vertex.get_atom_key_map(
-                    m_vertex, partition_id, routing_infos)
+                atom_keys = list(m_vertex.app_vertex.get_atom_key_map(
+                    m_vertex, partition_id, routing_infos))
             else:
                 r_info = routing_infos.get_routing_info_from_pre_vertex(
                     m_vertex, partition_id)
@@ -256,6 +257,13 @@ class DatabaseWriter(SQLiteDB):
                     keys = get_keys(r_info.key, vertex_slice)
                     start = vertex_slice.lo_atom
                     atom_keys = [(i, k) for i, k in enumerate(keys, start)]
+            for _atom, key in atom_keys:
+                if key in key_vertices:
+                    raise KeyError(
+                        f"Key {key} cannot be assigned to {m_vertex} "
+                        f"because it is already assigned to "
+                        f"{key_vertices[key]}")
+                key_vertices[key] = m_vertex
             m_vertex_id = self.__vertex_to_id[m_vertex]
             self.executemany(
                 """
