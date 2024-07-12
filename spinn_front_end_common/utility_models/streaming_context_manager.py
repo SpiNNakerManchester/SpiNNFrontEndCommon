@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+# pylint: disable=no-name-in-module
 from typing import ContextManager, Iterable, TYPE_CHECKING
 from typing_extensions import Literal
 if TYPE_CHECKING:
