@@ -51,6 +51,7 @@ class _MockTransceiver(Version5Transceiver):
             self, core_subsets: Optional[CoreSubsets] = None,
             states: Union[CPUState, Iterable[CPUState], None] = None,
             include: bool = True) -> CPUInfos:
+        assert core_subsets is not None
         if states is None or not include:
             raise NotImplementedError("oops")
         cores_in_state = CPUInfos()
