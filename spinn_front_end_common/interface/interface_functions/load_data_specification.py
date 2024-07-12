@@ -140,13 +140,16 @@ class _LoadDataSpecification(object):
         """
         Does the Data Specification Execution and loading using Python.
         """
-        if uses_advanced_monitors:
-            self.__set_router_timeouts()
 
         # create a progress bar for end users
         with DsSqlliteDatabase() as ds_database:
 
-            # allocate and set user 0 before loading data
+            if uses_advanced_monitors:
+                max_size = ds_database.get_max_content_size(is_system)
+                if max_size < MONITOR_CUTOFF:
+                    uses_advanced_monitors = False
+                else:
+                    self.__set_router_timeouts()
 
             transceiver = FecDataView.get_transceiver()
             direct_writer: _Writer = transceiver.write_memory
@@ -207,7 +210,7 @@ class _LoadDataSpecification(object):
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
         try:
             for region_num, pointer, content in \
-                    ds_database.get_region_pointers_and_content(x, y, p):
+                    ds_database.get_regions_content(x, y, p):
                 pointer_table[region_num]["pointer"] = pointer
 
                 if content is None:

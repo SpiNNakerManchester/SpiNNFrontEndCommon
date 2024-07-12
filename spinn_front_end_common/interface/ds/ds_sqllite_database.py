@@ -485,7 +485,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
         This includes regions with no content set where content will be None
 
-        Will yield nothing if there are no regions reserved or if the core if
+        Will yield nothing if there are no regions reserved or if the core is
         not known
 
         :param int x: X coordinate of the core
@@ -506,6 +506,74 @@ class DsSqlliteDatabase(SQLiteDB):
             else:
                 content = None
             yield row["region_num"], row["pointer"], content
+
+    def get_regions_content(
+            self, x: int, y: int, p: int) -> Iterable[Tuple[int, int, bytes]]:
+        """
+        Yields the number, pointers and content for each region
+
+        This does not include regions with no content set
+
+        Will yield nothing if there are no regions with content
+        or if the core the is not known
+
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
+        :return: number, pointer and (content or None)
+        :rtype: iterable(tuple(int, int, bytearray or None))
+        """
+        for row in self.execute(
+                """
+                SELECT region_num, content, pointer
+                FROM region
+                WHERE x = ? AND y = ? AND p = ? AND content IS NOT NULL
+                ORDER BY region_num
+                 """, (x, y, p)):
+            yield row["region_num"], row["pointer"], bytearray(row["content"])
+
+    def get_max_content_size(self, is_system: bool) -> int:
+        """
+        Returns the size of the largest content.
+
+        :param bool is_system: if True returns system cores
+            otherwise application cores
+
+        :rtype: int
+        :raises DsDatabaseException:
+        """
+        for row in self.execute(
+                """
+                SELECT MAX(LENGTH(content)) AS size
+                FROM region NATURAL JOIN CORE
+                WHERE is_system = ?
+                LIMIT 1
+                 """, (is_system,)):
+            return row["Size"]
+        raise DsDatabaseException("Max content size query")
+
+    def get_content_sizes(self, is_system: bool) -> List[Tuple[int, int]]:
+        """
+        Returns the sizes of the content and the count of each size.
+
+        May will return and empty list if there is no none Null content
+
+        :param bool is_system: if True returns system cores
+            otherwise application cores
+
+        :rtype: list(tuple(int, int))
+        """
+        sizes: List[Tuple[int, int]] = []
+        for row in self.execute(
+                """
+                SELECT LENGTH(content) AS size, COUNT(*) AS num  
+                FROM region NATURAL JOIN core
+                WHERE is_system = ? AND content IS NOT NULL
+                GROUP BY size
+                ORDER BY size
+                """, (is_system,)):
+            sizes.append((row["size"], row["num"]))
+        return sizes
 
     def get_ds_cores(self) -> Iterable[XYP]:
         """
