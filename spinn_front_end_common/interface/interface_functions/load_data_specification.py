@@ -96,8 +96,8 @@ class _LoadDataSpecification(object):
         """
         # create a progress bar for end users
         progress = ProgressBar(
-            2, "Executing data specifications and loading data for "
-            "application vertices using Java")
+            2,
+            f"Loading data for pplication vertices using Java")
 
         java_caller = FecDataView.get_java_caller()
         if use_monitors:
@@ -131,8 +131,8 @@ class _LoadDataSpecification(object):
         """
         # create a progress bar for end users
         progress = ProgressBar(
-            1, "Executing data specifications and loading data for system "
-            "vertices using Java")
+            1,
+            "Loading data for system vertices using Java")
         FecDataView.get_java_caller().load_system_data_specification()
         progress.end()
 
@@ -159,8 +159,7 @@ class _LoadDataSpecification(object):
                 type_str = "application"
             progress = ProgressBar(
                 len(core_infos) * 2,
-                "Executing data specifications and loading data for "
-                f"{type_str} vertices")
+                f"Loading data for {type_str} vertices")
 
             for x, y, p, _, _ in progress.over(
                     core_infos, finish_at_end=False):
@@ -214,11 +213,11 @@ class _LoadDataSpecification(object):
                 if content is None:
                     continue
 
-                if len(content) < MONITOR_CUTOFF:
+                n_bytes = len(content)
+                if n_bytes < MONITOR_CUTOFF:
                     direct_writer(x, y, pointer, content)
                 else:
                     monitor_writer(x, y, pointer, content)
-                n_bytes = len(content)
                 written += n_bytes
                 if n_bytes % BYTES_PER_WORD != 0:
                     n_bytes += BYTES_PER_WORD - n_bytes % BYTES_PER_WORD
