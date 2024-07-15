@@ -96,6 +96,7 @@ from spinn_front_end_common.interface.interface_functions import (
     insert_chip_power_monitors_to_graphs,
     insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
+    load_using_advanced_monitors,
     locate_executable_start_type, machine_generator,
     placements_provenance_gatherer, profile_data_gatherer,
     read_routing_tables_from_machine, router_provenance_gatherer,
@@ -1649,22 +1650,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             # BitFieldSummary output ignored as never used
             bitfield_compressor_report()
 
-    def _execute_load_fixed_routes(self) -> None:
+    def _execute_fixed_routes(self) -> None:
         """
         Runs, times and logs Load Fixed Routes if required.
         """
-        with FecTimer("Load fixed routes", TimerWork.LOADING) as timer:
-            if timer.skip_if_cfg_false(
-                    "Machine", "enable_advanced_monitor_support"):
-                return
-            if get_config_bool("Machine",
-                               "disable_advanced_monitor_usage_for_data_in"):
-                timer.skip("disable_advanced_monitor_usage_for_data_in")
+        with FecTimer("Fixed routes", TimerWork.LOADING) as timer:
+            if not load_using_advanced_monitors():
+                timer.skip("Not using advanced monitiors for loading")
                 return
             if timer.skip_if_virtual_board():
                 return
-            with DsSqlliteDatabase() as ds_database:
-                ds_database
             if not self._data_writer.has_fixed_routes():
                 self._data_writer.set_fixed_routes(fixed_route_router(
                     DataSpeedUpPacketGatherMachineVertex))
@@ -1820,7 +1815,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_control_sync(False)
         if self._data_writer.get_requires_mapping():
-            self._execute_load_fixed_routes()
+            self._execute_fixed_routes()
         self._execute_load_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()

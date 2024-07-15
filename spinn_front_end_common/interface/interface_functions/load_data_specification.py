@@ -50,7 +50,9 @@ def load_using_advanced_monitors() -> bool:
     if get_config_bool(
             "Machine", "disable_advanced_monitor_usage_for_data_in"):
         return False
-    return True
+    with DsSqlliteDatabase() as ds_database:
+        max_size = ds_database.get_max_content_size(is_system=False)
+        return max_size >= MONITOR_CUTOFF
 
 def load_system_data_specs() -> None:
     """
@@ -148,17 +150,10 @@ class _LoadDataSpecification(object):
         """
         Does the Data Specification Execution and loading using Python.
         """
+        if uses_advanced_monitors:
+            self.__set_router_timeouts()
 
-        # create a progress bar for end users
         with DsSqlliteDatabase() as ds_database:
-
-            if uses_advanced_monitors:
-                max_size = ds_database.get_max_content_size(is_system)
-                if max_size < MONITOR_CUTOFF:
-                    uses_advanced_monitors = False
-                else:
-                    self.__set_router_timeouts()
-
             transceiver = FecDataView.get_transceiver()
             direct_writer: _Writer = transceiver.write_memory
             # for the uses_advanced_monitors = false case
