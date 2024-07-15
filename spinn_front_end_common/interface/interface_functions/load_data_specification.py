@@ -37,6 +37,19 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _Writer: TypeAlias = Callable[[int, int, int, bytes], Any]
 
 
+def load_using_advanced_monitors() -> bool:
+    """
+    Detects if advanced monitors should be used for data specs
+    """
+    if not get_config_bool(
+            "Machine", "enable_advanced_monitor_support"):
+        return False
+    # Allow config to override
+    if get_config_bool(
+            "Machine", "disable_advanced_monitor_usage_for_data_in"):
+        return False
+    return True
+
 def load_system_data_specs() -> None:
     """
     Load the data specs for all system targets.
@@ -50,12 +63,7 @@ def load_application_data_specs() -> None:
     Load the data specs for all non-system targets.
     """
     specifier = _LoadDataSpecification()
-    uses_advanced_monitors = get_config_bool(
-        "Machine", "enable_advanced_monitor_support") or False
-    # Allow config to override
-    if get_config_bool(
-            "Machine", "disable_advanced_monitor_usage_for_data_in"):
-        uses_advanced_monitors = False
+    uses_advanced_monitors = load_using_advanced_monitors()
     try:
         specifier.load_data_specs(False, uses_advanced_monitors)
     except:  # noqa: E722

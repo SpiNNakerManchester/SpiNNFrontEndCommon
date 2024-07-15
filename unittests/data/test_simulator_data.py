@@ -398,9 +398,11 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_fixed_routes()
+        self.assertFalse(FecDataView.has_fixed_routes())
         data = dict()
         writer.set_fixed_routes(data)
         self.assertEqual(data, FecDataView.get_fixed_routes())
+        self.assertTrue(FecDataView.has_fixed_routes())
         with self.assertRaises(TypeError):
             writer.set_fixed_routes(writer)
 
