@@ -210,7 +210,7 @@ class _LoadDataSpecification(object):
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
         try:
             for region_num, pointer, content in \
-                    ds_database.get_regions_content(x, y, p):
+                    ds_database.get_region_pointers_and_content(x, y, p):
                 pointer_table[region_num]["pointer"] = pointer
 
                 if content is None:
