@@ -190,7 +190,7 @@ class TestDataSpecification(unittest.TestCase):
             b3 = bytearray(b'90\x00\x00')
             self.assertEqual(12345, int.from_bytes(b3, 'little'))
             self.assertIn((3, 400, b3), regions)
-            self.assertEquals(2, len(regions))
+            self.assertEqual(2, len(regions))
 
             self.assertEqual(12, db.get_max_content_size(True))
             self.assertEqual([(12, 1), (4, 1)], db.get_content_sizes(True))
