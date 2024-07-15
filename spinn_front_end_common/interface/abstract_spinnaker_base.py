@@ -1041,20 +1041,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             data = system_multicast_routing_generator()
             self._data_writer.set_system_multicast_routing_data(data)
 
-    @final
-    def _execute_fixed_route_router(self) -> None:
-        """
-        Runs, times and logs the FixedRouteRouter if required.
-
-        May set the "fixed_routes" data.
-        """
-        with FecTimer("Fixed route router", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false(
-                    "Machine", "enable_advanced_monitor_support"):
-                return
-            self._data_writer.set_fixed_routes(fixed_route_router(
-                DataSpeedUpPacketGatherMachineVertex))
-
     def _report_placements_with_application_graph(self) -> None:
         """
         Writes, times and logs the application graph placer report if
@@ -1385,7 +1371,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._json_placements()
 
         self._execute_system_multicast_routing_generator()
-        self._execute_fixed_route_router()
         self._do_routing()
 
         self._execute_basic_tag_allocator()
@@ -1672,9 +1657,20 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Machine", "enable_advanced_monitor_support"):
                 return
+            if get_config_bool("Machine",
+                               "disable_advanced_monitor_usage_for_data_in"):
+                timer.skip("disable_advanced_monitor_usage_for_data_in")
+                return
             if timer.skip_if_virtual_board():
                 return
+            with DsSqlliteDatabase() as ds_database:
+                ds_database
+            if not self._data_writer.has_fixed_routes():
+                self._data_writer.set_fixed_routes(fixed_route_router(
+                    DataSpeedUpPacketGatherMachineVertex))
             load_fixed_routes()
+            if get_config_bool("Machine", "enable_advanced_monitor_support"):
+                fixed_route_from_machine_report()
 
     def _execute_load_system_data_specification(self) -> None:
         """
@@ -1796,19 +1792,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 generate_routing_compression_checker_report(
                     routing_tables, compressed)
 
-    def _report_fixed_routes(self) -> None:
-        """
-        Runs, times and logs the FixedRouteFromMachineReport if requested.
-        """
-        with FecTimer("Fixed route report", TimerWork.REPORT) as timer:
-            if timer.skip_if_virtual_board():
-                return
-            if timer.skip_if_cfg_false(
-                    "Machine", "enable_advanced_monitor_support"):
-                return
-            # TODO at the same time as LoadFixedRoutes?
-            fixed_route_from_machine_report()
-
     def _execute_application_load_executables(self) -> None:
         """
         Algorithms needed for loading the binaries to the SpiNNaker machine.
@@ -1853,7 +1836,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._report_memory_on_host()
             self._report_memory_on_chip()
             self._report_compressed(compressed)
-            self._report_fixed_routes()
         self._execute_application_load_executables()
 
         FecTimer.end_category(TimerCategory.LOADING)
