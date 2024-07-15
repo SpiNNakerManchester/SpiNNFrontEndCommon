@@ -178,7 +178,7 @@ class TestDataSpecification(unittest.TestCase):
             dsg.reserve_memory_region(2, 100, "test_region")
             dsg.reserve_memory_region(3, 200, "test_region")
             dsg.switch_write_focus(2)
-            dsg.write_array([1, 2,3])
+            dsg.write_array([1, 2, 3])
             dsg.switch_write_focus(3)
             dsg.write_value(12345)
             dsg.end_specification()
@@ -187,15 +187,13 @@ class TestDataSpecification(unittest.TestCase):
             db.set_region_pointer(0, 1, 2, 3, 400)
 
             regions = list(db.get_regions_content(0, 1, 2))
-            r012 = (2, 200, bytearray(
-                b'\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00'))
             b3 = bytearray(b'90\x00\x00')
             self.assertEqual(12345, int.from_bytes(b3, 'little'))
             self.assertIn((3, 400, b3), regions)
             self.assertEquals(2, len(regions))
 
             self.assertEqual(12, db.get_max_content_size(True))
-            self.assertEqual([(4, 1), (12, 1)], db.get_content_sizes(True))
+            self.assertEqual([(12, 1), (4, 1)], db.get_content_sizes(True))
 
     def test_switch_write_focus(self):
         set_config("Machine", "versions", VersionStrings.ANY.text)

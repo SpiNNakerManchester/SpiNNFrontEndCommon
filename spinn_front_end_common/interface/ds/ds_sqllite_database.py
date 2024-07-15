@@ -556,7 +556,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Returns the sizes of the content and the count of each size.
 
-        May will return and empty list if there is no none Null content
+        Will return an empty list if there is no none Null content
 
         :param bool is_system: if True returns system cores
             otherwise application cores
@@ -566,11 +566,11 @@ class DsSqlliteDatabase(SQLiteDB):
         sizes: List[Tuple[int, int]] = []
         for row in self.execute(
                 """
-                SELECT LENGTH(content) AS size, COUNT(*) AS num  
+                SELECT LENGTH(content) AS size, COUNT(*) AS num
                 FROM region NATURAL JOIN core
                 WHERE is_system = ? AND content IS NOT NULL
                 GROUP BY size
-                ORDER BY size
+                ORDER BY size DESC
                 """, (is_system,)):
             sizes.append((row["size"], row["num"]))
         return sizes

@@ -97,7 +97,7 @@ class _LoadDataSpecification(object):
         # create a progress bar for end users
         progress = ProgressBar(
             2,
-            f"Loading data for pplication vertices using Java")
+            "Loading data for Application vertices using Java")
 
         java_caller = FecDataView.get_java_caller()
         if use_monitors:
