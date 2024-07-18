@@ -54,6 +54,7 @@ def load_using_advanced_monitors() -> bool:
         max_size = ds_database.get_max_content_size(is_system=False)
         return max_size >= MONITOR_CUTOFF
 
+
 def load_system_data_specs() -> None:
     """
     Load the data specs for all system targets.
