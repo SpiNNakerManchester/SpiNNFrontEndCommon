@@ -1663,8 +1663,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            with DsSqlliteDatabase() as ds_database:
-                ds_database
             if not self._data_writer.has_fixed_routes():
                 self._data_writer.set_fixed_routes(fixed_route_router(
                     DataSpeedUpPacketGatherMachineVertex))
