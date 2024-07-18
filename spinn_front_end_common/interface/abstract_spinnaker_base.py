@@ -1663,7 +1663,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     DataSpeedUpPacketGatherMachineVertex))
             if not get_config_bool("Machine", "virtual_board"):
                 load_fixed_routes()
-            if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 fixed_route_from_machine_report()
 
     def _execute_load_system_data_specification(self) -> None:
