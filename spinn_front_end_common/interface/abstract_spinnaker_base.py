@@ -1658,12 +1658,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             if not load_using_advanced_monitors():
                 timer.skip("Not using advanced monitiors for loading")
                 return
-            if timer.skip_if_virtual_board():
-                return
             if not self._data_writer.has_fixed_routes():
                 self._data_writer.set_fixed_routes(fixed_route_router(
                     DataSpeedUpPacketGatherMachineVertex))
-            load_fixed_routes()
+            if not get_config_bool("Machine", "virtual_board"):
+                load_fixed_routes()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 fixed_route_from_machine_report()
 
