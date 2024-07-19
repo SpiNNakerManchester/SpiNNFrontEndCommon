@@ -96,7 +96,6 @@ from spinn_front_end_common.interface.interface_functions import (
     insert_chip_power_monitors_to_graphs,
     insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
-    load_using_advanced_monitors,
     locate_executable_start_type, machine_generator,
     placements_provenance_gatherer, profile_data_gatherer,
     read_routing_tables_from_machine, router_provenance_gatherer,
