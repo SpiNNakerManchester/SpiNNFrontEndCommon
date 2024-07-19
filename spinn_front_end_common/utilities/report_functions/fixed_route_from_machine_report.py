@@ -18,12 +18,15 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
 
 
+REPORT_NAME = "fixed_route_routers"
+
+
 def fixed_route_from_machine_report() -> None:
     """
     Writes the fixed routes from the machine.
     """
     file_name = os.path.join(
-        FecDataView.get_run_dir_path(), "fixed_route_routers")
+        FecDataView.get_run_dir_path(), REPORT_NAME)
     transceiver = FecDataView.get_transceiver()
     machine = FecDataView.get_machine()
 
