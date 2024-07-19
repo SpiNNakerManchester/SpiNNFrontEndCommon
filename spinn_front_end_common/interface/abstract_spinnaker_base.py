@@ -1655,15 +1655,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs Load Fixed Routes if required.
         """
         with FecTimer("Fixed routes", TimerWork.LOADING) as timer:
-            if not load_using_advanced_monitors():
-                timer.skip("Not using advanced monitiors for loading")
+            if timer.skip_if_cfg_false(
+                    "Machine", "enable_advanced_monitor_support"):
                 return
             if not self._data_writer.has_fixed_routes():
                 self._data_writer.set_fixed_routes(fixed_route_router(
                     DataSpeedUpPacketGatherMachineVertex))
             if not get_config_bool("Machine", "virtual_board"):
                 load_fixed_routes()
-                fixed_route_from_machine_report()
+                if get_config_bool("Reports", "write_fixed_routes_report"):
+                    fixed_route_from_machine_report()
 
     def _execute_load_system_data_specification(self) -> None:
         """
