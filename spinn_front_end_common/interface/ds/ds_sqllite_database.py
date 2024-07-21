@@ -549,7 +549,10 @@ class DsSqlliteDatabase(SQLiteDB):
                 WHERE is_system = ?
                 LIMIT 1
                  """, (is_system,)):
-            return row["Size"]
+            the_max = row["Size"]
+            if the_max is None:
+                return 0
+            return the_max
         raise DsDatabaseException("Max content size query")
 
     def get_content_sizes(self, is_system: bool) -> List[Tuple[int, int]]:
