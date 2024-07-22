@@ -13,26 +13,22 @@
 # limitations under the License.
 from __future__ import annotations
 import os
-import datetime
 import logging
 import time
 import struct
 from enum import Enum, IntEnum
 from typing import (
-    Any, BinaryIO, Final, Iterable, List, Optional, Set, Tuple, Union,
-    TYPE_CHECKING)
-
+    Final, Iterable, List, Optional, Set, Tuple, TYPE_CHECKING)
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
 
-from spinn_machine import Chip
 
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.model.enums import (
-    CPUState, ExecutableType, SDP_PORTS, UserRegister)
+    CPUState, ExecutableType, SDP_PORTS)
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 
 from pacman.model.graphs.machine import MachineVertex
@@ -157,17 +153,6 @@ class _DataOutCommands(IntEnum):
     CLEAR = 2000
 
 
-class _DataInCommands(IntEnum):
-    """
-    Command IDs for the SDP packets for data in.
-    """
-    SEND_DATA_TO_LOCATION = 200
-    SEND_SEQ_DATA = 2000
-    SEND_TELL = 2001
-    RECEIVE_MISSING_SEQ_DATA = 2002
-    RECEIVE_FINISHED = 2003
-
-
 # precompiled structures
 _ONE_WORD = struct.Struct("<I")
 _TWO_WORDS = struct.Struct("<II")
@@ -232,8 +217,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_missing_seq_nums_data_in",
         # holder of data from out
         "_output",
-        # my placement for future lookup
-        "__placement",
         # Count of the runs for provenance data
         "_run",
         "_remote_tag",
@@ -317,23 +300,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # local provenance storage
         self._run = 0
-        self.__placement: Optional[Placement] = None
 
         # Stored reinjection status for resetting timeouts
         self._last_status: Optional[ReInjectionStatus] = None
-
-    def __throttled_send(
-            self, message: SDPMessage, connection: SCAMPConnection):
-        """
-        Slows down transmissions to allow SpiNNaker to keep up.
-
-        :param ~.SDPMessage message: message to send
-        :type connection:
-            ~spinnman.connections.udp_packet_connections.SCAMPConnection
-        """
-        # send first message
-        connection.send_sdp_message(message)
-        time.sleep(self._TRANSMISSION_THROTTLE_TIME)
 
     @property
     @overrides(MachineVertex.sdram_required)
@@ -349,15 +318,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             port=self._TAG_INITIAL_PORT, strip_sdp=True,
             ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
 
-    def _read_transaction_id_from_machine(self) -> None:
-        """
-        Looks up from the machine what the current transaction ID is
-        and updates the data speed up gatherer.
-        """
-        self._transaction_id = FecDataView.get_transceiver().read_user(
-            self._placement.x, self._placement.y, self._placement.p,
-            UserRegister.USER_1)
-
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self) -> ExecutableType:
         return ExecutableType.SYSTEM
@@ -366,8 +326,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     def generate_data_specification(
             self, spec: DataSpecificationGenerator, placement: Placement):
         # pylint: disable=unsubscriptable-object
-        # update my placement for future knowledge
-        self.__placement = placement
 
         # Create the data regions for hello world
         self._reserve_memory_regions(spec)
@@ -424,12 +382,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    @property
-    def _placement(self) -> Placement:
-        if self.__placement is None:
-            raise SpinnFrontEndException("placement not known")
-        return self.__placement
-
     def _reserve_memory_regions(self, spec: DataSpecificationGenerator):
         """
         Writes the DSG regions memory sizes. Static so that it can be used
@@ -452,135 +404,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self) -> str:
         return "data_speed_up_packet_gatherer.aplx"
-
-    def _generate_data_in_report(
-            self, time_diff, data_size: int, x: int, y: int,
-            address_written_to: int, missing_seq_nums):
-        """
-        Writes the data in report for this stage.
-
-        :param ~datetime.timedelta time_diff:
-            the time taken to write the memory
-        :param int data_size: the size of data that was written in bytes
-        :param int x:
-            the location in machine where the data was written to X axis
-        :param int y:
-            the location in machine where the data was written to Y axis
-        :param int address_written_to: where in SDRAM it was written to
-        :param list(set(int)) missing_seq_nums:
-            the set of missing sequence numbers per data transmission attempt
-        """
-        dir_path = FecDataView.get_run_dir_path()
-        in_report_path = os.path.join(dir_path, self.IN_REPORT_NAME)
-        if not os.path.isfile(in_report_path):
-            with open(in_report_path, "w", encoding="utf-8") as writer:
-                writer.write(
-                    "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
-                    " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
-                writer.write(
-                    "------------------------------------------------"
-                    "------------------------------------------------"
-                    "-------------------------------------------------\n")
-
-        time_took_ms = float(time_diff.microseconds +
-                             time_diff.total_seconds() * 1000000)
-        megabits = (data_size * 8.0) / (1024 * BYTES_PER_KB)
-        if time_took_ms == 0:
-            mbs: Any = "unknown, below threshold"
-        else:
-            mbs = megabits / (float(time_took_ms) / 100000.0)
-
-        with open(in_report_path, "a", encoding="utf-8") as writer:
-            writer.write(
-                f"{x}\t\t {y}\t\t {address_written_to}\t\t {data_size}\t\t"
-                f"\t\t {time_took_ms}\t\t\t {mbs}\t\t {missing_seq_nums}\n")
-
-    def send_data_into_spinnaker(
-            self, x: int, y: int, base_address: int,
-            data: Union[BinaryIO, bytes, str, int], *,
-            n_bytes: Optional[int] = None, offset: int = 0,
-            cpu: int = 0):  # pylint: disable=unused-argument
-        """
-        Sends a block of data into SpiNNaker to a given chip.
-
-        :param int x: chip x for data
-        :param int y: chip y for data
-        :param int base_address: the address in SDRAM to start writing memory
-        :param data:
-            the data to write or filename to load data from (if a string)
-        :type data: bytes or bytearray or memoryview or str
-        :param int n_bytes: how many bytes to read, or `None` if not set
-        :param int offset: where in the data to start from
-        :param int cpu: Ignored; can only target SDRAM so unimportant
-        """
-        # if file, read in and then process as normal
-        if isinstance(data, str):
-            if offset != 0:
-                raise ValueError(
-                    "when using a file, you can only have a offset of 0")
-
-            with open(data, "rb") as reader:
-                # n_bytes=None already means 'read everything'
-                data = reader.read(n_bytes)
-            # Number of bytes to write is now length of buffer we have
-            if n_bytes is None:
-                n_bytes = len(data)
-            else:
-                n_bytes = min(n_bytes, len(data))
-        elif not isinstance(data, (bytes, bytearray)):
-            raise ValueError("that type of data not supported")
-        if n_bytes is None:
-            n_bytes = len(data)
-        if n_bytes < 0:
-            raise ValueError("cannot write a negative amount of data")
-
-        destination = FecDataView.get_chip_at(x, y)
-        # start time recording
-        start = datetime.datetime.now()
-        # send data
-        self._send_data_via_extra_monitors(
-            destination, base_address, data[offset:n_bytes + offset])
-        # end time recording
-        end = datetime.datetime.now()
-
-        if VERIFY_SENT_DATA:
-            original_data = bytes(data[offset:n_bytes + offset])
-            transceiver = FecDataView.get_transceiver()
-            verified_data = bytes(transceiver.read_memory(
-                x, y, base_address, n_bytes))
-            self.__verify_sent_data(
-                original_data, verified_data, x, y, base_address, n_bytes)
-
-        # write report
-        if get_config_bool("Reports", "write_data_speed_up_reports"):
-            self._generate_data_in_report(
-                x=x, y=y, time_diff=end - start,
-                data_size=n_bytes, address_written_to=base_address,
-                missing_seq_nums=self._missing_seq_nums_data_in)
-
-    @staticmethod
-    def __verify_sent_data(
-            original_data: bytes, verified_data: bytes, x: int, y: int,
-            base_address: int, n_bytes: int):
-        if original_data != verified_data:
-            log.error("VARIANCE: chip:{},{} address:{} len:{}",
-                      x, y, base_address, n_bytes)
-            log.error("original:{}", original_data.hex())
-            log.error("verified:{}", verified_data.hex())
-            for i, (a, b) in enumerate(zip(original_data, verified_data)):
-                if a != b:
-                    raise ValueError(f"Mismatch found as position {i}")
-
-    def __make_data_in_message(self, payload: bytes) -> SDPMessage:
-        return SDPMessage(
-            sdp_header=SDPHeader(
-                destination_chip_x=self._placement.x,
-                destination_chip_y=self._placement.y,
-                destination_cpu=self._placement.p,
-                destination_port=(
-                    SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP.value),
-                flags=SDPFlag.REPLY_NOT_EXPECTED),
-            data=payload)
 
     @staticmethod
     def __make_data_out_message(
@@ -606,270 +429,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         connection = open_scp_connection(self._x, self._y, self._ip_address)
         retarget_tag(connection, self._x, self._y, self._remote_tag)
         return connection
-
-    def _send_data_via_extra_monitors(
-            self, destination_chip: Chip, start_address: int,
-            data_to_write: bytes):
-        """
-        Sends data using the extra monitor cores.
-
-        :param Chip destination_chip: chip to send to
-        :param int start_address: start address in SDRAM to write data to
-        :param bytearray data_to_write: the data to write
-        """
-        # Set up the connection
-        with self.__open_connection() as connection:
-            # how many packets after first one we need to send
-            self._max_seq_num = ceildiv(
-                len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
-
-            # determine board chip IDs, as the LPG does not know
-            # machine scope IDs
-            machine = FecDataView.get_machine()
-            dest_x, dest_y = machine.get_local_xy(destination_chip)
-            self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
-
-            # for safety, check the transaction id from the machine before
-            # updating
-            self._read_transaction_id_from_machine()
-            self._transaction_id = (
-                self._transaction_id + 1) & TRANSACTION_ID_CAP
-            time_out_count = 0
-
-            # verify completed
-            received_confirmation = False
-            while not received_confirmation:
-                # send initial attempt at sending all the data
-                self._send_all_data_based_packets(
-                    data_to_write, start_address, connection)
-
-                # Don't create a missing buffer until at least one packet has
-                # come back.
-                missing: Optional[Set[int]] = None
-
-                while not received_confirmation:
-                    try:
-                        # try to receive a confirmation of some sort from
-                        # spinnaker
-                        data = connection.receive(
-                            timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
-                        time_out_count = 0
-
-                        # Read command and transaction id
-                        (cmd, transaction_id) = _TWO_WORDS.unpack_from(data, 0)
-
-                        # If wrong transaction id, ignore packet
-                        if self._transaction_id != transaction_id:
-                            continue
-
-                        # Decide what to do with the packet
-                        if cmd == _DataInCommands.RECEIVE_FINISHED:
-                            received_confirmation = True
-                            break
-
-                        if cmd != _DataInCommands.RECEIVE_MISSING_SEQ_DATA:
-                            raise ValueError(f"Unknown command {cmd} received")
-
-                        # The currently received packet has missing sequence
-                        # numbers. Accumulate and dispatch transactionId when
-                        # we've got them all.
-                        if missing is None:
-                            missing = set()
-                            self._missing_seq_nums_data_in.append(missing)
-                        seen_last, seen_all = self._read_in_missing_seq_nums(
-                            data,
-                            BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER,
-                            missing)
-
-                        # Check that you've seen something that implies ready
-                        # to retransmit.
-                        if seen_all or seen_last:
-                            self._outgoing_retransmit_missing_seq_nums(
-                                data_to_write, missing, connection)
-                            missing.clear()
-
-                    except SpinnmanTimeoutException as e:
-                        # if the timeout has not occurred x times, keep trying
-                        time_out_count += 1
-                        if time_out_count > TIMEOUT_RETRY_LIMIT:
-                            emergency_recover_state_from_failure(
-                                self, self._placement)
-                            raise SpinnFrontEndException(
-                                "Failed to hear from the machine during "
-                                f"{time_out_count} attempts. "
-                                "Please try removing firewalls.") from e
-
-                        # If we never received a packet, we will never have
-                        # created the buffer, so send everything again
-                        if missing is None:
-                            break
-
-                        self._outgoing_retransmit_missing_seq_nums(
-                                data_to_write, missing, connection)
-                        missing.clear()
-
-    def _read_in_missing_seq_nums(
-            self, data: bytes, position: int,
-            seq_nums: Set[int]) -> Tuple[bool, bool]:
-        """
-        Handles a missing sequence number packet from SpiNNaker.
-
-        :param data: the data to translate into missing sequence numbers
-        :type data: bytearray or bytes
-        :param int position: the position in the data to write.
-        :param set(int) seq_nums: a set of sequence numbers to add to
-        :return: seen_last flag and seen_all flag
-        :rtype: tuple(bool, bool)
-        """
-        # find how many elements are in this packet
-        n_elements = (len(data) - position) // BYTES_PER_WORD
-
-        # store missing
-        new_seq_nums = n_word_struct(n_elements).unpack_from(
-            data, position)
-
-        # add missing sequence numbers accordingly
-        seen_last = False
-        seen_all = False
-        if new_seq_nums[-1] == self._MISSING_SEQ_NUMS_END_FLAG:
-            new_seq_nums = new_seq_nums[:-1]
-            seen_last = True
-        if new_seq_nums[-1] == self.FLAG_FOR_MISSING_ALL_SEQUENCES:
-            for missing_seq in range(self._max_seq_num or 0):
-                seq_nums.add(missing_seq)
-            seen_all = True
-        else:
-            seq_nums.update(new_seq_nums)
-
-        return seen_last, seen_all
-
-    def _outgoing_retransmit_missing_seq_nums(
-            self, data_to_write: bytes, missing: Set[int],
-            connection: SCAMPConnection):
-        """
-        Transmits back into SpiNNaker the missing data based off missing
-        sequence numbers.
-
-        :param bytearray data_to_write: the data to write.
-        :param set(int) missing: a set of missing sequence numbers
-        :type connection:
-            ~spinnman.connections.udp_packet_connections.SCAMPConnection
-        """
-        missing_seqs_as_list = list(missing)
-        missing_seqs_as_list.sort()
-
-        # send sequence data
-        for missing_seq_num in missing_seqs_as_list:
-            message, _length = self.__make_data_in_stream_message(
-                data_to_write, missing_seq_num, None)
-            self.__throttled_send(message, connection)
-
-        # request an update on what is missing
-        self.__send_tell_flag(connection)
-
-    @staticmethod
-    def __position_from_seq_number(seq_num: int) -> int:
-        """
-        Calculates where in the raw data to start reading from, given a
-        sequence number.
-
-        :param int seq_num: the sequence number to determine position from
-        :return: the position in the byte data
-        :rtype: int
-        """
-        return BYTES_IN_FULL_PACKET_WITH_KEY * seq_num
-
-    def __make_data_in_stream_message(
-            self, data_to_write: bytes, seq_num: int,
-            position: Optional[int]) -> Tuple[SDPMessage, int]:
-        """
-        Determine the data needed to be sent to the SpiNNaker machine
-        given a sequence number.
-
-        :param bytearray data_to_write:
-            the data to write to the SpiNNaker machine
-        :param int seq_num: the sequence number to get the data for
-        :param position:
-            the position in the data to write to SpiNNaker,
-            or None to infer from the sequence number
-        :type position: int or None
-        :return: SDP message and how much data has been written
-        :rtype: tuple(~.SDPMessage, int)
-        """
-        # check for last packet
-        packet_data_length = BYTES_IN_FULL_PACKET_WITH_KEY
-
-        # determine position in data if not given
-        if position is None:
-            position = self.__position_from_seq_number(seq_num)
-
-        # if less than a full packet worth of data, adjust length
-        if position + packet_data_length > len(data_to_write):
-            packet_data_length = len(data_to_write) - position
-
-        if packet_data_length < 0:
-            raise ValueError("weird packet data length")
-
-        # create message body
-        packet_data = _THREE_WORDS.pack(
-            _DataInCommands.SEND_SEQ_DATA, self._transaction_id,
-            seq_num) + data_to_write[position:position+packet_data_length]
-
-        # return message for sending, and the length in data sent
-        return self.__make_data_in_message(packet_data), packet_data_length
-
-    def __send_location(self, start_address: int, connection: SCAMPConnection):
-        """
-        Send location as separate message.
-
-        :param int start_address: SDRAM location
-        """
-        connection.send_sdp_message(self.__make_data_in_message(
-            _FIVE_WORDS.pack(
-                _DataInCommands.SEND_DATA_TO_LOCATION,
-                self._transaction_id, start_address, self._coord_word,
-                self._max_seq_num - 1)))
-        log.debug(
-            "start address for transaction {} is {}",
-            self._transaction_id, start_address)
-
-    def __send_tell_flag(self, connection: SCAMPConnection) -> None:
-        """
-        Send tell flag as separate message.
-        """
-        connection.send_sdp_message(self.__make_data_in_message(
-            _TWO_WORDS.pack(
-                _DataInCommands.SEND_TELL, self._transaction_id)))
-
-    def _send_all_data_based_packets(
-            self, data_to_write: bytes, start_address: int,
-            connection: SCAMPConnection):
-        """
-        Send all the data as one block.
-
-        :param bytearray data_to_write: the data to send
-        :param int start_address:
-        """
-        # Send the location
-        self.__send_location(start_address, connection)
-
-        # where in the data we are currently up to
-        position_in_data = 0
-
-        # send rest of data
-        for seq_num in range(self._max_seq_num or 0):
-            # put in command flag and sequence number
-            message, length_to_send = self.__make_data_in_stream_message(
-                data_to_write, seq_num, position_in_data)
-            position_in_data += length_to_send
-
-            # send the message
-            self.__throttled_send(message, connection)
-            log.debug("sent sequence {} of {} bytes", seq_num, length_to_send)
-
-        # check for end flag
-        self.__send_tell_flag(connection)
-        log.debug("sent end flag")
 
     def set_cores_for_data_streaming(self) -> None:
         """

@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import logging
+from functools import partial
 from typing import Any, Callable
-
-import numpy
 from typing_extensions import TypeAlias
+import numpy
 
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
@@ -32,6 +32,9 @@ from spinn_front_end_common.utilities.exceptions import DataSpecException
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
+from spinn_front_end_common.utilities.scp import (
+    WriteMemoryUsingMulticastProcess)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _Writer: TypeAlias = Callable[[int, int, int, bytes], Any]
@@ -118,6 +121,12 @@ class _LoadDataSpecification(object):
                     self.__java_app(uses_advanced_monitors)
             else:
                 self.__python_load(is_system, uses_advanced_monitors)
+            if uses_advanced_monitors and get_config_bool(
+                    "Reports", "write_advanced_monitor_iobuf"):
+                extractor = IOBufExtractor(
+                    None, recovery_mode=True,
+                    filename_template="system_iobuf_{}_{}_{}.txt")
+                extractor.extract_iobuf()
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure()
@@ -140,6 +149,8 @@ class _LoadDataSpecification(object):
         """
         if uses_advanced_monitors:
             self.__set_router_timeouts()
+        write_memory_process = WriteMemoryUsingMulticastProcess(
+            FecDataView.get_scamp_connection_selector())
 
         # create a progress bar for end users
         with DsSqlliteDatabase() as ds_database:
@@ -165,7 +176,11 @@ class _LoadDataSpecification(object):
             for x, y, p, eth_x, eth_y in progress.over(core_infos):
                 if uses_advanced_monitors:
                     gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
-                    writer = gatherer.send_data_into_spinnaker
+                    placement = FecDataView.get_placement_of_vertex(gatherer)
+                    writer = partial(
+                        write_memory_process.write_memory_from_bytearray,
+                        placement.x, placement.y, placement.p)
+
                 written = self.__python_load_core(ds_database, x, y, p, writer)
                 to_write = ds_database.get_memory_to_write(x, y, p)
                 if written != to_write:

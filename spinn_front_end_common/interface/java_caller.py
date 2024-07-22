@@ -424,7 +424,7 @@ class JavaCaller(object):
         """
         if use_monitors:
             result = self._run_java(
-                'dse_app_mon', self._placement_json, self._machine_json(),
+                'dse_app_mon_mc', self._placement_json, self._machine_json(),
                 FecDataView.get_ds_database_path(),
                 FecDataView.get_run_dir_path())
         else:
