@@ -21,6 +21,9 @@ from spinn_utilities.overrides import overrides
 from spinn_machine.version.version_strings import VersionStrings
 from spinnman.transceiver.version5transceiver import Version5Transceiver
 from spinnman.model.enums import ExecutableType
+from spinnman.processes import MostDirectConnectionSelector
+from spinnman.connections.udp_packet_connections import SCAMPConnection
+from spinnman.exceptions import SpinnmanTimeoutException
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placements
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
@@ -34,6 +37,14 @@ from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, MAX_MEM_REGIONS)
 from spinn_front_end_common.utilities.exceptions import DataSpecException
+
+
+class _MockConnection(SCAMPConnection):
+    def send(self, data):
+        pass
+
+    def receive_scp_response(self, timeout=1.0):
+        raise SpinnmanTimeoutException("Test", timeout)
 
 
 class _MockTransceiver(Version5Transceiver):
@@ -71,8 +82,8 @@ class _MockTransceiver(Version5Transceiver):
         return (-1, -1)
 
     @overrides(Version5Transceiver.get_scamp_connection_selector)
-    def get_scamp_connection_selector(self):
-        return None
+    def get_scamp_connection_selector(self) -> MostDirectConnectionSelector:
+        return MostDirectConnectionSelector([_MockConnection(0, 0)])
 
     @overrides(Version5Transceiver.close)
     def close(self) -> None:
