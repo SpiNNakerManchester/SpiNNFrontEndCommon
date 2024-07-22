@@ -52,7 +52,7 @@ class WriteMemoryUsingMulticastProcess(
         :param bytes data: The data to write.
         :param int n_bytes:
             The amount of data to be written in bytes.  If not specified,
-            len(data) is used.
+            length of data is used.
         :param int data_offset: The offset from which the valid data begins
         :param bool get_sum: whether to return a checksum or 0
         :return: The number of bytes written, the checksum (0 if get_sum=False)

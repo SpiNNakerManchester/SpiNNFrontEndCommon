@@ -13,10 +13,9 @@
 # limitations under the License.
 
 import logging
+from functools import partial
 from typing import Any, Callable
 from typing_extensions import TypeAlias
-from functools import partial
-
 import numpy
 
 from spinn_utilities.config_holder import get_config_bool
