@@ -77,7 +77,7 @@ class WriteMemoryUsingMulticastProcess(
                 offset += bytes_to_send
                 data_offset += bytes_to_send
         if not get_sum:
-            return n_bytes, 0
+            return n_bytes_to_write, 0
         np_data = numpy.array(data, dtype=uint8)
         np_sum = int(numpy.sum(np_data.view(uint32), dtype=uint32))
-        return n_bytes, np_sum & _UNSIGNED_WORD
+        return n_bytes_to_write, np_sum & _UNSIGNED_WORD
