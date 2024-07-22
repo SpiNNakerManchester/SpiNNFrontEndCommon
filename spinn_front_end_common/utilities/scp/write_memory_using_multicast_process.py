@@ -64,6 +64,7 @@ class WriteMemoryUsingMulticastProcess(
             n_bytes_to_write = len(data)
         else:
             n_bytes_to_write = n_bytes
+        n_bytes_written = n_bytes_to_write
         with self._collect_responses():
             while n_bytes_to_write > 0:
                 bytes_to_send = min(n_bytes_to_write, UDP_MESSAGE_MAX_SIZE)
@@ -77,7 +78,7 @@ class WriteMemoryUsingMulticastProcess(
                 offset += bytes_to_send
                 data_offset += bytes_to_send
         if not get_sum:
-            return n_bytes_to_write, 0
+            return n_bytes_written, 0
         np_data = numpy.array(data, dtype=uint8)
         np_sum = int(numpy.sum(np_data.view(uint32), dtype=uint32))
-        return n_bytes_to_write, np_sum & _UNSIGNED_WORD
+        return n_bytes_written, np_sum & _UNSIGNED_WORD
