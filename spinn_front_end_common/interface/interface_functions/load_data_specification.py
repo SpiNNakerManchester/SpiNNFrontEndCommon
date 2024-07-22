@@ -14,10 +14,11 @@
 
 import logging
 from typing import Any, Callable
-
-import numpy
 from typing_extensions import TypeAlias
 from functools import partial
+
+import numpy
+
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -180,7 +181,6 @@ class _LoadDataSpecification(object):
                     writer = partial(
                         write_memory_process.write_memory_from_bytearray,
                         placement.x, placement.y, placement.p)
-                    # writer = gatherer.send_data_into_spinnaker
 
                 written = self.__python_load_core(ds_database, x, y, p, writer)
                 to_write = ds_database.get_memory_to_write(x, y, p)
