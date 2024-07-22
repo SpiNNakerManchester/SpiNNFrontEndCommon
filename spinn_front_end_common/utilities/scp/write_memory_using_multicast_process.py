@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Optional, Tuple
 import numpy
 from numpy import uint8, uint32
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
@@ -33,7 +33,8 @@ class WriteMemoryUsingMulticastProcess(
     def write_memory_from_bytearray(
             self, x: int, y: int, p: int, target_x: int, target_y: int,
             base_address: int, data: bytes, data_offset: int = 0,
-            n_bytes: Optional[int] = None, get_sum: bool = False) -> int:
+            n_bytes: Optional[int] = None,
+            get_sum: bool = False) -> Tuple[int, int]:
         """
         Write memory using multicast over the advanced monitor connection.
 
