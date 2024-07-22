@@ -16,18 +16,22 @@ import logging
 import os
 from typing import (
     Dict, Iterable, Iterator, Optional, Set, Tuple, Union, List, TYPE_CHECKING)
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
-from spinn_machine import Chip, CoreSubsets, FixedRouteEntry
+
+from spinn_machine import Chip, CoreSubsets, RoutingEntry
 from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.spalloc import SpallocJob
+
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.routing_tables import MulticastRoutingTables
+
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
     from spinn_front_end_common.abstract_models.impl import (
@@ -90,9 +94,6 @@ class _FecDataModel(object):
         "_live_packet_recorder_params",
         "_live_output_vertices",
         "_live_output_devices",
-        "_n_boards_required",
-        "_n_chips_required",
-        "_n_chips_in_graph",
         "_next_sync_signal",
         "_next_ds_reference",
         "_none_labelled_edge_count",
@@ -138,8 +139,6 @@ class _FecDataModel(object):
         self._live_output_vertices: Set[Tuple[ApplicationVertex, str]] = set()
         self._live_output_devices: List[LiveOutputDevice] = list()
         self._java_caller: Optional[JavaCaller] = None
-        self._n_boards_required: Optional[int] = None
-        self._n_chips_required: Optional[int] = None
         self._none_labelled_edge_count = 0
         self._reset_number = 0
         self._run_number: Optional[int] = None
@@ -166,11 +165,10 @@ class _FecDataModel(object):
         self._ds_database_path: Optional[str] = None
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
-        self._fixed_routes: Optional[Dict[XY, FixedRouteEntry]] = None
+        self._fixed_routes: Optional[Dict[XY, RoutingEntry]] = None
         self._gatherer_map: \
             Optional[Dict[Chip, DataSpeedUpPacketGatherMachineVertex]] = None
         self._ipaddress: Optional[str] = None
-        self._n_chips_in_graph: Optional[int] = None
         self._next_sync_signal: Signal = Signal.SYNC0
         self._notification_protocol: Optional[NotificationProtocol] = None
         self._max_run_time_steps: Optional[int] = None
@@ -467,7 +465,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             If the hardware_time_step is currently unavailable
         """
         if cls.__fec_data._hardware_time_step_us is None:
-            raise cls._exception("ardware_time_step_us")
+            raise cls._exception("hardware_time_step_us")
         return cls.__fec_data._hardware_time_step_us
 
     # time scale factor
@@ -579,69 +577,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # n_boards/chips required
 
     @classmethod
-    def has_n_boards_required(cls) -> bool:
-        """
-        Reports if a user has sets the number of boards requested during setup.
-
-        :rtype: bool
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If n_boards_required is not set or set to `None`
-        """
-        return cls.__fec_data._n_boards_required is not None
-
-    @classmethod
-    def get_n_boards_required(cls) -> int:
-        """
-        Gets the number of boards requested by the user during setup if known.
-
-        Guaranteed to be positive
-
-        :rtype: int
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the n_boards_required is currently unavailable
-        """
-        if cls.__fec_data._n_boards_required is None:
-            raise cls._exception("n_boards_requiredr")
-        return cls.__fec_data._n_boards_required
-
-    @classmethod
-    def get_n_chips_needed(cls) -> int:
-        """
-        Gets the number of chips needed, if set.
-
-        This will be the number of chips requested by the user during setup,
-        even if this is less that what the partitioner reported.
-
-        If the partitioner has run and the user has not specified a number,
-        this will be what the partitioner requested.
-
-        Guaranteed to be positive if set
-
-        :rtype: int
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If data for n_chips_needed is not available
-        """
-        if cls.__fec_data._n_chips_required:
-            return cls.__fec_data._n_chips_required
-        if cls.__fec_data._n_chips_in_graph:
-            return cls.__fec_data._n_chips_in_graph
-        raise cls._exception("n_chips_requiredr")
-
-    @classmethod
-    def has_n_chips_needed(cls) -> bool:
-        """
-        Detects if the number of chips needed has been set.
-
-        This will be the number of chips requested by the use during setup or
-        what the partitioner requested.
-
-        :rtype: bool
-        """
-        if cls.__fec_data._n_chips_required is not None:
-            return True
-        return cls.__fec_data._n_chips_in_graph is not None
-
-    @classmethod
     def get_timestamp_dir_path(cls) -> str:
         """
         Returns path to existing time-stamped directory in the reports
@@ -668,8 +603,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retrieve the data_in_multicast_key_to_chip_map if known.
         Keys are the coordinates of chips.
-        Values are the base keys for multicast comms received by the Data In
-        streaming module of the extra monitor running on those chips.
+        Values are the base keys for multicast communication
+        received by the Data In streaming module
+        of the extra monitor running on those chips.
 
         :rtype: dict(tuple(int,int), int)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -698,7 +634,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retrieve the system_multicast_router_timeout_keys if known.
         Keys are the coordinates of chips.
-        Values are the base keys for multicast comms received by the
+        Values are the base keys for multicast communications received by the
         re-injector module of the extra monitor running on those chips.
 
         :rtype: dict(tuple(int,int), int)
@@ -710,7 +646,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             raise cls._exception("system_multicast_router_timeout_keys")
         return cls.__fec_data._system_multicast_router_timeout_keys
 
-    # ipaddress
+    # IP address
 
     @classmethod
     def has_ipaddress(cls) -> bool:
@@ -738,11 +674,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # fixed_routes
     @classmethod
-    def get_fixed_routes(cls) -> Dict[XY, FixedRouteEntry]:
+    def get_fixed_routes(cls) -> Dict[XY, RoutingEntry]:
         """
         Gets the fixed routes if they have been created.
 
-        :rtype: dict((int, int), ~spinn_machine.FixedRouteEntry)
+        :rtype: dict((int, int), ~spinn_machine.RoutingEntry)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the fixed_routes is currently unavailable
         """
@@ -1001,6 +937,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         lpg_vertex = cls.__fec_data._live_packet_recorder_params.get(
             live_packet_gatherer_params)
         if lpg_vertex is None:
+            # pylint: disable=import-outside-toplevel
             # UGLY import due to circular reference
             from spinn_front_end_common.utility_models import (
                 LivePacketGather as LPG)
@@ -1122,6 +1059,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Number of ExtraMonitorSupportMachineVertexs.
 
+        This is the total number of monitors NOT the number per chip.
+
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the monitors are currently unavailable
@@ -1200,6 +1139,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def get_n_gathers(cls) -> int:
         """
         Number of DataSpeedUpPacketGatherMachineVertex(s).
+
+        This is the total number of gathers NOT the number per chip
 
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -1296,6 +1237,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             The vertex to add
         :param str partition_id: The partition to get the IDs of
         """
+        if not isinstance(vertex, ApplicationVertex):
+            raise NotImplementedError(
+                "You only need to add ApplicationVertices")
         cls.__fec_data._live_output_vertices.add((vertex, partition_id))
 
     @classmethod

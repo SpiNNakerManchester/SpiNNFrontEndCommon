@@ -21,6 +21,7 @@ from spinn_utilities.data.data_status import DataStatus
 from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
+from spinn_machine.version.version_strings import VersionStrings
 from spinnman.messages.scp.enums.signal import Signal
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.model import ExecutableTargets
@@ -376,85 +377,6 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_system_multicast_router_timeout_keys()
 
-    def test_required(self):
-        writer = FecDataWriter.setup()
-        with self.assertRaises(DataNotYetAvialable):
-            self.assertIsNone(FecDataView.get_n_boards_required())
-        self.assertFalse(FecDataView.has_n_boards_required())
-        with self.assertRaises(DataNotYetAvialable):
-            self.assertIsNone(FecDataView.get_n_chips_needed())
-        self.assertFalse(FecDataView.has_n_chips_needed())
-
-        # required higher than in graph
-        writer.set_n_required(None, 20)
-        self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEqual(20, FecDataView.get_n_chips_needed())
-        writer.set_n_chips_in_graph(15)
-        self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEqual(20, FecDataView.get_n_chips_needed())
-
-        # required higher than in graph
-        writer.set_n_chips_in_graph(25)
-        self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEqual(20, FecDataView.get_n_chips_needed())
-
-        # reset does not remove required
-        writer.start_run()
-        writer.finish_run()
-        writer.hard_reset()
-        self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEqual(20, FecDataView.get_n_chips_needed())
-
-        writer = FecDataWriter.setup()
-        self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertFalse(FecDataView.has_n_chips_needed())
-
-        # in graph only
-        writer.set_n_chips_in_graph(25)
-        self.assertEqual(25, FecDataView.get_n_chips_needed())
-
-        # reset clears in graph
-        writer.start_run()
-        writer.finish_run()
-        writer.hard_reset()
-        self.assertFalse(FecDataView.has_n_chips_needed())
-
-        # N boards
-        writer = FecDataWriter.setup()
-        writer.set_n_required(5, None)
-        self.assertEqual(5, FecDataView.get_n_boards_required())
-        self.assertFalse(FecDataView.has_n_chips_needed())
-
-        # boards does not hide in graph
-        writer.set_n_chips_in_graph(40)
-        self.assertEqual(5, FecDataView.get_n_boards_required())
-        self.assertEqual(40, FecDataView.get_n_chips_needed())
-
-        # reset does not clear required
-        writer.start_run()
-        writer.finish_run()
-        writer.hard_reset()
-        self.assertEqual(5, FecDataView.get_n_boards_required())
-        self.assertFalse(FecDataView.has_n_chips_needed())
-
-        # two Nones fine
-        writer = FecDataWriter.setup()
-        writer.set_n_required(None, None)
-        self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertFalse(FecDataView.has_n_chips_needed())
-
-        # Ilegal calls
-        with self.assertRaises(ConfigurationException):
-            writer.set_n_required(5, 5)
-        with self.assertRaises(ConfigurationException):
-            writer.set_n_required(None, -5)
-        with self.assertRaises(ConfigurationException):
-            writer.set_n_required(0, None)
-        with self.assertRaises(TypeError):
-            writer.set_n_required(None, "five")
-        with self.assertRaises(TypeError):
-            writer.set_n_required("2.3", None)
-
     def test_ipaddress(self):
         writer = FecDataWriter.setup()
         self.assertFalse(FecDataView.has_ipaddress())
@@ -574,7 +496,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_gatherer_map(self):
         writer = FecDataWriter.mock()
-        set_config("Machine", "version", 5)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_gatherer_by_xy(0, 0)
         with self.assertRaises(DataNotYetAvialable):
@@ -623,7 +545,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_monitor_map(self):
         writer = FecDataWriter.mock()
-        set_config("Machine", "version", 5)
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
         self.assertFalse(FecDataView.has_monitors())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_monitor_by_xy(0, 0)

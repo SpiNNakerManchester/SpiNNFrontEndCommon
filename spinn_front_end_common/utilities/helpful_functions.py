@@ -206,7 +206,7 @@ def determine_flow_states(
             expected_start_states[ExecutableType.SYNC] = (CPUState.SYNC0,)
             expected_end_states[ExecutableType.SYNC] = (CPUState.FINISHED,)
 
-        # cores that use our sim interface
+        # cores that use our simulation interface
         elif start_type == ExecutableType.USES_SIMULATION_INTERFACE:
             if no_sync_changes % 2 == 0:
                 expected_start_states[start_type] = (CPUState.SYNC0,)

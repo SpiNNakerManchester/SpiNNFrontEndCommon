@@ -13,13 +13,15 @@
 # limitations under the License.
 
 from spinn_utilities.progress_bar import ProgressBar
+
 from spinnman.constants import ROUTER_REGISTER_REGISTERS
 from spinnman.model import DiagnosticFilter
 from spinnman.model.enums import (
     DiagnosticFilterDefaultRoutingStatus, DiagnosticFilterPacketType,
     DiagnosticFilterSource)
-from spinn_front_end_common.data import FecDataView
 from spinnman.transceiver import Transceiver
+
+from spinn_front_end_common.data import FecDataView
 
 
 def routing_setup() -> None:

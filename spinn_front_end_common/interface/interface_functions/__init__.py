@@ -30,8 +30,6 @@ from .graph_data_specification_writer import (
     graph_data_specification_writer)
 from .graph_provenance_gatherer import graph_provenance_gatherer
 from .hbp_allocator import hbp_allocator
-from .host_bit_field_router_compressor import (
-    host_based_bit_field_router_compressor)
 from .load_data_specification import (
     load_application_data_specs, load_system_data_specs)
 from .insert_chip_power_monitors_to_graphs import (
@@ -68,7 +66,7 @@ __all__ = (
     "load_system_data_specs", "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
     "graph_provenance_gatherer",
-    "hbp_allocator", "host_based_bit_field_router_compressor",
+    "hbp_allocator",
     "insert_chip_power_monitors_to_graphs",
     "insert_extra_monitor_vertices_to_graphs",
     "split_lpg_vertices",

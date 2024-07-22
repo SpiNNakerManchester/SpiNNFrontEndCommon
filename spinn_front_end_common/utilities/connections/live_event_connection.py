@@ -57,6 +57,9 @@ _MAX_HALF_KEYS_PER_PACKET = 127
 # The maximum number of 32-bit keys with payloads that will fit in a packet
 _MAX_FULL_KEYS_PAYLOADS_PER_PACKET = 31
 
+# The maximum number of packets to send before pausing
+_MAX_SEND_BEFORE_PAUSE = 6
+
 # Decoding of a single short value
 _ONE_SHORT = struct.Struct("<H")
 
@@ -72,7 +75,7 @@ _SCP_DEST_CPU_BYTE = 4
 # The expected flags from a RAW SCP packet in response
 _SCP_RESPONSE_FLAGS = 7
 
-# The expected destination cpu from a RAW SCP packet in repsonse
+# The expected destination cpu from a RAW SCP packet in response
 _SCP_RESPONSE_DEST = 0xFF
 
 
@@ -187,6 +190,11 @@ class LiveEventConnection(DatabaseConnection):
         self.__scp_response_received: Optional[bytes] = None
 
     def add_send_label(self, label: str):
+        """
+        Adds a send label.
+
+        :param str label:
+        """
         if self.__send_labels is None:
             self.__send_labels = list()
         if label not in self.__send_labels:
@@ -197,6 +205,11 @@ class LiveEventConnection(DatabaseConnection):
             self.__init_callbacks[label] = list()
 
     def add_receive_label(self, label: str):
+        """
+        Adds a receive label is possible.
+
+        :param str label:
+        """
         if self.__live_packet_gather_label is None:
             raise ConfigurationException(
                 "no live packet gather label given; "
@@ -262,7 +275,8 @@ class LiveEventConnection(DatabaseConnection):
             (live_event_callback, translate_key))
 
     def add_receive_no_time_callback(
-            self, label, live_event_callback, translate_key=True):
+            self, label: str, live_event_callback: _RcvCallback,
+            translate_key: bool = True):
         """
         Add a callback for the reception of live events from a vertex.
 
@@ -273,6 +287,8 @@ class LiveEventConnection(DatabaseConnection):
             an int atom ID or key, and an int payload which may be None
         :type live_event_callback: callable(str, int, int or None) -> None
         """
+        if self.__receive_labels is None:
+            raise ConfigurationException("no receive labels defined")
         label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
@@ -652,6 +668,7 @@ class LiveEventConnection(DatabaseConnection):
             msg_type = EIEIOType.KEY_32_BIT
 
         pos = 0
+        packets_sent = 0
         x, y, p, ip_address = self.__send_address_details[label]
         while pos < len(atom_ids):
             message = EIEIODataMessage.create(msg_type)
@@ -665,6 +682,10 @@ class LiveEventConnection(DatabaseConnection):
                 events_in_packet += 1
 
             self._send(message, x, y, p, ip_address)
+            packets_sent += 1
+            if (packets_sent % _MAX_SEND_BEFORE_PAUSE == 0 and
+                    pos < len(atom_ids)):
+                sleep(0.1)
 
     def send_event_with_payload(
             self, label: str, atom_id: int, payload: int):
@@ -692,6 +713,7 @@ class LiveEventConnection(DatabaseConnection):
         msg_type = EIEIOType.KEY_PAYLOAD_32_BIT
         max_keys = _MAX_FULL_KEYS_PAYLOADS_PER_PACKET
         pos = 0
+        packets_sent = 0
         x, y, p, ip_address = self.__send_address_details[label]
         while pos < len(atom_ids_and_payloads):
             message = EIEIODataMessage.create(msg_type)
@@ -704,6 +726,10 @@ class LiveEventConnection(DatabaseConnection):
                 events += 1
 
             self._send(message, x, y, p, ip_address)
+            packets_sent += 1
+            if (packets_sent % _MAX_SEND_BEFORE_PAUSE == 0 and
+                    pos < len(atom_ids_and_payloads)):
+                sleep(0.1)
 
     def send_eieio_message(
             self, message: AbstractEIEIOMessage, label: str):

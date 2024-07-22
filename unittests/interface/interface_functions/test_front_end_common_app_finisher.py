@@ -12,16 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Iterable, Optional, Tuple, Union
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets
+from spinnman.messages.scp.enums import Signal
+from spinnman.messages.sdp import SDPMessage
+from spinnman.model import CPUInfo, CPUInfos
 from spinnman.model.enums import ExecutableType
 from spinnman.model.enums.cpu_state import CPUState
+from spinnman.transceiver.version5transceiver import Version5Transceiver
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher)
-from spinnman.transceiver.version5transceiver import Version5Transceiver
-from spinnman.model import CPUInfo, CPUInfos
+from spinnman.connections.udp_packet_connections import SDPConnection
 
 
 class _MockTransceiver(Version5Transceiver):
@@ -33,7 +37,9 @@ class _MockTransceiver(Version5Transceiver):
         self.sdp_send_count = 0
 
     @overrides(Version5Transceiver.get_core_state_count)
-    def get_core_state_count(self, app_id, state, xys=None):
+    def get_core_state_count(
+            self, app_id: int, state: CPUState,
+            xys: Optional[Iterable[Tuple[int, int]]] = None) -> int:
         count = 0
         for core_state in self._core_states[self._current_state].values():
             if core_state == state:
@@ -42,7 +48,10 @@ class _MockTransceiver(Version5Transceiver):
 
     @overrides(Version5Transceiver.get_cpu_infos)
     def get_cpu_infos(
-            self, core_subsets=None, states=None, include=True):
+            self, core_subsets: Optional[CoreSubsets] = None,
+            states: Union[CPUState, Iterable[CPUState], None] = None,
+            include: bool = True) -> CPUInfos:
+        assert core_subsets is not None
         if states is None or not include:
             raise NotImplementedError("oops")
         cores_in_state = CPUInfos()
@@ -63,15 +72,16 @@ class _MockTransceiver(Version5Transceiver):
         return cores_in_state
 
     @overrides(Version5Transceiver.send_sdp_message)
-    def send_sdp_message(self, message, connection=None):
+    def send_sdp_message(self, message: SDPMessage,
+                         connection: Optional[SDPConnection] = None):
         self.sdp_send_count += 1
 
     @overrides(Version5Transceiver.send_signal)
-    def send_signal(self, app_id, signal):
+    def send_signal(self, app_id: int, signal: Signal):
         pass
 
     @overrides(Version5Transceiver.close)
-    def close(self):
+    def close(self) -> None:
         pass
 
 

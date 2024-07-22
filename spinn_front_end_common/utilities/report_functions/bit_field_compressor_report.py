@@ -194,8 +194,8 @@ def _write_report(writer: TextIO) -> BitFieldSummary:
         if isinstance(total_bit_fields_merged, str):
             writer.write(f"\nNone of the {total_to_merge} bitfields merged")
         else:
-            writer.write("\nIn total {:.2%} of the bitfields merged".format(
-                total_bit_fields_merged / total_to_merge))
+            percent = total_bit_fields_merged / total_to_merge
+            writer.write(f"\nIn total {percent:.2%} of the bitfields merged")
 
     return BitFieldSummary(
         lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,

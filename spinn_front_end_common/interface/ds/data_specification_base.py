@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy
 from typing import Optional, Sequence, TextIO, Union
+
+import numpy
+
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_front_end_common.utilities.exceptions import DataSpecException
+
 from .data_type import DataType
 from .ds_sqllite_database import DsSqlliteDatabase
-from spinn_front_end_common.utilities.exceptions import DataSpecException
+
 BYTES_PER_WORD = 4
 
 
@@ -80,7 +84,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
     @abstractmethod
     def reserve_memory_region(
             self, region: int, size: int, label: Optional[str] = None,
-            reference: Optional[int] = None) -> None:
+            reference: Optional[int] = None):
         """
         Insert command to reserve a memory region.
 
@@ -99,7 +103,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
     @abstractmethod
     def reference_memory_region(
-            self, region: int, ref: int, label: Optional[str] = None) -> None:
+            self, region: int, ref: int, label: Optional[str] = None):
         """
         Insert command to reference another memory region.
 
@@ -222,7 +226,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
         if self._size < length:
             raise DataSpecException(
-                f"Region size is {self._size} "
+                f"Region {self._region_num} size is {self._size} "
                 f"so unable to write {length} bytes")
         if length % 4 != 0:
             raise NotImplementedError(

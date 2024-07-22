@@ -12,18 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sized
 import logging
 import os
 import re
-from typing import List, Optional, Pattern, Sequence, Set, Sized, Tuple, Union
+from typing import (
+    Iterable, List, Optional, Pattern, Sequence, Set, Tuple, TypeVar, Union)
+
+from spinn_utilities.config_holder import get_config_str_or_none
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_machine.core_subsets import CoreSubsets
+
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.model.io_buffer import IOBuffer
-from spinn_utilities.config_holder import get_config_str_or_none
 
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
@@ -36,9 +41,25 @@ WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
 ENTRY_TEXT = 2
 
+#: :meta private:
+T = TypeVar("T")
+
 
 class _DummyProgress(object):
-    def over(self, values):
+    """
+    An alternative to the Progress bar so the over can be called.
+    """
+
+    def over(self, values: Iterable[T]) -> Iterable[T]:
+        """
+        Simple wrapper for the cases where a progress bar is being used
+        to show progress through the iteration over a single collection.
+
+        :param ~collections.abc.Iterable values:
+            The base collection (any iterable) being iterated over
+        :return: The passed in collection unchanged.
+        :rtype: ~collections.abc.Iterable
+        """
         return values
 
 

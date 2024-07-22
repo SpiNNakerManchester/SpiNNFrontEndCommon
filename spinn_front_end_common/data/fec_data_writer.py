@@ -23,7 +23,7 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
-from spinn_machine import Chip, FixedRouteEntry, CoreSubsets
+from spinn_machine import Chip, CoreSubsets, RoutingEntry
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
@@ -370,59 +370,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._data_in_multicast_routing_tables = routing_tables
         self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
 
-    def set_n_required(self, n_boards_required: Optional[int],
-                       n_chips_required: Optional[int]):
-        """
-        Sets (if not `None`) the number of boards/chips requested by the user.
-
-        :param n_boards_required:
-            `None` or the number of boards requested by the user
-        :type n_boards_required: int or None
-        :param n_chips_required:
-            `None` or the number of chips requested by the user
-        :type n_chips_required: int or None
-        """
-        if n_boards_required is None:
-            if n_chips_required is None:
-                return
-            elif not isinstance(n_chips_required, int):
-                raise TypeError("n_chips_required must be an int (or None)")
-            if n_chips_required <= 0:
-                raise ConfigurationException(
-                    "n_chips_required must be positive and not "
-                    f"{n_chips_required}")
-        else:
-            if n_chips_required is not None:
-                raise ConfigurationException(
-                    "Illegal call with both both param provided as "
-                    f"{n_boards_required}, {n_chips_required}")
-            if not isinstance(n_boards_required, int):
-                raise TypeError("n_boards_required must be an int (or None)")
-            if n_boards_required <= 0:
-                raise ConfigurationException(
-                    "n_boards_required must be positive and not "
-                    f"{n_boards_required}")
-        if self.__fec_data._n_boards_required is not None or \
-                self.__fec_data._n_chips_required is not None:
-            raise ConfigurationException(
-                "Illegal second call to set_n_required")
-        self.__fec_data._n_boards_required = n_boards_required
-        self.__fec_data._n_chips_required = n_chips_required
-
-    def set_n_chips_in_graph(self, n_chips_in_graph: int):
-        """
-        Sets the number of chips needed by the graph.
-
-        :param int n_chips_in_graph:
-        """
-        if not isinstance(n_chips_in_graph, int):
-            raise TypeError("n_chips_in_graph must be an int (or None)")
-        if n_chips_in_graph <= 0:
-            raise ConfigurationException(
-                "n_chips_in_graph must be positive and not "
-                f"{n_chips_in_graph}")
-        self.__fec_data._n_chips_in_graph = n_chips_in_graph
-
     def set_ipaddress(self, ip_address: str):
         """
         :param str ip_address:
@@ -432,11 +379,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._ipaddress = ip_address
 
     def set_fixed_routes(
-            self, fixed_routes: Dict[Tuple[int, int], FixedRouteEntry]):
+            self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]):
         """
         :param fixed_routes:
         :type fixed_routes:
-            dict((int, int), ~spinn_machine.FixedRouteEntry)
+            dict((int, int), ~spinn_machine.RoutingEntry)
         """
         if not isinstance(fixed_routes, dict):
             raise TypeError("fixed_routes must be a dict")
@@ -530,7 +477,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 if not isinstance(
                         vertex, DataSpeedUpPacketGatherMachineVertex):
                     raise self.__gatherer_map_error()
-                break  # assume if first is ok all are
+                break  # assume if first is OK all are
         except Exception as ex:  # pylint: disable=broad-except
             raise self.__gatherer_map_error() from ex
         self.__fec_data._gatherer_map = gatherer_map
@@ -557,7 +504,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                     raise self.__monitor_map_error()
                 if not isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     raise self.__monitor_map_error()
-                break  # assume if first is ok all are
+                break  # assume if first is OK all are
         except TypeError:
             raise
         except Exception as ex:  # pylint: disable=broad-except

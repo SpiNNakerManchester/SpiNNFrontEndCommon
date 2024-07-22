@@ -14,9 +14,11 @@
 
 from sqlite3 import IntegrityError
 import struct
+from typing import BinaryIO, Optional, Tuple, Union
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
+from spinn_machine.version.version_strings import VersionStrings
 from spinnman.transceiver.version5transceiver import Version5Transceiver
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
@@ -50,24 +52,30 @@ class _MockTransceiver(Version5Transceiver):
         return self._regions_written
 
     @overrides(Version5Transceiver.malloc_sdram)
-    def malloc_sdram(self,  x, y, size, app_id, tag=None):
+    def malloc_sdram(
+            self, x: int, y: int, size: int, app_id: int, tag: int = 0) -> int:
         address = self._next_address
         self._next_address += size
         return address
 
     @overrides(Version5Transceiver.write_memory)
-    def write_memory(self, x, y, base_address, data, *,
-                     n_bytes=None, offset=0, cpu=0, get_sum=False):
+    def write_memory(
+            self, x: int, y: int, base_address: int,
+            data: Union[BinaryIO, bytes, int, str], *,
+            n_bytes: Optional[int] = None, offset: int = 0, cpu: int = 0,
+            get_sum: bool = False) -> Tuple[int, int]:
         if isinstance(data, int):
             data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
+        # bogus return for mypy
+        return (-1, -1)
 
     @overrides(Version5Transceiver.get_scamp_connection_selector)
     def get_scamp_connection_selector(self):
         return None
 
     @overrides(Version5Transceiver.close)
-    def close(self):
+    def close(self) -> None:
         pass
 
 
@@ -79,11 +87,11 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
         self._binary_start_type = binary_start_type
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
+    def get_binary_file_name(self) -> str:
         return self._binary_file_name
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
+    def get_binary_start_type(self) -> ExecutableType:
         return self._binary_start_type
 
 
@@ -92,9 +100,9 @@ class TestLoadDataSpecification(unittest.TestCase):
     def setUp(self):
         unittest_setup()
         set_config("Machine", "enable_advanced_monitor_support", "False")
-        set_config("Machine", "version", 5)
 
     def test_call(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
@@ -161,6 +169,7 @@ class TestLoadDataSpecification(unittest.TestCase):
                              header_and_table_size + 16)
 
     def test_multi_spec_with_references(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
@@ -234,6 +243,7 @@ class TestLoadDataSpecification(unittest.TestCase):
         self.assertEqual(header_data[2][2 * 3], header_data[1][2 * 3])
 
     def test_multispec_with_reference_error(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
@@ -261,6 +271,7 @@ class TestLoadDataSpecification(unittest.TestCase):
             load_application_data_specs()
 
     def test_multispec_with_double_reference(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
@@ -274,6 +285,7 @@ class TestLoadDataSpecification(unittest.TestCase):
                 spec.reserve_memory_region(1, 12, reference=1)
 
     def test_multispec_with_wrong_chip_reference(self):
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)

@@ -35,7 +35,7 @@ def board_chip_report() -> None:
         len(machine.ethernet_connected_chips),
         "Writing the board chip report")
 
-    # iterate over ethernet chips and then the chips on that board
+    # iterate over Ethernet chips and then the chips on that board
     with open(directory_name, "w", encoding="utf-8") as writer:
         _write_report(writer, machine, progress_bar)
 
@@ -48,7 +48,7 @@ def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
     """
     down_links: List[Tuple[int, int, int, str]] = []
     down_chips: List[Tuple[int, int, str]] = []
-    down_cores: List[Tuple[int, int, int, str]] = []
+    down_cores: List[Tuple[int, int, str, str]] = []
     for e_chip in progress_bar.over(machine.ethernet_connected_chips):
         assert e_chip.ip_address is not None
         existing_chips: List[str] = []
@@ -57,17 +57,17 @@ def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
             if machine.is_chip_at(x, y):
                 chip = machine[x, y]
                 existing_chips.append(
-                    f"({x}, {y}, P: {chip.get_physical_core_id(0)})")
+                    f"({x}, {y}, "
+                    f"{FecDataView.get_physical_string((x, y), 0)})")
                 n_cores = FecDataView.get_machine_version().max_cores_per_chip
                 down_procs = set(range(n_cores))
-                for proc in chip.processors:
-                    down_procs.remove(proc.processor_id)
+                for p in chip.all_processor_ids:
+                    down_procs.remove(p)
                 for p in down_procs:
-                    phys_p = chip.get_physical_core_id(p)
-                    core = p
-                    if phys_p is not None:
-                        core = -phys_p
-                    down_cores.append((l_x, l_y, core, e_chip.ip_address))
+                    phys_p = FecDataView.get_physical_string((x, y), p)
+                    if not phys_p:   # ""
+                        phys_p = str(-p)
+                    down_cores.append((l_x, l_y, phys_p, e_chip.ip_address))
             else:
                 down_chips.append((l_x, l_y, e_chip.ip_address))
             for link in range(Router.MAX_LINKS_PER_ROUTER):
@@ -81,7 +81,7 @@ def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
     down_chips_out = ":".join(
         f"{x},{y},{ip}" for x, y, ip in down_chips)
     down_cores_out = ":".join(
-        f"{x},{y},{p},{ip}" for x, y, p, ip in down_cores)
+        f"{x},{y},{phys_p},{ip}" for x, y, phys_p, ip in down_cores)
     down_links_out = ":".join(
         f"{x},{y},{l},{ip}" for x, y, l, ip in down_links)
     writer.write(f"Down chips: {down_chips_out}\n")

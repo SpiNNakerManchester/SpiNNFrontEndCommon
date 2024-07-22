@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from typing import Dict, Optional, Set, Sequence, Tuple, TypeVar
+from typing import Dict, List, Optional, Set, Sequence, Tuple, TypeVar
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.placements import Placement, Placements
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     vertex_chip)
+from pacman.utilities.utility_objs import ChipCounter
 from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement)
 from spinn_front_end_common.utilities.utility_objs import (
@@ -64,17 +66,17 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
             self.__m_vertices_by_ethernet[eth.x, eth.y] = lpg_vtx
 
     @overrides(AbstractSplitterCommon.create_machine_vertices)
-    def create_machine_vertices(self, chip_counter):
+    def create_machine_vertices(self, chip_counter: ChipCounter):
         # Skip here, and do later!  This is a special case...
         pass
 
     @overrides(AbstractSplitterCommon.get_in_coming_slices)
-    def get_in_coming_slices(self):
+    def get_in_coming_slices(self) -> List[Slice]:
         # There are none!
         return []
 
     @overrides(AbstractSplitterCommon.get_out_going_slices)
-    def get_out_going_slices(self):
+    def get_out_going_slices(self) -> List[Slice]:
         # There are also none (but this should never be a pre-vertex)
         return []
 
@@ -117,12 +119,13 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
         return self.__targeted_lpgs
 
     @overrides(AbstractSplitterCommon.get_out_going_vertices)
-    def get_out_going_vertices(self, partition_id: str):
+    def get_out_going_vertices(self, partition_id: str) -> List[MachineVertex]:
         # There are none!
         return []
 
     @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
-    def machine_vertices_for_recording(self, variable_to_record: str):
+    def machine_vertices_for_recording(
+            self, variable_to_record: str) -> List[MachineVertex]:
         # Nothing to record here...
         return []
 
@@ -153,4 +156,9 @@ class LivePacketGather(ApplicationVertex[LivePacketGatherMachineVertex]):
 
     @property
     def params(self) -> LivePacketGatherParameters:
+        """
+        The params value passed into the init.
+
+        :rtype: LivePacketGatherParameters
+        """
         return self.__params

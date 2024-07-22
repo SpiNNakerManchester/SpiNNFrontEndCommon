@@ -18,6 +18,7 @@ import logging
 import os
 import subprocess
 from typing import Dict, Iterable, List, Optional, cast
+
 from spinn_utilities.config_holder import (
     get_config_str, get_config_str_or_none)
 from spinn_utilities.log import FormatAdapter
@@ -26,11 +27,11 @@ from spinn_machine import Chip
 from spinn_machine.tags import IPTag
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.model.graphs import AbstractVirtual
-from spinn_front_end_common.data import FecDataView
 from pacman.model.placements import Placement
+
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
-    import (
-        write_json_machine)  # Argh! Mypy
+    import write_json_machine
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
@@ -52,9 +53,9 @@ class JavaCaller(object):
     """
     __slots__ = (
         "_chip_by_ethernet",
-        # The call to get java to work. Including the path if required.
+        # The call to get Java to work. Including the path if required.
         "_java_call",
-        # The location of the java jar file
+        # The location of the Java jar file
         "_jar_file",
         # The location where the machine json is written
         "_machine_json_path",
@@ -62,9 +63,9 @@ class JavaCaller(object):
         "_monitor_cores",
         # Flag to indicate if at least one placement is recording
         "_recording",
-        # Dict of ethernet (x, y) and the packetGather IPtago
+        # Dict of Ethernet (x, y) and the packetGather IPtags
         "_gatherer_iptags",
-        # Dict of ethernet (x, y) to the p of the packetGather vertex
+        # Dict of Ethernet (x, y) to the p of the packetGather vertex
         "_gatherer_cores",
         # The location where the latest placement json is written
         "__placement_json",
@@ -118,7 +119,7 @@ class JavaCaller(object):
             parent = os.path.dirname(github_checkout_dir)
             java_spinnaker_path = os.path.join(parent, "JavaSpiNNaker")
         else:
-            # As I don't know how to write pwd and /JavaSpiNNaker to one line
+            # As I don't know how to write this to one line
             indirect_path = os.path.join(
                 java_spinnaker_path, "JavaSpiNNaker")
             if os.path.isdir(indirect_path):
@@ -145,7 +146,7 @@ class JavaCaller(object):
                         f"No jar file at {auto_jar_file} "
                         "nor is java_jar_path set.")
             elif os.path.exists(java_jar_path):
-                self._jar_file = auto_jar_file
+                self._jar_file = java_jar_path
             else:
                 raise ConfigurationException(
                     f"No file found at java_jar_path: {java_jar_path}")
