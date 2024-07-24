@@ -674,6 +674,15 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # fixed_routes
     @classmethod
+    def has_fixed_routes(cls) -> bool:
+        """
+        Detects if fixed routes have been created.
+
+        :return:  True if the fixed route have been created
+        """
+        return cls.__fec_data._fixed_routes is not None
+
+    @classmethod
     def get_fixed_routes(cls) -> Dict[XY, RoutingEntry]:
         """
         Gets the fixed routes if they have been created.
