@@ -36,7 +36,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferDatabase)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
+    AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost,
+    AbstractReceiveRegionsToHost)
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
@@ -95,13 +96,17 @@ class BufferManager(object):
 
         # The machine controller, in case it wants to make proxied connections
         # for us
-        "_machine_controller")
+        "_machine_controller",
+
+        # Has the data been extracted?
+        "_data_extracted")
 
     def __init__(self) -> None:
         self.__enable_monitors: bool = get_config_bool(
             "Machine", "enable_advanced_monitor_support") or False
         # Set of vertices with buffers to be sent
         self._sender_vertices: Set[AbstractSendsBuffersFromHost] = set()
+        self._data_extracted = False
 
         # Dictionary of sender vertex -> buffers sent
         self._sent_messages: Dict[
@@ -351,9 +356,13 @@ class BufferManager(object):
         """
         Retrieve the data from placed vertices.
         """
+        self._data_extracted = True
         recording_placements = list(
             FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveBuffersToHost))
+        recording_placements.extend(
+            FecDataView.iterate_placements_by_vertex_type(
+                AbstractReceiveRegionsToHost))
         if self._java_caller is not None:
             logger.info("Starting buffer extraction using Java")
             self._java_caller.set_placements(recording_placements)
@@ -412,10 +421,16 @@ class BufferManager(object):
         :rtype: tuple(bytearray, bool)
         """
         # Ensure that any transfers in progress are complete first
-        if not isinstance(placement.vertex, AbstractReceiveBuffersToHost):
+        if not isinstance(placement.vertex, (AbstractReceiveBuffersToHost,
+                                             AbstractReceiveRegionsToHost)):
             raise NotImplementedError(
                 f"vertex {placement.vertex} does not implement "
-                "AbstractReceiveBuffersToHost so no data read")
+                "AbstractReceiveBuffersToHost or AbstractReceiveRegionsToHost "
+                "so no data read")
+
+        if not self._data_extracted:
+            raise SpinnFrontEndException(
+                "Data must be extracted before it can be retrieved!")
 
         # data flush has been completed - return appropriate data
         with BufferDatabase() as db:
