@@ -444,21 +444,30 @@ class BufferManager(object):
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
         """
-        vertex = cast(AbstractReceiveBuffersToHost, placement.vertex)
-        addr = vertex.get_recording_region_base_address(placement)
-        sizes_and_addresses = self._get_region_information(
-                addr, placement.x, placement.y)
+        if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
+            vertex = cast(AbstractReceiveBuffersToHost, placement.vertex)
+            addr = vertex.get_recording_region_base_address(placement)
+            sizes_and_addresses = self._get_region_information(
+                    addr, placement.x, placement.y)
 
-        # Read the data if not already received
-        for region in vertex.get_recorded_region_ids():
-            # Now read the data and store it
-            size, addr, missing = sizes_and_addresses[region]
-            data = self._request_data(
-                placement.x, placement.y, addr, size)
-            with BufferDatabase() as db:
-                db.store_data_in_region_buffer(
-                    placement.x, placement.y, placement.p, region, missing,
-                    data)
+            # Read the data if not already received
+            for region in vertex.get_recorded_region_ids():
+                # Now read the data and store it
+                size, addr, missing = sizes_and_addresses[region]
+                data = self._request_data(
+                    placement.x, placement.y, addr, size)
+                with BufferDatabase() as db:
+                    db.store_data_in_region_buffer(
+                        placement.x, placement.y, placement.p, region, missing,
+                        data)
+        if isinstance(placement.vertex, AbstractReceiveRegionsToHost):
+            vertex = cast(AbstractReceiveRegionsToHost, placement.vertex)
+            for region, addr, size in vertex.get_download_regions(placement):
+                data = self._request_data(placement.x, placement.y, addr, size)
+                with BufferDatabase() as db:
+                    db.store_data_in_region_buffer(
+                        placement.x, placement.y, placement.p, region, False,
+                        data)
 
     def _get_region_information(
             self, address: int, x: int, y: int) -> List[Tuple[int, int, bool]]:
