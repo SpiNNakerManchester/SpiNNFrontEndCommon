@@ -236,7 +236,8 @@ class JavaCaller(object):
                 "downloadRegions": []}}
 
         if isinstance(vertex, AbstractReceiveBuffersToHost):
-            recording_regions = list(vertex.get_recorded_region_ids())
+            recording_regions = cast(
+                JsonArray, list(vertex.get_recorded_region_ids()))
             if recording_regions:
                 self._recording = True
                 json_vertex = cast(JsonObject, json_placement["vertex"])
