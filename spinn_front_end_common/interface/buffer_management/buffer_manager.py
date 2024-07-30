@@ -461,8 +461,8 @@ class BufferManager(object):
                         placement.x, placement.y, placement.p, region, missing,
                         data)
         if isinstance(placement.vertex, AbstractReceiveRegionsToHost):
-            vertex = cast(AbstractReceiveRegionsToHost, placement.vertex)
-            for region, addr, size in vertex.get_download_regions(placement):
+            dl_vtx = cast(AbstractReceiveRegionsToHost, placement.vertex)
+            for region, addr, size in dl_vtx.get_download_regions(placement):
                 data = self._request_data(placement.x, placement.y, addr, size)
                 with BufferDatabase() as db:
                     db.store_data_in_region_buffer(
