@@ -36,7 +36,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferDatabase)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
+    AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost,
+    AbstractReceiveRegionsToHost)
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
@@ -95,13 +96,17 @@ class BufferManager(object):
 
         # The machine controller, in case it wants to make proxied connections
         # for us
-        "_machine_controller")
+        "_machine_controller",
+
+        # Has the data been extracted?
+        "_data_extracted")
 
     def __init__(self) -> None:
         self.__enable_monitors: bool = get_config_bool(
             "Machine", "enable_advanced_monitor_support") or False
         # Set of vertices with buffers to be sent
         self._sender_vertices: Set[AbstractSendsBuffersFromHost] = set()
+        self._data_extracted = False
 
         # Dictionary of sender vertex -> buffers sent
         self._sent_messages: Dict[
@@ -351,9 +356,13 @@ class BufferManager(object):
         """
         Retrieve the data from placed vertices.
         """
-        recording_placements = list(
+        self._data_extracted = True
+        recording_placements = set(
             FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveBuffersToHost))
+        recording_placements.update(
+            FecDataView.iterate_placements_by_vertex_type(
+                AbstractReceiveRegionsToHost))
         if self._java_caller is not None:
             logger.info("Starting buffer extraction using Java")
             self._java_caller.set_placements(recording_placements)
@@ -365,7 +374,7 @@ class BufferManager(object):
             self.__python_get_data_for_placements(recording_placements)
 
     def __python_get_data_for_placements_with_monitors(
-            self, recording_placements: List[Placement]):
+            self, recording_placements: Set[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
             Where to get the data from.
@@ -384,7 +393,7 @@ class BufferManager(object):
             self.__python_get_data_for_placements(recording_placements)
 
     def __python_get_data_for_placements(
-            self, recording_placements: List[Placement]):
+            self, recording_placements: Set[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
             Where to get the data from.
@@ -412,10 +421,16 @@ class BufferManager(object):
         :rtype: tuple(bytearray, bool)
         """
         # Ensure that any transfers in progress are complete first
-        if not isinstance(placement.vertex, AbstractReceiveBuffersToHost):
+        if not isinstance(placement.vertex, (AbstractReceiveBuffersToHost,
+                                             AbstractReceiveRegionsToHost)):
             raise NotImplementedError(
                 f"vertex {placement.vertex} does not implement "
-                "AbstractReceiveBuffersToHost so no data read")
+                "AbstractReceiveBuffersToHost or AbstractReceiveRegionsToHost "
+                "so no data read")
+
+        if not self._data_extracted:
+            raise SpinnFrontEndException(
+                "Data must be extracted before it can be retrieved!")
 
         # data flush has been completed - return appropriate data
         with BufferDatabase() as db:
@@ -429,21 +444,30 @@ class BufferManager(object):
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
         """
-        vertex = cast(AbstractReceiveBuffersToHost, placement.vertex)
-        addr = vertex.get_recording_region_base_address(placement)
-        sizes_and_addresses = self._get_region_information(
-                addr, placement.x, placement.y)
+        if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
+            vertex = cast(AbstractReceiveBuffersToHost, placement.vertex)
+            addr = vertex.get_recording_region_base_address(placement)
+            sizes_and_addresses = self._get_region_information(
+                    addr, placement.x, placement.y)
 
-        # Read the data if not already received
-        for region in vertex.get_recorded_region_ids():
-            # Now read the data and store it
-            size, addr, missing = sizes_and_addresses[region]
-            data = self._request_data(
-                placement.x, placement.y, addr, size)
-            with BufferDatabase() as db:
-                db.store_data_in_region_buffer(
-                    placement.x, placement.y, placement.p, region, missing,
-                    data)
+            # Read the data if not already received
+            for region in vertex.get_recorded_region_ids():
+                # Now read the data and store it
+                size, addr, missing = sizes_and_addresses[region]
+                data = self._request_data(
+                    placement.x, placement.y, addr, size)
+                with BufferDatabase() as db:
+                    db.store_data_in_region_buffer(
+                        placement.x, placement.y, placement.p, region, missing,
+                        data)
+        if isinstance(placement.vertex, AbstractReceiveRegionsToHost):
+            dl_vtx = cast(AbstractReceiveRegionsToHost, placement.vertex)
+            for region, addr, size in dl_vtx.get_download_regions(placement):
+                data = self._request_data(placement.x, placement.y, addr, size)
+                with BufferDatabase() as db:
+                    db.store_data_in_region_buffer(
+                        placement.x, placement.y, placement.p, region, False,
+                        data)
 
     def _get_region_information(
             self, address: int, x: int, y: int) -> List[Tuple[int, int, bool]]:
