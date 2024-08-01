@@ -374,7 +374,7 @@ class BufferManager(object):
             self.__python_get_data_for_placements(recording_placements)
 
     def __python_get_data_for_placements_with_monitors(
-            self, recording_placements: List[Placement]):
+            self, recording_placements: Set[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
             Where to get the data from.
@@ -393,7 +393,7 @@ class BufferManager(object):
             self.__python_get_data_for_placements(recording_placements)
 
     def __python_get_data_for_placements(
-            self, recording_placements: List[Placement]):
+            self, recording_placements: Set[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
             Where to get the data from.
