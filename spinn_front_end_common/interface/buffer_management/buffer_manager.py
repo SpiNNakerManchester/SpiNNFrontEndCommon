@@ -357,10 +357,10 @@ class BufferManager(object):
         Retrieve the data from placed vertices.
         """
         self._data_extracted = True
-        recording_placements = list(
+        recording_placements = set(
             FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveBuffersToHost))
-        recording_placements.extend(
+        recording_placements.update(
             FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveRegionsToHost))
         if self._java_caller is not None:
