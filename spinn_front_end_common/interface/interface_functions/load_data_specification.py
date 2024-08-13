@@ -36,6 +36,24 @@ from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 logger = FormatAdapter(logging.getLogger(__name__))
 _Writer: TypeAlias = Callable[[int, int, int, bytes], Any]
 
+MONITOR_CUTOFF = 12800  # 50 packets of 256 bytes
+
+
+def load_using_advanced_monitors() -> bool:
+    """
+    Detects if advanced monitors should be used for data specs
+    """
+    if not get_config_bool(
+            "Machine", "enable_advanced_monitor_support"):
+        return False
+    # Allow config to override
+    if get_config_bool(
+            "Machine", "disable_advanced_monitor_usage_for_data_in"):
+        return False
+    with DsSqlliteDatabase() as ds_database:
+        max_size = ds_database.get_max_content_size(is_system=False)
+        return max_size >= MONITOR_CUTOFF
+
 
 def load_system_data_specs() -> None:
     """
@@ -50,12 +68,7 @@ def load_application_data_specs() -> None:
     Load the data specs for all non-system targets.
     """
     specifier = _LoadDataSpecification()
-    uses_advanced_monitors = get_config_bool(
-        "Machine", "enable_advanced_monitor_support") or False
-    # Allow config to override
-    if get_config_bool(
-            "Machine", "disable_advanced_monitor_usage_for_data_in"):
-        uses_advanced_monitors = False
+    uses_advanced_monitors = load_using_advanced_monitors()
     try:
         specifier.load_data_specs(False, uses_advanced_monitors)
     except:  # noqa: E722
@@ -94,8 +107,8 @@ class _LoadDataSpecification(object):
         """
         # create a progress bar for end users
         progress = ProgressBar(
-            2, "Executing data specifications and loading data for "
-            "application vertices using Java")
+            2,
+            "Loading data for Application vertices using Java")
 
         java_caller = FecDataView.get_java_caller()
         if use_monitors:
@@ -129,8 +142,8 @@ class _LoadDataSpecification(object):
         """
         # create a progress bar for end users
         progress = ProgressBar(
-            1, "Executing data specifications and loading data for system "
-            "vertices using Java")
+            1,
+            "Loading data for system vertices using Java")
         FecDataView.get_java_caller().load_system_data_specification()
         progress.end()
 
@@ -141,13 +154,11 @@ class _LoadDataSpecification(object):
         if uses_advanced_monitors:
             self.__set_router_timeouts()
 
-        # create a progress bar for end users
         with DsSqlliteDatabase() as ds_database:
-
-            # allocate and set user 0 before loading data
-
             transceiver = FecDataView.get_transceiver()
-            writer: _Writer = transceiver.write_memory
+            direct_writer: _Writer = transceiver.write_memory
+            # for the uses_advanced_monitors = false case
+            monitor_writer: _Writer = direct_writer
             core_infos = ds_database.get_core_infos(is_system)
             if is_system:
                 type_str = "system"
@@ -155,8 +166,7 @@ class _LoadDataSpecification(object):
                 type_str = "application"
             progress = ProgressBar(
                 len(core_infos) * 2,
-                "Executing data specifications and loading data for "
-                f"{type_str} vertices")
+                f"Loading data for {type_str} vertices")
 
             for x, y, p, _, _ in progress.over(
                     core_infos, finish_at_end=False):
@@ -165,8 +175,9 @@ class _LoadDataSpecification(object):
             for x, y, p, eth_x, eth_y in progress.over(core_infos):
                 if uses_advanced_monitors:
                     gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
-                    writer = gatherer.send_data_into_spinnaker
-                written = self.__python_load_core(ds_database, x, y, p, writer)
+                    monitor_writer = gatherer.send_data_into_spinnaker
+                written = self.__python_load_core(
+                    ds_database, x, y, p, direct_writer, monitor_writer)
                 to_write = ds_database.get_memory_to_write(x, y, p)
                 if written != to_write:
                     raise DataSpecException(
@@ -197,7 +208,7 @@ class _LoadDataSpecification(object):
 
     def __python_load_core(
             self, ds_database: DsSqlliteDatabase, x: int, y: int, p: int,
-            writer: _Writer) -> int:
+            direct_writer: _Writer, monitor_writer: _Writer) -> int:
         written = 0
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
@@ -209,8 +220,11 @@ class _LoadDataSpecification(object):
                 if content is None:
                     continue
 
-                writer(x, y, pointer, content)
                 n_bytes = len(content)
+                if n_bytes < MONITOR_CUTOFF:
+                    direct_writer(x, y, pointer, content)
+                else:
+                    monitor_writer(x, y, pointer, content)
                 written += n_bytes
                 if n_bytes % BYTES_PER_WORD != 0:
                     n_bytes += BYTES_PER_WORD - n_bytes % BYTES_PER_WORD
@@ -233,7 +247,10 @@ class _LoadDataSpecification(object):
             (header, pointer_table.view("uint32"))).tobytes()
         if base_address is None:
             logger.warning("here")
-        writer(x, y, base_address, to_write)
+        if len(to_write) < MONITOR_CUTOFF:
+            direct_writer(x, y, base_address, to_write)
+        else:
+            monitor_writer(x, y, base_address, to_write)
         written += len(to_write)
         return written
 
