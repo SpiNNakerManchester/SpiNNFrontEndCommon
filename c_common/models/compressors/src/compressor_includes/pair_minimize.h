@@ -106,14 +106,24 @@ static inline void cancel_dmas(void) {
 //! \param[in] left: The index of the first route to consider.
 //! \param[in] index: The index of the second route to consider.
 //! \return True if the entries were merged
-static inline bool find_merge(int left, int index) {
+static inline bool find_merge_optimised(int left, int index) {
+    log_debug("find merge %d %d", left, index);
     cancel_dmas();
     const entry_t *entry1 = routing_table_get_entry(left);
     const entry_t *entry2 = routing_table_get_entry(index);
     const entry_t merged = merge(entry1, entry2);
 
+     #if LOG_LEVEL >= LOG_DEBUG
+        for (int check = remaining_index; check < routing_table_get_n_entries(); check++) {
+            const entry_t *check_entry = routing_table_get_entry(check);
+            log_debug("%d %08x %08x %d", check, check_entry->key_mask.key,
+                      check_entry->key_mask.mask, check_entry->route);
+        }
+    #endif // LOG_LEVEL >= LOG_DEBUG
+
     uint32_t size = routing_table_get_n_entries();
     uint32_t items_to_go = size - remaining_index;
+    log_debug("size %d remaining_index %d items_to_go %d", size, remaining_index, items_to_go);
     uint32_t next_n_items = transfer_next(remaining_index, items_to_go, 0);
     uint32_t next_items_to_go = items_to_go - next_n_items;
     uint32_t next_start = remaining_index + next_n_items;
@@ -144,11 +154,15 @@ static inline bool find_merge(int left, int index) {
 
         // Check the items now available
         entry_t *entries = route_cache[cache];
+        log_debug("to check %d", n_items);
         for (uint32_t i = 0; i < n_items; i++) {
+            log_debug("%d %08x %08x %d", i + remaining_index, entries[i].key_mask.key,
+                      entries[i].key_mask.mask,  entries[i].route);
             if (key_mask_intersect(entries[i].key_mask, merged.key_mask)) {
                 if (dma_in_progress) {
                     routing_table_wait_for_last_transfer();
                 }
+                log_debug("intersect");
                 return false;
             }
         }
@@ -159,10 +173,38 @@ static inline bool find_merge(int left, int index) {
     return true;
 }
 
+//! \brief Finds if two routes can be merged.
+//! \details If they are merged, the entry at the index of left is also
+//!     replaced with the merged route.
+//! \param[in] left: The index of the first route to consider.
+//! \param[in] index: The index of the second route to consider.
+//! \return True if the entries were merged
+static inline bool find_merge(int left, int index) {
+    log_debug("find merge %d %d", left, index);
+    cancel_dmas();
+    const entry_t *entry1 = routing_table_get_entry(left);
+    const entry_t *entry2 = routing_table_get_entry(index);
+    const entry_t merged = merge(entry1, entry2);
+
+    for (int check = remaining_index;
+            check < routing_table_get_n_entries();
+            check++) {
+        const entry_t *check_entry =
+                routing_table_get_entry(check);
+        if (key_mask_intersect(check_entry->key_mask, merged.key_mask)) {
+            return false;
+        }
+    }
+
+    routing_table_put_entry(&merged, left);
+    return true;
+}
+
 //! \brief Does the actual routing compression
 //! \param[in] left: The start of the section of table to compress
 //! \param[in] right: The end of the section of table to compress
 static inline void compress_by_route(int left, int right) {
+    log_debug("merge left %d right %d", left, right);
     while (left < right) {
         bool merged = false;
 
@@ -209,6 +251,7 @@ static void sort_routes(void) {
 //! \return Whether the update succeeded
 static inline bool update_frequency(int index) {
     uint32_t route = routing_table_get_entry(index)->route;
+    log_debug("index %d routes %d", index, route);
     for (uint i = 0; i < routes_count; i++) {
         if (routes[i] == route) {
             routes_frequency[i]++;

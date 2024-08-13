@@ -20,8 +20,8 @@ from .fixed_route_from_machine_report import fixed_route_from_machine_report
 from .memory_map_on_host_chip_report import memory_map_on_host_chip_report
 from .memory_map_on_host_report import memory_map_on_host_report
 from .network_specification import network_specification
-from .routing_table_from_machine_report import (
-    routing_table_from_machine_report)
+from .routing_compression_report import (
+    generate_routing_compression_checker_report)
 from .real_tags_report import tags_from_machine_report
 from .write_json_machine import write_json_machine
 from .write_json_placements import write_json_placements
@@ -34,10 +34,10 @@ __all__ = (
     "board_chip_report",
     "EnergyReport",
     "fixed_route_from_machine_report",
+    "generate_routing_compression_checker_report",
     "network_specification",
     "memory_map_on_host_chip_report",
     "memory_map_on_host_report",
-    "routing_table_from_machine_report",
     "tags_from_machine_report",
     "write_json_machine",
     "write_json_placements",

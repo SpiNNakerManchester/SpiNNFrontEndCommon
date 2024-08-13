@@ -91,7 +91,7 @@ class TestDataSpecification(unittest.TestCase):
                 DataSpecificationGenerator(0, 1, 2, vertex2, db)
 
     def test_core_infos(self):
-        set_config("Machine", "versions", VersionStrings.MULTIPLE_BOARDS.text)
+        set_config("Machine", "versions", VersionStrings.BIG.text)
         writer = FecDataWriter.mock()
         writer.set_machine(virtual_machine_by_min_size(9, 9))
         with DsSqlliteDatabase() as db:
@@ -118,7 +118,7 @@ class TestDataSpecification(unittest.TestCase):
         set_config("Machine", "versions", VersionStrings.ANY.text)
         router = Router([], 123)
         width, height = FecDataView.get_machine_version().board_shape
-        bad = Chip(width, height, 15, router, 100, 8, 8)
+        bad = Chip(width, height, [0], range(1, 15), router, 100, 8, 8)
         FecDataView.get_machine().add_chip(bad)
         vertex = _TestVertexWithBinary(
             "bad", ExecutableType.SYSTEM)
@@ -167,6 +167,33 @@ class TestDataSpecification(unittest.TestCase):
             # If core unknown dict empty and size 0
             self.assertEqual({}, db.get_region_sizes(0, 1, 3))
             self.assertEqual(0, db.get_total_regions_size(0, 1, 3))
+
+    def test_regions_content(self):
+        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
+        vertex = _TestVertexWithBinary(
+            "binary", ExecutableType.SYSTEM)
+        with DsSqlliteDatabase() as db:
+            dsg = DataSpecificationGenerator(0, 1, 2, vertex, db)
+            dsg.reserve_memory_region(1, 12, "test_region")
+            dsg.reserve_memory_region(2, 100, "test_region")
+            dsg.reserve_memory_region(3, 200, "test_region")
+            dsg.switch_write_focus(2)
+            dsg.write_array([1, 2, 3])
+            dsg.switch_write_focus(3)
+            dsg.write_value(12345)
+            dsg.end_specification()
+            db.set_region_pointer(0, 1, 2, 1, 100)
+            db.set_region_pointer(0, 1, 2, 2, 200)
+            db.set_region_pointer(0, 1, 2, 3, 400)
+
+            regions = list(db.get_regions_content(0, 1, 2))
+            b3 = bytearray(b'90\x00\x00')
+            self.assertEqual(12345, int.from_bytes(b3, 'little'))
+            self.assertIn((3, 400, b3), regions)
+            self.assertEqual(2, len(regions))
+
+            self.assertEqual(12, db.get_max_content_size(True))
+            self.assertEqual([(12, 1), (4, 1)], db.get_content_sizes(True))
 
     def test_switch_write_focus(self):
         set_config("Machine", "versions", VersionStrings.ANY.text)

@@ -67,6 +67,8 @@ class _MockTransceiver(Version5Transceiver):
         if isinstance(data, int):
             data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
+        # bogus return for mypy
+        return (-1, -1)
 
     @overrides(Version5Transceiver.close)
     def close(self) -> None:

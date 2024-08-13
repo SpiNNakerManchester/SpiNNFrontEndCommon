@@ -20,8 +20,8 @@ import traceback
 from typing import Optional, Type
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.config_holder import (
-    config_options, load_config, get_config_bool, get_config_int,
-    get_config_str, get_config_str_list, set_config)
+    config_options, has_config_option, load_config, get_config_bool,
+    get_config_int, get_config_str, get_config_str_list, set_config)
 from spinn_front_end_common.interface.interface_functions.\
     insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
 from spinn_front_end_common.interface.interface_functions.\
@@ -43,9 +43,11 @@ WARNING_LOGS_FILENAME = "warning_logs.txt"
 # options names are all lower without _ inside config
 _DEBUG_ENABLE_OPTS = frozenset([
     "reportsenabled",
-    "clear_iobuf_during_run", "extract_iobuf"])
+    "cleariobufduringrun", "extractiobuf"])
+_DEBUG_MAPPING_OPTS = frozenset([
+    "routertablecompressasfaraspossible", "runcompressionchecker"])
 _REPORT_DISABLE_OPTS = frozenset([
-    "clear_iobuf_during_run", "extract_iobuf"])
+    "cleariobufduringrun", "extractiobuf"])
 
 
 class ConfigHandler(object):
@@ -91,10 +93,13 @@ class ConfigHandler(object):
                         set_config("Reports", option, "True")
                         logger.info("As mode == \"Debug\", [Reports] {} "
                                     "has been set to True", option)
-            if not get_config_bool("Reports", "extract_iobuf"):
-                set_config("Reports", "extract_iobuf", "True")
-                logger.info("As mode == \"Debug\", [Reports] {} "
-                            "has been set to True", "extract_iobuf")
+            for option in config_options("Mapping"):
+                # options names are all lower without _ inside config
+                if option in _DEBUG_MAPPING_OPTS:
+                    if not get_config_bool("Mapping", option):
+                        set_config("Mapping", option, "True")
+                        logger.info("As mode == \"Debug\", [Mapping] {} "
+                                    "has been set to True", option)
         elif not get_config_bool("Reports", "reportsEnabled"):
             for option in config_options("Reports"):
                 # options names are all lower without _ inside config
@@ -104,18 +109,21 @@ class ConfigHandler(object):
                         logger.info(
                             "As reportsEnabled == \"False\", [Reports] {} "
                             "has been set to False", option)
-        if get_config_bool("Machine", "virtual_board"):
-            # TODO handle in the execute methods
-            if get_config_bool("Reports", "write_energy_report"):
-                set_config("Reports", "write_energy_report", "False")
-                logger.info("[Reports]write_energy_report has been set to "
-                            "False as using virtual boards")
 
     def _previous_handler(self) -> None:
         self._error_on_previous("loading_algorithms")
         self._error_on_previous("application_to_machine_graph_algorithms")
         self._error_on_previous("machine_graph_to_machine_algorithms")
         self._error_on_previous("machine_graph_to_virtual_machine_algorithms")
+        self._replaced_cfg("Reports",
+                           "write_routing_table_reports", "write_uncompressed")
+        self._replaced_cfg("Reports",
+                           "write_routing_tables_from_machine_reports",
+                           "write_compressed, write_compression_comparison,"
+                           " and write_compression_summary")
+        self._replaced_cfg("Reports",
+                           "write_routing_compression_checker_report",
+                           "run_compression_checker")
 
     def _error_on_previous(self, option) -> None:
         try:
@@ -127,6 +135,16 @@ class ConfigHandler(object):
             f"cfg setting {option} is no longer supported! "
             "See https://spinnakermanchester.github.io/common_pages/"
             "Algorithms.html.")
+
+    def _replaced_cfg(self, section: str, previous: str, new: str):
+        if has_config_option(section, previous):
+            if get_config_bool(section, previous):
+                raise ConfigurationException(
+                    f"cfg setting [{section}] {previous} "
+                    f"is no longer supported! Use {new} instead")
+            else:
+                logger.warning(f"cfg setting [{section}] {previous} "
+                               f"is no longer supported! Use {new} instead")
 
     def _reserve_system_vertices(self):
         """

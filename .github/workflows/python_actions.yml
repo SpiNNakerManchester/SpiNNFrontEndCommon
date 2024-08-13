@@ -17,107 +17,15 @@
 
 name: Python Actions
 on: [push]
-env:
-  BASE_PKG: spinn_front_end_common
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Checkout SupportScripts
-      uses: actions/checkout@v4
-      with:
-        repository: SpiNNakerManchester/SupportScripts
-        path: support
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install pip, etc
-      uses: ./support/actions/python-tools
-    - name: Install mypy
-      run: pip install mypy
-
-    - name: Install Spinnaker Dependencies
-      uses: ./support/actions/install-spinn-deps
-      with:
-        repositories:
-          SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
-        install: true
-
-    - name: Setup
-      uses: ./support/actions/run-install
-
-    - name: Test with pytest
-      uses: ./support/actions/pytest
-      with:
-        tests: unittests fec_integration_tests
-        coverage: ${{ matrix.python-version == 3.12 }}
-        cover-packages: ${{ env.BASE_PKG }}
-        coveralls-token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Lint with flake8
-      run: flake8 $BASE_PKG unittests fec_integration_tests
-    - name: Lint with pylint
-      uses: ./support/actions/pylint
-      with:
-        package: ${{ env.BASE_PKG }}
-        exitcheck: 31 # Action fails on any message
-        language: en_GB
-        rcfile: global_strict
-    - name: Lint with mypy
-      run: mypy $BASE_PKG
-
-  validate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        python-version: [3.12]
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Checkout SupportScripts
-      uses: actions/checkout@v4
-      with:
-        repository: SpiNNakerManchester/SupportScripts
-        path: support
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install pip, etc
-      uses: ./support/actions/python-tools
-    - name: Install Spinnaker Dependencies
-      uses: ./support/actions/install-spinn-deps
-      with:
-        repositories:
-          SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
-        install: true
-    - name: Setup
-      uses: ./support/actions/run-install
-
-    - name: Run rat copyright enforcement
-      uses: ./support/actions/check-copyrights
-      with:
-        config_file: rat_asl20.xml
-    - name: Validate all XML
-      if: false
-      uses: ./support/actions/validate-xml
-      with:
-        base-path: ${{ env.BASE_PKG }}
-    - name: Build documentation with sphinx
-      uses: ./support/actions/sphinx
-      with:
-        directory: doc/source
-    - name: Validate CITATION.cff
-      uses: dieghernan/cff-validator@main
+  call:
+    uses: SpiNNakerManchester/SupportScripts/.github/workflows/python_checks.yml@main
+    with:
+      dependencies: SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
+      test_directories: unittests fec_integration_tests
+      coverage-package: spinn_front_end_common
+      flake8-packages: spinn_front_end_common unittests fec_integration_tests
+      pylint-packages: spinn_front_end_common
+      mypy-packages: spinn_front_end_common unittests fec_integration_tests
+    secrets: inherit

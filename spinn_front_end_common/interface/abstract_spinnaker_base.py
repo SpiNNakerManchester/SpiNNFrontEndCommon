@@ -92,8 +92,7 @@ from spinn_front_end_common.interface.interface_functions import (
     reload_dsg_regions, energy_provenance_reporter,
     load_application_data_specs, load_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
-    graph_provenance_gatherer,
-    host_based_bit_field_router_compressor, hbp_allocator,
+    graph_provenance_gatherer, hbp_allocator,
     insert_chip_power_monitors_to_graphs,
     insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
@@ -115,9 +114,10 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
-    fixed_route_from_machine_report, memory_map_on_host_report,
+    fixed_route_from_machine_report,
+    generate_routing_compression_checker_report, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
-    routing_table_from_machine_report, tags_from_machine_report,
+    tags_from_machine_report,
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
@@ -212,6 +212,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
+
+        external_binaries = get_config_str_or_none(
+            "Mapping", "external_binaries")
+        if external_binaries is not None:
+            self._data_writer.register_binary_search_path(external_binaries)
 
         self._data_writer.set_machine_generator(self._get_machine)
         FecTimer.end_category(TimerCategory.SETTING_UP)
@@ -1036,20 +1041,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             data = system_multicast_routing_generator()
             self._data_writer.set_system_multicast_routing_data(data)
 
-    @final
-    def _execute_fixed_route_router(self) -> None:
-        """
-        Runs, times and logs the FixedRouteRouter if required.
-
-        May set the "fixed_routes" data.
-        """
-        with FecTimer("Fixed route router", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false(
-                    "Machine", "enable_advanced_monitor_support"):
-                return
-            self._data_writer.set_fixed_routes(fixed_route_router(
-                DataSpeedUpPacketGatherMachineVertex))
-
     def _report_placements_with_application_graph(self) -> None:
         """
         Writes, times and logs the application graph placer report if
@@ -1380,7 +1371,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._json_placements()
 
         self._execute_system_multicast_routing_generator()
-        self._execute_fixed_route_router()
         self._do_routing()
 
         self._execute_basic_tag_allocator()
@@ -1438,32 +1428,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                     graph_binary_gatherer())
             except KeyError:
                 if get_config_bool("Machine", "virtual_board"):
+                    # Github actions have no binaries
                     logger.warning(
                         "Ignoring executable not found as using virtual")
                     timer.error("executable not found and virtual board")
                     return
                 raise
-
-    @final
-    def _execute_host_bitfield_compressor(self) -> Optional[
-            MulticastRoutingTables]:
-        """
-        Runs, times and logs the HostBasedBitFieldRouterCompressor
-
-        .. note::
-            Calling of this method is based on the configuration compressor or
-            virtual_compressor value
-
-        :return: Compressed routing tables
-        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
-        """
-        with FecTimer("Host based bitfield router compressor",
-                      TimerWork.OTHER) as timer:
-            if timer.skip_if_virtual_board():
-                return None
-            self._multicast_routes_loaded = False
-            compressed = host_based_bit_field_router_compressor()
-            return compressed
 
     @final
     def _execute_ordered_covering_compressor(self) -> MulticastRoutingTables:
@@ -1640,39 +1610,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # delay compression until later
         return None
 
-    def _do_delayed_compression(
-            self, name: str,
-            compressed: Optional[MulticastRoutingTables]) -> Optional[
-                MulticastRoutingTables]:
-        """
-        Run compression that must be delayed until later.
-
-        .. note::
-            This method is the entry point for adding a new compressor that
-            can not run at the normal place
-
-        :param str name: Name of a compressor
-        :return: CompressedRoutingTables (likely to be `None`),
-            RouterCompressorProvenanceItems (may be an empty list)
-        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables or None
-        :raise ConfigurationException: if the name is not expected
-        """
-        if self._multicast_routes_loaded or compressed:
-            # Already compressed
-            return compressed
-        # overridden in spy to handle:
-        # SpynnakerMachineBitFieldOrderedCoveringCompressor
-        # SpynnakerMachineBitFieldPairRouterCompressor
-
-        if name == "HostBasedBitFieldRouterCompressor":
-            return self._execute_host_bitfield_compressor()
-        if "," in name:
-            raise ConfigurationException(
-                "Only a single algorithm is supported for compressor")
-
-        raise ConfigurationException(
-            f"Unexpected cfg setting compressor: {name}")
-
     @final
     def _execute_load_routing_tables(
             self, compressed: Optional[MulticastRoutingTables]) -> None:
@@ -1697,7 +1634,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Uncompressed routing table report",
                       TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_table_reports"):
+                    "Reports", "write_uncompressed"):
                 return
             router_report_from_router_tables()
 
@@ -1712,17 +1649,21 @@ class AbstractSpinnakerBase(ConfigHandler):
             # BitFieldSummary output ignored as never used
             bitfield_compressor_report()
 
-    def _execute_load_fixed_routes(self) -> None:
+    def _execute_fixed_routes(self) -> None:
         """
         Runs, times and logs Load Fixed Routes if required.
         """
-        with FecTimer("Load fixed routes", TimerWork.LOADING) as timer:
+        with FecTimer("Fixed routes", TimerWork.LOADING) as timer:
             if timer.skip_if_cfg_false(
                     "Machine", "enable_advanced_monitor_support"):
                 return
-            if timer.skip_if_virtual_board():
-                return
-            load_fixed_routes()
+            if not self._data_writer.has_fixed_routes():
+                self._data_writer.set_fixed_routes(fixed_route_router(
+                    DataSpeedUpPacketGatherMachineVertex))
+            if not get_config_bool("Machine", "virtual_board"):
+                load_fixed_routes()
+                if get_config_bool("Reports", "write_fixed_routes_report"):
+                    fixed_route_from_machine_report()
 
     def _execute_load_system_data_specification(self) -> None:
         """
@@ -1820,11 +1761,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type compressed: ~.MulticastRoutingTables or None
         """
         with FecTimer("Compressor report", TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_table_reports"):
-                return
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_tables_from_machine_reports"):
+            if timer.skip_all_cfgs_false(
+                    [("Reports", "write_compressed"),
+                     ("Reports", "write_compression_comparison"),
+                     ("Reports", "write_compression_summary"),
+                     ("Mapping", "run_compression_checker")],
+                    "No reports need compressed routing tables"):
                 return
 
             if compressed is None:
@@ -1832,23 +1774,16 @@ class AbstractSpinnakerBase(ConfigHandler):
                     return
                 compressed = read_routing_tables_from_machine()
 
-            router_report_from_compressed_router_tables(compressed)
-            generate_comparison_router_report(compressed)
-            router_compressed_summary_report(compressed)
-            routing_table_from_machine_report(compressed)
-
-    def _report_fixed_routes(self) -> None:
-        """
-        Runs, times and logs the FixedRouteFromMachineReport if requested.
-        """
-        with FecTimer("Fixed route report", TimerWork.REPORT) as timer:
-            if timer.skip_if_virtual_board():
-                return
-            if timer.skip_if_cfg_false(
-                    "Machine", "enable_advanced_monitor_support"):
-                return
-            # TODO at the same time as LoadFixedRoutes?
-            fixed_route_from_machine_report()
+            if get_config_bool("Reports", "write_compressed"):
+                router_report_from_compressed_router_tables(compressed)
+            if get_config_bool("Reports", "write_compression_comparison"):
+                generate_comparison_router_report(compressed)
+            if get_config_bool("Reports", "write_compression_summary"):
+                router_compressed_summary_report(compressed)
+            if get_config_bool("Mapping", "run_compression_checker"):
+                routing_tables = self._data_writer.get_uncompressed()
+                generate_routing_compression_checker_report(
+                    routing_tables, compressed)
 
     def _execute_application_load_executables(self) -> None:
         """
@@ -1878,14 +1813,13 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_control_sync(False)
         if self._data_writer.get_requires_mapping():
-            self._execute_load_fixed_routes()
+            self._execute_fixed_routes()
         self._execute_load_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
         self._execute_load_application_data_specification()
 
         self._do_extra_load_algorithms()
-        compressed = self._do_delayed_compression(compressor, compressed)
         self._execute_load_routing_tables(compressed)
         self._report_bit_field_compressor()
 
@@ -1895,7 +1829,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._report_memory_on_host()
             self._report_memory_on_chip()
             self._report_compressed(compressed)
-            self._report_fixed_routes()
         self._execute_application_load_executables()
 
         FecTimer.end_category(TimerCategory.LOADING)
