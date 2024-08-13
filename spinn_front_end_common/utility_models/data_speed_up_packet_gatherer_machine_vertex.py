@@ -1017,7 +1017,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: bytearray
         """
         # create report elements
-        if get_config_bool("Reports", "write_data_speed_up_reports"):
+        if (get_config_bool("Reports", "write_data_speed_up_reports")
+                and FecDataView.has_fixed_routes()):
             self._report_routers_used_for_out(placement)
 
         start = float(time.time())
