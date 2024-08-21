@@ -140,7 +140,7 @@ class BufferDatabase(BaseDatabase):
         for row in self.execute(
                 """
                 SELECT content, missing_data FROM region_data
-                WHERE region_id = ? ORDER BY extration_id ASC
+                WHERE region_id = ? ORDER BY extraction_id ASC
                 """, (region_id, )):
             item = row["content"]
             c_buffer[idx:idx + len(item)] = item
@@ -224,7 +224,7 @@ class BufferDatabase(BaseDatabase):
         self.execute(
             """
             INSERT INTO region_data(
-                region_id, extration_id, content, content_len, missing_data)
+                region_id, extraction_id, content, content_len, missing_data)
             VALUES (?, ?, CAST(? AS BLOB), ?, ?)
             """, (region_id, extraction_id, datablob, len(data), missing))
         assert self.rowcount == 1

@@ -65,22 +65,22 @@ CREATE TABLE IF NOT EXISTS region_data(
     region_data_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	region_id INTEGER NOT NULL
 		REFERENCES region(region_id) ON DELETE RESTRICT,
-    extration_id INTEGER NOT NULL
+    extraction_id INTEGER NOT NULL
 		REFERENCES extraction(extraction_id) ON DELETE RESTRICT,
 	content BLOB NOT NULL,
 	content_len INTEGER NOT NULL,
     missing_data INTEGER NOT NULL);
 -- Every recording region is extracted once per BefferExtractor run
 CREATE UNIQUE INDEX IF NOT EXISTS region_data_sanity ON region_data(
-	region_id ASC, extration_id ASC);
+	region_id ASC, extraction_id ASC);
 
 CREATE VIEW IF NOT EXISTS region_data_view AS
-	SELECT core_id, region_id, extration_id, x, y, processor, local_region_index,
+	SELECT core_id, region_id, extraction_id, x, y, processor, local_region_index,
 		content, content_len
 FROM region_view NATURAL JOIN region_data;
 
 CREATE VIEW IF NOT EXISTS region_data_plus_view AS
-	SELECT core_id, region_id, extration_id, x, y, processor, local_region_index,
+	SELECT core_id, region_id, extraction_id, x, y, processor, local_region_index,
 		content, content_len, run_timestep, run_time_ms, n_run, n_loop, extraction_time
 FROM region_data_view NATURAL JOIN extraction_view;
 
