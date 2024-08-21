@@ -27,6 +27,15 @@ CREATE TABLE IF NOT EXISTS core(
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
 	x ASC, y ASC, processor ASC);
 
+-- A table containing the metadata for an extraction run
+CREATE TABLE IF NOT EXISTS extraction(
+	extraction_id INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+    run_timestep INTEGER NOT NULL,
+    hardware_time_step_ms FLOAT NOT NULL,
+    n_run INTEGER NOT NULL,
+    n_loop INTEGER,
+    extract_time INTEGER
+    );
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing recording regions.
@@ -43,6 +52,7 @@ CREATE TABLE IF NOT EXISTS region(
 -- Every recording region has a unique vertex and index
 CREATE UNIQUE INDEX IF NOT EXISTS regionSanity ON region(
 	core_id ASC, local_region_index ASC);
+
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table containing the data which doesn't fit in the content column of the

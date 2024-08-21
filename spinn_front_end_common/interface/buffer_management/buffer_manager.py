@@ -351,6 +351,8 @@ class BufferManager(object):
         """
         Retrieve the data from placed vertices.
         """
+        with BufferDatabase() as db:
+            db.start_new_extraction()
         recording_placements = list(
             FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveBuffersToHost))

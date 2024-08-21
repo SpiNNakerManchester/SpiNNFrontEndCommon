@@ -150,6 +150,21 @@ class BufferDatabase(BaseDatabase):
         assert region_id is not None
         return region_id
 
+    def start_new_extraction(self):
+        run_timesteps = FecDataView.get_current_run_timesteps() or 0
+        self.execute(
+            """
+            INSERT INTO extraction(
+                run_timestep, hardware_time_step_ms, n_run, n_loop, extract_time)
+            VALUES(?, ?, ?, ?, ?)
+            """, (
+                run_timesteps, FecDataView.get_hardware_time_step_ms(),
+                FecDataView.get_run_number(), FecDataView.get_run_step(),
+                _timestamp()))
+        extraction_id = self.lastrowid
+        assert extraction_id is not None
+        return extraction_id
+
     def store_data_in_region_buffer(
             self, x: int, y: int, p: int, region: int, missing: bool,
             data: bytes):
