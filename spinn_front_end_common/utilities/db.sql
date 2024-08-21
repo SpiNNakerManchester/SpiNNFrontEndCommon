@@ -36,6 +36,10 @@ CREATE TABLE IF NOT EXISTS extraction(
     n_loop INTEGER,
     extract_time INTEGER
     );
+CREATE VIEW IF NOT EXISTS extraction_view AS
+	SELECT extraction_id, run_timestep, run_timestep * hardware_time_step_ms as run_time_ms,
+	       n_run, n_loop, datetime(extract_time/1000, 'unixepoch') AS extraction_time
+    from extraction;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing recording regions.
