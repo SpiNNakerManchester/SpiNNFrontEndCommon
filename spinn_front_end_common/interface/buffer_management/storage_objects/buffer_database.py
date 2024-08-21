@@ -79,7 +79,7 @@ class BufferDatabase(BaseDatabase):
         :param int region_id:
         :rtype: memoryview
         """
-        content, _ = self._read_contents(region_id)
+        content, _ = self._read_contents_with_missing(region_id)
         return content
 
     def _read_contents_with_missing(self, region_id: int) -> Tuple[
@@ -119,10 +119,30 @@ class BufferDatabase(BaseDatabase):
                 WHERE region_id = ?
                 LIMIT 1
                 """, (region_id,)):
-            a = row['missing_data']
             return memoryview(row["content"]), row['missing_data'] != 0
         else:
             raise LookupError(f"no record for region {region_id}")
+
+    def _read_contents_by_extraction_id(
+            self, region_id: int,
+            extraction_id:int) -> Tuple[memoryview, bool]:
+        """
+        Reads the content for a single block for this region
+
+        :param int region_id:
+        :rtype: memoryview
+        """
+        for row in self.execute(
+                """
+                SELECT content, missing_data
+                FROM region_data
+                WHERE region_id = ? AND extraction_id = ?
+                LIMIT 1
+                """, (region_id, extraction_id)):
+            return memoryview(row["content"]), row['missing_data'] != 0
+        else:
+            raise LookupError(
+                f"no record for {region_id=} and {extraction_id=}")
 
     def _read_content_multiple(
             self, region_id: int, total_content_length: int) -> Tuple[
@@ -189,7 +209,7 @@ class BufferDatabase(BaseDatabase):
         assert extraction_id is not None
         return extraction_id
 
-    def _get_extraction_id(self):
+    def get_last_extraction_id(self):
         for row in self.execute(
                 """
                 SELECT max(extraction_id) as max_id 
@@ -220,7 +240,7 @@ class BufferDatabase(BaseDatabase):
         # TODO: Use missing
         datablob = Binary(data)
         region_id = self._get_region_id(x, y, p, region)
-        extraction_id = self._get_extraction_id()
+        extraction_id = self.get_last_extraction_id()
         self.execute(
             """
             INSERT INTO region_data(
@@ -251,6 +271,37 @@ class BufferDatabase(BaseDatabase):
         try:
             region_id = self._get_region_id(x, y, p, region)
             return self._read_contents_with_missing(region_id)
+        except LookupError:
+            return memoryview(b''), True
+
+    def get_region_data_by_extraction_id(
+            self, x: int, y: int, p: int, region: int,
+            extraction_id:int) -> Tuple[memoryview, bool]:
+        """
+        Get the data stored for a given region of a given core.
+
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
+        :param int extraction_id: If of the Wxtraction top get data for.
+           Negative values will be counted from the end.
+        :return:
+            A buffer containing all the data received during the
+            simulation, and a flag indicating if any data was missing.
+
+            .. note::
+                Implementations should not assume that the total buffer is
+                necessarily shorter than 1GB.
+
+        :rtype: tuple(memoryview, bool)
+        """
+        try:
+            region_id = self._get_region_id(x, y, p, region)
+            if extraction_id < 0:
+                last_extraction_id = self.get_last_extraction_id()
+                extraction_id = last_extraction_id + 1 + extraction_id
+            return self._read_contents_by_extraction_id(region_id, extraction_id)
         except LookupError:
             return memoryview(b''), True
 
