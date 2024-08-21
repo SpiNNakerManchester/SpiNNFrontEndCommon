@@ -37,12 +37,15 @@ class TestBufferedDatabase(unittest.TestCase):
         with BufferDatabase() as brd:
             self.assertTrue(os.path.isfile(f), "DB now exists")
 
+
             # TODO missing
             # data, missing = brd.get_region_data(0, 0, 0, 0)
             # self.assertTrue(missing, "data should be 'missing'")
             # self.assertEqual(data, b"")
 
+            brd.start_new_extraction()
             brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"abc")
+            brd.start_new_extraction()
             brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"def")
             data, missing = brd.get_region_data(0, 0, 0, 0)
 
@@ -63,6 +66,7 @@ class TestBufferedDatabase(unittest.TestCase):
         info.add_placement(Placement(SimpleMachineVertex(None), 2, 2, 3))
         writer.set_placements(info)
         with BufferDatabase() as db:
+            db.start_new_extraction()
             db.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc")
             db.store_vertex_labels()
             label = db.get_core_name(1, 2, 3)

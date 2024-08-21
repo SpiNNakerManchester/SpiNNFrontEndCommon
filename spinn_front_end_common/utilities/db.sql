@@ -57,29 +57,32 @@ CREATE TABLE IF NOT EXISTS region(
 CREATE UNIQUE INDEX IF NOT EXISTS regionSanity ON region(
 	core_id ASC, local_region_index ASC);
 
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table containing the data which doesn't fit in the content column of the
--- region table; care must be taken with this to not exceed 1GB! We actually
--- store one per auto-pause-resume cycle as that is more efficient.
-CREATE TABLE IF NOT EXISTS region_extra(
-	extra_id INTEGER PRIMARY KEY ASC AUTOINCREMENT,
-	region_id INTEGER NOT NULL
-		REFERENCES region(region_id) ON DELETE RESTRICT,
-	content BLOB NOT NULL DEFAULT '',
-	content_len INTEGER DEFAULT 0);
-
 CREATE VIEW IF NOT EXISTS region_view AS
-	SELECT core_id, region_id, x, y, processor, local_region_index, address,
-		content, content_len, fetches, append_time,
-		(fetches > 1) AS have_extra
+	SELECT core_id, region_id, x, y, processor, local_region_index
 FROM core NATURAL JOIN region;
 
-CREATE VIEW IF NOT EXISTS extra_view AS
-    SELECT core_id, region_id, extra_id, x, y, processor, local_region_index,
-    	address, append_time, region_extra.content AS content,
-    	region_extra.content_len AS content_len
-FROM core NATURAL JOIN region NATURAL JOIN region_extra;
+CREATE TABLE IF NOT EXISTS region_data(
+    region_data_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	region_id INTEGER NOT NULL
+		REFERENCES region(region_id) ON DELETE RESTRICT,
+    extration_id INTEGER NOT NULL
+		REFERENCES extraction(extraction_id) ON DELETE RESTRICT,
+	content BLOB NOT NULL,
+	content_len INTEGER NOT NULL,
+    missing_data INTEGER NOT NULL);
+-- Every recording region is extracted once per BefferExtractor run
+CREATE UNIQUE INDEX IF NOT EXISTS region_data_sanity ON region_data(
+	region_id ASC, extration_id ASC);
+
+CREATE VIEW IF NOT EXISTS region_data_view AS
+	SELECT core_id, region_id, extration_id, x, y, processor, local_region_index,
+		content, content_len
+FROM region_view NATURAL JOIN region_data;
+
+CREATE VIEW IF NOT EXISTS region_data_plus_view AS
+	SELECT core_id, region_id, extration_id, x, y, processor, local_region_index,
+		content, content_len, run_timestep, run_time_ms, n_run, n_loop, extraction_time
+FROM region_data_view NATURAL JOIN extraction_view;
 
 -- Information about how to access the connection proxying
 -- WARNING! May include credentials

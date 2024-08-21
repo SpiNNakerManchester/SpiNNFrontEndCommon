@@ -70,14 +70,7 @@ class BufferDatabase(BaseDatabase):
             return False
         self.execute(
             """
-            UPDATE region SET
-                content = CAST('' AS BLOB), content_len = 0,
-                fetches = 0, append_time = NULL
-            WHERE region_id = ?
-            """, locus)
-        self.execute(
-            """
-            DELETE FROM region_extra WHERE region_id = ?
+            DELETE FROM region_data WHERE region_id = ?
             """, locus)
         return True
 
@@ -88,41 +81,58 @@ class BufferDatabase(BaseDatabase):
         """
         for row in self.execute(
                 """
+                SELECT count(*) as n_extractions, 
+                SUM(content_len) as total_content_length
+                FROM region_data
+                WHERE region_id = ?
+                LIMIT 1
+                """, (region_id, )):
+            n_extractions = row["n_extractions"]
+            total_content_length = row["total_content_length"]
+        if n_extractions <= 1:
+            return self._read_contents_single(region_id)
+        else:
+            return self._read_content_multiple(
+                region_id, total_content_length)
+
+    def _read_contents_single(self, region_id: int) -> memoryview:
+        """
+        Reads the content for a single block for this region
+
+        :param int region_id:
+        :rtype: memoryview
+        """
+        for row in self.execute(
+                """
                 SELECT content
-                FROM region_view
+                FROM region_data
                 WHERE region_id = ?
                 LIMIT 1
                 """, (region_id,)):
-            data = row["content"]
-            break
+            return memoryview(row["content"])
         else:
             raise LookupError(f"no record for region {region_id}")
 
-        c_buffer = None
+    def _read_content_multiple(
+            self, region_id: int, total_content_length: int) -> memoryview:
+        """
+        Reads the contents of all blocks for this regions.
+
+        :param int region_id:
+        :param int total_content_length: total size of content for this region
+        :rtype: memoryview
+        """
+        c_buffer = bytearray(total_content_length)
+        idx = 0
         for row in self.execute(
                 """
-                SELECT r.content_len + (
-                    SELECT SUM(x.content_len)
-                    FROM region_extra AS x
-                    WHERE x.region_id = r.region_id) AS len
-                FROM region AS r WHERE region_id = ? LIMIT 1
+                SELECT content FROM region_data
+                WHERE region_id = ? ORDER BY extration_id ASC
                 """, (region_id, )):
-            if row["len"] is not None:
-                c_buffer = bytearray(row["len"])
-                c_buffer[:len(data)] = data
-
-        if c_buffer is not None:
-            idx = len(data)
-            for row in self.execute(
-                    """
-                    SELECT content FROM region_extra
-                    WHERE region_id = ? ORDER BY extra_id ASC
-                    """, (region_id, )):
-                item = row["content"]
-                c_buffer[idx:idx + len(item)] = item
-                idx += len(item)
-            data = c_buffer
-        return memoryview(data)
+            item = row["content"]
+            c_buffer[idx:idx + len(item)] = item
+            idx += len(item)
+        return memoryview(c_buffer)
 
     def _get_region_id(self, x: int, y: int, p: int, region: int) -> int:
         """
@@ -143,8 +153,8 @@ class BufferDatabase(BaseDatabase):
         self.execute(
             """
             INSERT INTO region(
-                core_id, local_region_index, content, content_len, fetches)
-            VALUES(?, ?, CAST('' AS BLOB), 0, 0)
+                core_id, local_region_index)
+            VALUES(?, ?)
             """, (core_id, region))
         region_id = self.lastrowid
         assert region_id is not None
@@ -164,6 +174,16 @@ class BufferDatabase(BaseDatabase):
         extraction_id = self.lastrowid
         assert extraction_id is not None
         return extraction_id
+
+    def _get_extraction_id(self):
+        for row in self.execute(
+                """
+                SELECT max(extraction_id) as max_id 
+                FROM extraction
+                LIMIT 1
+                """):
+            return row["max_id"]
+        raise LookupError("No Extraction id found")
 
     def store_data_in_region_buffer(
             self, x: int, y: int, p: int, region: int, missing: bool,
@@ -186,31 +206,13 @@ class BufferDatabase(BaseDatabase):
         # TODO: Use missing
         datablob = Binary(data)
         region_id = self._get_region_id(x, y, p, region)
-        if self.__use_main_table(region_id):
-            self.execute(
-                """
-                UPDATE region SET
-                    content = CAST(? AS BLOB),
-                    content_len = ?,
-                    fetches = fetches + 1,
-                    append_time = ?
-                WHERE region_id = ?
-                """, (datablob, len(data), _timestamp(), region_id))
-        else:
-            self.execute(
-                """
-                UPDATE region SET
-                    fetches = fetches + 1,
-                    append_time = ?
-                WHERE region_id = ?
-                """, (_timestamp(), region_id))
-            assert self.rowcount == 1
-            self.execute(
-                """
-                INSERT INTO region_extra(
-                    region_id, content, content_len)
-                VALUES (?, CAST(? AS BLOB), ?)
-                """, (region_id, datablob, len(data)))
+        extraction_id = self._get_extraction_id()
+        self.execute(
+            """
+            INSERT INTO region_data(
+                region_id, extration_id, content, content_len, missing_data)
+            VALUES (?, ?, CAST(? AS BLOB), ?, ?)
+            """, (region_id, extraction_id, datablob, len(data), missing))
         assert self.rowcount == 1
 
     def __use_main_table(self, region_id: int) -> bool:
