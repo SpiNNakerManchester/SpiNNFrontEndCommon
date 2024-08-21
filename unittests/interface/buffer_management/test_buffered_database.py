@@ -39,18 +39,27 @@ class TestBufferedDatabase(unittest.TestCase):
 
 
             # TODO missing
-            # data, missing = brd.get_region_data(0, 0, 0, 0)
-            # self.assertTrue(missing, "data should be 'missing'")
-            # self.assertEqual(data, b"")
+            data, missing = brd.get_region_data(0, 0, 0, 0)
+            self.assertTrue(missing, "data should be 'missing'")
+            self.assertEqual(data, b"")
 
             brd.start_new_extraction()
             brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"abc")
+            data, missing = brd.get_region_data(0, 0, 0, 0)
+            self.assertFalse(missing, "data shouldn't be 'missing'")
+            self.assertEqual(bytes(data), b"abc")
+
             brd.start_new_extraction()
             brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"def")
             data, missing = brd.get_region_data(0, 0, 0, 0)
-
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abcdef")
+
+            brd.start_new_extraction()
+            brd.store_data_in_region_buffer(0, 0, 0, 0, True, b"g")
+            data, missing = brd.get_region_data(0, 0, 0, 0)
+            self.assertTrue(missing, "data should be 'missing'")
+            self.assertEqual(bytes(data), b"abcdefg")
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
 

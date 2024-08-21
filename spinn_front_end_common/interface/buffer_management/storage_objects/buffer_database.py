@@ -79,6 +79,15 @@ class BufferDatabase(BaseDatabase):
         :param int region_id:
         :rtype: memoryview
         """
+        content, _ = self._read_contents(region_id)
+        return content
+
+    def _read_contents_with_missing(self, region_id: int) -> Tuple[
+            memoryview, bool]:
+        """
+        :param int region_id:
+        :rtype: memoryview, bool
+        """
         for row in self.execute(
                 """
                 SELECT count(*) as n_extractions, 
@@ -95,7 +104,8 @@ class BufferDatabase(BaseDatabase):
             return self._read_content_multiple(
                 region_id, total_content_length)
 
-    def _read_contents_single(self, region_id: int) -> memoryview:
+    def _read_contents_single(self, region_id: int) -> Tuple[
+            memoryview, bool]:
         """
         Reads the content for a single block for this region
 
@@ -104,17 +114,19 @@ class BufferDatabase(BaseDatabase):
         """
         for row in self.execute(
                 """
-                SELECT content
+                SELECT content, missing_data
                 FROM region_data
                 WHERE region_id = ?
                 LIMIT 1
                 """, (region_id,)):
-            return memoryview(row["content"])
+            a = row['missing_data']
+            return memoryview(row["content"]), row['missing_data'] != 0
         else:
             raise LookupError(f"no record for region {region_id}")
 
     def _read_content_multiple(
-            self, region_id: int, total_content_length: int) -> memoryview:
+            self, region_id: int, total_content_length: int) -> Tuple[
+            memoryview, bool]:
         """
         Reads the contents of all blocks for this regions.
 
@@ -123,16 +135,18 @@ class BufferDatabase(BaseDatabase):
         :rtype: memoryview
         """
         c_buffer = bytearray(total_content_length)
+        missing_data = False
         idx = 0
         for row in self.execute(
                 """
-                SELECT content FROM region_data
+                SELECT content, missing_data FROM region_data
                 WHERE region_id = ? ORDER BY extration_id ASC
                 """, (region_id, )):
             item = row["content"]
             c_buffer[idx:idx + len(item)] = item
             idx += len(item)
-        return memoryview(c_buffer)
+            missing_data = missing_data or row["missing_data"] != 0
+        return memoryview(c_buffer), missing_data
 
     def _get_region_id(self, x: int, y: int, p: int, region: int) -> int:
         """
@@ -215,20 +229,6 @@ class BufferDatabase(BaseDatabase):
             """, (region_id, extraction_id, datablob, len(data), missing))
         assert self.rowcount == 1
 
-    def __use_main_table(self, region_id: int) -> bool:
-        """
-        :param int region_id:
-        """
-        for row in self.execute(
-                """
-                SELECT COUNT(*) AS existing FROM region
-                WHERE region_id = ? AND fetches = 0
-                LIMIT 1
-                """, (region_id, )):
-            existing = row["existing"]
-            return existing == 1
-        return False
-
     def get_region_data(self, x: int, y: int, p: int, region: int) -> Tuple[
             memoryview, bool]:
         """
@@ -250,9 +250,7 @@ class BufferDatabase(BaseDatabase):
         """
         try:
             region_id = self._get_region_id(x, y, p, region)
-            data = self._read_contents(region_id)
-            # TODO missing data
-            return data, False
+            return self._read_contents_with_missing(region_id)
         except LookupError:
             return memoryview(b''), True
 
