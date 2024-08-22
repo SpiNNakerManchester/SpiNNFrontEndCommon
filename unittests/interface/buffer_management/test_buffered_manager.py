@@ -38,11 +38,8 @@ class TestBufferedDatabase(unittest.TestCase):
         with BufferDatabase() as brd:
             self.assertTrue(os.path.isfile(f), "DB now exists")
 
-
-            # TODO missing
-            data, missing = brd.get_region_data(0, 0, 0, 0)
-            self.assertTrue(missing, "data should be 'missing'")
-            self.assertEqual(data, b"")
+            with self.assertRaises(LookupError):
+                data, missing = brd.get_region_data(0, 0, 0, 0)
 
             brd.start_new_extraction()
             brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"abc")
@@ -71,3 +68,30 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertEqual(bytes(data), b"g")
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
+
+    def test_placements(self):
+        set_config("Machine", "versions", VersionStrings.BIG.text)
+        writer = FecDataWriter.mock()
+        info = Placements([])
+        p1 = Placement(SimpleMachineVertex(None, label="V1"), 1, 2, 3)
+        info.add_placement(p1)
+        v2 = SimpleMachineVertex(None, label="V2")
+        p2 = Placement(v2, 1, 2, 5)
+        info.add_placement(p2)
+        info.add_placement(Placement(SimpleMachineVertex(None), 2, 2, 3))
+        writer.set_placements(info)
+        with BufferDatabase() as db:
+            db.start_new_extraction()
+            db.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc")
+            db.store_vertex_labels()
+            label = db.get_core_name(1, 2, 3)
+            self.assertEqual("V1", label)
+            label = db.get_core_name(1, 2, 5)
+            self.assertEqual("V2", label)
+            label = db.get_core_name(4, 3, 0)
+            self.assertEqual("SCAMP(OS)_4:3", label)
+
+        bm = BufferManager()
+        data, missing = bm.get_data_by_placement(p1, 0)
+        self.assertFalse(missing, "data should not be 'missing'")
+        self.assertEqual(bytes(data), b"abc")
