@@ -37,6 +37,8 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferDatabase)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
+from spinn_front_end_common.utilities.exceptions import (
+    BufferedRegionNotPresent)
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
@@ -412,18 +414,32 @@ class BufferManager(object):
         :return: an array contained all the data received during the
             simulation, and a flag indicating if any data was missing
         :rtype: tuple(bytearray, bool)
+        :raises BufferedRegionNotPresent:
+            If no data is available nor marked missing.
+        :raises NotImplementedError:
+            If the plcamenets vertex is not a type that records data
         """
-        # Ensure that any transfers in progress are complete first
-        if not isinstance(placement.vertex, AbstractReceiveBuffersToHost):
-            raise NotImplementedError(
-                f"vertex {placement.vertex} does not implement "
-                "AbstractReceiveBuffersToHost so no data read")
-
-        # data flush has been completed - return appropriate data
-        with BufferDatabase() as db:
-            return db.get_region_data(
-                placement.x, placement.y, placement.p, recording_region_id)
-
+        try:
+            with BufferDatabase() as db:
+                return db.get_region_data(
+                    placement.x, placement.y, placement.p,
+                    recording_region_id)
+        except LookupError as lookup_error:
+            vertex = placement.vertex
+            if isinstance(vertex, AbstractReceiveBuffersToHost):
+                if recording_region_id not in vertex.get_recorded_region_ids():
+                    raise BufferedRegionNotPresent(
+                        f"{vertex} not set to record region "
+                        f"{recording_region_id}") from lookup_error
+                else:
+                    raise BufferedRegionNotPresent(
+                        f"{vertex} should have record region "
+                        f"{recording_region_id} but there is no data"
+                    ) from lookup_error
+            else:
+                raise NotImplementedError(
+                    f"vertex {placement.vertex} does not implement "
+                    "AbstractReceiveBuffersToHost so no data read")
     def _retreive_by_placement(self, placement: Placement):
         """
         Retrieve the data for a vertex; must be locked first.

@@ -267,12 +267,10 @@ class BufferDatabase(BaseDatabase):
                 necessarily shorter than 1GB.
 
         :rtype: tuple(memoryview, bool)
+        :raises LookupErrror: If no data is available nor marked missing.
         """
-        try:
-            region_id = self._get_region_id(x, y, p, region)
-            return self._read_contents_with_missing(region_id)
-        except LookupError:
-            return memoryview(b''), True
+        region_id = self._get_region_id(x, y, p, region)
+        return self._read_contents_with_missing(region_id)
 
     def get_region_data_by_extraction_id(
             self, x: int, y: int, p: int, region: int,
