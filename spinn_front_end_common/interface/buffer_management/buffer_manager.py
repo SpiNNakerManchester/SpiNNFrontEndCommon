@@ -349,7 +349,7 @@ class BufferManager(object):
         FecDataView.write_memory(
             placement.x, placement.y, region_base_address, all_data)
 
-    def gather_placement_data(self) -> None:
+    def extract_data(self) -> None:
         """
         Retrieve the data from placed vertices.
         """
@@ -361,14 +361,14 @@ class BufferManager(object):
         if self._java_caller is not None:
             logger.info("Starting buffer extraction using Java")
             self._java_caller.set_placements(recording_placements)
-            self._java_caller.gather_all_data()
+            self._java_caller.extract_all_data()
         elif self.__enable_monitors:
-            self.__python_gather_placements_data_with_monitors(
-                recording_placements)
+            self.__python_extract_with_monitors(recording_placements)
         else:
-            self.__python_gather_placements_data(recording_placements)
+            self.__python_extract_no_monitors(recording_placements)
 
-    def __python_gather_placements_data_with_monitors(
+
+    def __python_extract_with_monitors(
             self, recording_placements: List[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
@@ -385,9 +385,9 @@ class BufferManager(object):
 
         with StreamingContextManager(receivers):
             # get data
-            self.__python_gather_placements_data(recording_placements)
+            self.__python_extract_no_monitors(recording_placements)
 
-    def __python_gather_placements_data(
+    def __python_extract_no_monitors(
             self, recording_placements: List[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:

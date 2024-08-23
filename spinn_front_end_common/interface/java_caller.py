@@ -362,7 +362,7 @@ class JavaCaller(object):
         params.extend(args)
         return subprocess.call(params)
 
-    def gather_all_data(self) -> None:
+    def extract_all_data(self) -> None:
         """
         Gets all the data from the previously set placements
         and put these in the previously set database.
