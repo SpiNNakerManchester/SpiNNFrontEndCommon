@@ -75,8 +75,16 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertEqual("V1", label)
             label = brd.get_core_name(1, 2, 5)
             self.assertEqual("V2", label)
-            label = brd.get_core_name(1, 1, 0)
-            self.assertEqual("SCAMP(OS)_1:1", label)
+
+            label = brd.get_core_name(0, 0, 0)
+            self.assertEqual("SCAMP(OS)_0:0", label)
+            version = writer.get_machine_version()
+            if version.n_chips_per_board >= 4:
+                label = brd.get_core_name(1, 1, 0)
+                self.assertEqual("SCAMP(OS)_1:1", label)
+            if version.n_chips_per_board >= 40:
+                label = brd.get_core_name(4, 3, 0)
+                self.assertEqual("SCAMP(OS)_4:3", label)
 
             with self.assertRaises(LookupError):
                 brd.get_region_data(1, 2, 3, 0)
