@@ -419,7 +419,7 @@ class BufferManager(object):
         :raises BufferedRegionNotPresent:
             If no data is available nor marked missing.
         :raises NotImplementedError:
-            If the placment's vertex is not a type that records data
+            If the placement's vertex is not a type that records data
         """
         try:
             with BufferDatabase() as db:

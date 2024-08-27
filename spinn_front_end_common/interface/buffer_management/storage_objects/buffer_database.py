@@ -200,7 +200,7 @@ class BufferDatabase(BaseDatabase):
 
     def store_setup_data(self):
         """
-        Stores data passed into sim.setup
+        Stores data passed into simulator setup
 
         """
         for _ in self.execute(
