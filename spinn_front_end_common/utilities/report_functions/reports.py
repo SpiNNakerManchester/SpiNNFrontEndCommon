@@ -518,7 +518,7 @@ def routing_info_report(
         with open(file_name, "w", encoding="utf-8") as f:
             vertex_partitions = OrderedSet(
                 (p.pre_vertex, p.identifier)
-                for p in FecDataView.iterate_partitions())
+                for p in get_app_partitions())
             vertex_partitions.update(extra_allocations)
             progress = ProgressBar(len(vertex_partitions),
                                    "Generating Routing info report")
