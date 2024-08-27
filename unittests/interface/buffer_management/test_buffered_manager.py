@@ -75,8 +75,8 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertEqual("V1", label)
             label = brd.get_core_name(1, 2, 5)
             self.assertEqual("V2", label)
-            label = brd.get_core_name(4, 3, 0)
-            self.assertEqual("SCAMP(OS)_4:3", label)
+            label = brd.get_core_name(1, 1, 0)
+            self.assertEqual("SCAMP(OS)_1:1", label)
 
             with self.assertRaises(LookupError):
                 brd.get_region_data(1, 2, 3, 0)
@@ -134,7 +134,7 @@ class TestBufferedDatabase(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             bm.get_data_by_placement(p, 1)
 
-    def test_not_recording(self):
+    def test_not_data_recorded(self):
         writer = FecDataWriter.mock()
         v = MockAbstractReceiveBuffersToHost(None, label="V2")
         p = Placement(v, 1, 2, 5)
@@ -142,12 +142,12 @@ class TestBufferedDatabase(unittest.TestCase):
         writer.set_placements(info)
         bm = BufferManager()
         try:
-            bm.get_data_by_placement(p, 1)
-            raise Exception("SException should have been raised")
+            bm.get_data_by_placement(p, 0)
+            raise Exception("Exception should have been raised")
         except BufferedRegionNotPresent as ex:
             self.assertIn("should have record region", str(ex))
 
-    def test_no_data_recording(self):
+    def test_not_recording_region(self):
         writer = FecDataWriter.mock()
         v = MockAbstractReceiveBuffersToHost(None, label="V2")
         p = Placement(v, 1, 2, 5)
@@ -156,6 +156,6 @@ class TestBufferedDatabase(unittest.TestCase):
         bm = BufferManager()
         try:
             bm.get_data_by_placement(p, 1)
-            raise Exception("SException should have been raised")
+            raise Exception("Exception should have been raised")
         except BufferedRegionNotPresent as ex:
             self.assertIn("not set to record region 1", str(ex))
