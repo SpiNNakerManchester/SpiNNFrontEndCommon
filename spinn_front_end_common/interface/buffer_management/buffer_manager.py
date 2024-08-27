@@ -427,7 +427,8 @@ class BufferManager(object):
                     placement.x, placement.y, placement.p,
                     recording_region_id)
         except LookupError as lookup_error:
-            self._raise_error(placement, recording_region_id, lookup_error)
+            return self._raise_error(
+                placement, recording_region_id, lookup_error)
 
     def get_last_data_by_placement(
             self, placement: Placement, recording_region_id: int) -> Tuple[
@@ -453,10 +454,14 @@ class BufferManager(object):
                     placement.x, placement.y, placement.p,
                     recording_region_id, -1)
         except LookupError as lookup_error:
-            self._raise_error(placement, recording_region_id, lookup_error)
+            return self._raise_error(
+                placement, recording_region_id, lookup_error)
 
     def _raise_error(self, placement: Placement, recording_region_id: int,
-                     lookup_error: LookupError):
+                     lookup_error: LookupError)-> Tuple[bytes, bool]:
+        """
+        Raises the correct exception-
+        """
         vertex = placement.vertex
         if isinstance(vertex, AbstractReceiveBuffersToHost):
             if recording_region_id not in vertex.get_recorded_region_ids():
