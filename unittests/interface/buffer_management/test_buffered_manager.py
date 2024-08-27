@@ -34,15 +34,17 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.exceptions import (
     BufferedRegionNotPresent)
 
+
 class MockAbstractReceiveBuffersToHost(SimpleMachineVertex,
                                        AbstractReceiveBuffersToHost):
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self) -> Sequence[int]:
-        return[0]
+        return [0]
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, placement: Placement) -> int:
         raise NotImplementedError
+
 
 class TestBufferedDatabase(unittest.TestCase):
 
@@ -78,7 +80,7 @@ class TestBufferedDatabase(unittest.TestCase):
 
             with self.assertRaises(LookupError):
                 brd.get_region_data(1, 2, 3, 0)
-                
+
         with self.assertRaises(BufferedRegionNotPresent):
             bm.get_data_by_placement(p1, 0)
 
@@ -115,10 +117,9 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"def")
 
-            data, missing = brd.get_region_data_by_extraction_id(1, 2, 3, 0, -1)
+            data, missing = brd.get_region_data_by_extraction_id(
+                1, 2, 3, 0, -1)
             self.assertTrue(missing, "data should be 'missing'")
             self.assertEqual(bytes(data), b"g")
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
-
-

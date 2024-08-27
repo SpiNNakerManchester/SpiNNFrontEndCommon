@@ -91,7 +91,7 @@ class BufferDatabase(BaseDatabase):
         """
         for row in self.execute(
                 """
-                SELECT count(*) as n_extractions, 
+                SELECT count(*) as n_extractions,
                 SUM(content_len) as total_content_length
                 FROM region_data
                 WHERE region_id = ?
@@ -129,7 +129,7 @@ class BufferDatabase(BaseDatabase):
 
     def _read_contents_by_extraction_id(
             self, region_id: int,
-            extraction_id:int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> Tuple[memoryview, bool]:
         """
         Reads the content for a single block for this region
 
@@ -230,7 +230,7 @@ class BufferDatabase(BaseDatabase):
     def get_last_extraction_id(self):
         for row in self.execute(
                 """
-                SELECT max(extraction_id) as max_id 
+                SELECT max(extraction_id) as max_id
                 FROM extraction
                 LIMIT 1
                 """):
@@ -292,7 +292,7 @@ class BufferDatabase(BaseDatabase):
 
     def get_region_data_by_extraction_id(
             self, x: int, y: int, p: int, region: int,
-            extraction_id:int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> Tuple[memoryview, bool]:
         """
         Get the data stored for a given region of a given core.
 
@@ -317,7 +317,8 @@ class BufferDatabase(BaseDatabase):
             if extraction_id < 0:
                 last_extraction_id = self.get_last_extraction_id()
                 extraction_id = last_extraction_id + 1 + extraction_id
-            return self._read_contents_by_extraction_id(region_id, extraction_id)
+            return self._read_contents_by_extraction_id(
+                region_id, extraction_id)
         except LookupError:
             return memoryview(b''), True
 

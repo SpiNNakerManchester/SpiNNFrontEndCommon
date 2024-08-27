@@ -370,7 +370,6 @@ class BufferManager(object):
         else:
             self.__python_extract_no_monitors(recording_placements)
 
-
     def __python_extract_with_monitors(
             self, recording_placements: List[Placement]):
         """
@@ -458,21 +457,21 @@ class BufferManager(object):
 
     def _raise_error(self, placement: Placement, recording_region_id: int,
                      lookup_error: LookupError):
-            vertex = placement.vertex
-            if isinstance(vertex, AbstractReceiveBuffersToHost):
-                if recording_region_id not in vertex.get_recorded_region_ids():
-                    raise BufferedRegionNotPresent(
-                        f"{vertex} not set to record region "
-                        f"{recording_region_id}") from lookup_error
-                else:
-                    raise BufferedRegionNotPresent(
-                        f"{vertex} should have record region "
-                        f"{recording_region_id} but there is no data"
-                    ) from lookup_error
+        vertex = placement.vertex
+        if isinstance(vertex, AbstractReceiveBuffersToHost):
+            if recording_region_id not in vertex.get_recorded_region_ids():
+                raise BufferedRegionNotPresent(
+                    f"{vertex} not set to record region "
+                    f"{recording_region_id}") from lookup_error
             else:
-                raise NotImplementedError(
-                    f"vertex {placement.vertex} does not implement "
-                    "AbstractReceiveBuffersToHost so no data read")
+                raise BufferedRegionNotPresent(
+                    f"{vertex} should have record region "
+                    f"{recording_region_id} but there is no data"
+                ) from lookup_error
+        else:
+            raise NotImplementedError(
+                f"vertex {placement.vertex} does not implement "
+                "AbstractReceiveBuffersToHost so no data read")
 
     def _retreive_by_placement(self, placement: Placement):
         """
