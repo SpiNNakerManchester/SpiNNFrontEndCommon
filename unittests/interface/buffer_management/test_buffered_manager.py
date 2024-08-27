@@ -123,3 +123,39 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertEqual(bytes(data), b"g")
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
+
+    def test_not_recording_type(self):
+        writer = FecDataWriter.mock()
+        info = Placements([])
+        writer.set_placements(info)
+        bm = BufferManager()
+        v = SimpleMachineVertex(None, label="V2")
+        p = Placement(v, 1, 2, 5)
+        with self.assertRaises(NotImplementedError):
+            bm.get_data_by_placement(p, 1)
+
+    def test_not_recording(self):
+        writer = FecDataWriter.mock()
+        v = MockAbstractReceiveBuffersToHost(None, label="V2")
+        p = Placement(v, 1, 2, 5)
+        info = Placements([p])
+        writer.set_placements(info)
+        bm = BufferManager()
+        try:
+            bm.get_data_by_placement(p, 1)
+            raise Exception("SException should have been raised")
+        except BufferedRegionNotPresent as ex:
+            self.assertIn("should have record region", str(ex))
+
+    def test_no_data_recording(self):
+        writer = FecDataWriter.mock()
+        v = MockAbstractReceiveBuffersToHost(None, label="V2")
+        p = Placement(v, 1, 2, 5)
+        info = Placements([p])
+        writer.set_placements(info)
+        bm = BufferManager()
+        try:
+            bm.get_data_by_placement(p, 1)
+            raise Exception("SException should have been raised")
+        except BufferedRegionNotPresent as ex:
+            self.assertIn("not set to record region 1", str(ex))
