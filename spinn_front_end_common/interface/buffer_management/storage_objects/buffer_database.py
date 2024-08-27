@@ -15,6 +15,7 @@
 from sqlite3 import Binary, IntegrityError
 import time
 from typing import Optional, Tuple
+from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
@@ -121,7 +122,10 @@ class BufferDatabase(BaseDatabase):
                 """, (region_id,)):
             return memoryview(row["content"]), row['missing_data'] != 0
         else:
-            raise LookupError(f"no record for region {region_id}")
+            if get_config_bool("Machine", "virtual_board"):
+                return memoryview(bytearray()), True
+            else:
+                raise LookupError(f"no record for region {region_id}")
 
     def _read_contents_by_extraction_id(
             self, region_id: int,
