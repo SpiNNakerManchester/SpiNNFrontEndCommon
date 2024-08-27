@@ -458,7 +458,7 @@ class BufferManager(object):
                 placement, recording_region_id, lookup_error)
 
     def _raise_error(self, placement: Placement, recording_region_id: int,
-                     lookup_error: LookupError)-> Tuple[bytes, bool]:
+                     lookup_error: LookupError) -> Tuple[bytes, bool]:
         """
         Raises the correct exception-
         """
