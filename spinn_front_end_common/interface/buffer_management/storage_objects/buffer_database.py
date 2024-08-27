@@ -236,7 +236,11 @@ class BufferDatabase(BaseDatabase):
         assert extraction_id is not None
         return extraction_id
 
-    def get_last_extraction_id(self):
+    def get_last_extraction_id(self) -> int:
+        """
+        Get the id of the current/ last extraction
+
+        """
         for row in self.execute(
                 """
                 SELECT max(extraction_id) as max_id
