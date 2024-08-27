@@ -425,6 +425,36 @@ class BufferManager(object):
                     placement.x, placement.y, placement.p,
                     recording_region_id)
         except LookupError as lookup_error:
+            self._raise_error(placement, recording_region_id, lookup_error)
+
+    def get_last_data_by_placement(
+            self, placement: Placement, recording_region_id: int) -> Tuple[
+                bytes, bool]:
+        """
+        Get the data container for all the data retrieved
+        during the simulation from a specific region area of a core.
+
+        :param ~pacman.model.placements.Placement placement:
+            the placement to get the data from
+        :param int recording_region_id: desired recording data region
+        :return: an array contained all the data received during the
+            simulation, and a flag indicating if any data was missing
+        :rtype: tuple(bytearray, bool)
+        :raises BufferedRegionNotPresent:
+            If no data is available nor marked missing.
+        :raises NotImplementedError:
+            If the plcamenets vertex is not a type that records data
+        """
+        try:
+            with BufferDatabase() as db:
+                return db.get_region_data_by_extraction_id(
+                    placement.x, placement.y, placement.p,
+                    recording_region_id, -1)
+        except LookupError as lookup_error:
+            self._raise_error(placement, recording_region_id, lookup_error)
+
+    def _raise_error(self, placement: Placement, recording_region_id: int,
+                     lookup_error: LookupError):
             vertex = placement.vertex
             if isinstance(vertex, AbstractReceiveBuffersToHost):
                 if recording_region_id not in vertex.get_recorded_region_ids():
@@ -440,6 +470,7 @@ class BufferManager(object):
                 raise NotImplementedError(
                     f"vertex {placement.vertex} does not implement "
                     "AbstractReceiveBuffersToHost so no data read")
+
     def _retreive_by_placement(self, placement: Placement):
         """
         Retrieve the data for a vertex; must be locked first.
