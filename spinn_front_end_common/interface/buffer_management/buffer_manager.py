@@ -125,6 +125,9 @@ class BufferManager(object):
             if vertex.buffering_input():
                 self._sender_vertices.add(vertex)
 
+        with BufferDatabase() as db:
+            db.store_setup_data()
+
     def _request_data(
             self, placement_x: int, placement_y: int, address: int,
             length: int) -> bytes:

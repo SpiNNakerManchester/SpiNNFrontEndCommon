@@ -27,11 +27,15 @@ CREATE TABLE IF NOT EXISTS core(
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
 	x ASC, y ASC, processor ASC);
 
+CREATE TABLE IF NOT EXISTS setup(
+    setup_id INTEGER PRIMARY KEY CHECK (setup_id = 0),
+    hardware_time_step_ms FLOAT NOT NULL,
+    time_scale_factor INTEGER);
+
 -- A table containing the metadata for an extraction run
 CREATE TABLE IF NOT EXISTS extraction(
 	extraction_id INTEGER PRIMARY KEY ASC AUTOINCREMENT,
     run_timestep INTEGER NOT NULL,
-    hardware_time_step_ms FLOAT NOT NULL,
     n_run INTEGER NOT NULL,
     n_loop INTEGER,
     extract_time INTEGER
@@ -39,7 +43,7 @@ CREATE TABLE IF NOT EXISTS extraction(
 CREATE VIEW IF NOT EXISTS extraction_view AS
 	SELECT extraction_id, run_timestep, run_timestep * hardware_time_step_ms as run_time_ms,
 	       n_run, n_loop, datetime(extract_time/1000, 'unixepoch') AS extraction_time
-    from extraction;
+    from extraction join setup;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing recording regions.
