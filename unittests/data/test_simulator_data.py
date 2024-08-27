@@ -73,6 +73,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_buffer_manager(self):
         writer = FecDataWriter.setup()
+        writer.set_up_timings(1, 1)
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_buffer_manager()
         self.assertFalse(FecDataView.has_buffer_manager())
