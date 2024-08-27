@@ -121,11 +121,11 @@ class BufferDatabase(BaseDatabase):
                 LIMIT 1
                 """, (region_id,)):
             return memoryview(row["content"]), row['missing_data'] != 0
+
+        if get_config_bool("Machine", "virtual_board"):
+            return memoryview(bytearray()), True
         else:
-            if get_config_bool("Machine", "virtual_board"):
-                return memoryview(bytearray()), True
-            else:
-                raise LookupError(f"no record for region {region_id}")
+            raise LookupError(f"no record for region {region_id}")
 
     def _read_contents_by_extraction_id(
             self, region_id: int,
@@ -144,9 +144,9 @@ class BufferDatabase(BaseDatabase):
                 LIMIT 1
                 """, (region_id, extraction_id)):
             return memoryview(row["content"]), row['missing_data'] != 0
-        else:
-            raise LookupError(
-                f"no record for {region_id=} and {extraction_id=}")
+
+        raise LookupError(
+            f"no record for {region_id=} and {extraction_id=}")
 
     def _read_content_multiple(
             self, region_id: int, total_content_length: int) -> Tuple[
@@ -199,12 +199,17 @@ class BufferDatabase(BaseDatabase):
         return region_id
 
     def store_setup_data(self):
-        for row in self.execute(
+        """
+        Stores data passed into sim.setup
+
+        """
+        for _ in self.execute(
                 """
                 SELECT hardware_time_step_ms
                 FROM setup
                 """):
             return
+
         self.execute(
             """
             INSERT INTO setup(
@@ -215,6 +220,10 @@ class BufferDatabase(BaseDatabase):
                 FecDataView.get_time_scale_factor()))
 
     def start_new_extraction(self):
+        """
+        Stores the metadata for the extractions about to occur
+
+        """
         run_timesteps = FecDataView.get_current_run_timesteps() or 0
         self.execute(
             """
@@ -300,7 +309,7 @@ class BufferDatabase(BaseDatabase):
         :param int y: y coordinate of the chip
         :param int p: Core within the specified chip
         :param int region: Region containing the data
-        :param int extraction_id: If of the Wxtraction top get data for.
+        :param int extraction_id: ID of the extraction top get data for.
            Negative values will be counted from the end.
         :return:
             A buffer containing all the data received during the
