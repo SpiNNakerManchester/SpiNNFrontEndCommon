@@ -75,7 +75,7 @@ class BufferDatabase(BaseDatabase):
 
     def _clear_region(self, region_id: int) -> bool:
         """
-        Clears out a region leaveing empty data and a missing of 2
+        Clears out a region leaving empty data and a missing of 2
 
         :param region_id: region to clear
         :return:
