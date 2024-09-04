@@ -152,7 +152,7 @@ class TestBufferedDatabase(unittest.TestCase):
         data, missing = bm.get_data_by_placement(p1, 0)
         self.assertFalse(missing, "data shouldn't be 'missing'")
         self.assertEqual(bytes(data), b"abcdef")
-        bm.clear_recorded_data(1,2,3, 0)
+        bm.clear_recorded_data(1, 2, 3, 0)
         data, missing = bm.get_data_by_placement(p1, 0)
         self.assertTrue(missing, "data should be 'missing'")
         self.assertEqual(bytes(data), b"")

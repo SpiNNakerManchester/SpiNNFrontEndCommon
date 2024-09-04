@@ -63,7 +63,7 @@ class BufferDatabase(BaseDatabase):
                 """
                 SELECT region_id FROM region_view
                 WHERE x = ? AND y = ? AND processor = ?
-                    AND local_region_index = ?  
+                    AND local_region_index = ?
                 LIMIT 1
                 """, (x, y, p, region)):
             region_id = (row["region_id"], )
