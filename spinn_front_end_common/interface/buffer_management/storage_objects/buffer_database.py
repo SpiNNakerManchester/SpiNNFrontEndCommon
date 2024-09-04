@@ -63,16 +63,29 @@ class BufferDatabase(BaseDatabase):
                 """
                 SELECT region_id FROM region_view
                 WHERE x = ? AND y = ? AND processor = ?
-                    AND local_region_index = ? AND fetches > 0 LIMIT 1
+                    AND local_region_index = ?  
+                LIMIT 1
                 """, (x, y, p, region)):
-            locus = (row["region_id"], )
+            region_id = (row["region_id"], )
             break
         else:
             return False
+
+        return self._clear_region(region_id)
+
+    def _clear_region(self, region_id: int) -> bool:
+        """
+        Clears out a region leaveing empty data and a missing of 2
+
+        :param region_id: region to clear
+        :return:
+        """
         self.execute(
             """
-            DELETE FROM region_data WHERE region_id = ?
-            """, locus)
+            UPDATE region_data SET
+            content = CAST('' AS BLOB), content_len = 0, missing_data = 2
+            WHERE region_id = ?
+            """, region_id)
         return True
 
     def _read_contents(self, region_id: int) -> memoryview:

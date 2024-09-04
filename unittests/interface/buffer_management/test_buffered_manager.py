@@ -132,6 +132,31 @@ class TestBufferedDatabase(unittest.TestCase):
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
 
+    def test_clear(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
+        writer = FecDataWriter.mock()
+
+        info = Placements([])
+        p1 = Placement(
+            MockAbstractReceiveBuffersToHost(None, label="V1"), 1, 2, 3)
+        info.add_placement(p1)
+        writer.set_placements(info)
+
+        bm = BufferManager()
+        with BufferDatabase() as brd:
+            brd.start_new_extraction()
+            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc")
+            brd.start_new_extraction()
+            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"def")
+
+        data, missing = bm.get_data_by_placement(p1, 0)
+        self.assertFalse(missing, "data shouldn't be 'missing'")
+        self.assertEqual(bytes(data), b"abcdef")
+        bm.clear_recorded_data(1,2,3, 0)
+        data, missing = bm.get_data_by_placement(p1, 0)
+        self.assertTrue(missing, "data should be 'missing'")
+        self.assertEqual(bytes(data), b"")
+
     def test_not_recording_type(self):
         writer = FecDataWriter.mock()
         info = Placements([])
