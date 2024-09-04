@@ -66,7 +66,7 @@ class BufferDatabase(BaseDatabase):
                     AND local_region_index = ?
                 LIMIT 1
                 """, (x, y, p, region)):
-            region_id = (row["region_id"], )
+            region_id = int(row["region_id"])
             break
         else:
             return False
@@ -85,7 +85,7 @@ class BufferDatabase(BaseDatabase):
             UPDATE region_data SET
             content = CAST('' AS BLOB), content_len = 0, missing_data = 2
             WHERE region_id = ?
-            """, region_id)
+            """, (region_id,))
         return True
 
     def _read_contents(self, region_id: int) -> memoryview:
