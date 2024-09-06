@@ -38,6 +38,8 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost,
     AbstractReceiveRegionsToHost)
+from spinn_front_end_common.utilities.exceptions import (
+    BufferedRegionNotPresent)
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
@@ -127,6 +129,9 @@ class BufferManager(object):
             vertex = cast(AbstractSendsBuffersFromHost, placement.vertex)
             if vertex.buffering_input():
                 self._sender_vertices.add(vertex)
+
+        with BufferDatabase() as db:
+            db.store_setup_data()
 
     def _request_data(
             self, placement_x: int, placement_y: int, address: int,
@@ -352,10 +357,12 @@ class BufferManager(object):
         FecDataView.write_memory(
             placement.x, placement.y, region_base_address, all_data)
 
-    def get_placement_data(self) -> None:
+    def extract_data(self) -> None:
         """
         Retrieve the data from placed vertices.
         """
+        with BufferDatabase() as db:
+            db.start_new_extraction()
         self._data_extracted = True
         recording_placements = set(
             FecDataView.iterate_placements_by_vertex_type(
@@ -366,14 +373,13 @@ class BufferManager(object):
         if self._java_caller is not None:
             logger.info("Starting buffer extraction using Java")
             self._java_caller.set_placements(recording_placements)
-            self._java_caller.get_all_data()
+            self._java_caller.extract_all_data()
         elif self.__enable_monitors:
-            self.__python_get_data_for_placements_with_monitors(
-                recording_placements)
+            self.__python_extract_with_monitors(recording_placements)
         else:
-            self.__python_get_data_for_placements(recording_placements)
+            self.__python_extract_no_monitors(recording_placements)
 
-    def __python_get_data_for_placements_with_monitors(
+    def __python_extract_with_monitors(
             self, recording_placements: Set[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
@@ -390,9 +396,9 @@ class BufferManager(object):
 
         with StreamingContextManager(receivers):
             # get data
-            self.__python_get_data_for_placements(recording_placements)
+            self.__python_extract_no_monitors(recording_placements)
 
-    def __python_get_data_for_placements(
+    def __python_extract_no_monitors(
             self, recording_placements: Set[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
@@ -419,23 +425,67 @@ class BufferManager(object):
         :return: an array contained all the data received during the
             simulation, and a flag indicating if any data was missing
         :rtype: tuple(bytearray, bool)
+        :raises BufferedRegionNotPresent:
+            If no data is available nor marked missing.
+        :raises NotImplementedError:
+            If the placement's vertex is not a type that records data
         """
-        # Ensure that any transfers in progress are complete first
-        if not isinstance(placement.vertex, (AbstractReceiveBuffersToHost,
-                                             AbstractReceiveRegionsToHost)):
+        try:
+            with BufferDatabase() as db:
+                return db.get_region_data(
+                    placement.x, placement.y, placement.p,
+                    recording_region_id)
+        except LookupError as lookup_error:
+            return self._raise_error(
+                placement, recording_region_id, lookup_error)
+
+    def get_last_data_by_placement(
+            self, placement: Placement, recording_region_id: int) -> Tuple[
+                bytes, bool]:
+        """
+        Get the data container for all the data retrieved
+        during the simulation from a specific region area of a core.
+
+        :param ~pacman.model.placements.Placement placement:
+            the placement to get the data from
+        :param int recording_region_id: desired recording data region
+        :return: an array contained all the data received during the
+            simulation, and a flag indicating if any data was missing
+        :rtype: tuple(bytearray, bool)
+        :raises BufferedRegionNotPresent:
+            If no data is available nor marked missing.
+        :raises NotImplementedError:
+            If the placement's vertex is not a type that records data
+        """
+        try:
+            with BufferDatabase() as db:
+                return db.get_region_data_by_extraction_id(
+                    placement.x, placement.y, placement.p,
+                    recording_region_id, -1)
+        except LookupError as lookup_error:
+            return self._raise_error(
+                placement, recording_region_id, lookup_error)
+
+    def _raise_error(self, placement: Placement, recording_region_id: int,
+                     lookup_error: LookupError) -> Tuple[bytes, bool]:
+        """
+        Raises the correct exception-
+        """
+        vertex = placement.vertex
+        if isinstance(vertex, AbstractReceiveBuffersToHost):
+            if recording_region_id not in vertex.get_recorded_region_ids():
+                raise BufferedRegionNotPresent(
+                    f"{vertex} not set to record region "
+                    f"{recording_region_id}") from lookup_error
+            else:
+                raise BufferedRegionNotPresent(
+                    f"{vertex} should have record region "
+                    f"{recording_region_id} but there is no data"
+                ) from lookup_error
+        else:
             raise NotImplementedError(
                 f"vertex {placement.vertex} does not implement "
-                "AbstractReceiveBuffersToHost or AbstractReceiveRegionsToHost "
-                "so no data read")
-
-        if not self._data_extracted:
-            raise SpinnFrontEndException(
-                "Data must be extracted before it can be retrieved!")
-
-        # data flush has been completed - return appropriate data
-        with BufferDatabase() as db:
-            return db.get_region_data(
-                placement.x, placement.y, placement.p, recording_region_id)
+                "AbstractReceiveBuffersToHost so no data read")
 
     def _retreive_by_placement(self, placement: Placement):
         """
