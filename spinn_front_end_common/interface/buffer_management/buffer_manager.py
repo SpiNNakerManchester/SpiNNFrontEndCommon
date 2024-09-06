@@ -471,21 +471,38 @@ class BufferManager(object):
         """
         Raises the correct exception-
         """
-        vertex = placement.vertex
-        if isinstance(vertex, AbstractReceiveBuffersToHost):
-            if recording_region_id not in vertex.get_recorded_region_ids():
-                raise BufferedRegionNotPresent(
-                    f"{vertex} not set to record region "
-                    f"{recording_region_id}") from lookup_error
-            else:
-                raise BufferedRegionNotPresent(
-                    f"{vertex} should have record region "
-                    f"{recording_region_id} but there is no data"
-                ) from lookup_error
-        else:
+        # Ensure that any transfers in progress are complete first
+        if not isinstance(placement.vertex, (AbstractReceiveBuffersToHost,
+                                             AbstractReceiveRegionsToHost)):
             raise NotImplementedError(
                 f"vertex {placement.vertex} does not implement "
-                "AbstractReceiveBuffersToHost so no data read")
+                "AbstractReceiveBuffersToHost or AbstractReceiveRegionsToHost "
+                "so no data read")
+        if not self._data_extracted:
+            raise SpinnFrontEndException(
+                "Data must be extracted before it can be retrieved!")
+
+        vertex = placement.vertex
+        recording_id_error = False
+        region_id_error = False
+        if isinstance(vertex, AbstractReceiveBuffersToHost):
+            if recording_region_id not in vertex.get_recorded_region_ids():
+                recording_id_error = True
+
+        if isinstance(vertex, AbstractReceiveRegionsToHost):
+            if recording_region_id not in vertex.get_download_regions(
+                    placement):
+                region_id_error = True
+
+        if recording_id_error or region_id_error:
+            raise BufferedRegionNotPresent(
+                    f"{vertex} not set to record or download region "
+                    f"{recording_region_id}") from lookup_error
+        else:
+            raise BufferedRegionNotPresent(
+                f"{vertex} should have record region "
+                f"{recording_region_id} but there is no data"
+            ) from lookup_error
 
     def _retreive_by_placement(self, placement: Placement):
         """
