@@ -98,17 +98,13 @@ class BufferManager(object):
 
         # The machine controller, in case it wants to make proxied connections
         # for us
-        "_machine_controller",
-
-        # Has the data been extracted?
-        "_data_extracted")
+        "_machine_controller")
 
     def __init__(self) -> None:
         self.__enable_monitors: bool = get_config_bool(
             "Machine", "enable_advanced_monitor_support") or False
         # Set of vertices with buffers to be sent
         self._sender_vertices: Set[AbstractSendsBuffersFromHost] = set()
-        self._data_extracted = False
 
         # Dictionary of sender vertex -> buffers sent
         self._sent_messages: Dict[
@@ -363,7 +359,6 @@ class BufferManager(object):
         """
         with BufferDatabase() as db:
             db.start_new_extraction()
-        self._data_extracted = True
         recording_placements = set(
             FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveBuffersToHost))
@@ -478,9 +473,6 @@ class BufferManager(object):
                 f"vertex {placement.vertex} does not implement "
                 "AbstractReceiveBuffersToHost or AbstractReceiveRegionsToHost "
                 "so no data read")
-        if not self._data_extracted:
-            raise SpinnFrontEndException(
-                "Data must be extracted before it can be retrieved!")
 
         vertex = placement.vertex
         recording_id_error = False

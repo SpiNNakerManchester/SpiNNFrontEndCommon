@@ -191,4 +191,4 @@ class TestBufferedDatabase(unittest.TestCase):
             bm.get_data_by_placement(p, 1)
             raise Exception("Exception should have been raised")
         except BufferedRegionNotPresent as ex:
-            self.assertIn("not set to record region 1", str(ex))
+            self.assertIn("not set to record or download region 1", str(ex))
