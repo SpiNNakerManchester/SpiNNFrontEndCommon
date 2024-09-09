@@ -598,6 +598,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             assert steps is not None
             logger.info("Running for {} steps for a total of {}ms",
                         len(steps), run_time)
+            self._data_writer.set_n_run_steps(len(steps))
             for step in steps:
                 run_step = self._data_writer.next_run_step()
                 logger.info(f"Run {run_step} of {len(steps)}")

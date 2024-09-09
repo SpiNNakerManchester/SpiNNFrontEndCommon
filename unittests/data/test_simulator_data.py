@@ -649,17 +649,27 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_run_step(self):
         self.assertIsNone(FecDataView.get_run_step())
+        FecDataView.is_last_step()
         writer = FecDataWriter.setup()
+        self.assertTrue(FecDataView.is_last_step())
+        writer.set_n_run_steps(3)
+        self.assertFalse(FecDataView.is_last_step())
         self.assertEqual(1, writer.next_run_step())
         self.assertEqual(1, FecDataView.get_run_step())
+        self.assertFalse(FecDataView.is_last_step())
         self.assertEqual(2, writer.next_run_step())
+        self.assertFalse(FecDataView.is_last_step())
         self.assertEqual(3, writer.next_run_step())
         self.assertEqual(3, FecDataView.get_run_step())
         self.assertEqual(3, FecDataView.get_run_step())
+        self.assertTrue(FecDataView.is_last_step())
         writer.clear_run_steps()
+        self.assertTrue(FecDataView.is_last_step())
         self.assertIsNone(FecDataView.get_run_step())
         self.assertEqual(1, writer.next_run_step())
         self.assertEqual(1, FecDataView.get_run_step())
+        # this time there is no n_time_Step so assuming run forever
+        self.assertFalse(FecDataView.is_last_step())
 
     def test_ds_references(self):
         refs1 = FecDataView.get_next_ds_references(7)
