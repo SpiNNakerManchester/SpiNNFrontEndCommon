@@ -149,6 +149,10 @@ class BufferDatabase(BaseDatabase):
         :param int region_id:
         :rtype: memoryview
         """
+        if extraction_id < 0:
+            last_extraction_id = self.get_last_extraction_id()
+            extraction_id = last_extraction_id + 1 + extraction_id
+
         for row in self.execute(
                 """
                 SELECT content, missing_data
@@ -304,6 +308,10 @@ class BufferDatabase(BaseDatabase):
         """
         Get the data stored for a given region of a given core.
 
+        If this is a recoding region the data for all extractions is combined.
+
+        For none recording regions only the last data extracted is returned.
+
         :param int x: x coordinate of the chip
         :param int y: y coordinate of the chip
         :param int p: Core within the specified chip
@@ -319,8 +327,11 @@ class BufferDatabase(BaseDatabase):
         :rtype: tuple(memoryview, bool)
         :raises LookupErrror: If no data is available nor marked missing.
         """
-        region_id, _ = self._get_region_id(x, y, p, region)
-        return self._read_contents_with_missing(region_id)
+        region_id, is_recording = self._get_region_id(x, y, p, region)
+        if is_recording:
+            return self._read_contents_with_missing(region_id)
+        else:
+            return self._read_contents_by_extraction_id(region_id, -1)
 
     def get_region_data_by_extraction_id(
             self, x: int, y: int, p: int, region: int,
@@ -346,9 +357,6 @@ class BufferDatabase(BaseDatabase):
         """
         try:
             region_id, _ = self._get_region_id(x, y, p, region)
-            if extraction_id < 0:
-                last_extraction_id = self.get_last_extraction_id()
-                extraction_id = last_extraction_id + 1 + extraction_id
             return self._read_contents_by_extraction_id(
                 region_id, extraction_id)
         except LookupError:

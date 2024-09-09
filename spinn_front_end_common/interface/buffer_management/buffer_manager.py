@@ -359,9 +359,16 @@ class BufferManager(object):
         """
         with BufferDatabase() as db:
             db.start_new_extraction()
-        recording_placements = list(
-            FecDataView.iterate_placements_by_vertex_type(
-                (AbstractReceiveBuffersToHost, AbstractReceiveRegionsToHost)))
+        if FecDataView.is_last_step():
+            recording_placements = list(
+                FecDataView.iterate_placements_by_vertex_type(
+                    (AbstractReceiveBuffersToHost,
+                     AbstractReceiveRegionsToHost)))
+        else:
+            recording_placements = list(
+                FecDataView.iterate_placements_by_vertex_type(
+                    AbstractReceiveBuffersToHost))
+
         if self._java_caller is not None:
             logger.info("Starting buffer extraction using Java")
             self._java_caller.set_placements(recording_placements)
@@ -408,8 +415,12 @@ class BufferManager(object):
             self, placement: Placement, recording_region_id: int) -> Tuple[
                 bytes, bool]:
         """
-        Get the data container for all the data retrieved
+        Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
+
+        If this is a recoding region the data for all extractions is combined.
+
+        For none recording regions only the last data extracted is returned.
 
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
@@ -515,7 +526,7 @@ class BufferManager(object):
                 with BufferDatabase() as db:
                     db.store_data_in_region_buffer(
                         placement.x, placement.y, placement.p, region, missing,
-                        data)
+                        data, True)
         if isinstance(placement.vertex, AbstractReceiveRegionsToHost):
             dl_vtx = cast(AbstractReceiveRegionsToHost, placement.vertex)
             for region, addr, size in dl_vtx.get_download_regions(placement):
@@ -523,7 +534,7 @@ class BufferManager(object):
                 with BufferDatabase() as db:
                     db.store_data_in_region_buffer(
                         placement.x, placement.y, placement.p, region, False,
-                        data)
+                        data, False)
 
     def _get_region_information(
             self, address: int, x: int, y: int) -> List[Tuple[int, int, bool]]:
