@@ -359,12 +359,9 @@ class BufferManager(object):
         """
         with BufferDatabase() as db:
             db.start_new_extraction()
-        recording_placements = set(
+        recording_placements = list(
             FecDataView.iterate_placements_by_vertex_type(
-                AbstractReceiveBuffersToHost))
-        recording_placements.update(
-            FecDataView.iterate_placements_by_vertex_type(
-                AbstractReceiveRegionsToHost))
+                (AbstractReceiveBuffersToHost, AbstractReceiveRegionsToHost)))
         if self._java_caller is not None:
             logger.info("Starting buffer extraction using Java")
             self._java_caller.set_placements(recording_placements)
@@ -375,7 +372,7 @@ class BufferManager(object):
             self.__python_extract_no_monitors(recording_placements)
 
     def __python_extract_with_monitors(
-            self, recording_placements: Set[Placement]):
+            self, recording_placements: List[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
             Where to get the data from.
@@ -394,7 +391,7 @@ class BufferManager(object):
             self.__python_extract_no_monitors(recording_placements)
 
     def __python_extract_no_monitors(
-            self, recording_placements: Set[Placement]):
+            self, recording_placements: List[Placement]):
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
             Where to get the data from.
