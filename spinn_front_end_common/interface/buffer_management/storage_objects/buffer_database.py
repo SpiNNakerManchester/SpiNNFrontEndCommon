@@ -190,7 +190,8 @@ class BufferDatabase(BaseDatabase):
         return memoryview(c_buffer), missing_data
 
     def _get_region_id(self, x: int, y: int, p: int, region: int,
-                       is_recording: Optional[bool] = None) -> int:
+                       is_recording: Optional[bool] = None) -> Tuple[
+                       int, bool]:
         """
         :param int x:
         :param int y:
