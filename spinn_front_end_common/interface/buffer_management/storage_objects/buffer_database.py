@@ -15,6 +15,7 @@
 from sqlite3 import Binary, IntegrityError
 import time
 from typing import Optional, Tuple
+from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
@@ -62,23 +63,29 @@ class BufferDatabase(BaseDatabase):
                 """
                 SELECT region_id FROM region_view
                 WHERE x = ? AND y = ? AND processor = ?
-                    AND local_region_index = ? AND fetches > 0 LIMIT 1
+                    AND local_region_index = ?
+                LIMIT 1
                 """, (x, y, p, region)):
-            locus = (row["region_id"], )
+            region_id = int(row["region_id"])
             break
         else:
             return False
+
+        return self._clear_region(region_id)
+
+    def _clear_region(self, region_id: int) -> bool:
+        """
+        Clears out a region leaving empty data and a missing of 2
+
+        :param region_id: region to clear
+        :return:
+        """
         self.execute(
             """
-            UPDATE region SET
-                content = CAST('' AS BLOB), content_len = 0,
-                fetches = 0, append_time = NULL
+            UPDATE region_data SET
+            content = CAST('' AS BLOB), content_len = 0, missing_data = 2
             WHERE region_id = ?
-            """, locus)
-        self.execute(
-            """
-            DELETE FROM region_extra WHERE region_id = ?
-            """, locus)
+            """, (region_id,))
         return True
 
     def _read_contents(self, region_id: int) -> memoryview:
@@ -86,43 +93,97 @@ class BufferDatabase(BaseDatabase):
         :param int region_id:
         :rtype: memoryview
         """
+        content, _ = self._read_contents_with_missing(region_id)
+        return content
+
+    def _read_contents_with_missing(self, region_id: int) -> Tuple[
+            memoryview, bool]:
+        """
+        :param int region_id:
+        :rtype: memoryview, bool
+        """
         for row in self.execute(
                 """
-                SELECT content
-                FROM region_view
+                SELECT count(*) as n_extractions,
+                SUM(content_len) as total_content_length
+                FROM region_data
+                WHERE region_id = ?
+                LIMIT 1
+                """, (region_id, )):
+            n_extractions = row["n_extractions"]
+            total_content_length = row["total_content_length"]
+        if n_extractions <= 1:
+            return self._read_contents_single(region_id)
+        else:
+            return self._read_content_multiple(
+                region_id, total_content_length)
+
+    def _read_contents_single(self, region_id: int) -> Tuple[
+            memoryview, bool]:
+        """
+        Reads the content for a single block for this region
+
+        :param int region_id:
+        :rtype: memoryview
+        """
+        for row in self.execute(
+                """
+                SELECT content, missing_data
+                FROM region_data
                 WHERE region_id = ?
                 LIMIT 1
                 """, (region_id,)):
-            data = row["content"]
-            break
+            return memoryview(row["content"]), row['missing_data'] != 0
+
+        if get_config_bool("Machine", "virtual_board"):
+            return memoryview(bytearray()), True
         else:
             raise LookupError(f"no record for region {region_id}")
 
-        c_buffer = None
+    def _read_contents_by_extraction_id(
+            self, region_id: int,
+            extraction_id: int) -> Tuple[memoryview, bool]:
+        """
+        Reads the content for a single block for this region
+
+        :param int region_id:
+        :rtype: memoryview
+        """
         for row in self.execute(
                 """
-                SELECT r.content_len + (
-                    SELECT SUM(x.content_len)
-                    FROM region_extra AS x
-                    WHERE x.region_id = r.region_id) AS len
-                FROM region AS r WHERE region_id = ? LIMIT 1
-                """, (region_id, )):
-            if row["len"] is not None:
-                c_buffer = bytearray(row["len"])
-                c_buffer[:len(data)] = data
+                SELECT content, missing_data
+                FROM region_data
+                WHERE region_id = ? AND extraction_id = ?
+                LIMIT 1
+                """, (region_id, extraction_id)):
+            return memoryview(row["content"]), row['missing_data'] != 0
 
-        if c_buffer is not None:
-            idx = len(data)
-            for row in self.execute(
-                    """
-                    SELECT content FROM region_extra
-                    WHERE region_id = ? ORDER BY extra_id ASC
-                    """, (region_id, )):
-                item = row["content"]
-                c_buffer[idx:idx + len(item)] = item
-                idx += len(item)
-            data = c_buffer
-        return memoryview(data)
+        raise LookupError(
+            f"no record for {region_id=} and {extraction_id=}")
+
+    def _read_content_multiple(
+            self, region_id: int, total_content_length: int) -> Tuple[
+            memoryview, bool]:
+        """
+        Reads the contents of all blocks for this regions.
+
+        :param int region_id:
+        :param int total_content_length: total size of content for this region
+        :rtype: memoryview
+        """
+        c_buffer = bytearray(total_content_length)
+        missing_data = False
+        idx = 0
+        for row in self.execute(
+                """
+                SELECT content, missing_data FROM region_data
+                WHERE region_id = ? ORDER BY extraction_id ASC
+                """, (region_id, )):
+            item = row["content"]
+            c_buffer[idx:idx + len(item)] = item
+            idx += len(item)
+            missing_data = missing_data or row["missing_data"] != 0
+        return memoryview(c_buffer), missing_data
 
     def _get_region_id(self, x: int, y: int, p: int, region: int) -> int:
         """
@@ -143,12 +204,64 @@ class BufferDatabase(BaseDatabase):
         self.execute(
             """
             INSERT INTO region(
-                core_id, local_region_index, content, content_len, fetches)
-            VALUES(?, ?, CAST('' AS BLOB), 0, 0)
+                core_id, local_region_index)
+            VALUES(?, ?)
             """, (core_id, region))
         region_id = self.lastrowid
         assert region_id is not None
         return region_id
+
+    def store_setup_data(self):
+        """
+        Stores data passed into simulator setup
+
+        """
+        for _ in self.execute(
+                """
+                SELECT hardware_time_step_ms
+                FROM setup
+                """):
+            return
+
+        self.execute(
+            """
+            INSERT INTO setup(
+                setup_id, hardware_time_step_ms, time_scale_factor)
+            VALUES(0, ?, ?)
+            """, (
+                FecDataView.get_hardware_time_step_ms(),
+                FecDataView.get_time_scale_factor()))
+
+    def start_new_extraction(self):
+        """
+        Stores the metadata for the extractions about to occur
+
+        """
+        run_timesteps = FecDataView.get_current_run_timesteps() or 0
+        self.execute(
+            """
+            INSERT INTO extraction(run_timestep, n_run, n_loop, extract_time)
+            VALUES(?, ?, ?, ?)
+            """, (
+                run_timesteps, FecDataView.get_run_number(),
+                FecDataView.get_run_step(), _timestamp()))
+        extraction_id = self.lastrowid
+        assert extraction_id is not None
+        return extraction_id
+
+    def get_last_extraction_id(self) -> int:
+        """
+        Get the id of the current/ last extraction
+
+        """
+        for row in self.execute(
+                """
+                SELECT max(extraction_id) as max_id
+                FROM extraction
+                LIMIT 1
+                """):
+            return row["max_id"]
+        raise LookupError("No Extraction id found")
 
     def store_data_in_region_buffer(
             self, x: int, y: int, p: int, region: int, missing: bool,
@@ -171,46 +284,14 @@ class BufferDatabase(BaseDatabase):
         # TODO: Use missing
         datablob = Binary(data)
         region_id = self._get_region_id(x, y, p, region)
-        if self.__use_main_table(region_id):
-            self.execute(
-                """
-                UPDATE region SET
-                    content = CAST(? AS BLOB),
-                    content_len = ?,
-                    fetches = fetches + 1,
-                    append_time = ?
-                WHERE region_id = ?
-                """, (datablob, len(data), _timestamp(), region_id))
-        else:
-            self.execute(
-                """
-                UPDATE region SET
-                    fetches = fetches + 1,
-                    append_time = ?
-                WHERE region_id = ?
-                """, (_timestamp(), region_id))
-            assert self.rowcount == 1
-            self.execute(
-                """
-                INSERT INTO region_extra(
-                    region_id, content, content_len)
-                VALUES (?, CAST(? AS BLOB), ?)
-                """, (region_id, datablob, len(data)))
+        extraction_id = self.get_last_extraction_id()
+        self.execute(
+            """
+            INSERT INTO region_data(
+                region_id, extraction_id, content, content_len, missing_data)
+            VALUES (?, ?, CAST(? AS BLOB), ?, ?)
+            """, (region_id, extraction_id, datablob, len(data), missing))
         assert self.rowcount == 1
-
-    def __use_main_table(self, region_id: int) -> bool:
-        """
-        :param int region_id:
-        """
-        for row in self.execute(
-                """
-                SELECT COUNT(*) AS existing FROM region
-                WHERE region_id = ? AND fetches = 0
-                LIMIT 1
-                """, (region_id, )):
-            existing = row["existing"]
-            return existing == 1
-        return False
 
     def get_region_data(self, x: int, y: int, p: int, region: int) -> Tuple[
             memoryview, bool]:
@@ -230,12 +311,40 @@ class BufferDatabase(BaseDatabase):
                 necessarily shorter than 1GB.
 
         :rtype: tuple(memoryview, bool)
+        :raises LookupErrror: If no data is available nor marked missing.
+        """
+        region_id = self._get_region_id(x, y, p, region)
+        return self._read_contents_with_missing(region_id)
+
+    def get_region_data_by_extraction_id(
+            self, x: int, y: int, p: int, region: int,
+            extraction_id: int) -> Tuple[memoryview, bool]:
+        """
+        Get the data stored for a given region of a given core.
+
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
+        :param int extraction_id: ID of the extraction top get data for.
+           Negative values will be counted from the end.
+        :return:
+            A buffer containing all the data received during the
+            simulation, and a flag indicating if any data was missing.
+
+            .. note::
+                Implementations should not assume that the total buffer is
+                necessarily shorter than 1GB.
+
+        :rtype: tuple(memoryview, bool)
         """
         try:
             region_id = self._get_region_id(x, y, p, region)
-            data = self._read_contents(region_id)
-            # TODO missing data
-            return data, False
+            if extraction_id < 0:
+                last_extraction_id = self.get_last_extraction_id()
+                extraction_id = last_extraction_id + 1 + extraction_id
+            return self._read_contents_by_extraction_id(
+                region_id, extraction_id)
         except LookupError:
             return memoryview(b''), True
 

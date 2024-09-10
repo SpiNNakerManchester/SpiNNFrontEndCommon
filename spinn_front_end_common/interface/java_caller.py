@@ -35,7 +35,7 @@ from spinn_front_end_common.utilities.report_functions.write_json_machine \
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost)
+    AbstractReceiveBuffersToHost, AbstractReceiveRegionsToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 
@@ -232,17 +232,27 @@ class JavaCaller(object):
             "vertex": {
                 "label": vertex.label,
                 "recordedRegionIds": [],
-                "recordingRegionBaseAddress": 0}}
+                "recordingRegionBaseAddress": 0,
+                "downloadRegions": []}}
 
-        if isinstance(vertex, AbstractReceiveBuffersToHost) and \
-                vertex.get_recorded_region_ids():
-            self._recording = True
-            json_vertex = cast(JsonObject, json_placement["vertex"])
-            # Replace fields in template above
-            json_vertex["recordedRegionIds"] = list(
-                vertex.get_recorded_region_ids())
-            json_vertex["recordingRegionBaseAddress"] = \
-                vertex.get_recording_region_base_address(placement)
+        if isinstance(vertex, AbstractReceiveBuffersToHost):
+            recording_regions = cast(
+                JsonArray, list(vertex.get_recorded_region_ids()))
+            if recording_regions:
+                self._recording = True
+                json_vertex = cast(JsonObject, json_placement["vertex"])
+                # Replace fields in template above
+                json_vertex["recordedRegionIds"] = recording_regions
+                json_vertex["recordingRegionBaseAddress"] = \
+                    vertex.get_recording_region_base_address(placement)
+        if isinstance(vertex, AbstractReceiveRegionsToHost):
+            download_regions = list(vertex.get_download_regions(placement))
+            if download_regions:
+                self._recording = True
+                json_vertex = cast(JsonObject, json_placement["vertex"])
+                json_vertex["downloadRegions"] = [
+                    {"index": region_id, "address": address, "size": size}
+                    for region_id, address, size in download_regions]
 
         return json_placement
 
@@ -362,7 +372,7 @@ class JavaCaller(object):
         params.extend(args)
         return subprocess.call(params)
 
-    def get_all_data(self) -> None:
+    def extract_all_data(self) -> None:
         """
         Gets all the data from the previously set placements
         and put these in the previously set database.

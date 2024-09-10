@@ -2055,7 +2055,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             bm = self._data_writer.get_buffer_manager()
-            bm.get_placement_data()
+            bm.extract_data()
 
     def _do_extract_from_machine(self) -> None:
         """
