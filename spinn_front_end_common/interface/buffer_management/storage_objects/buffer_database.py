@@ -207,7 +207,8 @@ class BufferDatabase(BaseDatabase):
                 """, (x, y, p, region)):
             return row["region_id"], row["is_recording"]
         if is_recording is None:
-            raise LookupError(f"There is no region for {x=} {y=} {p=} {region=}")
+            raise LookupError(
+                f"There is no region for {x=} {y=} {p=} {region=}")
 
         core_id = self._get_core_id(x, y, p)
         self.execute(
