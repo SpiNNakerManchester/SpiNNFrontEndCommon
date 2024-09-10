@@ -94,7 +94,7 @@ class TestBufferedDatabase(unittest.TestCase):
 
         with BufferDatabase() as brd:
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc")
+            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc", True)
             data, missing = brd.get_region_data(1, 2, 3, 0)
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abc")
@@ -105,13 +105,13 @@ class TestBufferedDatabase(unittest.TestCase):
 
         with BufferDatabase() as brd:
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"def")
+            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"def", True)
             data, missing = brd.get_region_data(1, 2, 3, 0)
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abcdef")
 
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, True, b"g")
+            brd.store_data_in_region_buffer(1, 2, 3, 0, True, b"g", True)
             data, missing = brd.get_region_data(1, 2, 3, 0)
             self.assertTrue(missing, "data should be 'missing'")
             self.assertEqual(bytes(data), b"abcdefg")
