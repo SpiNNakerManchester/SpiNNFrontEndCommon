@@ -145,9 +145,9 @@ class TestBufferedDatabase(unittest.TestCase):
         bm = BufferManager()
         with BufferDatabase() as brd:
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc")
+            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc", True)
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"def")
+            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"def", True)
 
         data, missing = bm.get_data_by_placement(p1, 0)
         self.assertFalse(missing, "data shouldn't be 'missing'")
