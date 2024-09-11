@@ -94,6 +94,7 @@ class _FecDataModel(object):
         "_live_packet_recorder_params",
         "_live_output_vertices",
         "_live_output_devices",
+        "_n_run_steps",
         "_next_sync_signal",
         "_next_ds_reference",
         "_none_labelled_edge_count",
@@ -187,6 +188,7 @@ class _FecDataModel(object):
         self._current_run_timesteps: Optional[int] = 0
         self._first_machine_time_step = 0
         self._run_step: Optional[int] = None
+        self._n_run_steps: Optional[int] = None
 
     def _clear_notification_protocol(self) -> None:
         if self._notification_protocol:
@@ -569,6 +571,23 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :rtype: None or int
         """
         return cls.__fec_data._run_step
+
+    @classmethod
+    def is_last_step(cls) -> bool:
+        """
+        Detects if this is the last or only step of this run.
+
+        When not using auto pause resume steps this always returns True
+
+        When running forever with steps this always returns False.
+
+        For auto pause steps of a fixed run time this returns True
+        only on the last of these steps.
+        """
+        if cls.__fec_data._n_run_steps is None:
+            return cls.__fec_data._run_step is None
+        else:
+            return cls.__fec_data._run_step == cls.__fec_data._n_run_steps
 
     # Report directories
     # There are NO has or get methods for directories

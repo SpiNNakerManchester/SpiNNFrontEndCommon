@@ -52,17 +52,13 @@ CREATE TABLE IF NOT EXISTS region(
 	core_id INTEGER NOT NULL
 		REFERENCES core(core_id) ON DELETE RESTRICT,
 	local_region_index INTEGER NOT NULL,
-	address INTEGER,
-	content BLOB NOT NULL DEFAULT '',
-	content_len INTEGER DEFAULT 0,
-	fetches INTEGER NOT NULL DEFAULT 0,
-	append_time INTEGER);
+    is_recording INTEGER NOT NULL);
 -- Every recording region has a unique vertex and index
 CREATE UNIQUE INDEX IF NOT EXISTS regionSanity ON region(
 	core_id ASC, local_region_index ASC);
 
 CREATE VIEW IF NOT EXISTS region_view AS
-	SELECT core_id, region_id, x, y, processor, local_region_index
+	SELECT core_id, region_id, x, y, processor, local_region_index, is_recording
 FROM core NATURAL JOIN region;
 
 CREATE TABLE IF NOT EXISTS region_data(
@@ -80,12 +76,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS region_data_sanity ON region_data(
 
 CREATE VIEW IF NOT EXISTS region_data_view AS
 	SELECT core_id, region_id, extraction_id, x, y, processor, local_region_index,
-		content, content_len
+		content, content_len, is_recording
 FROM region_view NATURAL JOIN region_data;
 
 CREATE VIEW IF NOT EXISTS region_data_plus_view AS
 	SELECT core_id, region_id, extraction_id, x, y, processor, local_region_index,
-		content, content_len, run_timestep, run_time_ms, n_run, n_loop, extraction_time
+		content, content_len, is_recording, run_timestep, run_time_ms, n_run, n_loop, extraction_time
 FROM region_data_view NATURAL JOIN extraction_view;
 
 -- Information about how to access the connection proxying
