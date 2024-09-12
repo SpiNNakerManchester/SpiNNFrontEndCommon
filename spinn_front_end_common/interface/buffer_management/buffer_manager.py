@@ -246,7 +246,7 @@ class BufferManager(object):
         :param int recording_region_id: the recording region ID
         """
         with BufferDatabase() as db:
-            db.clear_region(x, y, p, recording_region_id)
+            db.clear_recording_region(x, y, p, recording_region_id)
 
     def _create_message_to_send(
             self, size: int, vertex: AbstractSendsBuffersFromHost,
