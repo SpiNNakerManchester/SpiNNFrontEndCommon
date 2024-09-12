@@ -189,16 +189,7 @@ class BufferDatabase(BaseDatabase):
             missing_data = missing_data or row["missing_data"] != 0
         return memoryview(c_buffer), missing_data
 
-    def _get_region_id(self, x: int, y: int, p: int, region: int,
-                       is_recording: Optional[bool] = None) -> Tuple[
-                       int, bool]:
-        """
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int region:
-        :param is_recording: Flag to say if this is a recording regions.
-        """
+    def _find_existing_regiond_id(self, x: int, y: int, p: int, region: int):
         for row in self.execute(
                 """
                 SELECT region_id, is_recording FROM region_view
@@ -207,9 +198,28 @@ class BufferDatabase(BaseDatabase):
                 LIMIT 1
                 """, (x, y, p, region)):
             return row["region_id"], row["is_recording"]
-        if is_recording is None:
+        return None
+
+    def _get_existing_regiond_id(self, x: int, y: int, p: int, region: int):
+        region_id = self._find_existing_regiond_id(x, y, p, region)
+        if region_id is None:
             raise LookupError(
                 f"There is no region for {x=} {y=} {p=} {region=}")
+        else:
+            return region_id
+
+    def _get_region_id(self, x: int, y: int, p: int, region: int,
+                       is_recording: bool) -> int:
+        """
+        :param int x:
+        :param int y:
+        :param int p:
+        :param int region:
+        :param is_recording: Flag to say if this is a recording regions.
+        """
+        region_info = self._find_existing_regiond_id(x, y, p, region)
+        if region_info is not None:
+            return region_info[0]
 
         core_id = self._get_core_id(x, y, p)
         self.execute(
@@ -220,7 +230,7 @@ class BufferDatabase(BaseDatabase):
             """, (core_id, region, is_recording))
         region_id = self.lastrowid
         assert region_id is not None
-        return region_id, is_recording
+        return region_id
 
     def store_setup_data(self):
         """
@@ -295,7 +305,7 @@ class BufferDatabase(BaseDatabase):
         # pylint: disable=too-many-arguments, unused-argument
         # TODO: Use missing
         datablob = Binary(data)
-        region_id, _ = self._get_region_id(x, y, p, region, is_recording)
+        region_id = self._get_region_id(x, y, p, region, is_recording)
         extraction_id = self.get_last_extraction_id()
         self.execute(
             """
@@ -329,7 +339,8 @@ class BufferDatabase(BaseDatabase):
         :rtype: tuple(memoryview, bool)
         :raises LookupErrror: If no data is available nor marked missing.
         """
-        region_id, is_recording = self._get_region_id(x, y, p, region)
+        region_id, is_recording = self._get_existing_regiond_id(
+            x, y, p, region)
         if is_recording:
             return self._read_contents_with_missing(region_id)
         else:
@@ -358,7 +369,7 @@ class BufferDatabase(BaseDatabase):
         :rtype: tuple(memoryview, bool)
         """
         try:
-            region_id, _ = self._get_region_id(x, y, p, region)
+            region_id, _ = self._get_existing_regiond_id(x, y, p, region)
             return self._read_contents_by_extraction_id(
                 region_id, extraction_id)
         except LookupError:
