@@ -14,7 +14,7 @@
 
 import unittest
 import os
-from typing import Sequence
+from typing import Sequence, Tuple
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
@@ -27,7 +27,7 @@ from pacman.model.placements import Placement, Placements
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost)
+    AbstractReceiveBuffersToHost, AbstractReceiveRegionsToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -35,8 +35,9 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferedRegionNotPresent)
 
 
-class MockAbstractReceiveBuffersToHost(SimpleMachineVertex,
-                                       AbstractReceiveBuffersToHost):
+class MockAbstractReceiveBuffersToHost(
+        SimpleMachineVertex, AbstractReceiveBuffersToHost):
+
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self) -> Sequence[int]:
         return [0]
@@ -46,12 +47,20 @@ class MockAbstractReceiveBuffersToHost(SimpleMachineVertex,
         raise NotImplementedError
 
 
+class MockAbstractReceiveRegionsToHost(
+    SimpleMachineVertex, AbstractReceiveRegionsToHost):
+
+    def get_download_regions(self, placement: Placement) -> Sequence[
+            Tuple[int, int, int]]:
+        return [0]
+
+
 class TestBufferedDatabase(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
 
-    def test_use_database(self):
+    def test_recording(self):
         set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         f = BufferDatabase.default_database_file()
@@ -87,15 +96,15 @@ class TestBufferedDatabase(unittest.TestCase):
                 self.assertEqual("SCAMP(OS)_4:3", label)
 
             with self.assertRaises(LookupError):
-                brd.get_region_data(1, 2, 3, 0)
+                brd.get_recording(1, 2, 3, 0)
 
         with self.assertRaises(BufferedRegionNotPresent):
             bm.get_recording(p1, 0)
 
         with BufferDatabase() as brd:
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc", True)
-            data, missing = brd.get_region_data(1, 2, 3, 0)
+            brd.store_recording(1, 2, 3, 0, False, b"abc")
+            data, missing = brd.get_recording(1, 2, 3, 0)
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abc")
 
@@ -105,14 +114,14 @@ class TestBufferedDatabase(unittest.TestCase):
 
         with BufferDatabase() as brd:
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"def", True)
-            data, missing = brd.get_region_data(1, 2, 3, 0)
+            brd.store_recording(1, 2, 3, 0, False, b"def")
+            data, missing = brd.get_recording(1, 2, 3, 0)
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abcdef")
 
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, True, b"g", True)
-            data, missing = brd.get_region_data(1, 2, 3, 0)
+            brd.store_recording(1, 2, 3, 0, True, b"g")
+            data, missing = brd.get_recording(1, 2, 3, 0)
             self.assertTrue(missing, "data should be 'missing'")
             self.assertEqual(bytes(data), b"abcdefg")
 
@@ -121,16 +130,67 @@ class TestBufferedDatabase(unittest.TestCase):
         self.assertEqual(bytes(data), b"abcdefg")
 
         with BufferDatabase() as brd:
-            data, missing = brd.get_region_data_by_extraction_id(1, 2, 3, 0, 2)
+            data, missing = brd.get_recording_by_extraction_id(1, 2, 3, 0, 2)
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"def")
 
-            data, missing = brd.get_region_data_by_extraction_id(
+            data, missing = brd.get_recording_by_extraction_id(
                 1, 2, 3, 0, -1)
             self.assertTrue(missing, "data should be 'missing'")
             self.assertEqual(bytes(data), b"g")
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
+
+    def test_download(self):
+        set_config("Machine", "versions", VersionStrings.ANY.text)
+        writer = FecDataWriter.mock()
+
+        info = Placements([])
+        p1 = Placement(
+            MockAbstractReceiveRegionsToHost(None, label="V1"), 1, 2, 3)
+        info.add_placement(p1)
+        writer.set_placements(info)
+        bm = BufferManager()
+        with BufferDatabase() as brd:
+            brd.store_vertex_labels()
+            with self.assertRaises(LookupError):
+                brd.get_download_by_extraction_id(1, 2, 3, 0, -1)
+
+        with self.assertRaises(BufferedRegionNotPresent):
+            bm.get_download(p1, 0)
+
+        with BufferDatabase() as brd:
+            brd.start_new_extraction()
+            brd.store_download(1, 2, 3, 0, False, b"abc")
+            data, missing = brd.get_download_by_extraction_id(1, 2, 3, 0, -1)
+            self.assertFalse(missing, "data should be 'missing'")
+            self.assertEqual(bytes(data), b"abc")
+
+        data, missing = bm.get_download(p1, 0)
+        self.assertFalse(missing, "data shouldn't be 'missing'")
+        self.assertEqual(bytes(data), b"abc")
+
+        with BufferDatabase() as brd:
+            brd.start_new_extraction()
+            brd.store_download(1, 2, 3, 0, False, b"def")
+            data, missing = brd.get_download_by_extraction_id(1, 2, 3, 0, -1)
+            self.assertFalse(missing, "data shouldn't be 'missing'")
+            self.assertEqual(bytes(data), b"def")
+
+        data, missing = bm.get_download(p1, 0)
+        self.assertFalse(missing, "data shouldn't be 'missing'")
+        self.assertEqual(bytes(data), b"def")
+
+        with BufferDatabase() as brd:
+            brd.start_new_extraction()
+            brd.store_download(1, 2, 3, 0, True, b"gh")
+            data, missing = brd.get_download_by_extraction_id(1, 2, 3, 0, -1)
+            self.assertTrue(missing, "data should be 'missing'")
+            self.assertEqual(bytes(data), b"gh")
+
+        data, missing = bm.get_download(p1, 0)
+        self.assertTrue(missing, "data should be 'missing'")
+        self.assertEqual(bytes(data), b"gh")
 
     def test_clear(self):
         set_config("Machine", "versions", VersionStrings.ANY.text)
@@ -145,9 +205,9 @@ class TestBufferedDatabase(unittest.TestCase):
         bm = BufferManager()
         with BufferDatabase() as brd:
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc", True)
+            brd.store_recording(1, 2, 3, 0, False, b"abc")
             brd.start_new_extraction()
-            brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"def", True)
+            brd.store_recording(1, 2, 3, 0, False, b"def")
 
         data, missing = bm.get_recording(p1, 0)
         self.assertFalse(missing, "data shouldn't be 'missing'")

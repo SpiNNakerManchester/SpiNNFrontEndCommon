@@ -432,9 +432,8 @@ class BufferManager(object):
         """
         try:
             with BufferDatabase() as db:
-                return db.get_region_data(
-                    placement.x, placement.y, placement.p,
-                    recording_region_id)
+                return db.get_recording(placement.x, placement.y, placement.p,
+                                        recording_region_id)
         except LookupError as lookup_error:
             return self._raise_error(
                 placement, recording_region_id, lookup_error)
@@ -460,9 +459,9 @@ class BufferManager(object):
         """
         try:
             with BufferDatabase() as db:
-                return db.get_region_data(
+                return db.get_download_by_extraction_id(
                     placement.x, placement.y, placement.p,
-                    recording_region_id)
+                    recording_region_id, -1)
         except LookupError as lookup_error:
             return self._raise_error(
                 placement, recording_region_id, lookup_error)
@@ -522,17 +521,15 @@ class BufferManager(object):
                 data = self._request_data(
                     placement.x, placement.y, addr, size)
                 with BufferDatabase() as db:
-                    db.store_data_in_region_buffer(
-                        placement.x, placement.y, placement.p, region, missing,
-                        data, True)
+                    db.store_recording(placement.x, placement.y, placement.p,
+                                       region, missing, data)
         if isinstance(placement.vertex, AbstractReceiveRegionsToHost):
             dl_vtx = cast(AbstractReceiveRegionsToHost, placement.vertex)
             for region, addr, size in dl_vtx.get_download_regions(placement):
                 data = self._request_data(placement.x, placement.y, addr, size)
                 with BufferDatabase() as db:
-                    db.store_data_in_region_buffer(
-                        placement.x, placement.y, placement.p, region, False,
-                        data, False)
+                    db.store_download(placement.x, placement.y, placement.p,
+                                      region, False, data)
 
     def _get_region_information(
             self, address: int, x: int, y: int) -> List[Tuple[int, int, bool]]:

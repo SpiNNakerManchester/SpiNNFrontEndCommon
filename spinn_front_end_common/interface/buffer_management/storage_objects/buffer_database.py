@@ -189,7 +189,7 @@ class BufferDatabase(BaseDatabase):
             missing_data = missing_data or row["missing_data"] != 0
         return memoryview(c_buffer), missing_data
 
-    def _find_existing_regiond_id(self, x: int, y: int, p: int, region: int):
+    def _find_existing_recording_region_id(self, x: int, y: int, p: int, region: int):
         for row in self.execute(
                 """
                 SELECT region_id, is_recording FROM region_view
@@ -200,16 +200,35 @@ class BufferDatabase(BaseDatabase):
             return row["region_id"], row["is_recording"]
         return None
 
-    def _get_existing_regiond_id(self, x: int, y: int, p: int, region: int):
-        region_id = self._find_existing_regiond_id(x, y, p, region)
+    def _find_existing_download_region_id(self, x: int, y: int, p: int, region: int):
+        for row in self.execute(
+                """
+                SELECT region_id, is_recording FROM region_view
+                WHERE x = ? AND y = ? AND processor = ?
+                    AND local_region_index = ?
+                LIMIT 1
+                """, (x, y, p, region)):
+            return row["region_id"], row["is_recording"]
+        return None
+
+    def _get_existing_recording_region_id(self, x: int, y: int, p: int, region: int):
+        region_id = self._find_existing_recording_region_id(x, y, p, region)
         if region_id is None:
             raise LookupError(
                 f"There is no region for {x=} {y=} {p=} {region=}")
         else:
             return region_id
 
-    def _get_region_id(self, x: int, y: int, p: int, region: int,
-                       is_recording: bool) -> int:
+    def _get_existing_download_region_id(
+            self, x: int, y: int, p: int, region: int):
+        region_id = self._find_existing_download_region_id(x, y, p, region)
+        if region_id is None:
+            raise LookupError(
+                f"There is no region for {x=} {y=} {p=} {region=}")
+        else:
+            return region_id
+
+    def _get_recording_region_id(self, x: int, y: int, p: int, region: int) -> int:
         """
         :param int x:
         :param int y:
@@ -217,7 +236,7 @@ class BufferDatabase(BaseDatabase):
         :param int region:
         :param is_recording: Flag to say if this is a recording regions.
         """
-        region_info = self._find_existing_regiond_id(x, y, p, region)
+        region_info = self._find_existing_recording_region_id(x, y, p, region)
         if region_info is not None:
             return region_info[0]
 
@@ -227,7 +246,30 @@ class BufferDatabase(BaseDatabase):
             INSERT INTO region(
                 core_id, local_region_index, is_recording)
             VALUES(?, ?, ?)
-            """, (core_id, region, is_recording))
+            """, (core_id, region, True))
+        region_id = self.lastrowid
+        assert region_id is not None
+        return region_id
+
+    def _get_download_region_id(self, x: int, y: int, p: int, region: int) -> int:
+        """
+        :param int x:
+        :param int y:
+        :param int p:
+        :param int region:
+        :param is_recording: Flag to say if this is a recording regions.
+        """
+        region_info = self._find_existing_download_region_id(x, y, p, region)
+        if region_info is not None:
+            return region_info[0]
+
+        core_id = self._get_core_id(x, y, p)
+        self.execute(
+            """
+            INSERT INTO region(
+                core_id, local_region_index, is_recording)
+            VALUES(?, ?, ?)
+            """, (core_id, region, False))
         region_id = self.lastrowid
         assert region_id is not None
         return region_id
@@ -284,9 +326,38 @@ class BufferDatabase(BaseDatabase):
             return row["max_id"]
         raise LookupError("No Extraction id found")
 
-    def store_data_in_region_buffer(
+    def store_recording(self, x: int, y: int, p: int, region: int,
+                        missing: bool, data: bytes):
+        """
+        Store some information in the corresponding buffer for a
+        specific chip, core and recording region.
+
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data to be stored
+        :param bool missing: Whether any data is missing
+        :param bytearray data: data to be stored
+
+        .. note::
+                    Must be shorter than 1GB
+        """
+        # pylint: disable=too-many-arguments, unused-argument
+        # TODO: Use missing
+        datablob = Binary(data)
+        region_id = self._get_recording_region_id(x, y, p, region)
+        extraction_id = self.get_last_extraction_id()
+        self.execute(
+            """
+            INSERT INTO region_data(
+                region_id, extraction_id, content, content_len, missing_data)
+            VALUES (?, ?, CAST(? AS BLOB), ?, ?)
+            """, (region_id, extraction_id, datablob, len(data), missing))
+        assert self.rowcount == 1
+
+    def store_download(
             self, x: int, y: int, p: int, region: int, missing: bool,
-            data: bytes, is_recording: bool):
+            data: bytes):
         """
         Store some information in the corresponding buffer for a
         specific chip, core and recording region.
@@ -305,7 +376,7 @@ class BufferDatabase(BaseDatabase):
         # pylint: disable=too-many-arguments, unused-argument
         # TODO: Use missing
         datablob = Binary(data)
-        region_id = self._get_region_id(x, y, p, region, is_recording)
+        region_id = self._get_download_region_id(x, y, p, region)
         extraction_id = self.get_last_extraction_id()
         self.execute(
             """
@@ -315,7 +386,12 @@ class BufferDatabase(BaseDatabase):
             """, (region_id, extraction_id, datablob, len(data), missing))
         assert self.rowcount == 1
 
-    def get_region_data(self, x: int, y: int, p: int, region: int) -> Tuple[
+    def store_data_in_region_buffer(
+            self, x: int, y: int, p: int, region: int, missing: bool,
+            data: bytes, is_recording: bool):
+        pass
+
+    def get_recording(self, x: int, y: int, p: int, region: int) -> Tuple[
             memoryview, bool]:
         """
         Get the data stored for a given region of a given core.
@@ -339,14 +415,11 @@ class BufferDatabase(BaseDatabase):
         :rtype: tuple(memoryview, bool)
         :raises LookupErrror: If no data is available nor marked missing.
         """
-        region_id, is_recording = self._get_existing_regiond_id(
+        region_id, is_recording = self._get_existing_recording_region_id(
             x, y, p, region)
-        if is_recording:
-            return self._read_contents_with_missing(region_id)
-        else:
-            return self._read_contents_by_extraction_id(region_id, -1)
+        return self._read_contents_with_missing(region_id)
 
-    def get_region_data_by_extraction_id(
+    def get_recording_by_extraction_id(
             self, x: int, y: int, p: int, region: int,
             extraction_id: int) -> Tuple[memoryview, bool]:
         """
@@ -369,11 +442,39 @@ class BufferDatabase(BaseDatabase):
         :rtype: tuple(memoryview, bool)
         """
         try:
-            region_id, _ = self._get_existing_regiond_id(x, y, p, region)
+            region_id, _ = self._get_existing_recording_region_id(
+                x, y, p, region)
             return self._read_contents_by_extraction_id(
                 region_id, extraction_id)
         except LookupError:
             return memoryview(b''), True
+
+    def get_download_by_extraction_id(
+            self, x: int, y: int, p: int, region: int,
+            extraction_id: int) -> Tuple[memoryview, bool]:
+        """
+        Get the data stored for a given region of a given core.
+
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
+        :param int extraction_id: ID of the extraction top get data for.
+           Negative values will be counted from the end.
+        :return:
+            A buffer containing all the data received during the
+            simulation, and a flag indicating if any data was missing.
+
+            .. note::
+                Implementations should not assume that the total buffer is
+                necessarily shorter than 1GB.
+
+        :rtype: tuple(memoryview, bool)
+        """
+        region_id, _ = self._get_existing_download_region_id(
+            x, y, p, region)
+        return self._read_contents_by_extraction_id(
+            region_id, extraction_id)
 
     def write_session_credentials_to_db(self) -> None:
         """
