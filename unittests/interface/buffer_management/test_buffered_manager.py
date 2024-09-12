@@ -90,7 +90,7 @@ class TestBufferedDatabase(unittest.TestCase):
                 brd.get_region_data(1, 2, 3, 0)
 
         with self.assertRaises(BufferedRegionNotPresent):
-            bm.get_data_by_placement(p1, 0)
+            bm.get_recording(p1, 0)
 
         with BufferDatabase() as brd:
             brd.start_new_extraction()
@@ -99,7 +99,7 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abc")
 
-        data, missing = bm.get_data_by_placement(p1, 0)
+        data, missing = bm.get_recording(p1, 0)
         self.assertFalse(missing, "data shouldn't be 'missing'")
         self.assertEqual(bytes(data), b"abc")
 
@@ -116,7 +116,7 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertTrue(missing, "data should be 'missing'")
             self.assertEqual(bytes(data), b"abcdefg")
 
-        data, missing = bm.get_data_by_placement(p1, 0)
+        data, missing = bm.get_recording(p1, 0)
         self.assertTrue(missing, "data should be 'missing'")
         self.assertEqual(bytes(data), b"abcdefg")
 
@@ -149,11 +149,11 @@ class TestBufferedDatabase(unittest.TestCase):
             brd.start_new_extraction()
             brd.store_data_in_region_buffer(1, 2, 3, 0, False, b"def", True)
 
-        data, missing = bm.get_data_by_placement(p1, 0)
+        data, missing = bm.get_recording(p1, 0)
         self.assertFalse(missing, "data shouldn't be 'missing'")
         self.assertEqual(bytes(data), b"abcdef")
         bm.clear_recorded_data(1, 2, 3, 0)
-        data, missing = bm.get_data_by_placement(p1, 0)
+        data, missing = bm.get_recording(p1, 0)
         self.assertTrue(missing, "data should be 'missing'")
         self.assertEqual(bytes(data), b"")
 
@@ -165,7 +165,7 @@ class TestBufferedDatabase(unittest.TestCase):
         v = SimpleMachineVertex(None, label="V2")
         p = Placement(v, 1, 2, 5)
         with self.assertRaises(NotImplementedError):
-            bm.get_data_by_placement(p, 1)
+            bm.get_recording(p, 1)
 
     def test_not_data_recorded(self):
         writer = FecDataWriter.mock()
@@ -175,7 +175,7 @@ class TestBufferedDatabase(unittest.TestCase):
         writer.set_placements(info)
         bm = BufferManager()
         try:
-            bm.get_data_by_placement(p, 0)
+            bm.get_recording(p, 0)
             raise Exception("Exception should have been raised")
         except BufferedRegionNotPresent as ex:
             self.assertIn("should have record region", str(ex))
@@ -188,7 +188,7 @@ class TestBufferedDatabase(unittest.TestCase):
         writer.set_placements(info)
         bm = BufferManager()
         try:
-            bm.get_data_by_placement(p, 1)
+            bm.get_recording(p, 1)
             raise Exception("Exception should have been raised")
         except BufferedRegionNotPresent as ex:
             self.assertIn("not set to record or download region 1", str(ex))

@@ -411,16 +411,13 @@ class BufferManager(object):
         for placement in progress.over(recording_placements):
             self._retreive_by_placement(placement)
 
-    def get_data_by_placement(
-            self, placement: Placement, recording_region_id: int) -> Tuple[
-                bytes, bool]:
+    def get_recording(self, placement: Placement,
+                      recording_region_id: int) -> Tuple[bytes, bool]:
         """
         Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
 
-        If this is a recoding region the data for all extractions is combined.
-
-        For none recording regions only the last data extracted is returned.
+        Data for all extractions is combined.
 
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
@@ -442,12 +439,13 @@ class BufferManager(object):
             return self._raise_error(
                 placement, recording_region_id, lookup_error)
 
-    def get_last_data_by_placement(
-            self, placement: Placement, recording_region_id: int) -> Tuple[
-                bytes, bool]:
+    def get_download(self, placement: Placement,
+                     recording_region_id: int) -> Tuple[bytes, bool]:
         """
-        Get the data container for all the data retrieved
+        Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
+
+        Only the last data extracted is returned.
 
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
@@ -462,9 +460,9 @@ class BufferManager(object):
         """
         try:
             with BufferDatabase() as db:
-                return db.get_region_data_by_extraction_id(
+                return db.get_region_data(
                     placement.x, placement.y, placement.p,
-                    recording_region_id, -1)
+                    recording_region_id)
         except LookupError as lookup_error:
             return self._raise_error(
                 placement, recording_region_id, lookup_error)
