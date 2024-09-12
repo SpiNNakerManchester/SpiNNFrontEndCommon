@@ -53,7 +53,7 @@ class MockAbstractReceiveRegionsToHost(
     @overrides(AbstractReceiveRegionsToHost.get_download_regions)
     def get_download_regions(self, placement: Placement) -> Sequence[
             Tuple[int, int, int]]:
-        return (0, 1235678, 90)
+        return [(0, 1235678, 90)]
 
 
 class TestBufferedDatabase(unittest.TestCase):
