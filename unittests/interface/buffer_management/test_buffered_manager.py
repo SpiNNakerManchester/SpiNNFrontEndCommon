@@ -48,7 +48,7 @@ class MockAbstractReceiveBuffersToHost(
 
 
 class MockAbstractReceiveRegionsToHost(
-    SimpleMachineVertex, AbstractReceiveRegionsToHost):
+        SimpleMachineVertex, AbstractReceiveRegionsToHost):
 
     def get_download_regions(self, placement: Placement) -> Sequence[
             Tuple[int, int, int]]:

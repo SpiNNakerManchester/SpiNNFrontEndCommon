@@ -223,7 +223,7 @@ class BufferDatabase(BaseDatabase):
             self, x: int, y: int, p: int, region: int) -> Optional[int]:
         for row in self.execute(
                 """
-                SELECT recording_region_id 
+                SELECT recording_region_id
                 FROM recording_region_view
                 WHERE x = ? AND y = ? AND processor = ?
                     AND local_region_index = ?
@@ -236,7 +236,7 @@ class BufferDatabase(BaseDatabase):
             self, x: int, y: int, p: int, region: int) -> Optional[int]:
         for row in self.execute(
                 """
-                SELECT download_region_id 
+                SELECT download_region_id
                 FROM download_region_view
                 WHERE x = ? AND y = ? AND processor = ?
                     AND local_region_index = ?
@@ -387,9 +387,11 @@ class BufferDatabase(BaseDatabase):
         self.execute(
             """
             INSERT INTO recording_data(
-                recording_region_id, extraction_id, content, content_len, missing_data)
+                recording_region_id, extraction_id, content, content_len,
+                missing_data)
             VALUES (?, ?, CAST(? AS BLOB), ?, ?)
-            """, (region_id, extraction_id, datablob, len(data), missing))
+            """,
+            (region_id, extraction_id, datablob, len(data), missing))
         assert self.rowcount == 1
 
     def store_download(
