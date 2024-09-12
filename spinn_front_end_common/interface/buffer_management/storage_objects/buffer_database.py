@@ -427,11 +427,6 @@ class BufferDatabase(BaseDatabase):
                   missing))
         assert self.rowcount == 1
 
-    def store_data_in_region_buffer(
-            self, x: int, y: int, p: int, region: int, missing: bool,
-            data: bytes, is_recording: bool):
-        pass
-
     def get_recording(self, x: int, y: int, p: int, region: int) -> Tuple[
             memoryview, bool]:
         """
