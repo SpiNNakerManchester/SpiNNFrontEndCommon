@@ -112,12 +112,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS download_data_sanity ON download_data(
 	download_region_id ASC, extraction_id ASC);
 
 CREATE VIEW IF NOT EXISTS download_data_view AS
-	SELECT core_id, region_id, extraction_id, x, y, processor, local_region_index,
+	SELECT core_id, download_region_id, extraction_id, x, y, processor, local_region_index,
 		content, content_len
-FROM recording_region_view NATURAL JOIN download_data;
+FROM download_region_view NATURAL JOIN download_data;
 
 CREATE VIEW IF NOT EXISTS download_data_plus_view AS
-	SELECT core_id, region_id, extraction_id, x, y, processor, local_region_index,
+	SELECT core_id, download_region_id, extraction_id, x, y, processor, local_region_index,
 		content, content_len, run_timestep, run_time_ms, n_run, n_loop, extraction_time
 FROM download_data_view NATURAL JOIN extraction_view;
 
