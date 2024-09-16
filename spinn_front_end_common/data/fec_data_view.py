@@ -51,8 +51,6 @@ if TYPE_CHECKING:
     from spinn_front_end_common.abstract_models import LiveOutputDevice
 
 logger = FormatAdapter(logging.getLogger(__name__))
-FINISHED_FILENAME = "finished"
-ERRORED_FILENAME = "errored"
 _EMPTY_CORE_SUBSETS = CoreSubsets()
 hash(_EMPTY_CORE_SUBSETS)
 
@@ -215,6 +213,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     repositories as all methods are available to subclasses
     """
 
+    FINISHED_FILENAME = "finished"
+    ERRORED_FILENAME = "errored"
     __fec_data = _FecDataModel()
 
     __slots__ = ()
@@ -625,18 +625,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
             f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
 
-
-    def write_finished_file(self) -> None:
-        """
-        Write a finished file to flag that the code has finished cleanly
-
-        This file signals the report directory can be removed.
-        """
-        finished_file_name = os.path.join(
-            self.get_timestamp_dir_path(), FINISHED_FILENAME)
-        with open(finished_file_name, "w", encoding="utf-8") as f:
-            f.writelines(self._get_timestamp())
-
     @classmethod
     def write_errored_file(cls, message: Optional[str] = None) -> None:
         """
@@ -654,11 +642,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :param message: An error message to included
         """
         errored_file_name = os.path.join(
-            cls.get_timestamp_dir_path(), ERRORED_FILENAME)
+            cls.get_timestamp_dir_path(), cls.ERRORED_FILENAME)
 
         if message is None:
             finished_file_name = os.path.join(
-                cls.get_timestamp_dir_path(), FINISHED_FILENAME)
+                cls.get_timestamp_dir_path(), cls.FINISHED_FILENAME)
             if os.path.exists(finished_file_name):
                 return
 

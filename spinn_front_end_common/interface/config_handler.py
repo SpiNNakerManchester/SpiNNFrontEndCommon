@@ -28,8 +28,6 @@ from spinn_front_end_common.interface.interface_functions.\
     insert_extra_monitor_vertices_to_graphs import (
         sample_monitor_vertex, sample_speedup_vertex)
 from spinn_front_end_common.interface.provenance import LogStoreDB
-from spinn_front_end_common.data.fec_data_view import (
-    ERRORED_FILENAME, FINISHED_FILENAME)
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
@@ -194,10 +192,10 @@ class ConfigHandler(object):
                 for current_oldest_file in files_in_report_folder:
                     finished_flag = os.path.join(os.path.join(
                         starting_directory, current_oldest_file),
-                        FINISHED_FILENAME)
+                        self._data_writer.FINISHED_FILENAME)
                     errored_flag = os.path.join(os.path.join(
                         starting_directory, current_oldest_file),
-                        ERRORED_FILENAME)
+                        self._data_writer.ERRORED_FILENAME)
                     finished_flag_exists = os.path.exists(finished_flag)
                     errored_flag_exists = os.path.exists(errored_flag)
                     if finished_flag_exists and (
