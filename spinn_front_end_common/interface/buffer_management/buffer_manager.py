@@ -430,8 +430,7 @@ class BufferManager(object):
             return self.get_recording(placement, recording_region_id)
 
         elif isinstance(placement.vertex, AbstractReceiveRegionsToHost):
-            raise SpinnFrontEndException(
-                f"Use the get_download method")
+            raise SpinnFrontEndException("Use the get_download method")
 
         else:
             raise NotImplementedError(
