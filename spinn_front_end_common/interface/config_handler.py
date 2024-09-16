@@ -236,24 +236,3 @@ class ConfigHandler(object):
             f.write("\n")
             f.write("Traceback of setup call:\n")
             traceback.print_stack(file=f)
-
-    def __write_marker_file(self, file_name: str):
-        app_file_name = os.path.join(
-            self._data_writer.get_timestamp_dir_path(), file_name)
-        with open(app_file_name, "w", encoding="utf-8") as f:
-            # TODO What should this file contain?
-            f.writelines("file_name")
-
-    def write_finished_file(self) -> None:
-        """
-        Write a finished file that allows file removal to only remove
-        folders that are finished.
-        """
-        self.__write_marker_file(FINISHED_FILENAME)
-
-    def write_errored_file(self) -> None:
-        """
-        Writes an ``errored`` file that allows file removal to only remove
-        folders that have errors if requested to do so
-        """
-        self.__write_marker_file(ERRORED_FILENAME)

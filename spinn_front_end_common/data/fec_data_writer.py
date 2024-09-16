@@ -175,7 +175,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         with open(errored_file_name, "w", encoding="utf-8") as f:
             f.writelines(cls._get_timestamp())
 
-
     def set_allocation_controller(self, allocation_controller: Optional[
             MachineAllocationController]):
         """
