@@ -628,7 +628,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def write_errored_file(cls, message: Optional[str] = None) -> None:
         """
-        Writes an ``errored`` file that signals code has finished an error
+        Writes an ``errored`` file that signals code if the code has errored
 
         Not written if there is a finished file exists and
         there is no error message.
