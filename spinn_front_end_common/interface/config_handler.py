@@ -88,7 +88,8 @@ class ConfigHandler(object):
         if get_config_str("Mode", "mode") == "Debug":
             for option in config_options("Reports"):
                 # options names are all lower without _ inside config
-                if option in _DEBUG_ENABLE_OPTS or option[:5] == "write":
+                if (option in _DEBUG_ENABLE_OPTS or option[:5] == "write" or
+                        option[:4] == "keep"):
                     if not get_config_bool("Reports", option):
                         set_config("Reports", option, "True")
                         logger.info("As mode == \"Debug\", [Reports] {} "
