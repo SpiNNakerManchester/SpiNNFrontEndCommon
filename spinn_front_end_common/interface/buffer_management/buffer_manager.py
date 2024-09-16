@@ -411,6 +411,32 @@ class BufferManager(object):
         for placement in progress.over(recording_placements):
             self._retreive_by_placement(placement)
 
+    def get_data_by_placement(self, placement: Placement,
+                              recording_region_id: int) -> Tuple[bytes, bool]:
+        """
+        Deprecated use get_recording or get_download
+
+        :param placement:
+        :param recording_region_id:
+        :return:
+        """
+        if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
+            if isinstance(placement.vertex, AbstractReceiveRegionsToHost):
+                raise SpinnFrontEndException(
+                    f"The vertex {placement.vertex} could return "
+                    f"either recording or download data")
+            logger.warning(
+                "get_data_by_placement is deprecated use get_recording")
+            return self.get_recording(placement, recording_region_id)
+
+        elif isinstance(placement.vertex, AbstractReceiveRegionsToHost):
+            raise SpinnFrontEndException(
+                f"Use the get_download method")
+
+        else:
+            raise NotImplementedError(
+                f"Unable to get data for vertex {placement.vertex}")
+
     def get_recording(self, placement: Placement,
                       recording_region_id: int) -> Tuple[bytes, bool]:
         """
