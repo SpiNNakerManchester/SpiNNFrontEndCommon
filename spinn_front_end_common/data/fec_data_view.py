@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations  # Type checking trickery
+import datetime
 import logging
 import os
 from typing import (
@@ -50,6 +51,8 @@ if TYPE_CHECKING:
     from spinn_front_end_common.abstract_models import LiveOutputDevice
 
 logger = FormatAdapter(logging.getLogger(__name__))
+FINISHED_FILENAME = "finished"
+ERRORED_FILENAME = "errored"
 _EMPTY_CORE_SUBSETS = CoreSubsets()
 hash(_EMPTY_CORE_SUBSETS)
 
@@ -614,6 +617,60 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls._is_mocked():
             return cls._temporary_dir_path()
         raise cls._exception("timestamp_dir_path")
+
+    @classmethod
+    def _get_timestamp(cls) -> str:
+        now = datetime.datetime.now()
+        return (
+            f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
+            f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
+
+
+    def write_finished_file(self) -> None:
+        """
+        Write a finished file to flag that the code has finished cleanly
+
+        This file signals the report directory can be removed.
+        """
+        finished_file_name = os.path.join(
+            self.get_timestamp_dir_path(), FINISHED_FILENAME)
+        with open(finished_file_name, "w", encoding="utf-8") as f:
+            f.writelines(self._get_timestamp())
+
+    @classmethod
+    def write_errored_file(cls, message: Optional[str] = None) -> None:
+        """
+        Writes an ``errored`` file that signals code has finished an error
+
+        Not written if there is a finished file exists and
+        there is no error message.
+
+        This file signals the report directory can be removed.
+
+        This method can be called while there is still code to be run BUT
+        if running other simulations at the same time there is a possibility
+        that the report directory is no longer available for writing to.
+
+        :param message: An error message to included
+        """
+        errored_file_name = os.path.join(
+            cls.get_timestamp_dir_path(), ERRORED_FILENAME)
+
+        if message is None:
+            finished_file_name = os.path.join(
+                cls.get_timestamp_dir_path(), FINISHED_FILENAME)
+            if os.path.exists(finished_file_name):
+                return
+
+            if os.path.exists(errored_file_name):
+                return
+
+            message = "Unexpected end"
+
+        with open(errored_file_name, "w", encoding="utf-8") as f:
+            f.writelines(message)
+            f.writelines("\n")
+            f.writelines(cls._get_timestamp())
 
     # system multicast routing data
 
