@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import atexit
 import datetime
 import logging
 import math
@@ -50,6 +51,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 __temp_dir = None
 
 REPORTS_DIRNAME = "reports"
+FINISHED_FILENAME = "finished"
+ERRORED_FILENAME = "errored"
 
 
 class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
@@ -125,18 +128,53 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.set_report_dir_path(
             self._child_folder(directory, REPORTS_DIRNAME))
 
+    @classmethod
+    def _get_timestamp(cls) -> str:
+        now = datetime.datetime.now()
+        return (
+            f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
+            f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
+
     def __create_timestamp_directory(self) -> None:
         while True:
             try:
-                now = datetime.datetime.now()
-                timestamp = (
-                    f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
-                    f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
                 self.__fec_data._timestamp_dir_path = self._child_folder(
-                    self.get_report_dir_path(), timestamp, must_create=True)
+                    self.get_report_dir_path(), self._get_timestamp(),
+                    must_create=True)
+                atexit.register(FecDataWriter.write_errored_file)
                 return
             except OSError:
                 time.sleep(0.5)
+
+    def write_finished_file(self) -> None:
+        """
+        Write a finished file that allows file removal to only remove
+        folders that are finished.
+        """
+        finished_file_name = os.path.join(
+            self.get_timestamp_dir_path(), FINISHED_FILENAME)
+        with open(finished_file_name, "w", encoding="utf-8") as f:
+            f.writelines(self._get_timestamp)
+
+    @classmethod
+    def write_errored_file(cls) -> None:
+        """
+        Writes an ``errored`` file that allows file removal to only remove
+        folders that have errors if requested to do so
+        """
+        finished_file_name = os.path.join(
+            cls.get_timestamp_dir_path(), FINISHED_FILENAME)
+        if os.path.exists(finished_file_name):
+            return
+
+        errored_file_name = os.path.join(
+            cls.get_timestamp_dir_path(), ERRORED_FILENAME)
+        if os.path.exists(errored_file_name):
+            return
+
+        with open(errored_file_name, "w", encoding="utf-8") as f:
+            f.writelines(cls._get_timestamp())
+
 
     def set_allocation_controller(self, allocation_controller: Optional[
             MachineAllocationController]):

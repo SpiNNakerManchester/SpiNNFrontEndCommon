@@ -34,9 +34,6 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 logger = FormatAdapter(logging.getLogger(__name__))
 
 APP_DIRNAME = 'application_generated_data_files'
-FINISHED_FILENAME = "finished"
-ERRORED_FILENAME = "errored"
-REPORTS_DIRNAME = "reports"
 TIMESTAMP_FILENAME = "time_stamp"
 WARNING_LOGS_FILENAME = "warning_logs.txt"
 
@@ -195,10 +192,10 @@ class ConfigHandler(object):
                 for current_oldest_file in files_in_report_folder:
                     finished_flag = os.path.join(os.path.join(
                         starting_directory, current_oldest_file),
-                        FINISHED_FILENAME)
+                        self._data_writer.FINISHED_FILENAME)
                     errored_flag = os.path.join(os.path.join(
                         starting_directory, current_oldest_file),
-                        ERRORED_FILENAME)
+                        self._data_writer.ERRORED_FILENAME)
                     finished_flag_exists = os.path.exists(finished_flag)
                     errored_flag_exists = os.path.exists(errored_flag)
                     if finished_flag_exists and (

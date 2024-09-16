@@ -2320,13 +2320,13 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         except Exception as e:
             self._recover_from_error(e)
-            self.write_errored_file()
+            self._data_writer.write_errored_file()
             raise
         finally:
             # shut down the machine properly
             self._shutdown()
 
-        self.write_finished_file()
+        self._data_writer.write_finished_file()
         # No matching FecTimer.end_category as shutdown stops timer
 
     def _execute_application_finisher(self) -> None:
