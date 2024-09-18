@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
+import atexit
 import logging
 import math
 import os
@@ -126,17 +126,28 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             self._child_folder(directory, REPORTS_DIRNAME))
 
     def __create_timestamp_directory(self) -> None:
+        if self.__fec_data._timestamp_dir_path is not None:
+            self.write_errored_file()
         while True:
             try:
-                now = datetime.datetime.now()
-                timestamp = (
-                    f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
-                    f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
                 self.__fec_data._timestamp_dir_path = self._child_folder(
-                    self.get_report_dir_path(), timestamp, must_create=True)
+                    self.get_report_dir_path(), self._get_timestamp(),
+                    must_create=True)
+                atexit.register(FecDataWriter.write_errored_file)
                 return
             except OSError:
                 time.sleep(0.5)
+
+    def write_finished_file(self) -> None:
+        """
+        Write a finished file to flag that the code has finished cleanly
+
+        This file signals the report directory can be removed.
+        """
+        finished_file_name = os.path.join(
+            self.get_timestamp_dir_path(), self.FINISHED_FILENAME)
+        with open(finished_file_name, "w", encoding="utf-8") as f:
+            f.writelines(self._get_timestamp())
 
     def set_allocation_controller(self, allocation_controller: Optional[
             MachineAllocationController]):
