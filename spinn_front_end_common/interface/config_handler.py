@@ -17,8 +17,9 @@ import logging
 import os
 import shutil
 import traceback
-from typing import Optional, Type
+from typing import List, Optional, Type
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.configs.camel_case_config_parser import FALSES
 from spinn_utilities.config_holder import (
     config_options, has_config_option, load_config, get_config_bool,
     get_config_int, get_config_str, get_config_str_list, set_config)
@@ -75,6 +76,12 @@ class ConfigHandler(object):
         self._previous_handler()
         self._reserve_system_vertices()
 
+    def __toggle_config(self, section: str, option: str, toggles: List[str]):
+        previous = get_config_str(section, option)
+        if previous.lower() in toggles:
+            set_config(section, option, "True")
+            loger.info(f"[{section}:{option} now True instead of {previous}")
+
     def _debug_configs(self) -> None:
         """
         Adjusts and checks the configuration based on mode and
@@ -82,31 +89,27 @@ class ConfigHandler(object):
 
         :raises ConfigurationException:
         """
-        if get_config_str("Mode", "mode") == "Debug":
-            for option in config_options("Reports"):
-                # options names are all lower without _ inside config
-                if (option in _DEBUG_ENABLE_OPTS or option[:5] == "write" or
-                        option[:4] == "keep"):
-                    if not get_config_bool("Reports", option):
-                        set_config("Reports", option, "True")
-                        logger.info("As mode == \"Debug\", [Reports] {} "
-                                    "has been set to True", option)
-            for option in config_options("Mapping"):
-                # options names are all lower without _ inside config
-                if option in _DEBUG_MAPPING_OPTS:
-                    if not get_config_bool("Mapping", option):
-                        set_config("Mapping", option, "True")
-                        logger.info("As mode == \"Debug\", [Mapping] {} "
-                                    "has been set to True", option)
-        elif not get_config_bool("Reports", "reportsEnabled"):
-            for option in config_options("Reports"):
-                # options names are all lower without _ inside config
-                if option in _REPORT_DISABLE_OPTS or option[:5] == "write":
-                    if not get_config_bool("Reports", option):
-                        set_config("Reports", option, "False")
-                        logger.info(
-                            "As reportsEnabled == \"False\", [Reports] {} "
-                            "has been set to False", option)
+        mode = get_config_str("Mode", "mode").lower()
+
+        if mode == "production":
+            return
+        elif mode == "info":
+            toggles = ["info"]
+        elif mode == "debug":
+            toggles = ["info, debug"]
+        elif mode == "all":
+            toggles = ["info, debug"].extend(FALSES)
+
+        logger.info(f"As {mode=} the following cfg setting have been changed")
+        for option in config_options("Reports"):
+            # options names are all lower without _ inside config
+            if (option in _DEBUG_ENABLE_OPTS or option[:5] == "write" or
+                    option[:4] == "keep"):
+                self.__toggle_config("Reports", option, toggles)
+        for option in config_options("Mapping"):
+            # options names are all lower without _ inside config
+            if option in _DEBUG_MAPPING_OPTS:
+                self.__toggle_config("Mapping", option, toggles)
 
     def _previous_handler(self) -> None:
         self._error_on_previous("loading_algorithms")
@@ -122,6 +125,7 @@ class ConfigHandler(object):
         self._replaced_cfg("Reports",
                            "write_routing_compression_checker_report",
                            "run_compression_checker")
+        self._reports_enabled_removed()
 
     def _error_on_previous(self, option) -> None:
         try:
@@ -143,6 +147,17 @@ class ConfigHandler(object):
             else:
                 logger.warning(f"cfg setting [{section}] {previous} "
                                f"is no longer supported! Use {new} instead")
+
+    def _reports_enabled_removed(self):
+        try:
+            get_config_str("Reports", "reportsEnabled")
+        except NoOptionError:
+            # GOOD!
+            return
+        raise ConfigurationException(
+            f"cfg setting [Reports]reportsEnabled is no longer supported! "
+            "See https://spinnakermanchester.github.io/common_pages/"
+            "Algorithms.html.")
 
     def _reserve_system_vertices(self):
         """
