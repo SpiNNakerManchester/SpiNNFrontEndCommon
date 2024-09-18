@@ -76,11 +76,14 @@ class ConfigHandler(object):
         self._previous_handler()
         self._reserve_system_vertices()
 
-    def __toggle_config(self, section: str, option: str, toggles: List[str]):
-        previous = get_config_str(section, option)
-        if previous.lower() in toggles:
+    def __toggle_config(self, section: str, option: str, to_false: List[str],
+                        to_true: List[str]):
+        previous = get_config_str(section, option).lower()
+        if previous in to_true:
             set_config(section, option, "True")
-            loger.info(f"[{section}:{option} now True instead of {previous}")
+            logger.info(f"[{section}]:{option} now True instead of {previous}")
+        elif previous in to_false:
+            set_config(section, option, "False")
 
     def _debug_configs(self) -> None:
         """
@@ -92,24 +95,39 @@ class ConfigHandler(object):
         mode = get_config_str("Mode", "mode").lower()
 
         if mode == "production":
-            return
+            to_false = ["info", "debug"]
+            to_true = []
+            logger.info("As mode is Production running all reports and "
+                        "keeping files is turned off "
+                        "unless specifically asked for in cfg")
         elif mode == "info":
-            toggles = ["info"]
+            logger.info(
+                "As mode is Info the following cfg setting have been changed")
+            to_false = ["debug"]
+            to_true = ["info"]
         elif mode == "debug":
-            toggles = ["info, debug"]
+            logger.info("As mode is Debug the following cfg setting "
+                        "have been changed")
+            to_false = []
+            to_true = ["info", "debug"]
         elif mode == "all":
-            toggles = ["info, debug"].extend(FALSES)
+            logger.info(
+                "As mode is All the following cfg setting have been changed")
+            to_false = []
+            to_true = ["info", "debug"]
+            to_true.extend(FALSES)
 
-        logger.info(f"As {mode=} the following cfg setting have been changed")
+
         for option in config_options("Reports"):
             # options names are all lower without _ inside config
-            if (option in _DEBUG_ENABLE_OPTS or option[:5] == "write" or
-                    option[:4] == "keep"):
-                self.__toggle_config("Reports", option, toggles)
+            a = option[:4]
+            if (option in _DEBUG_ENABLE_OPTS or
+                    option[:4] in ["keep", "read", "writ"]):
+                self.__toggle_config("Reports", option, to_false, to_true)
         for option in config_options("Mapping"):
             # options names are all lower without _ inside config
             if option in _DEBUG_MAPPING_OPTS:
-                self.__toggle_config("Mapping", option, toggles)
+                self.__toggle_config("Mapping", option, to_false, to_true)
 
     def _previous_handler(self) -> None:
         self._error_on_previous("loading_algorithms")
