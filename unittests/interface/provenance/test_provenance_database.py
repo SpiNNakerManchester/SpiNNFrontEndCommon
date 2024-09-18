@@ -55,6 +55,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             self.assertListEqual(data, versions)
 
     def test_power(self):
+        set_config("Reports", "write_provenance", "true")
         with ProvenanceWriter() as db:
             db.insert_power("num_cores", 34)
             db.insert_power("total time (seconds)", 6.81)
@@ -113,6 +114,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         self.assertEqual(12 + 123, data)
 
     def test_gatherer(self):
+        set_config("Reports", "write_provenance", "true")
         with ProvenanceWriter() as db:
             db.insert_gatherer(
                 1, 3, 1715886360, 80, 1, "Extraction_time", 00.234)
@@ -125,6 +127,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         self.assertListEqual(expected, data)
 
     def test_router(self):
+        set_config("Reports", "write_provenance", "true")
         with ProvenanceWriter() as db:
             db.insert_router(1, 3, "des1", 34, True)
             db.insert_router(1, 2, "des1", 45, True)
@@ -140,6 +143,7 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_monitor(self):
         with ProvenanceWriter() as db:
+            set_config("Reports", "write_provenance", "true")
             db.insert_monitor(1, 3, "des1", 34)
             db.insert_monitor(1, 2, "des1", 45)
             db.insert_monitor(1, 3, "des2", 67)
@@ -159,6 +163,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_core(1, 3, 1, "des1", 48)
 
     def test_messages(self):
+        set_config("Reports", "write_provenance", "true")
         set_config("Reports", "provenance_report_cutoff", 3)
         with LogCapture() as lc:
             with ProvenanceWriter() as db:
@@ -173,6 +178,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         self.assertEqual(4, len(data))
 
     def test_connector(self):
+        set_config("Reports", "write_provenance", "true")
         with ProvenanceWriter() as db:
             db.insert_connector("the pre", "A post", "OneToOne", "foo", 12)
         with ProvenanceReader() as db:
