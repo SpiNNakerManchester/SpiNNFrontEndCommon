@@ -286,7 +286,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             timestamp_dir = self._data_writer.get_timestamp_dir_path()
             if not get_config_bool("Reports", "keep_data_database"):
-                for root, dirs, files in os.walk(timestamp_dir):
+                for root, _, files in os.walk(timestamp_dir):
                     for file in filter(
                             lambda x: re.match("data.+sqlite3", x), files):
                         try:
