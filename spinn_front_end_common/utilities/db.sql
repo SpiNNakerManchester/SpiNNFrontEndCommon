@@ -47,42 +47,79 @@ CREATE VIEW IF NOT EXISTS extraction_view AS
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing recording regions.
-CREATE TABLE IF NOT EXISTS region(
-	region_id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE IF NOT EXISTS recording_region(
+	recording_region_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	core_id INTEGER NOT NULL
 		REFERENCES core(core_id) ON DELETE RESTRICT,
-	local_region_index INTEGER NOT NULL,
-    is_recording INTEGER NOT NULL);
+	local_region_index INTEGER NOT NULL);
 -- Every recording region has a unique vertex and index
-CREATE UNIQUE INDEX IF NOT EXISTS regionSanity ON region(
+CREATE UNIQUE INDEX IF NOT EXISTS recording_region_sanity ON recording_region(
 	core_id ASC, local_region_index ASC);
 
-CREATE VIEW IF NOT EXISTS region_view AS
-	SELECT core_id, region_id, x, y, processor, local_region_index, is_recording
-FROM core NATURAL JOIN region;
+CREATE VIEW IF NOT EXISTS recording_region_view AS
+	SELECT core_id, recording_region_id, x, y, processor, local_region_index
+FROM core NATURAL JOIN recording_region;
 
-CREATE TABLE IF NOT EXISTS region_data(
-    region_data_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	region_id INTEGER NOT NULL
-		REFERENCES region(region_id) ON DELETE RESTRICT,
+CREATE TABLE IF NOT EXISTS recording_data(
+    recording_data_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	recording_region_id INTEGER NOT NULL
+		REFERENCES recording_region(recording_region_id) ON DELETE RESTRICT,
     extraction_id INTEGER NOT NULL
 		REFERENCES extraction(extraction_id) ON DELETE RESTRICT,
 	content BLOB NOT NULL,
 	content_len INTEGER NOT NULL,
     missing_data INTEGER NOT NULL);
 -- Every recording region is extracted once per BefferExtractor run
-CREATE UNIQUE INDEX IF NOT EXISTS region_data_sanity ON region_data(
-	region_id ASC, extraction_id ASC);
+CREATE UNIQUE INDEX IF NOT EXISTS recording_data_sanity ON recording_data(
+	recording_region_id ASC, extraction_id ASC);
 
-CREATE VIEW IF NOT EXISTS region_data_view AS
-	SELECT core_id, region_id, extraction_id, x, y, processor, local_region_index,
-		content, content_len, is_recording
-FROM region_view NATURAL JOIN region_data;
+CREATE VIEW IF NOT EXISTS recording_data_view AS
+	SELECT core_id, recording_region_id, extraction_id, x, y, processor, local_region_index,
+		content, content_len
+FROM recording_region_view NATURAL JOIN recording_data;
 
-CREATE VIEW IF NOT EXISTS region_data_plus_view AS
+CREATE VIEW IF NOT EXISTS recording_data_plus_view AS
 	SELECT core_id, region_id, extraction_id, x, y, processor, local_region_index,
-		content, content_len, is_recording, run_timestep, run_time_ms, n_run, n_loop, extraction_time
-FROM region_data_view NATURAL JOIN extraction_view;
+		content, content_len, run_timestep, run_time_ms, n_run, n_loop, extraction_time
+FROM recording_data_view NATURAL JOIN extraction_view;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing download regions.
+CREATE TABLE IF NOT EXISTS download_region(
+	download_region_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	core_id INTEGER NOT NULL
+		REFERENCES core(core_id) ON DELETE RESTRICT,
+	local_region_index INTEGER NOT NULL);
+-- Every recording region has a unique vertex and index
+CREATE UNIQUE INDEX IF NOT EXISTS download_region_sanity ON download_region(
+	core_id ASC, local_region_index ASC);
+
+CREATE VIEW IF NOT EXISTS download_region_view AS
+	SELECT core_id, download_region_id, x, y, processor, local_region_index
+FROM core NATURAL JOIN download_region;
+
+CREATE TABLE IF NOT EXISTS download_data(
+    download_data_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	download_region_id INTEGER NOT NULL
+		REFERENCES download_region(download_region_id) ON DELETE RESTRICT,
+    extraction_id INTEGER NOT NULL
+		REFERENCES extraction(extraction_id) ON DELETE RESTRICT,
+	content BLOB NOT NULL,
+	content_len INTEGER NOT NULL,
+    missing_data INTEGER NOT NULL);
+-- Every recording region is extracted once per BefferExtractor run
+CREATE UNIQUE INDEX IF NOT EXISTS download_data_sanity ON download_data(
+	download_region_id ASC, extraction_id ASC);
+
+CREATE VIEW IF NOT EXISTS download_data_view AS
+	SELECT core_id, download_region_id, extraction_id, x, y, processor, local_region_index,
+		content, content_len
+FROM download_region_view NATURAL JOIN download_data;
+
+CREATE VIEW IF NOT EXISTS download_data_plus_view AS
+	SELECT core_id, download_region_id, extraction_id, x, y, processor, local_region_index,
+		content, content_len, run_timestep, run_time_ms, n_run, n_loop, extraction_time
+FROM download_data_view NATURAL JOIN extraction_view;
 
 -- Information about how to access the connection proxying
 -- WARNING! May include credentials
