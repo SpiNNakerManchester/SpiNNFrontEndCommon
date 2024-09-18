@@ -34,7 +34,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 logger = FormatAdapter(logging.getLogger(__name__))
 
 APP_DIRNAME = 'application_generated_data_files'
-TIMESTAMP_FILENAME = "time_stamp"
+STACK_TRACE_FILENAME = "stack_trace"
 WARNING_LOGS_FILENAME = "warning_logs.txt"
 
 # options names are all lower without _ inside config
@@ -230,7 +230,7 @@ class ConfigHandler(object):
         # store timestamp in latest/time_stamp for provenance reasons
         timestamp_dir_path = self._data_writer.get_timestamp_dir_path()
         time_of_run_file_name = os.path.join(
-            timestamp_dir_path, TIMESTAMP_FILENAME)
+            timestamp_dir_path, STACK_TRACE_FILENAME)
         _, timestamp = os.path.split(timestamp_dir_path)
         with open(time_of_run_file_name, "w", encoding="utf-8") as f:
             f.writelines(timestamp)

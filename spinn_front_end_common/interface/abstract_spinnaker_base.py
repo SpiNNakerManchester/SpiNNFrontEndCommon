@@ -84,7 +84,8 @@ from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
-from spinn_front_end_common.interface.config_handler import ConfigHandler
+from spinn_front_end_common.interface.config_handler import (
+    ConfigHandler, STACK_TRACE_FILENAME)
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
     chip_io_buf_clearer, chip_io_buf_extractor,
@@ -295,6 +296,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                             pass
             logger.info("Removed data sqlite3 files as "
                         "cfg:Reports:keep_data_database is false")
+
+            if not get_config_bool("Reports", "keep_stack_trace"):
+                os.remove(os.path.join(
+                    timestamp_dir, STACK_TRACE_FILENAME))
+            logger.info(f"Removed {STACK_TRACE_FILENAME} file as "
+                        "cfg:Reports:keep_stack_trace is false")
 
         # clear provenance outside of the FecTimer as it uses it
         if not get_config_bool("Reports", "keep_provenance_database"):
