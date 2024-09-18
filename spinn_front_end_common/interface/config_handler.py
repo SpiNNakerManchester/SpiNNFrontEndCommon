@@ -233,8 +233,8 @@ class ConfigHandler(object):
                         self._data_writer.ERRORED_FILENAME)
                     finished_flag_exists = os.path.exists(finished_flag)
                     errored_flag_exists = os.path.exists(errored_flag)
-                    if finished_flag_exists and (
-                            not errored_flag_exists or remove_errored_folders):
+                    if finished_flag_exists or (
+                            errored_flag_exists and remove_errored_folders):
                         shutil.rmtree(os.path.join(
                             starting_directory, current_oldest_file),
                             ignore_errors=True)
