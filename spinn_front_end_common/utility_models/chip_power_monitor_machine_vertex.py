@@ -242,7 +242,7 @@ class ChipPowerMonitorMachineVertex(
         # for buffering output info is taken form the buffer manager
         # get raw data as a byte array
         buffer_manager = FecDataView.get_buffer_manager()
-        record_raw, data_missing = buffer_manager.get_data_by_placement(
+        record_raw, data_missing = buffer_manager.get_recording(
             placement, self._SAMPLE_RECORDING_CHANNEL)
         if data_missing:
             logger.warning(
