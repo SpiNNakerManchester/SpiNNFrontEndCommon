@@ -116,6 +116,8 @@ class ConfigHandler(object):
             to_false = []
             to_true = ["info", "debug"]
             to_true.extend(FALSES)
+        else:
+            raise ConfigurationException(f"Unexpected {mode=}")
 
 
         for option in config_options("Reports"):
