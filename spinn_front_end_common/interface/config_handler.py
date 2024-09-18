@@ -119,10 +119,8 @@ class ConfigHandler(object):
         else:
             raise ConfigurationException(f"Unexpected {mode=}")
 
-
         for option in config_options("Reports"):
             # options names are all lower without _ inside config
-            a = option[:4]
             if (option in _DEBUG_ENABLE_OPTS or
                     option[:4] in ["keep", "read", "writ"]):
                 self.__toggle_config("Reports", option, to_false, to_true)
@@ -175,7 +173,7 @@ class ConfigHandler(object):
             # GOOD!
             return
         raise ConfigurationException(
-            f"cfg setting [Reports]reportsEnabled is no longer supported! "
+            "cfg setting [Reports]reportsEnabled is no longer supported! "
             "Use [Mode]mode = Production to turn of most reports.")
 
     def _reserve_system_vertices(self):
