@@ -176,8 +176,7 @@ class ConfigHandler(object):
             return
         raise ConfigurationException(
             f"cfg setting [Reports]reportsEnabled is no longer supported! "
-            "See https://spinnakermanchester.github.io/common_pages/"
-            "Algorithms.html.")
+            "Use [Mode]mode = Production to turn of most reports.")
 
     def _reserve_system_vertices(self):
         """
