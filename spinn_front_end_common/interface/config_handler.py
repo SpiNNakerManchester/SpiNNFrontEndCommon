@@ -143,7 +143,8 @@ class ConfigHandler(object):
         self._replaced_cfg("Reports",
                            "write_routing_compression_checker_report",
                            "run_compression_checker")
-        self._reports_enabled_removed()
+        self._replaced_cfg("Reports", "reportsEnabled",
+                           "[Mode]mode = Production to turn off most reports")
 
     def _error_on_previous(self, option) -> None:
         try:
@@ -165,16 +166,6 @@ class ConfigHandler(object):
             else:
                 logger.warning(f"cfg setting [{section}] {previous} "
                                f"is no longer supported! Use {new} instead")
-
-    def _reports_enabled_removed(self):
-        try:
-            get_config_str("Reports", "reportsEnabled")
-        except NoOptionError:
-            # GOOD!
-            return
-        raise ConfigurationException(
-            "cfg setting [Reports]reportsEnabled is no longer supported! "
-            "Use [Mode]mode = Production to turn of most reports.")
 
     def _reserve_system_vertices(self):
         """

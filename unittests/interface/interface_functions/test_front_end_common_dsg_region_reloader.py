@@ -132,6 +132,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
     def setUp(self):
         unittest_setup()
         set_config("Machine", "versions", VersionStrings.ANY.text)
+        set_config("Reports", "write_text_specs", "True")
 
     def test_with_good_sizes(self):
         """ Test that an application vertex's data is rewritten correctly

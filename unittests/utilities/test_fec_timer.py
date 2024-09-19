@@ -15,6 +15,8 @@
 import tempfile
 import unittest
 from testfixtures import LogCapture  # type: ignore[import]
+
+from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.provenance import (
     FecTimer, GlobalProvenance, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -39,6 +41,7 @@ class TestFecTimer(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        set_config("Reports", "write_algorithm_timings", "True")
         FecTimer.setup(MockSimulator())
 
     def test_simple(self):
