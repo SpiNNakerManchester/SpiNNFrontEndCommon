@@ -303,20 +303,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.info(f"Removed {STACK_TRACE_FILENAME} file as "
                         "cfg:Reports:keep_stack_trace is false")
 
-        # clear provenance outside of the FecTimer as it uses it
-        if not get_config_bool("Reports", "keep_provenance_database"):
-            logger.info("Removed global_provenance.sqlite3 as "
-                        "cfg:Reports:keep_provenance_database is false")
-            FecTimer.stop_category_timing()
-            try:
-                os.remove(os.path.join(
-                    timestamp_dir, "global_provenance.sqlite3"))
-            except OSError:
-                pass
-
-    def _machine_clear(self) -> None:
-        pass
-
     def _setup_java_caller(self) -> None:
         if get_config_bool("Java", "use_java"):
             self._data_writer.set_java_caller(JavaCaller())
