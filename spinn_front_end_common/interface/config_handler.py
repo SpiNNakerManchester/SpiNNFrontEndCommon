@@ -42,8 +42,7 @@ WARNING_LOGS_FILENAME = "warning_logs.txt"
 _DEBUG_ENABLE_OPTS = frozenset([
     "cleariobufduringrun", "extractiobuf"])
 _DEBUG_MAPPING_OPTS = frozenset([
-    "routertablecompressasfaraspossible", "runcompressionchecker",
-    "validateroutesuncompressed"])
+    "routertablecompressasfaraspossible", "runcompressionchecker"])
 
 
 class ConfigHandler(object):
@@ -124,7 +123,7 @@ class ConfigHandler(object):
                 self.__toggle_config("Reports", option, to_false, to_true)
         for option in config_options("Mapping"):
             # options names are all lower without _ inside config
-            if option in _DEBUG_MAPPING_OPTS:
+            if option in _DEBUG_MAPPING_OPTS or option[:8] == "validate":
                 self.__toggle_config("Mapping", option, to_false, to_true)
 
     def _previous_handler(self) -> None:

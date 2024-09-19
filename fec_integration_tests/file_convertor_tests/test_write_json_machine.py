@@ -45,6 +45,7 @@ class TestWriteJson(unittest.TestCase):
         set_config("Machine", "down_chips", "None")
         set_config("Machine", "down_cores", "None")
         set_config("Machine", "down_links", "None")
+        set_config("Mapping", "validate_json", "True")
 
     def _chips_differ(self, chip1, chip2):
         if (chip1 == chip2):

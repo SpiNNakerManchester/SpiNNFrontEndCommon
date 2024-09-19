@@ -15,6 +15,8 @@
 import json
 import os
 from typing import Optional
+
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar, DummyProgressBar
 from spinn_machine.json_machine import to_json
 from pacman.utilities import file_format_schemas
@@ -26,8 +28,7 @@ MACHINE_FILENAME = "machine.json"
 
 
 def write_json_machine(
-        json_folder: Optional[str] = None, progress_bar: bool = True,
-        validate: bool = True) -> str:
+        json_folder: Optional[str] = None, progress_bar: bool = True) -> str:
     """
     Runs the code to write the machine in Java readable JSON.
 
@@ -48,7 +49,7 @@ def write_json_machine(
             json_obj = to_json()
             progress.update()
             # Step 2: validate against the schema
-            if validate:
+            if get_config_bool("Mapping", "validate_json"):
                 file_format_schemas.validate(json_obj, MACHINE_FILENAME)
             progress.update()
             # Step 3: dump to json file

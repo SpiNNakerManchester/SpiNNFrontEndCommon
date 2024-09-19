@@ -15,11 +15,14 @@
 import logging
 import json
 import os
+
+from jsonschema.exceptions import ValidationError
+
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
 from pacman.utilities.json_utils import placements_to_json
-from jsonschema.exceptions import ValidationError
 from spinn_front_end_common.data import FecDataView
 
 _PLACEMENTS_FILENAME = "placements.json"
@@ -35,17 +38,13 @@ def write_json_placements() -> None:
     # Steps are create json object, validate json and write json to a file
     with ProgressBar(3, "Converting to JSON Placements") as progress:
         json_obj = placements_to_json()
+        progress.update()
 
-        # validate the schema
-        try:
+        if get_config_bool("Mapping", "validate_json"):
             file_format_schemas.validate(json_obj, _PLACEMENTS_FILENAME)
-        except ValidationError as ex:
-            logger.error("JSON validation exception: {}\n{}",
-                         ex.message, ex.instance)
-
-        # update and complete progress bar
         progress.update()
 
         # dump to json file
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(json_obj, f)
+        progress.update()
