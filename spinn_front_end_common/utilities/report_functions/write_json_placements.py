@@ -16,8 +16,6 @@ import logging
 import json
 import os
 
-from jsonschema.exceptions import ValidationError
-
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
