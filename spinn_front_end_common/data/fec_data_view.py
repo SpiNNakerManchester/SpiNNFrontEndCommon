@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations  # Type checking trickery
+import datetime
 import logging
 import os
 from typing import (
@@ -94,6 +95,7 @@ class _FecDataModel(object):
         "_live_packet_recorder_params",
         "_live_output_vertices",
         "_live_output_devices",
+        "_n_run_steps",
         "_next_sync_signal",
         "_next_ds_reference",
         "_none_labelled_edge_count",
@@ -187,6 +189,7 @@ class _FecDataModel(object):
         self._current_run_timesteps: Optional[int] = 0
         self._first_machine_time_step = 0
         self._run_step: Optional[int] = None
+        self._n_run_steps: Optional[int] = None
 
     def _clear_notification_protocol(self) -> None:
         if self._notification_protocol:
@@ -210,6 +213,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     repositories as all methods are available to subclasses
     """
 
+    FINISHED_FILENAME = "finished"
+    ERRORED_FILENAME = "errored"
     __fec_data = _FecDataModel()
 
     __slots__ = ()
@@ -570,6 +575,23 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         return cls.__fec_data._run_step
 
+    @classmethod
+    def is_last_step(cls) -> bool:
+        """
+        Detects if this is the last or only step of this run.
+
+        When not using auto pause resume steps this always returns True
+
+        When running forever with steps this always returns False.
+
+        For auto pause steps of a fixed run time this returns True
+        only on the last of these steps.
+        """
+        if cls.__fec_data._n_run_steps is None:
+            return cls.__fec_data._run_step is None
+        else:
+            return cls.__fec_data._run_step == cls.__fec_data._n_run_steps
+
     # Report directories
     # There are NO has or get methods for directories
     # This allows directories to be created on the fly
@@ -595,6 +617,48 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls._is_mocked():
             return cls._temporary_dir_path()
         raise cls._exception("timestamp_dir_path")
+
+    @classmethod
+    def _get_timestamp(cls) -> str:
+        now = datetime.datetime.now()
+        return (
+            f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
+            f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
+
+    @classmethod
+    def write_errored_file(cls, message: Optional[str] = None) -> None:
+        """
+        Writes an ``errored`` file that signals code if the code has errored
+
+        Not written if there is a finished file exists and
+        there is no error message.
+
+        This file signals the report directory can be removed.
+
+        This method can be called while there is still code to be run BUT
+        if running other simulations at the same time there is a possibility
+        that the report directory is no longer available for writing to.
+
+        :param message: An error message to included
+        """
+        errored_file_name = os.path.join(
+            cls.get_timestamp_dir_path(), cls.ERRORED_FILENAME)
+
+        if message is None:
+            finished_file_name = os.path.join(
+                cls.get_timestamp_dir_path(), cls.FINISHED_FILENAME)
+            if os.path.exists(finished_file_name):
+                return
+
+            if os.path.exists(errored_file_name):
+                return
+
+            message = "Unexpected end"
+
+        with open(errored_file_name, "w", encoding="utf-8") as f:
+            f.writelines(message)
+            f.writelines("\n")
+            f.writelines(cls._get_timestamp())
 
     # system multicast routing data
 

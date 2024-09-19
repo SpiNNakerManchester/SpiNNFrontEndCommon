@@ -246,7 +246,7 @@ class BufferManager(object):
         :param int recording_region_id: the recording region ID
         """
         with BufferDatabase() as db:
-            db.clear_region(x, y, p, recording_region_id)
+            db.clear_recording_region(x, y, p, recording_region_id)
 
     def _create_message_to_send(
             self, size: int, vertex: AbstractSendsBuffersFromHost,
@@ -359,9 +359,16 @@ class BufferManager(object):
         """
         with BufferDatabase() as db:
             db.start_new_extraction()
-        recording_placements = list(
-            FecDataView.iterate_placements_by_vertex_type(
-                (AbstractReceiveBuffersToHost, AbstractReceiveRegionsToHost)))
+        if FecDataView.is_last_step():
+            recording_placements = list(
+                FecDataView.iterate_placements_by_vertex_type(
+                    (AbstractReceiveBuffersToHost,
+                     AbstractReceiveRegionsToHost)))
+        else:
+            recording_placements = list(
+                FecDataView.iterate_placements_by_vertex_type(
+                    AbstractReceiveBuffersToHost))
+
         if self._java_caller is not None:
             logger.info("Starting buffer extraction using Java")
             self._java_caller.set_placements(recording_placements)
@@ -404,12 +411,38 @@ class BufferManager(object):
         for placement in progress.over(recording_placements):
             self._retreive_by_placement(placement)
 
-    def get_data_by_placement(
-            self, placement: Placement, recording_region_id: int) -> Tuple[
-                bytes, bool]:
+    def get_data_by_placement(self, placement: Placement,
+                              recording_region_id: int) -> Tuple[bytes, bool]:
         """
-        Get the data container for all the data retrieved
+        Deprecated use get_recording or get_download
+
+        :param placement:
+        :param recording_region_id:
+        :return:
+        """
+        if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
+            if isinstance(placement.vertex, AbstractReceiveRegionsToHost):
+                raise SpinnFrontEndException(
+                    f"The vertex {placement.vertex} could return "
+                    f"either recording or download data")
+            logger.warning(
+                "get_data_by_placement is deprecated use get_recording")
+            return self.get_recording(placement, recording_region_id)
+
+        elif isinstance(placement.vertex, AbstractReceiveRegionsToHost):
+            raise SpinnFrontEndException("Use the get_download method")
+
+        else:
+            raise NotImplementedError(
+                f"Unable to get data for vertex {placement.vertex}")
+
+    def get_recording(self, placement: Placement,
+                      recording_region_id: int) -> Tuple[bytes, bool]:
+        """
+        Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
+
+        Data for all extractions is combined.
 
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
@@ -424,19 +457,19 @@ class BufferManager(object):
         """
         try:
             with BufferDatabase() as db:
-                return db.get_region_data(
-                    placement.x, placement.y, placement.p,
-                    recording_region_id)
+                return db.get_recording(placement.x, placement.y, placement.p,
+                                        recording_region_id)
         except LookupError as lookup_error:
             return self._raise_error(
                 placement, recording_region_id, lookup_error)
 
-    def get_last_data_by_placement(
-            self, placement: Placement, recording_region_id: int) -> Tuple[
-                bytes, bool]:
+    def get_download(self, placement: Placement,
+                     recording_region_id: int) -> Tuple[bytes, bool]:
         """
-        Get the data container for all the data retrieved
+        Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
+
+        Only the last data extracted is returned.
 
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
@@ -451,7 +484,7 @@ class BufferManager(object):
         """
         try:
             with BufferDatabase() as db:
-                return db.get_region_data_by_extraction_id(
+                return db.get_download_by_extraction_id(
                     placement.x, placement.y, placement.p,
                     recording_region_id, -1)
         except LookupError as lookup_error:
@@ -513,17 +546,15 @@ class BufferManager(object):
                 data = self._request_data(
                     placement.x, placement.y, addr, size)
                 with BufferDatabase() as db:
-                    db.store_data_in_region_buffer(
-                        placement.x, placement.y, placement.p, region, missing,
-                        data)
+                    db.store_recording(placement.x, placement.y, placement.p,
+                                       region, missing, data)
         if isinstance(placement.vertex, AbstractReceiveRegionsToHost):
             dl_vtx = cast(AbstractReceiveRegionsToHost, placement.vertex)
             for region, addr, size in dl_vtx.get_download_regions(placement):
                 data = self._request_data(placement.x, placement.y, addr, size)
                 with BufferDatabase() as db:
-                    db.store_data_in_region_buffer(
-                        placement.x, placement.y, placement.p, region, False,
-                        data)
+                    db.store_download(placement.x, placement.y, placement.p,
+                                      region, False, data)
 
     def _get_region_information(
             self, address: int, x: int, y: int) -> List[Tuple[int, int, bool]]:

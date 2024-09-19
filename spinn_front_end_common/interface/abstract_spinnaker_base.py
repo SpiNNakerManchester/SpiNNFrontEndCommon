@@ -600,6 +600,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             assert steps is not None
             logger.info("Running for {} steps for a total of {}ms",
                         len(steps), run_time)
+            self._data_writer.set_n_run_steps(len(steps))
             for step in steps:
                 run_step = self._data_writer.next_run_step()
                 logger.info(f"Run {run_step} of {len(steps)}")
@@ -2333,13 +2334,13 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         except Exception as e:
             self._recover_from_error(e)
-            self.write_errored_file()
+            self._data_writer.write_errored_file(str(e))
             raise
         finally:
             # shut down the machine properly
             self._shutdown()
 
-        self.write_finished_file()
+        self._data_writer.write_finished_file()
         # No matching FecTimer.end_category as shutdown stops timer
 
     def _execute_application_finisher(self) -> None:
