@@ -40,12 +40,9 @@ WARNING_LOGS_FILENAME = "warning_logs.txt"
 
 # options names are all lower without _ inside config
 _DEBUG_ENABLE_OPTS = frozenset([
-    "reportsenabled",
     "cleariobufduringrun", "extractiobuf"])
 _DEBUG_MAPPING_OPTS = frozenset([
     "routertablecompressasfaraspossible", "runcompressionchecker"])
-_REPORT_DISABLE_OPTS = frozenset([
-    "cleariobufduringrun", "extractiobuf"])
 
 
 class ConfigHandler(object):
@@ -143,7 +140,7 @@ class ConfigHandler(object):
         self._replaced_cfg("Reports",
                            "write_routing_compression_checker_report",
                            "run_compression_checker")
-        self._replaced_cfg("Reports", "reportsEnabled",
+        self._replaced_cfg("Reports", "report_enabled",
                            "[Mode]mode = Production to turn off most reports")
 
     def _error_on_previous(self, option) -> None:
