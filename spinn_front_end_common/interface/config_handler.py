@@ -42,7 +42,8 @@ WARNING_LOGS_FILENAME = "warning_logs.txt"
 _DEBUG_ENABLE_OPTS = frozenset([
     "cleariobufduringrun", "extractiobuf"])
 _DEBUG_MAPPING_OPTS = frozenset([
-    "routertablecompressasfaraspossible", "runcompressionchecker"])
+    "routertablecompressasfaraspossible", "runcompressionchecker",
+    "validateroutesuncompressed"])
 
 
 class ConfigHandler(object):
