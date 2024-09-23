@@ -17,8 +17,9 @@ import logging
 import os
 import shutil
 import traceback
-from typing import Optional, Type
+from typing import List, Optional, Type
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.configs.camel_case_config_parser import FALSES
 from spinn_utilities.config_holder import (
     config_options, has_config_option, load_config, get_config_bool,
     get_config_int, get_config_str, get_config_str_list, set_config)
@@ -34,18 +35,14 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 logger = FormatAdapter(logging.getLogger(__name__))
 
 APP_DIRNAME = 'application_generated_data_files'
-TIMESTAMP_FILENAME = "time_stamp"
+STACK_TRACE_FILENAME = "stack_trace"
 WARNING_LOGS_FILENAME = "warning_logs.txt"
 
 # options names are all lower without _ inside config
 _DEBUG_ENABLE_OPTS = frozenset([
-    "reportsenabled",
     "cleariobufduringrun", "extractiobuf"])
 _DEBUG_MAPPING_OPTS = frozenset([
-    "routertablecompressasfaraspossible", "runcompressionchecker",
-    "validateroutesuncompressed"])
-_REPORT_DISABLE_OPTS = frozenset([
-    "cleariobufduringrun", "extractiobuf"])
+    "routertablecompressasfaraspossible", "runcompressionchecker"])
 
 
 class ConfigHandler(object):
@@ -76,6 +73,15 @@ class ConfigHandler(object):
         self._previous_handler()
         self._reserve_system_vertices()
 
+    def __toggle_config(self, section: str, option: str, to_false: List[str],
+                        to_true: List[str]):
+        previous = get_config_str(section, option).lower()
+        if previous in to_true:
+            set_config(section, option, "True")
+            logger.info(f"[{section}]:{option} now True instead of {previous}")
+        elif previous in to_false:
+            set_config(section, option, "False")
+
     def _debug_configs(self) -> None:
         """
         Adjusts and checks the configuration based on mode and
@@ -83,30 +89,42 @@ class ConfigHandler(object):
 
         :raises ConfigurationException:
         """
-        if get_config_str("Mode", "mode") == "Debug":
-            for option in config_options("Reports"):
-                # options names are all lower without _ inside config
-                if option in _DEBUG_ENABLE_OPTS or option[:5] == "write":
-                    if not get_config_bool("Reports", option):
-                        set_config("Reports", option, "True")
-                        logger.info("As mode == \"Debug\", [Reports] {} "
-                                    "has been set to True", option)
-            for option in config_options("Mapping"):
-                # options names are all lower without _ inside config
-                if option in _DEBUG_MAPPING_OPTS:
-                    if not get_config_bool("Mapping", option):
-                        set_config("Mapping", option, "True")
-                        logger.info("As mode == \"Debug\", [Mapping] {} "
-                                    "has been set to True", option)
-        elif not get_config_bool("Reports", "reportsEnabled"):
-            for option in config_options("Reports"):
-                # options names are all lower without _ inside config
-                if option in _REPORT_DISABLE_OPTS or option[:5] == "write":
-                    if not get_config_bool("Reports", option):
-                        set_config("Reports", option, "False")
-                        logger.info(
-                            "As reportsEnabled == \"False\", [Reports] {} "
-                            "has been set to False", option)
+        mode = get_config_str("Mode", "mode").lower()
+
+        if mode == "production":
+            to_false = ["info", "debug"]
+            to_true = []
+            logger.info("As mode is Production running all reports and "
+                        "keeping files is turned off "
+                        "unless specifically asked for in cfg")
+        elif mode == "info":
+            logger.info(
+                "As mode is Info the following cfg setting have been changed")
+            to_false = ["debug"]
+            to_true = ["info"]
+        elif mode == "debug":
+            logger.info("As mode is Debug the following cfg setting "
+                        "have been changed")
+            to_false = []
+            to_true = ["info", "debug"]
+        elif mode == "all":
+            logger.info(
+                "As mode is All the following cfg setting have been changed")
+            to_false = []
+            to_true = ["info", "debug"]
+            to_true.extend(FALSES)
+        else:
+            raise ConfigurationException(f"Unexpected {mode=}")
+
+        for option in config_options("Reports"):
+            # options names are all lower without _ inside config
+            if (option in _DEBUG_ENABLE_OPTS or
+                    option[:4] in ["keep", "read", "writ"]):
+                self.__toggle_config("Reports", option, to_false, to_true)
+        for option in config_options("Mapping"):
+            # options names are all lower without _ inside config
+            if option in _DEBUG_MAPPING_OPTS or option[:8] == "validate":
+                self.__toggle_config("Mapping", option, to_false, to_true)
 
     def _previous_handler(self) -> None:
         self._error_on_previous("loading_algorithms")
@@ -122,6 +140,8 @@ class ConfigHandler(object):
         self._replaced_cfg("Reports",
                            "write_routing_compression_checker_report",
                            "run_compression_checker")
+        self._replaced_cfg("Reports", "report_enabled",
+                           "[Mode]mode = Production to turn off most reports")
 
     def _error_on_previous(self, option) -> None:
         try:
@@ -199,8 +219,8 @@ class ConfigHandler(object):
                         self._data_writer.ERRORED_FILENAME)
                     finished_flag_exists = os.path.exists(finished_flag)
                     errored_flag_exists = os.path.exists(errored_flag)
-                    if finished_flag_exists and (
-                            not errored_flag_exists or remove_errored_folders):
+                    if finished_flag_exists or (
+                            errored_flag_exists and remove_errored_folders):
                         shutil.rmtree(os.path.join(
                             starting_directory, current_oldest_file),
                             ignore_errors=True)
@@ -230,7 +250,7 @@ class ConfigHandler(object):
         # store timestamp in latest/time_stamp for provenance reasons
         timestamp_dir_path = self._data_writer.get_timestamp_dir_path()
         time_of_run_file_name = os.path.join(
-            timestamp_dir_path, TIMESTAMP_FILENAME)
+            timestamp_dir_path, STACK_TRACE_FILENAME)
         _, timestamp = os.path.split(timestamp_dir_path)
         with open(time_of_run_file_name, "w", encoding="utf-8") as f:
             f.writelines(timestamp)

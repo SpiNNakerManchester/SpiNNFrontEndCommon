@@ -32,6 +32,7 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        set_config("Reports", "write_provenance", "true")
 
     def test_create(self):
         ProvenanceWriter()

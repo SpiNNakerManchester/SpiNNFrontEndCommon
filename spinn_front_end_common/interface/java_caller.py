@@ -184,8 +184,7 @@ class JavaCaller(object):
         :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
-            self._machine_json_path = write_json_machine(
-                progress_bar=False, validate=False)
+            self._machine_json_path = write_json_machine(progress_bar=False)
         return self._machine_json_path
 
     def set_placements(self, used_placements: Iterable[Placement]):

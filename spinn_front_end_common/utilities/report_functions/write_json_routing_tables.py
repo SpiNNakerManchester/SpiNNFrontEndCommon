@@ -14,6 +14,8 @@
 
 import json
 import os
+
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
 from pacman.model.routing_tables.multicast_routing_tables import (
@@ -35,17 +37,16 @@ def write_json_routing_tables(router_tables: MulticastRoutingTables) -> str:
     # Steps are create json object, validate json and write json to a file
     with ProgressBar(3, "Converting to JSON RouterTables") as progress:
         json_obj = to_json(router_tables)
-
         progress.update()
 
-        # validate the schema
-        file_format_schemas.validate(json_obj, _ROUTING_TABLES_FILENAME)
-
-        # update and complete progress bar
+        if get_config_bool("Mapping", "validate_json"):
+            # validate the schema
+            file_format_schemas.validate(json_obj, _ROUTING_TABLES_FILENAME)
         progress.update()
 
         # dump to json file
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(json_obj, f)
+        progress.update()
 
     return file_path
