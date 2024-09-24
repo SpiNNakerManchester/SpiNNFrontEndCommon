@@ -19,8 +19,8 @@ import sys
 import unittest
 from spinn_utilities.config_holder import set_config
 from spalloc_client.job import JobDestroyedError
-from spinn_utilities.ping import Ping
-from spinnman.exceptions import SpinnmanIOException
+from spinnman.exceptions import (
+    SpinnmanIOException, SpinnmanGenericProcessException)
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -108,14 +108,14 @@ class TestWriteJson(unittest.TestCase):
                 os.remove(json_file)
 
     def testSpin4(self):
-        if not Ping.host_is_reachable(self.spin4Host):
-            raise unittest.SkipTest(self.spin4Host + " appears to be down")
         try:
             trans = create_transceiver_from_hostname(self.spin4Host)
         except (SpinnmanIOException):
-            self.skipTest("Skipping as getting Job failed")
-
-        machine = trans.get_machine_details()
+            self.skipTest("Skipping as create_transceiver failed")
+        try:
+            machine = trans.get_machine_details()
+        except (SpinnmanGenericProcessException):
+            self.skipTest("Skipping as getting machine_details failed")
         FecDataWriter.mock().set_machine(machine)
 
         folder = "spinn4"
@@ -139,8 +139,6 @@ class TestWriteJson(unittest.TestCase):
         trans.close()
 
     def testSpin2(self):
-        if not Ping.host_is_reachable(self.spalloc):
-            raise unittest.SkipTest(self.spalloc + " appears to be down")
         set_config(
             "Machine", "spalloc_user", "Integration testing OK to kill")
         set_config("Machine", "spalloc_server", self.spalloc)
@@ -153,9 +151,15 @@ class TestWriteJson(unittest.TestCase):
                 spalloc_allocator()
         except (JobDestroyedError, ConnectionRefusedError):
             self.skipTest("Skipping as getting Job failed")
+        try:
+            trans = create_transceiver_from_hostname(hostname)
+        except (SpinnmanIOException):
+            self.skipTest("Skipping as create_transceiver failed")
 
-        trans = create_transceiver_from_hostname(hostname)
-        writer.set_machine(trans.get_machine_details())
+        try:
+            writer.set_machine(trans.get_machine_details())
+        except (SpinnmanGenericProcessException):
+            self.skipTest("Skipping as getting machine_details failed")
 
         m_allocation_controller.close()
 
