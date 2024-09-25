@@ -26,7 +26,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_machine import Chip
 from spinn_machine.tags import IPTag
-from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.model.graphs import AbstractVirtual
 from pacman.model.placements import Placement
 
