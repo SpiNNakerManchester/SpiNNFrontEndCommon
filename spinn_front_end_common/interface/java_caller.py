@@ -374,11 +374,11 @@ class JavaCaller(object):
             subprocess.check_output(params, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
             logger.error("Java Call resulted in an error")
-            updated = datetime.datetime.fromtimestamp(os.path.getmtime(self._jar_file))
-            updated_str =(
+            updated = datetime.datetime.fromtimestamp(
+                os.path.getmtime(self._jar_file))
+            updated_str = (
                 f"{updated.year:04}-{updated.month:02}-{updated.day:02}"
-                f"-{updated.hour:02}-{updated.minute:02}-{updated.second:02}"
-                f"-{updated.microsecond:06}")
+                f"-{updated.hour:02}-{updated.minute:02}")
             logger.error(f"Jar {self._jar_file} was updated {updated_str}")
             logger.error(f"Call was {params}")
             logger.error(f"Output was {exc.output  }")
