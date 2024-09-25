@@ -385,15 +385,14 @@ class JavaCaller(object):
             log_file = os.path.join(
                 FecDataView.get_run_dir_path(), "jspin.log")
             logger.error(f"Logging to: {log_file}")
-            raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call failed")
+            raise
 
     def extract_all_data(self) -> None:
         """
         Gets all the data from the previously set placements
         and put these in the previously set database.
 
-        :raises PacmanExternalAlgorithmFailedToCompleteException:
+        :raises subprocess.CalledProcessError
             On failure of the Java code.
         """
         if not self._recording:
@@ -415,7 +414,7 @@ class JavaCaller(object):
         Writes all the data specifications for system cores,
         uploading the result to the machine.
 
-        :raises PacmanExternalAlgorithmFailedToCompleteException:
+        :raises subprocess.CalledProcessError:
             On failure of the Java code.
         """
         self._run_java(
@@ -433,7 +432,7 @@ class JavaCaller(object):
             `use_monitors` is set to `True`.
 
         :param bool use_monitors:
-        :raises PacmanExternalAlgorithmFailedToCompleteException:
+        :raises subprocess.CalledProcessError:
             On failure of the Java code.
         """
         if use_monitors:
