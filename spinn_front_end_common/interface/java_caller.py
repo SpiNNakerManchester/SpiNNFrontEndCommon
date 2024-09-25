@@ -381,7 +381,7 @@ class JavaCaller(object):
                 f"-{updated.hour:02}-{updated.minute:02}")
             logger.error(f"Jar {self._jar_file} was updated {updated_str}")
             logger.error(f"Call was {params}")
-            logger.error(f"Output was {exc.output  }")
+            logger.error(f"Output was {exc.output}")
             log_file = os.path.join(
                 FecDataView.get_run_dir_path(), "jspin.log")
             logger.error(f"Logging to: {log_file}")
