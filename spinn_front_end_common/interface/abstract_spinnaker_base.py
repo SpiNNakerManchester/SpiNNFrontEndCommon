@@ -241,7 +241,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Removes all data from the report directory user did not ask to keep.
         """
-        with FecTimer("Cleanup reports folder", TimerWork.REPORT):
+        with FecTimer("Cleanup reports folder based on cfg", TimerWork.REPORT):
             self.__reset_remove_data()
 
     def __reset_remove_data(self):
@@ -251,8 +251,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             json_dir = os.path.join(run_dir, "json_files")
             if os.path.exists(json_dir):
                 shutil.rmtree(json_dir, ignore_errors=True)
-                logger.info("Removed json files as "
-                            "cfg:Reports:keep_json_files is False")
 
         if not get_config_bool("Reports", "keep_dataspec_database"):
             for f in os.listdir(run_dir):
@@ -261,8 +259,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                         os.remove(os.path.join(run_dir, f))
                     except OSError:
                         pass
-            logger.info("Removed ds sqlite3 files as "
-                        "cfg:Reports:keep_dataspec_database is False")
 
         if not get_config_bool("Reports", "keep_input_output_database"):
             try:
@@ -270,8 +266,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     run_dir, "input_output_database.sqlite3"))
             except OSError:
                 pass
-            logger.info("Removed input_output_database.sqlite3 as "
-                        "cfg:Reports:keep_input_output_database is False")
 
         if not get_config_bool("Reports", "keep_java_log"):
             log_dir = os.path.join(run_dir, "jspin.log")
@@ -280,11 +274,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                     os.remove(log_dir)
                 except OSError:
                     pass
-                logger.info("Removed input_output_database.sqlite3 as "
-                            "cfg:Reports:jspin.log is False")
 
     def _stop_remove_data(self):
-        with FecTimer("Cleanup reports folder", TimerWork.REPORT):
+        with FecTimer("Cleanup reports folder based on cfg", TimerWork.REPORT):
             self.__reset_remove_data()
 
             timestamp_dir = self._data_writer.get_timestamp_dir_path()
@@ -296,14 +288,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                             os.remove(os.path.join(root, file))
                         except OSError:
                             pass
-            logger.info("Removed data sqlite3 files as "
-                        "cfg:Reports:keep_data_database is false")
 
             if not get_config_bool("Reports", "keep_stack_trace"):
                 os.remove(os.path.join(
                     timestamp_dir, STACK_TRACE_FILENAME))
-            logger.info(f"Removed {STACK_TRACE_FILENAME} file as "
-                        "cfg:Reports:keep_stack_trace is false")
 
     def _setup_java_caller(self) -> None:
         if get_config_bool("Java", "use_java"):
