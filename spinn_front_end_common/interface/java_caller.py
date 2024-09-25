@@ -386,7 +386,7 @@ class JavaCaller(object):
                 FecDataView.get_run_dir_path(), "jspin.log")
             logger.error(f"Logging to: {log_file}")
             raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call filed")
+                "Java call failed")
 
     def extract_all_data(self) -> None:
         """
