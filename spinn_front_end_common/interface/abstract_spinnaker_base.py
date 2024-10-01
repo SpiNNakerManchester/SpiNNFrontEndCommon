@@ -37,6 +37,7 @@ from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
     is_config_none, set_config)
+from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
 
@@ -1951,10 +1952,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            # Also used in recover from error where is is not all placements
-            placements_provenance_gatherer(
-                self._data_writer.get_n_placements(),
-                self._data_writer.iterate_placemements())
+            try:
+                # Also used in recover from error where is is not all placements
+                placements_provenance_gatherer(
+                    self._data_writer.get_n_placements(),
+                    self._data_writer.iterate_placemements())
+            except DataNotYetAvialable as ex:
+                timer.skip(str(ex))
+                return
 
     def _execute_router_provenance_gatherer(self) -> None:
         """
@@ -1967,7 +1972,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            router_provenance_gatherer()
+            try:
+                router_provenance_gatherer()
+            except DataNotYetAvialable as ex:
+                timer.skip(str(ex))
+                return
+
 
     def _execute_profile_data_gatherer(self) -> None:
         """
@@ -1978,7 +1988,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            profile_data_gatherer()
+            try:
+                profile_data_gatherer()
+            except DataNotYetAvialable as ex:
+                timer.skip(str(ex))
+                return
+
 
     def _do_read_provenance(self) -> None:
         """
