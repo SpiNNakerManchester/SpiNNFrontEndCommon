@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import defaultdict
+import datetime
 import json
 import logging
 import os
@@ -25,7 +26,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_machine import Chip
 from spinn_machine.tags import IPTag
-from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.model.graphs import AbstractVirtual
 from pacman.model.placements import Placement
 
@@ -355,7 +355,7 @@ class JavaCaller(object):
 
         return path
 
-    def _run_java(self, *args: str) -> int:
+    def _run_java(self, *args: str):
         """
         Does the actual running of `JavaSpiNNaker`. Arguments are those that
         will be processed by the `main` method on the Java side.
@@ -369,54 +369,57 @@ class JavaCaller(object):
             params = [self._java_call] + self._java_properties \
                      + ['-jar', self._jar_file]
         params.extend(args)
-        return subprocess.call(params)
+        try:
+            subprocess.check_output(params, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as exc:
+            logger.error("Java Call resulted in an error")
+            updated = datetime.datetime.fromtimestamp(
+                os.path.getmtime(self._jar_file))
+            updated_str = (
+                f"{updated.year:04}-{updated.month:02}-{updated.day:02}"
+                f"-{updated.hour:02}-{updated.minute:02}")
+            logger.error(f"Jar {self._jar_file} was updated {updated_str}")
+            logger.error(f"Call was {params}")
+            logger.error(f"Output was {exc.output}")
+            log_file = os.path.join(
+                FecDataView.get_run_dir_path(), "jspin.log")
+            logger.error(f"Logging to: {log_file}")
+            raise
 
     def extract_all_data(self) -> None:
         """
         Gets all the data from the previously set placements
         and put these in the previously set database.
 
-        :raises PacmanExternalAlgorithmFailedToCompleteException:
+        :raises subprocess.CalledProcessError
             On failure of the Java code.
         """
         if not self._recording:
             return
 
         if self._gatherer_iptags is None:
-            result = self._run_java(
+            self._run_java(
                 'download', self._placement_json, self._machine_json(),
                 BufferDatabase.default_database_file(),
                 FecDataView.get_run_dir_path())
         else:
-            result = self._run_java(
+            self._run_java(
                 'gather', self._placement_json, self._machine_json(),
                 BufferDatabase.default_database_file(),
                 FecDataView.get_run_dir_path())
-        if result != 0:
-            log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
-            raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call exited with value " + str(result) + " see "
-                + str(log_file) + " for logged info")
 
     def load_system_data_specification(self) -> None:
         """
         Writes all the data specifications for system cores,
         uploading the result to the machine.
 
-        :raises PacmanExternalAlgorithmFailedToCompleteException:
+        :raises subprocess.CalledProcessError:
             On failure of the Java code.
         """
-        result = self._run_java(
+        self._run_java(
             'dse_sys', self._machine_json(),
             FecDataView.get_ds_database_path(),
             FecDataView.get_run_dir_path())
-        if result != 0:
-            log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
-            raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call exited with value " + str(result) + " see "
-                + str(log_file) + " for logged info")
 
     def load_app_data_specification(self, use_monitors: bool) -> None:
         """
@@ -428,22 +431,16 @@ class JavaCaller(object):
             `use_monitors` is set to `True`.
 
         :param bool use_monitors:
-        :raises PacmanExternalAlgorithmFailedToCompleteException:
+        :raises subprocess.CalledProcessError:
             On failure of the Java code.
         """
         if use_monitors:
-            result = self._run_java(
+            self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
                 FecDataView.get_ds_database_path(),
                 FecDataView.get_run_dir_path())
         else:
-            result = self._run_java(
+            self._run_java(
                 'dse_app', self._machine_json(),
                 FecDataView.get_ds_database_path(),
                 FecDataView.get_run_dir_path())
-        if result != 0:
-            log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
-            raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call exited with value " + str(result) + " see "
-                + str(log_file) + " for logged info")
