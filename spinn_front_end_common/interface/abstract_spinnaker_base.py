@@ -1953,7 +1953,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             try:
-                # Also used in recover from error where is is not all placements
+                # Also used in recover from error
                 placements_provenance_gatherer(
                     self._data_writer.get_n_placements(),
                     self._data_writer.iterate_placemements())
@@ -1978,7 +1978,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 timer.skip(str(ex))
                 return
 
-
     def _execute_profile_data_gatherer(self) -> None:
         """
         Runs, times and logs the ProfileDataGatherer if requested.
@@ -1993,7 +1992,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             except DataNotYetAvialable as ex:
                 timer.skip(str(ex))
                 return
-
 
     def _do_read_provenance(self) -> None:
         """
