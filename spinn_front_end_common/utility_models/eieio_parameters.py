@@ -50,17 +50,11 @@ class EIEIOParameters:
     :param bool check_keys:
         True if the keys of received events should be verified before sending
         (default False)
-    :param str send_buffer_partition_id:
-        The ID of the partition containing the edges down which the events are
-        to be sent
     :param bool reserve_reverse_ip_tag:
         True if the source should set up a tag through which it can receive
         packets; if port is set to `None` this can be used to enable the
         reception of packets on a randomly assigned port, which can be read
         from the database
-    :param str injection_partition:
-        If not `None`, will enable injection and specify the partition to send
-        injected keys with
     """
     receive_port: Optional[int] = None
     receive_sdp_port: int = SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value
@@ -70,6 +64,4 @@ class EIEIOParameters:
     prefix: Optional[int] = None
     prefix_type: Optional[EIEIOPrefix] = None
     check_keys: bool = False
-    send_buffer_partition_id: Optional[str] = None
     reserve_reverse_ip_tag: bool = False
-    injection_partition_id: Optional[str] = None
