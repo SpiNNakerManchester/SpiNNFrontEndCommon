@@ -735,7 +735,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(AbstractSupportsDatabaseInjection.injection_partition_id)
     def injection_partition_id(self) -> str:
-        assert self.is_in_injection_mode()
+        assert self.is_in_injection_mode
         routing_infos = FecDataView.get_routing_infos()
         parts = routing_infos.get_partitions_outgoing_from_vertex(self)
         # Should be exactly one partition here - verified elsewhere
