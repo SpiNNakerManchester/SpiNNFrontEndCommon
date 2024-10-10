@@ -128,9 +128,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "_first_machine_time_step", "_run_until_timesteps",
         "_receive_rate", "_receive_sdp_port",
         "_send_buffer", "_send_buffer_times", "_send_buffers",
-        "_send_buffer_partition_id", "_send_buffer_size",
-        "_injection_partition_id",
-        "_virtual_key", "_mask", "_prefix", "_prefix_type", "_check_keys")
+        "_send_buffer_size", "_virtual_key", "_mask", "_prefix",
+        "_prefix_type", "_check_keys")
 
     class _Regions(IntEnum):
         SYSTEM = 0
@@ -175,12 +174,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Get the defaults
             eieio_params = EIEIOParameters()
 
-        if (eieio_params.send_buffer_partition_id is not None and
-                eieio_params.injection_partition_id is not None):
-            raise ValueError(
-                "Can't specify both send_buffer_partition_id and"
-                " injection_partition_id")
-
         super().__init__(label, app_vertex, vertex_slice)
 
         self._reverse_iptags: List[ReverseIPtagResource] = []
@@ -200,7 +193,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._send_buffer: Optional[BufferedSendingRegion] = None
         self._first_machine_time_step: Optional[int] = None
         self._run_until_timesteps: Optional[int] = None
-        self._send_buffer_partition_id = eieio_params.send_buffer_partition_id
         self._send_buffer_size = 0
         n_buffer_times = 0
         if send_buffer_times is not None:
@@ -225,9 +217,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Set up for recording (if requested)
         self._is_recording = False
-
-        # set flag for checking if in injection mode
-        self._injection_partition_id = eieio_params.injection_partition_id
 
         # Sort out the keys to be used
         self._virtual_key = eieio_params.virtual_key
@@ -605,13 +594,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         routing_info = FecDataView.get_routing_infos()
         if self._virtual_key is None:
-            rinfo = None
-            if self._send_buffer_partition_id is not None:
-                rinfo = routing_info.get_routing_info_from_pre_vertex(
-                    self, self._send_buffer_partition_id)
-            if self._injection_partition_id is not None:
-                rinfo = routing_info.get_routing_info_from_pre_vertex(
-                    self, self._injection_partition_id)
+            rinfo = routing_info.get_single_routing_info_from_pre_vertex(self)
 
             # if no edge leaving this vertex, no key needed
             if rinfo is not None:
@@ -742,13 +725,21 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
     def is_in_injection_mode(self) -> bool:
-        return self._injection_partition_id is not None
+        # If the send buffer is not set and there is a virtual key,
+        # we are in injection mode (update the key first to ensure it is there)
+        # Note: we might be technically in injection mode but have no outgoing
+        # edges, and so no key, so we can't send anyway!
+        self.update_virtual_key()
+        return self._send_buffer is None and self._virtual_key is not None
 
     @property
     @overrides(AbstractSupportsDatabaseInjection.injection_partition_id)
     def injection_partition_id(self) -> str:
-        assert self._injection_partition_id is not None
-        return self._injection_partition_id
+        assert self.is_in_injection_mode()
+        routing_infos = FecDataView.get_routing_infos()
+        parts = routing_infos.get_partitions_outgoing_from_vertex(self)
+        # Should be exactly one partition here - verified elsewhere
+        return next(iter(parts))
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self) -> List[int]:

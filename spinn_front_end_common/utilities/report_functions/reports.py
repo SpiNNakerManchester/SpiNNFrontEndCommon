@@ -224,10 +224,8 @@ def _write_one_router_partition_report(
     routing_infos = FecDataView.get_routing_infos()
     for edge in partition.edges:
         for m_vertex in outgoing:
-            r_info = routing_infos.get_routing_info_from_pre_vertex(
+            r_info = routing_infos.get_safe_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
-            if r_info is None:
-                continue
             path = _search_route(m_vertex, r_info.key_and_mask)
             f.write(
                 f"    Edge '{edge.label}', "
@@ -538,21 +536,17 @@ def _write_vertex_virtual_keys(
     :param str part_id:
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
     """
-    rinfo = routing_infos.get_routing_info_from_pre_vertex(
+    rinfo = routing_infos.get_safe_routing_info_from_pre_vertex(
         pre_vertex, part_id)
-    # Might be None if the partition has no outgoing vertices e.g. a Poisson
-    # source replaced by SDRAM data passing
-    if rinfo is not None:
-        f.write(f"Vertex: {pre_vertex}\n")
-        f.write(f"    Partition: {part_id}, "
-                f"Routing Info: {rinfo.key_and_mask}\n")
-        for m_vertex in pre_vertex.splitter.get_out_going_vertices(part_id):
-            r_info = routing_infos.get_routing_info_from_pre_vertex(
-                m_vertex, part_id)
-            if r_info is not None:
-                f.write(f"    Machine Vertex: {m_vertex}, "
-                        f"Slice: {m_vertex.vertex_slice}, "
-                        f"Routing Info: {r_info.key_and_mask}\n")
+    f.write(f"Vertex: {pre_vertex}\n")
+    f.write(f"    Partition: {part_id}, "
+            f"Routing Info: {rinfo.key_and_mask}\n")
+    for m_vertex in pre_vertex.splitter.get_out_going_vertices(part_id):
+        r_info = routing_infos.get_safe_routing_info_from_pre_vertex(
+            m_vertex, part_id)
+        f.write(f"    Machine Vertex: {m_vertex}, "
+                f"Slice: {m_vertex.vertex_slice}, "
+                f"Routing Info: {r_info.key_and_mask}\n")
 
 
 def router_report_from_router_tables() -> None:

@@ -68,13 +68,9 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
 
             # Send buffer parameters
             send_buffer_times: _SendBufferTimes = None,
-            send_buffer_partition_id: Optional[str] = None,
 
             # Extra flag for input without a reserved port
             reserve_reverse_ip_tag: bool = False,
-
-            # Name of partition to inject keys with
-            injection_partition_id: Optional[str] = None,
 
             # splitter object
             splitter: Optional[AbstractSplitterCommon] = None):
@@ -116,14 +112,8 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         :type send_buffer_times:
             ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(~numpy.int32)) or None
-        :param send_buffer_partition_id: The ID of the partition containing
-            the edges down which the events are to be sent
-        :type send_buffer_partition_id: str or None
         :param bool reserve_reverse_ip_tag:
             Extra flag for input without a reserved port
-        :param str injection_partition:
-            If not `None`, will enable injection and specify the partition to
-            send injected keys with
         :param splitter: the splitter object needed for this vertex
         :type splitter:
             ~pacman.model.partitioner_splitters.AbstractSplitterCommon or None
@@ -139,8 +129,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             receive_port, receive_sdp_port,
             receive_tag.tag if receive_tag else None, receive_rate,
             virtual_key, prefix, prefix_type, check_keys,
-            send_buffer_partition_id, reserve_reverse_ip_tag,
-            injection_partition_id)
+            reserve_reverse_ip_tag)
 
         # Store the send buffering details
         self.__send_buffer_times = self._validate_send_buffer_times(
