@@ -162,10 +162,10 @@ class _GraphDataSpecificationWriter(object):
                         FecDataView.get_max_run_time_steps())
                     total_est_size += est_size
                     if size > est_size:
-                        logger.warning(
-                            "Region {} of vertex {} is bigger than "
-                            "expected: {} estimated vs. {} actual",
-                            i, vertex.label, est_size, size)
+                        raise ValueError(
+                            f"Region {i} of vertex {vertex.label} is bigger"
+                            f" than expected: {est_size} estimated vs. {size}"
+                            " actual")
 
         self._vertices_by_chip[x, y].append(vertex)
         self._sdram_usage[x, y] += total_size
