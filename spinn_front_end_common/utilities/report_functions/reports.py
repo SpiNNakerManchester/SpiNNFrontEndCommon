@@ -536,12 +536,16 @@ def _write_vertex_virtual_keys(
     :param str part_id:
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
     """
+    # If there are no outgoing machine vertices, then there is no routing
+    outgoing = pre_vertex.splitter.get_out_going_vertices(part_id)
+    if not outgoing:
+        return
     rinfo = routing_infos.get_safe_routing_info_from_pre_vertex(
         pre_vertex, part_id)
     f.write(f"Vertex: {pre_vertex}\n")
     f.write(f"    Partition: {part_id}, "
             f"Routing Info: {rinfo.key_and_mask}\n")
-    for m_vertex in pre_vertex.splitter.get_out_going_vertices(part_id):
+    for m_vertex in outgoing:
         r_info = routing_infos.get_safe_routing_info_from_pre_vertex(
             m_vertex, part_id)
         f.write(f"    Machine Vertex: {m_vertex}, "
