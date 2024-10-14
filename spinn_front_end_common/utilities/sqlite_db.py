@@ -67,7 +67,7 @@ class SQLiteDB(object):
             row_factory: Optional[Union[
                 Type[sqlite3.Row], Type[tuple]]] = sqlite3.Row,
             text_factory: Optional[Union[
-                Type[memoryview], Type[str]]] = memoryview,
+                Type[memoryview[bytes]], Type[str]]] = memoryview[bytes],
             case_insensitive_like: bool = True, timeout: float = 5.0):
         """
         :param str database_file:
