@@ -196,7 +196,7 @@ class CommandSenderMachineVertex(
         av = self.app_vertex
         assert av is not None
         for mc_key in self._keys_to_partition_id:
-            allocated_key = routing_infos.get_safe_first_key_from_pre_vertex(
+            allocated_key = routing_infos.get_key_from(
                 av, self._keys_to_partition_id[mc_key])
             if allocated_key != mc_key:
                 raise ConfigurationException(

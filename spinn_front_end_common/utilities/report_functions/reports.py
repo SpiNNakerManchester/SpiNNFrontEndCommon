@@ -224,7 +224,7 @@ def _write_one_router_partition_report(
     routing_infos = FecDataView.get_routing_infos()
     for edge in partition.edges:
         for m_vertex in outgoing:
-            r_info = routing_infos.get_safe_routing_info_from_pre_vertex(
+            r_info = routing_infos.get_info_from(
                 m_vertex, partition.identifier)
             path = _search_route(m_vertex, r_info.key_and_mask)
             f.write(
@@ -540,13 +540,13 @@ def _write_vertex_virtual_keys(
     outgoing = pre_vertex.splitter.get_out_going_vertices(part_id)
     if not outgoing:
         return
-    rinfo = routing_infos.get_safe_routing_info_from_pre_vertex(
+    rinfo = routing_infos.get_info_from(
         pre_vertex, part_id)
     f.write(f"Vertex: {pre_vertex}\n")
     f.write(f"    Partition: {part_id}, "
             f"Routing Info: {rinfo.key_and_mask}\n")
     for m_vertex in outgoing:
-        r_info = routing_infos.get_safe_routing_info_from_pre_vertex(
+        r_info = routing_infos.get_info_from(
             m_vertex, part_id)
         f.write(f"    Machine Vertex: {m_vertex}, "
                 f"Slice: {m_vertex.vertex_slice}, "

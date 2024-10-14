@@ -252,7 +252,7 @@ class LivePacketGatherMachineVertex(
             routing_info = FecDataView.get_routing_infos()
             spec.write_value(len(self._incoming_sources))
             for vertex, partition_id in self._incoming_sources:
-                r_info = routing_info.get_safe_routing_info_from_pre_vertex(
+                r_info = routing_info.get_info_from(
                     vertex, partition_id)
                 spec.write_value(r_info.key)
                 spec.write_value(r_info.mask)

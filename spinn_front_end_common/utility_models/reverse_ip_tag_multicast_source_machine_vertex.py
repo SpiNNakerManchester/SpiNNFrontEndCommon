@@ -594,7 +594,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         routing_info = FecDataView.get_routing_infos()
         if self._virtual_key is None:
-            rinfo = routing_info.get_single_routing_info_from_pre_vertex(self)
+            rinfo = routing_info.get_single_info_from(self)
 
             # if no edge leaving this vertex, no key needed
             if rinfo is not None:
@@ -737,7 +737,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def injection_partition_id(self) -> str:
         assert self.is_in_injection_mode
         routing_infos = FecDataView.get_routing_infos()
-        parts = routing_infos.get_partitions_outgoing_from_vertex(self)
+        parts = routing_infos.get_partitions_from(self)
         # Should be exactly one partition here - verified elsewhere
         return next(iter(parts))
 
