@@ -166,6 +166,14 @@ class _GraphDataSpecificationWriter(object):
                             f"Region {i} of vertex {vertex.label} is bigger"
                             f" than expected: {est_size} estimated vs. {size}"
                             " actual")
+            else:
+                total_est_size = sdram.get_total_sdram(
+                    FecDataView.get_max_run_time_steps())
+
+            if total_size > total_est_size:
+                raise ValueError(
+                    f"Data of vertex {vertex.label} is bigger than expected:"
+                    f" estimated: {total_est_size} vs. actual: {total_size}")
 
         self._vertices_by_chip[x, y].append(vertex)
         self._sdram_usage[x, y] += total_size
