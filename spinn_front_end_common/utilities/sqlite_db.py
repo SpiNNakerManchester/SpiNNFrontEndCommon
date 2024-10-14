@@ -66,8 +66,10 @@ class SQLiteDB(object):
             read_only: bool = False, ddl_file: Optional[str] = None,
             row_factory: Optional[Union[
                 Type[sqlite3.Row], Type[tuple]]] = sqlite3.Row,
-            text_factory: Optional[Union[
-                Type[memoryview], Type[str]]] = memoryview,
+            # TODO: Replace in future once mypy is fixed
+            # text_factory: Optional[Union[
+            #     Type[memoryview], Type[str]]] = memoryview,
+            text_factory: Optional[type] = memoryview,
             case_insensitive_like: bool = True, timeout: float = 5.0):
         """
         :param str database_file:

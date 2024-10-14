@@ -32,7 +32,8 @@ MILLIWATTS_PER_FPGA: Final = 0.000584635
 
 #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
 #: Massively-Parallel Neural Network Simulation)
-JOULES_PER_SPIKE: Final = 0.000000000800
+# - 25pJ per bit - spike packets are 40 bits so 1nJ per spike
+JOULES_PER_SPIKE: Final = 0.000000001000
 
 #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
 #: Massively-Parallel Neural Network Simulation)

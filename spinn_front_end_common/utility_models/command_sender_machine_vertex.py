@@ -196,14 +196,14 @@ class CommandSenderMachineVertex(
         av = self.app_vertex
         assert av is not None
         for mc_key in self._keys_to_partition_id:
-            allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
+            allocated_key = routing_infos.get_key_from(
                 av, self._keys_to_partition_id[mc_key])
-            if allocated_mc_key != mc_key:
+            if allocated_key != mc_key:
                 raise ConfigurationException(
                     f"The command sender {self._label} has requested key "
                     f"{mc_key} for outgoing partition "
                     f"{self._keys_to_partition_id[mc_key]}, but the keys "
-                    f"allocated to it ({allocated_mc_key}) do not match. This "
+                    f"allocated to it ({allocated_key}) do not match. This "
                     "will cause errors in the external devices support and "
                     "therefore needs fixing")
 

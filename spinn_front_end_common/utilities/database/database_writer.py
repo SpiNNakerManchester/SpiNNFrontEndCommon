@@ -248,15 +248,12 @@ class DatabaseWriter(SQLiteDB):
                 atom_keys = list(m_vertex.app_vertex.get_atom_key_map(
                     m_vertex, partition_id, routing_infos))
             else:
-                r_info = routing_infos.get_routing_info_from_pre_vertex(
+                r_info = routing_infos.get_info_from(
                     m_vertex, partition_id)
-                # r_info could be None if there are no outgoing edges,
-                # at which point there is nothing to do here anyway
-                if r_info is not None:
-                    vertex_slice = m_vertex.vertex_slice
-                    keys = get_keys(r_info.key, vertex_slice)
-                    start = vertex_slice.lo_atom
-                    atom_keys = [(i, k) for i, k in enumerate(keys, start)]
+                vertex_slice = m_vertex.vertex_slice
+                keys = get_keys(r_info.key, vertex_slice)
+                start = vertex_slice.lo_atom
+                atom_keys = [(i, k) for i, k in enumerate(keys, start)]
             for _atom, key in atom_keys:
                 if key in key_vertices:
                     raise KeyError(

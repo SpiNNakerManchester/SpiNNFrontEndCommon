@@ -137,7 +137,7 @@ def _report_iobuf_messages(
     error_entries, warn_entries = iobuf_reader.extract_iobuf()
     if logger is not None:
         for entry in warn_entries:
-            logger.warn("{}", entry)
+            logger.warning("{}", entry)
         for entry in error_entries:
             logger.error("{}", entry)
 
