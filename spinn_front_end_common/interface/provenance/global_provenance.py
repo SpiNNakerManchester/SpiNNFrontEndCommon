@@ -402,7 +402,7 @@ class GlobalProvenance(SQLiteDB):
             return 0
 
     def retreive_log_messages(
-            self, min_level: int = 0) -> List[Tuple[int, str]]:
+            self, min_level: int = 0) -> List[str]:
         """
         Retrieves all log messages at or above the min_level
 
