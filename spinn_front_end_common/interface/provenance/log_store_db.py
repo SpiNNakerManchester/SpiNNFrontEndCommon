@@ -43,7 +43,7 @@ class LogStoreDB(LogStore):
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(
-            self, min_level: int = 0) -> List[Tuple[int, str]]:
+            self, min_level: int = 0) -> List[str]:
         with GlobalProvenance() as db:
             return db.retreive_log_messages(min_level)
 
