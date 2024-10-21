@@ -72,6 +72,9 @@ static uint32_t n_sync_steps;
 //! The number simulation timestep at the next synchronisation
 static uint32_t next_sync_step;
 
+//! Whether the simulation has been manually "paused"
+static bool simulation_paused = false;
+
 //! \brief Store basic provenance data
 //! \return the address after which new provenance data can be stored
 static void *simulation_store_provenance_data(void) {
@@ -271,6 +274,14 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
         spin1_msg_free(msg);
         break;
 
+    case CMD_PAUSE:
+        // pause the simulation
+        log_info("Pausing the simulation");
+        simulation_paused = true;
+        send_ok_response(msg);
+        spin1_msg_free(msg);
+        break;
+
     default:
         // should never get here
         log_error("received packet with unknown command code %d",
@@ -415,6 +426,12 @@ void simulation_set_sync_steps(uint32_t n_steps) {
 }
 
 bool simulation_is_finished(void) {
+    // If we are manually paused, report yes once, then go back to no
+    if (simulation_paused) {
+        simulation_paused = false;
+        return true;
+    }
+
     bool finished = ((*pointer_to_infinite_run != TRUE) &&
             (*pointer_to_current_time >= *pointer_to_simulation_time));
     // If we are finished, or not running synchronized, return finished

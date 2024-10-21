@@ -63,7 +63,10 @@ typedef enum simulation_commands {
     //! Asks the application to gather provenance data
     PROVENANCE_DATA_GATHERING = 8,
     //! Clears the IOBUF
-    IOBUF_CLEAR = 9
+    IOBUF_CLEAR = 9,
+    //! Asks the application to pause.  This relies on the application using
+    //! simulation_is_finished which can then handle the pause status better.
+    CMD_PAUSE = 10
 } simulation_commands;
 
 //! the definition of the callback used by provenance data functions
