@@ -409,8 +409,7 @@ def _write_one_chip_application_placement(f: TextIO, chip: Chip):
             f.write(f"              Model: {vertex.__class__.__name__}\n")
 
         sdram = vertex.sdram_required
-        f.write(f"              SDRAM required: {sdram.fixed}; "
-                f"{sdram.per_timestep} per timestep\n\n")
+        f.write(f"              {sdram.fixed}\n\n")
         if total_sdram is None:
             total_sdram = sdram
         else:
