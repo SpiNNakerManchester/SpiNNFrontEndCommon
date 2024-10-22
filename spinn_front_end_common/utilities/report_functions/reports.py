@@ -409,8 +409,7 @@ def _write_one_chip_application_placement(f: TextIO, chip: Chip):
             f.write(f"              Model: {vertex.__class__.__name__}\n")
 
         sdram = vertex.sdram_required
-        f.write(f"              SDRAM required: {sdram.fixed}; "
-                f"{sdram.per_timestep} per timestep\n\n")
+        f.write(f"              {sdram.fixed}\n\n")
         if total_sdram is None:
             total_sdram = sdram
         else:
@@ -463,7 +462,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
     :param bool details: If True will get costs printed by regions
     """
     f.write(f"Based on {timesteps} timesteps\n\n")
-    used_sdram_by_chip = dict()
+    sdram_by_chip = dict()
     placements = sorted(
         FecDataView.iterate_placemements(),
         key=lambda x: x.vertex.label or "")
@@ -477,23 +476,27 @@ def _sdram_usage_report_per_chip_with_timesteps(
                 preamble=f"core ({x},{y},{p})", target=f)
         else:
             f.write(
-                f"SDRAM reqs forx core ({x},{y},{p}) is "
+                f"SDRAM reqs for core ({x},{y},{p}) is "
                 f"{int(core_sdram / 1024.0)} KB ({core_sdram} bytes)"
                 f" for {placement}\n")
         key = (x, y)
-        if key not in used_sdram_by_chip:
-            used_sdram_by_chip[key] = core_sdram
+        if key not in sdram_by_chip:
+            sdram_by_chip[key] = vertex_sdram
         else:
-            used_sdram_by_chip[key] += core_sdram
+            sdram_by_chip[key] += vertex_sdram
     for chip in progress.over(FecDataView.get_machine().chips, end_progress):
         try:
-            used_sdram = used_sdram_by_chip[chip.x, chip.y]
-            if used_sdram:
+            if chip in sdram_by_chip:
+                chip_sdram = sdram_by_chip[chip]
+                used_sdram = chip_sdram.get_total_sdram(timesteps)
                 f.write(
                     f"**** Chip: ({chip.x}, {chip.y}) has total memory usage "
                     f"of {int(used_sdram / 1024.0)} KB ({used_sdram} bytes) "
                     f"out of a max of "
-                    f"{int(chip.sdram / 1024.0)} KB ({chip.sdram} bytes)\n\n")
+                    f"{int(chip.sdram / 1024.0)} KB ({chip.sdram} bytes)\n")
+                f.write(
+                    f"     Based on {chip_sdram}\n\n")
+
         except KeyError:
             # Do Nothing
             pass
