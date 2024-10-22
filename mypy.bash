@@ -25,4 +25,4 @@ man="../SpiNNMan/spinnman"
 pacman="../PACMAN/pacman"
 spalloc="../spalloc/spalloc_client"
 
-mypy $utils $machine $man $pacman $spalloc spinn_front_end_common
+mypy --python-version 3.8 $$utils $machine $man $pacman $spalloc spinn_front_end_common
