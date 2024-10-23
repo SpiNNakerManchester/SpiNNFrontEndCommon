@@ -214,6 +214,9 @@ Variables</h2></td></tr>
 <tr class="memitem:a5b77e4cda1979070114549b0d5be9fdd" id="r_a5b77e4cda1979070114549b0d5be9fdd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="live__packet__gather_8c.html#ad51d37ac38989c1d089da8aa0d1bc1d7">static</a> <a class="el" href="live__packet__gather_8c.html#ad51d37ac38989c1d089da8aa0d1bc1d7">uint32_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a5b77e4cda1979070114549b0d5be9fdd">next_sync_step</a></td></tr>
 <tr class="memdesc:a5b77e4cda1979070114549b0d5be9fdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number simulation timestep at the next synchronisation.  <br /></td></tr>
 <tr class="separator:a5b77e4cda1979070114549b0d5be9fdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8287431bd0298b4ee139722699e53fa3" id="r_a8287431bd0298b4ee139722699e53fa3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="live__packet__gather_8c.html#ad51d37ac38989c1d089da8aa0d1bc1d7">static</a> <a class="el" href="live__packet__gather_8c.html#ad51d37ac38989c1d089da8aa0d1bc1d7">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a8287431bd0298b4ee139722699e53fa3">simulation_paused</a> = <a class="el" href="live__packet__gather_8c.html#ad51d37ac38989c1d089da8aa0d1bc1d7">false</a></td></tr>
+<tr class="memdesc:a8287431bd0298b4ee139722699e53fa3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the simulation has been manually "paused".  <br /></td></tr>
+<tr class="separator:a8287431bd0298b4ee139722699e53fa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>implementation of <a class="el" href="simulation_8h.html" title="Simulation Functions Header File.">simulation.h</a> </p>
@@ -277,7 +280,7 @@ Variables</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>the address after which new provenance data can be stored </dd></dl>
 <p>gets access to the diagnostics object from SARK</p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00077">77</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00080">80</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -307,7 +310,7 @@ Variables</h2></td></tr>
 
 <p>Run the provenance data storage. </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00094">94</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00097">97</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -329,7 +332,7 @@ Variables</h2></td></tr>
 
 <p>Starts the simulation running, returning when it is complete,. </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00105">105</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00108">108</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -357,7 +360,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00110">110</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00113">113</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -381,7 +384,7 @@ Variables</h2></td></tr>
 <p>a helper method for people not using the auto pause and resume functionality</p>
 <p>Helper when not using the auto pause and resume functionality </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00124">124</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00127">127</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -403,7 +406,7 @@ Variables</h2></td></tr>
 
 <p>Indicates that all data has been written and the core is going idle, so any data can now be read. </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00128">128</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00131">131</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -439,7 +442,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00134">134</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00137">137</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -475,7 +478,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00149">149</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00152">152</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -522,7 +525,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00162">162</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00165">165</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -551,7 +554,7 @@ Variables</h2></td></tr>
 
 <p>Set the CPU state depending on the event wait state. </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00171">171</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00174">174</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -598,7 +601,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00184">184</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00187">187</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -645,7 +648,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00285">285</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00296">296</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -685,7 +688,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if successful, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00296">296</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00307">307</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -713,7 +716,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00306">306</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00317">317</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -760,7 +763,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00313">313</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00324">324</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -800,7 +803,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if successful, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00319">319</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00330">330</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -828,7 +831,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00339">339</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00350">350</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -915,7 +918,7 @@ Variables</h2></td></tr>
 </li>
 </ol>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00343">343</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00354">354</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -943,7 +946,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00387">387</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00398">398</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -982,7 +985,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00391">391</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00402">402</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -1010,7 +1013,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00398">398</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00409">409</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -1038,7 +1041,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00402">402</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00413">413</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -1066,7 +1069,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00406">406</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00417">417</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -1094,7 +1097,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00410">410</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00421">421</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -1117,7 +1120,7 @@ Variables</h2></td></tr>
 <p>determine if the simulation is finished. Will also pause the simulation for resynchronisation if requested (see simulation_set_sync_steps). </p>
 <dl class="section return"><dt>Returns</dt><dd>true if the simulation is finished, false if not. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00417">417</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00428">428</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -1457,6 +1460,32 @@ Variables</h2></td></tr>
 <p>The number simulation timestep at the next synchronisation. </p>
 
 <p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00073">73</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+
+</div>
+</div>
+<a id="a8287431bd0298b4ee139722699e53fa3" name="a8287431bd0298b4ee139722699e53fa3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8287431bd0298b4ee139722699e53fa3">&#9670;&#160;</a></span>simulation_paused</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="live__packet__gather_8c.html#ad51d37ac38989c1d089da8aa0d1bc1d7">bool</a> simulation_paused = <a class="el" href="live__packet__gather_8c.html#ad51d37ac38989c1d089da8aa0d1bc1d7">false</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Whether the simulation has been manually "paused". </p>
+
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00076">76</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>

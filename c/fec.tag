@@ -767,6 +767,12 @@
       <anchor>aecb935c0ee1f0574fe403361369301d5ae1f9d7108bb374a827d2908be32b697e</anchor>
       <arglist></arglist>
     </member>
+    <member kind="enumvalue">
+      <name>CMD_PAUSE</name>
+      <anchorfile>simulation_8h.html</anchorfile>
+      <anchor>aecb935c0ee1f0574fe403361369301d5a22507047922c1ce8c921c8d193e67126</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function">
       <type>bool</type>
       <name>simulation_initialise</name>
@@ -2062,6 +2068,13 @@
       <name>next_sync_step</name>
       <anchorfile>simulation_8c.html</anchorfile>
       <anchor>a5b77e4cda1979070114549b0d5be9fdd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static bool</type>
+      <name>simulation_paused</name>
+      <anchorfile>simulation_8c.html</anchorfile>
+      <anchor>a8287431bd0298b4ee139722699e53fa3</anchor>
       <arglist></arglist>
     </member>
   </compound>
