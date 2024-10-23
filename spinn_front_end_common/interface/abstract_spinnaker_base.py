@@ -557,8 +557,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Only binaries that use the simulation interface can be"
                     " run more than once")
 
-        self._adjust_config(run_time)
-
         # Install the Control-C handler
         if self.__is_main_thread():
             signal.signal(signal.SIGINT, self.__signal_handler)
@@ -672,10 +670,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.info("Running forever")
             self._do_run(None, n_sync_steps)
         else:
-            logger.error("Current simulation could run for {}ms",
+            logger.warning("Current simulation could run for {}ms",
                          self._data_writer.get_max_run_time_steps())
-            raise ConfigurationException(
-                "Run forever not possible without setting max_record_time")
+            logger.info("Running forever hoping a stop happens "
+                        "before data space runs out.")
+            self._do_run(None, n_sync_steps)
+            #raise ConfigurationException(
+            #    "Run forever not possible without setting max_record_time")
 
         # Indicate that the signal handler needs to act
         if self.__is_main_thread():

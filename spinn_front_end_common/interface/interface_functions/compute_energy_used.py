@@ -69,9 +69,6 @@ def compute_energy_used() -> PowerUsed:
 
     :rtype: PowerUsed
     """
-    ts = FecDataView.get_current_run_timesteps()
-    assert ts is not None, \
-        "energy reporting not supported in run forever mode"
     machine = FecDataView.get_machine()
     with GlobalProvenance() as db:
         dsg_time = db.get_category_timer_sum(TimerCategory.DATA_GENERATION)
@@ -97,7 +94,11 @@ def compute_energy_used() -> PowerUsed:
     power_used.data_gen_time_secs = dsg_time / _MS_PER_SECOND
     power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
-    runtime_total_ms = ts * FecDataView.get_time_scale_factor()
+    ts = FecDataView.get_current_run_timesteps()
+    if ts is None:
+        runtime_total_ms = 0  # TODO FIX
+    else:
+        runtime_total_ms = ts * FecDataView.get_time_scale_factor()
     # TODO: extraction time as currently defined is part of execution time,
     #       so for now don't add it on, but revisit this in the future
     total_booted_time = execute_time + load_time
