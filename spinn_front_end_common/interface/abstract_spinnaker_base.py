@@ -2433,6 +2433,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.is_stop_already_requested():
             logger.warning("Second Request to stop_run ignored")
             return
+        if self._data_writer.get_current_run_timesteps() is not None:
+            logger.exception(
+                "Stop run has little to no affect if not running forever")
         with self._state_condition:
             self._data_writer.request_stop()
             self._state_condition.notify_all()
