@@ -190,7 +190,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :type increment: int or None
         """
         if increment is None:
-            if self.__fec_data._current_run_timesteps != 0:
+            current = self.__fec_data._current_run_timesteps
+            if current != 0 and current is not None:
                 raise NotImplementedError("Run forever after another run")
             self.__fec_data._current_run_timesteps = None
             return

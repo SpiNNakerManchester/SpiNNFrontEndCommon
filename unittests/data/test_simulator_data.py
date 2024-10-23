@@ -122,8 +122,7 @@ class TestSimulatorData(unittest.TestCase):
         writer.increment_current_run_timesteps(None)
         self.assertEqual(0, FecDataView.get_first_machine_time_step())
         self.assertIsNone(FecDataView.get_current_run_timesteps())
-        with self.assertRaises(NotImplementedError):
-            writer.increment_current_run_timesteps(None)
+        writer.increment_current_run_timesteps(None)
         with self.assertRaises(NotImplementedError):
             writer.increment_current_run_timesteps(100)
 

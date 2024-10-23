@@ -13,13 +13,19 @@
 # limitations under the License.
 
 import logging
-import time
+from time import sleep
+import struct
+from threading import Condition
 from typing import Optional
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
+from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp.enums import Signal
-from spinnman.model.enums import ExecutableType
+from spinnman.model.enums import (
+    ExecutableType, SDP_PORTS, SDP_RUNNING_MESSAGE_CODES, CPUState)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.exceptions import (
+    ConfigurationException, ExecutableFailedToStopException)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 
@@ -27,10 +33,13 @@ SAFETY_FINISH_TIME = 0.1
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
+_ONE_WORD = struct.Struct("<I")
+_LIMIT = 10
+
 
 def application_runner(
         runtime: Optional[float], time_threshold: Optional[float],
-        run_until_complete: bool):
+        run_until_complete: bool, state_condition: Condition):
     """
     Ensures all cores are initialised correctly, ran, and completed
     successfully.
@@ -38,9 +47,11 @@ def application_runner(
     :param int runtime:
     :param int time_threshold:
     :param bool run_until_complete:
+    :param Condition state_condition:
     :raises ConfigurationException:
     """
-    _ApplicationRunner().run_app(runtime, time_threshold, run_until_complete)
+    _ApplicationRunner().run_app(
+        runtime, time_threshold, run_until_complete, state_condition)
 
 
 class _ApplicationRunner(object):
@@ -57,11 +68,12 @@ class _ApplicationRunner(object):
 
     def run_app(
             self, runtime: Optional[float], time_threshold: Optional[float],
-            run_until_complete: bool = False):
+            run_until_complete: bool, state_condition: Condition):
         """
         :param int runtime:
         :param int time_threshold:
         :param bool run_until_complete:
+        :param Condition state_condition:
         :return: Number of synchronisation changes
         :rtype: int
         :raises ConfigurationException:
@@ -96,15 +108,18 @@ class _ApplicationRunner(object):
         notification_interface.send_start_resume_notification()
 
         if runtime is None and not run_until_complete:
-            # Do NOT stop the buffer manager at end; app is using it still
-            logger.info("Application is set to run forever; exiting")
+            with state_condition:
+                while FecDataView.is_no_stop_requested():
+                    state_condition.wait()
+            self.__send_pause()
+            self._wait_for_end()
         else:
             # Wait for the application to finish
             self._run_wait(
                 run_until_complete, runtime, time_threshold)
 
-            # Send stop notification to external applications
-            notification_interface.send_stop_pause_notification()
+        # Send stop notification to external applications
+        notification_interface.send_stop_pause_notification()
 
     def _run_wait(
             self, run_until_complete: bool, runtime: Optional[float],
@@ -123,7 +138,7 @@ class _ApplicationRunner(object):
             logger.info(
                 "Application started; waiting {}s for it to stop",
                 time_to_wait)
-            time.sleep(time_to_wait)
+            sleep(time_to_wait)
             self._wait_for_end(timeout=time_threshold)
         else:
             logger.info("Application started; waiting until finished")
@@ -190,3 +205,53 @@ class _ApplicationRunner(object):
             sync_signal = Signal.SYNC0
 
         return sync_signal
+
+    def __send_pause(self) -> None:
+        all_core_subsets = FecDataView.get_executable_types()[
+            ExecutableType.USES_SIMULATION_INTERFACE]
+        total_processors = len(all_core_subsets)
+        last_finished_count = 0
+        with ProgressBar(total_processors, "Pausing application") as progress:
+            # check that the right number of processors are finished
+            while (processors_finished := self.__txrx.get_core_state_count(
+                    self.__app_id, CPUState.READY)) != total_processors:
+                if processors_finished > last_finished_count:
+                    progress.update(processors_finished - last_finished_count)
+                    last_finished_count = processors_finished
+
+                processors_rte = self.__txrx.get_core_state_count(
+                    self.__app_id, CPUState.RUN_TIME_EXCEPTION)
+                processors_watchdogged = self.__txrx.get_core_state_count(
+                    self.__app_id, CPUState.WATCHDOG)
+
+                if processors_rte > 0 or processors_watchdogged > 0:
+                    cpu_infos = self.__txrx.get_cpu_infos(
+                        all_core_subsets,
+                        [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG], True)
+                    logger.error(cpu_infos.get_status_string())
+
+                    raise ExecutableFailedToStopException(
+                        f"{processors_rte + processors_watchdogged} of "
+                        f"{total_processors} processors went into an error "
+                        "state when shutting down")
+
+                successful_cores_finished = self.__txrx.get_cpu_infos(
+                    all_core_subsets, CPUState.READY, include=True)
+
+                for core_subset in all_core_subsets:
+                    for processor in core_subset.processor_ids:
+                        if not successful_cores_finished.is_core(
+                                core_subset.x, core_subset.y, processor):
+                            self.__send_pause_message(
+                                core_subset.x, core_subset.y, processor)
+                sleep(0.5)
+
+    def __send_pause_message(self, x, y, p):
+        sdp_port = SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value
+        code = _ONE_WORD.pack(
+            SDP_RUNNING_MESSAGE_CODES.SDP_PAUSE_ID_CODE.value)
+        self.__txrx.send_sdp_message(SDPMessage(
+            sdp_header=SDPHeader(
+                flags=SDPFlag.REPLY_NOT_EXPECTED, destination_port=sdp_port,
+                destination_chip_x=x, destination_chip_y=y, destination_cpu=p),
+            data=code))

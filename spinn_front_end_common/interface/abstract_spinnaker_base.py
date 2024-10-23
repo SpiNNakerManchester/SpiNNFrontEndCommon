@@ -671,10 +671,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 not is_per_timestep_sdram):
             logger.info("Running forever")
             self._do_run(None, n_sync_steps)
-            logger.info("Waiting for stop request")
-            with self._state_condition:
-                while self._data_writer.is_no_stop_requested():
-                    self._state_condition.wait()
         else:
             logger.info("Running forever in steps of {}ms",
                         self._data_writer.get_max_run_time_steps())
@@ -2103,7 +2099,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 time_threshold = get_config_int(
                     "Machine", "post_simulation_overrun_before_error")
             application_runner(
-                run_time, time_threshold, self._run_until_complete)
+                run_time, time_threshold, self._run_until_complete,
+                self._state_condition)
 
     def _execute_extract_iobuff(self) -> None:
         """
@@ -2174,8 +2171,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_dsg_region_reloader()
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
-        if n_machine_time_steps is not None or self._run_until_complete:
-            self._do_extract_from_machine()
+        self._do_extract_from_machine()
         # reset at the end of each do_run cycle
         self._report_drift(start=False)
         self._execute_control_sync(True)
