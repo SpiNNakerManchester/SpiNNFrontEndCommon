@@ -670,9 +670,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.info("Running forever")
             self._do_run(None, n_sync_steps)
         else:
-            logger.warning("Due to recording this simulation should not be run "
-                           "longer than {}ms",
-                         self._data_writer.get_max_run_time_steps())
+            logger.warning("Due to recording this simulation "
+                           "should not be run longer than {}ms",
+                           self._data_writer.get_max_run_time_steps())
             logger.info("Running until stop is called.")
             self._do_run(None, n_sync_steps)
 
