@@ -96,9 +96,9 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
         data_extraction_ms, machine, version.n_scamp_cores + 2,
         version.n_scamp_cores + 1)
 
-    run_router_packets = _extract_router_packets("Run")
-    load_router_packets = _extract_router_packets("Load")
-    extraction_router_packets = _extract_router_packets("Extract")
+    run_router_packets = _extract_router_packets("Run", version)
+    load_router_packets = _extract_router_packets("Load", version)
+    extraction_router_packets = _extract_router_packets("Extract", version)
 
     # TODO get_machine not include here
     return compute_energy_over_time(
@@ -157,15 +157,12 @@ def _make_extra_monitor_core_use(
         time_ms: int, machine: Machine, extra_monitors_per_board: int,
         extra_monitors_per_chip: int) -> ChipActiveTime:
     time_s = time_ms / _MS_PER_SECOND
-    core_use = defaultdict(list)
+    core_use = {}
     for chip in machine.chips:
         n_monitors = extra_monitors_per_chip
         if chip.ip_address is not None:
             n_monitors += extra_monitors_per_board
-        for core in range(n_monitors):
-            core_use[chip.x, chip.y].append(time_s)
-        for _ in range(core, chip.n_processors):
-            core_use[chip.x, chip.y].append(0.0)
+        core_use[chip.x, chip.y] = n_monitors * time_s
     return core_use
 
 
