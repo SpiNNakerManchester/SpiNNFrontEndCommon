@@ -96,7 +96,7 @@ def compute_energy_used() -> PowerUsed:
 
     ts = FecDataView.get_current_run_timesteps()
     if ts is None:
-        runtime_total_ms = 0  # TODO FIX
+        runtime_total_ms = 0.0  # TODO FIX
     else:
         runtime_total_ms = ts * FecDataView.get_time_scale_factor()
     # TODO: extraction time as currently defined is part of execution time,
