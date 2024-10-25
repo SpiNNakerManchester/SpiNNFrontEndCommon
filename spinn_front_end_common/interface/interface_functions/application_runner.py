@@ -109,8 +109,7 @@ class _ApplicationRunner(object):
 
         if runtime is None and not run_until_complete:
             with state_condition:
-                while FecDataView.is_no_stop_requested():
-                    state_condition.wait()
+                state_condition.wait()
             self.__send_pause()
             self._wait_for_end()
         else:
