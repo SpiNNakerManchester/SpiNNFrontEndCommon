@@ -115,14 +115,14 @@ class _ApplicationRunner(object):
         else:
             # Wait for the application to finish
             self._run_wait(
-                run_until_complete, runtime, time_threshold)
+                run_until_complete, runtime, time_threshold, state_condition)
 
         # Send stop notification to external applications
         notification_interface.send_stop_pause_notification()
 
     def _run_wait(
             self, run_until_complete: bool, runtime: Optional[float],
-            time_threshold: Optional[float]):
+            time_threshold: Optional[float], state_condition: Condition):
         """
         :param bool run_until_complete:
         :param int runtime:
@@ -133,11 +133,14 @@ class _ApplicationRunner(object):
             factor = (FecDataView.get_time_scale_factor() /
                       MICRO_TO_MILLISECOND_CONVERSION)
             scaled_runtime = runtime * factor
-            time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
             logger.info(
                 "Application started; waiting {}s for it to stop",
-                time_to_wait)
-            sleep(time_to_wait)
+                scaled_runtime + SAFETY_FINISH_TIME)
+            with state_condition:
+                state_condition.wait(scaled_runtime - SAFETY_FINISH_TIME)
+                if not FecDataView.is_no_stop_requested():
+                    self.__send_pause()
+            sleep(SAFETY_FINISH_TIME * 2)
             self._wait_for_end(timeout=time_threshold)
         else:
             logger.info("Application started; waiting until finished")
