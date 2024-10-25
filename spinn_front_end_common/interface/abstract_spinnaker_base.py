@@ -1762,7 +1762,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         with FecTimer("Load Application data specification",
-                      TimerWork.LOADING) as timer:
+                      TimerWork.LOADING_DATA) as timer:
             if timer.skip_if_virtual_board():
                 return
             return load_application_data_specs()
@@ -1898,6 +1898,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._report_memory_on_chip()
             self._report_compressed(compressed)
         self._execute_application_load_executables()
+        self._execute_router_provenance_gatherer("Load", TimerWork.LOADING)
 
         FecTimer.end_category(TimerCategory.LOADING)
 
@@ -1957,19 +1958,20 @@ class AbstractSpinnakerBase(ConfigHandler):
                 timer.skip(str(ex))
                 return
 
-    def _execute_router_provenance_gatherer(self) -> None:
+    def _execute_router_provenance_gatherer(
+            self, prefix: str, phase: TimerWork) -> None:
         """
         Runs, times and log the RouterProvenanceGatherer if requested.
         """
         with FecTimer(
-                "Router provenance gatherer", TimerWork.EXTRACTING) as timer:
+                "Router provenance gatherer", phase) as timer:
             if timer.skip_if_cfg_false("Reports",
                                        "read_router_provenance_data"):
                 return
             if timer.skip_if_virtual_board():
                 return
             try:
-                router_provenance_gatherer()
+                router_provenance_gatherer(prefix)
             except DataNotYetAvialable as ex:
                 timer.skip(str(ex))
                 return
@@ -1997,7 +1999,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._execute_graph_provenance_gatherer()
         self._execute_placements_provenance_gatherer()
-        self._execute_router_provenance_gatherer()
         self._execute_profile_data_gatherer()
 
     def _report_energy(self) -> None:
@@ -2098,9 +2099,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 time_threshold = get_config_int(
                     "Machine", "post_simulation_overrun_before_error")
-            application_runner(
-                run_time, time_threshold, self._run_until_complete,
-                self._state_condition)
+            self._data_writer.increment_measured_run_time_ms(
+                application_runner(
+                    run_time, time_threshold, self._run_until_complete,
+                    self._state_condition))
 
     def _execute_extract_iobuff(self) -> None:
         """
@@ -2131,11 +2133,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param run_time: the run duration in milliseconds.
         :type run_time: int or None
         """
+        self._execute_router_provenance_gatherer("Run", TimerWork.EXTRACTING)
+        for chip in FecDataView.get_machine().chips:
+            FecDataView().get_transceiver().clear_router_diagnostic_counters(
+                chip.x, chip.y)
         self._execute_extract_iobuff()
         self._execute_buffer_extractor()
         self._execute_clear_io_buf()
+        self._execute_router_provenance_gatherer(
+            "Extract", TimerWork.EXTRACTING)
 
-        # FinaliseTimingData never needed as just pushed self._ to inputs
         self._do_read_provenance()
         self._report_energy()
         self._do_provenance_reports()

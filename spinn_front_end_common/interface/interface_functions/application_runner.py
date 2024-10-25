@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from time import sleep
+from time import sleep, time
 import struct
 from threading import Condition
 from typing import Optional
@@ -35,11 +35,12 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 _ONE_WORD = struct.Struct("<I")
 _LIMIT = 10
+SECONDS_TO_MILLISECONDS_CONVERSION = 1000.0
 
 
 def application_runner(
         runtime: Optional[float], time_threshold: Optional[float],
-        run_until_complete: bool, state_condition: Condition):
+        run_until_complete: bool, state_condition: Condition) -> int:
     """
     Ensures all cores are initialised correctly, ran, and completed
     successfully.
@@ -48,9 +49,10 @@ def application_runner(
     :param int time_threshold:
     :param bool run_until_complete:
     :param Condition state_condition:
+    :return: The measured execution time in milliseconds
     :raises ConfigurationException:
     """
-    _ApplicationRunner().run_app(
+    return _ApplicationRunner().run_app(
         runtime, time_threshold, run_until_complete, state_condition)
 
 
@@ -68,13 +70,13 @@ class _ApplicationRunner(object):
 
     def run_app(
             self, runtime: Optional[float], time_threshold: Optional[float],
-            run_until_complete: bool, state_condition: Condition):
+            run_until_complete: bool, state_condition: Condition) -> int:
         """
         :param int runtime:
         :param int time_threshold:
         :param bool run_until_complete:
         :param Condition state_condition:
-        :return: Number of synchronisation changes
+        :return: The measured time in milliseconds
         :rtype: int
         :raises ConfigurationException:
         """
@@ -104,6 +106,8 @@ class _ApplicationRunner(object):
         # (sending to all is just as safe)
         self._send_sync_signal()
 
+        start = time()
+
         # Send start notification to external applications
         notification_interface.send_start_resume_notification()
 
@@ -118,8 +122,12 @@ class _ApplicationRunner(object):
             self._run_wait(
                 run_until_complete, runtime, time_threshold)
 
+        end = time()
+
         # Send stop notification to external applications
         notification_interface.send_stop_pause_notification()
+
+        return int(round((end - start) * SECONDS_TO_MILLISECONDS_CONVERSION))
 
     def _run_wait(
             self, run_until_complete: bool, runtime: Optional[float],

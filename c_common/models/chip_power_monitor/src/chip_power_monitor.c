@@ -51,6 +51,11 @@ struct sample_params {
     uint32_t frequency;
 };
 
+struct recording {
+    uint32_t time;
+    uint32_t core_counters[NUM_CPUS];
+};
+
 //! \brief The recording channel we use.
 //!
 //! Only one recording channel is used by this application.
@@ -73,7 +78,7 @@ static uint32_t time;
 static uint32_t timer = 0;
 
 //! Where we aggregate the sample activity counts.
-static uint32_t core_counters[NUM_CPUS];
+static struct recording recording;
 //! How many samples have we done so far within this aggregate step?
 static uint32_t sample_count;
 //! The number of samples to aggregate per recording entry.
@@ -105,15 +110,16 @@ static inline uint32_t get_random_busy(void) {
 //! \brief Synchronously records the current contents of the core_counters to
 //! the recording region.
 static inline void record_aggregate_sample(void) {
+    recording.time = time;
     recording_record(
-            RECORDING_CHANNEL_ID, core_counters, sizeof(core_counters));
+            RECORDING_CHANNEL_ID, &recording, sizeof(recording));
 }
 
 //! \brief Resets the state of the core_counters and the sample_count variables
 //! to zero.
 static inline void reset_core_counters(void) {
     for (uint32_t i = 0 ; i < NUM_CPUS ; i++) {
-        core_counters[i] = 0;
+        recording.core_counters[i] = 0;
     }
     sample_count = 0;
 }
@@ -154,7 +160,7 @@ static inline void count_core_states(void) {
 
     for (uint32_t i = 0, j = 1 ; i < NUM_CPUS ; i++, j <<= 1) {
         if (!(sample & j)) {
-            core_counters[i]++;
+            recording.core_counters[i]++;
         }
     }
 }

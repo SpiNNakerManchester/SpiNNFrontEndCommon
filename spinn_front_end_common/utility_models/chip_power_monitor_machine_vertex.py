@@ -47,7 +47,8 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
-PROVENANCE_KEY = "Power_Monitor_Total_Activity_Count"
+PROVENANCE_COUNT_KEY = "Power_Monitor_Total_Activity_Count"
+PROVENANCE_TIME_KEY = "Power_Monitor_Total_Activity_Time"
 
 RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD
 DEFAULT_MALLOCS_USED = 3
@@ -249,12 +250,32 @@ class ChipPowerMonitorMachineVertex(
                 "Chip Power monitor has lost data on chip({}, {})",
                 placement.x, placement.y)
 
+        time_for_recorded_sample_s = (
+            self._sampling_frequency *
+            self.__n_samples_per_recording) / 1000000
         results = (
-            numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 18) /
-            self.__n_samples_per_recording)
-        activity_count = int(
-            numpy.frombuffer(record_raw, dtype="uint32").sum())
+            numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 19) /
+            self.__n_samples_per_recording) * time_for_recorded_sample_s
+        record_times = results[:, 0] * self._sampling_frequency / 1000
+        activity = results[:, 1:].astype("float")
+        activity_times = activity * time_for_recorded_sample_s
+        for checkpoint in FecDataView().iterate_energy_checkpoints():
+            # Find all activity up to the check point
+            activity_before = activity[record_times < checkpoint].sum()
+            activity_time = activity_times[record_times < checkpoint].sum()
+            with ProvenanceWriter() as db:
+                db.insert_monitor(
+                    placement.x, placement.y,
+                    f"{PROVENANCE_COUNT_KEY}_{checkpoint}", activity_before)
+                db.insert_monitor(
+                    placement.x, placement.y,
+                    f"{PROVENANCE_TIME_KEY}_{checkpoint}", activity_time)
+        FecDataView().clear_energy_checkpoints()
+        activity_count = activity.sum()
+        activity_time = activity_times.sum()
         with ProvenanceWriter() as db:
             db.insert_monitor(
-                placement.x, placement.y, PROVENANCE_KEY, activity_count)
+                placement.x, placement.y, PROVENANCE_COUNT_KEY, activity_count)
+            db.insert_monitor(
+                placement.x, placement.y, PROVENANCE_TIME_KEY, activity_time)
         return results

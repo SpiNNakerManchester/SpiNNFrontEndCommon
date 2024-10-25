@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from collections import defaultdict
-from typing import Dict, Iterable, Tuple
+from typing_extensions import Self
 
 
 class PowerUsed(object):
@@ -22,378 +20,212 @@ class PowerUsed(object):
     """
 
     __slots__ = (
-        "__num_chips", "__num_cores", "__num_fpgas", "__num_frames",
-        "__exec_time", "__mapping_time", "__data_gen_time", "__loading_time",
-        "__saving_time",
-        "__chip_energy", "__fpga_total_energy", "__fpga_exec_energy",
-        "__baseline_energy", "__packet_energy", "__mapping_energy",
-        "__data_gen_energy", "__loading_energy", "__saving_energy",
-        "__core_energy", "__router_energy")
+        "__n_chips", "__n_cores", "__n_boards", "__n_frames",
+        "__exec_time_s", "__mapping_time_s", "__loading_time_s",
+        "__saving_time_s", "__other_time_s",
+        "__exec_energy_j", "__mapping_energy_j", "__loading_energy_j",
+        "__saving_energy_j", "__other_energy_j",
+        )
 
-    def __init__(self) -> None:
-        self.__num_chips = 0
-        self.__num_cores = 0
-        self.__num_fpgas = 0
-        self.__num_frames = 0
-        self.__exec_time = 0.0
-        self.__mapping_time = 0.0
-        self.__data_gen_time = 0.0
-        self.__loading_time = 0.0
-        self.__saving_time = 0.0
-        self.__chip_energy = 0.0
-        self.__fpga_total_energy = 0.0
-        self.__fpga_exec_energy = 0.0
-        self.__baseline_energy = 0.0
-        self.__packet_energy = 0.0
-        self.__mapping_energy = 0.0
-        self.__data_gen_energy = 0.0
-        self.__loading_energy = 0.0
-        self.__saving_energy = 0.0
-        self.__core_energy: Dict[
-            Tuple[int, int, int], float] = defaultdict(float)
-        self.__router_energy: Dict[Tuple[int, int], float] = defaultdict(float)
+    def __init__(
+            self, n_chips: int, n_cores: int, n_boards: int, n_frames: int,
+            exec_time_s: float, mapping_time_s: float, loading_time_s: float,
+            saving_time_s: float, other_time_s: float,
+            exec_energy_j: float, mapping_energy_j: float,
+            loading_energy_j: float, saving_energy_j: float,
+            other_energy_j: float) -> None:
+        """
+        :param n_chips: The number of chips used
+        :param n_cores: The number of cores used
+        :param n_boards: The number of boards used
+        :param n_frames: The number of frames used
+        :param exec_time_s: The execution time in seconds
+        :param mapping_time_s: The mapping time in seconds
+        :param loading_time_s: The loading time in seconds
+        :param saving_time_s: The saving time in seconds
+        :param other_time_s: The other time in seconds
+        :param exec_energy_j: The execution energy in Joules
+        :param mapping_energy_j: The mapping energy in Joules
+        :param loading_energy_j: The loading energy in Joules
+        :param saving_energy_j: The saving energy in Joules
+        :param other_energy_j: The other energy in Joules
+        """
+        self.__n_chips = n_chips
+        self.__n_cores = n_cores
+        self.__n_boards = n_boards
+        self.__n_frames = n_frames
+
+        self.__exec_time_s = exec_time_s
+        self.__mapping_time_s = mapping_time_s
+        self.__loading_time_s = loading_time_s
+        self.__saving_time_s = saving_time_s
+        self.__other_time_s = other_time_s
+
+        self.__exec_energy_j = exec_energy_j
+        self.__mapping_energy_j = mapping_energy_j
+        self.__loading_energy_j = loading_energy_j
+        self.__saving_energy_j = saving_energy_j
+        self.__other_energy_j = other_energy_j
 
     @property
-    def num_chips(self) -> int:
+    def n_chips(self) -> int:
+        """ Get the number of chips used
         """
-        The total number of chips used.
-
-        :rtype: int
-        """
-        return self.__num_chips
-
-    @num_chips.setter
-    def num_chips(self, value: int):
-        self.__num_chips = int(value)
+        return self.__n_chips
 
     @property
-    def num_cores(self) -> int:
+    def n_cores(self) -> int:
+        """ Get the number of cores used
         """
-        The total number of cores used, including for SCAMP.
-
-        :rtype: int
-        """
-        return self.__num_cores
-
-    @num_cores.setter
-    def num_cores(self, value: int):
-        self.__num_cores = int(value)
+        return self.__n_cores
 
     @property
-    def num_fpgas(self) -> int:
+    def n_boards(self) -> int:
+        """ Get the number of boards used
         """
-        The total number of FPGAs used.
-
-        :rtype: int
-        """
-        return self.__num_fpgas
-
-    @num_fpgas.setter
-    def num_fpgas(self, value: int):
-        self.__num_fpgas = int(value)
+        return self.__n_boards
 
     @property
-    def num_frames(self) -> int:
+    def n_frames(self) -> int:
+        """ Get the number of frames used
         """
-        The total number of frames used.
-
-        :rtype: int
-        """
-        return self.__num_frames
-
-    @num_frames.setter
-    def num_frames(self, value: int):
-        self.__num_frames = int(value)
+        return self.__n_frames
 
     @property
-    def total_time_secs(self) -> float:
+    def exec_time_s(self) -> float:
+        """ Get the execution time in seconds
         """
-        Time taken in total, in seconds.
-
-        :rtype: float
-        """
-        return self.exec_time_secs + self.loading_time_secs + \
-            self.saving_time_secs + self.data_gen_time_secs + \
-            self.mapping_time_secs
+        return self.__exec_time_s
 
     @property
-    def booted_time_secs(self) -> float:
+    def mapping_time_s(self) -> float:
+        """ Get the mapping time in seconds
         """
-        Time taken when the machine is booted, in seconds.
-
-        :rtype: float
-        """
-        return self.exec_time_secs + self.loading_time_secs + \
-            self.saving_time_secs
+        return self.__mapping_time_s
 
     @property
-    def exec_time_secs(self) -> float:
+    def loading_time_s(self) -> float:
+        """ Get the loading time in seconds
         """
-        Time taken by active simulation running, in seconds.
-
-        :rtype: float
-        """
-        return self.__exec_time
-
-    @exec_time_secs.setter
-    def exec_time_secs(self, value: float):
-        self.__exec_time = float(value)
+        return self.__loading_time_s
 
     @property
-    def mapping_time_secs(self) -> float:
+    def saving_time_s(self) -> float:
+        """ Get the saving time in seconds
         """
-        Time taken by the mapping phase, in seconds.
-
-        :rtype: float
-        """
-        return self.__mapping_time
-
-    @mapping_time_secs.setter
-    def mapping_time_secs(self, value: float):
-        self.__mapping_time = float(value)
+        return self.__saving_time_s
 
     @property
-    def data_gen_time_secs(self) -> float:
+    def other_time_s(self) -> float:
+        """ Get the other time in seconds
         """
-        Time taken by data generation phase, in seconds.
-
-        :rtype: float
-        """
-        return self.__data_gen_time
-
-    @data_gen_time_secs.setter
-    def data_gen_time_secs(self, value: float):
-        self.__data_gen_time = float(value)
+        return self.__other_time_s
 
     @property
-    def loading_time_secs(self) -> float:
+    def exec_energy_j(self) -> float:
+        """ Get the execution energy in Joules
         """
-        Time taken by data loading, in seconds.
-
-        :rtype: float
-        """
-        return self.__loading_time
-
-    @loading_time_secs.setter
-    def loading_time_secs(self, value: float):
-        self.__loading_time = float(value)
+        return self.__exec_energy_j
 
     @property
-    def saving_time_secs(self) -> float:
+    def mapping_energy_j(self) -> float:
+        """ Get the mapping energy in Joules
         """
-        Time taken by data extraction, in seconds.
-
-        :rtype: float
-        """
-        return self.__saving_time
-
-    @saving_time_secs.setter
-    def saving_time_secs(self, value: float):
-        self.__saving_time = float(value)
+        return self.__mapping_energy_j
 
     @property
-    def total_energy_joules(self) -> float:
+    def loading_energy_j(self) -> float:
+        """ Get the loading energy in Joules
         """
-        Total of all energy costs, in Joules.
-
-        :rtype: float
-        """
-        baseline_energy = self.baseline_joules + self.fpga_total_energy_joules
-        idle_energy = self.mapping_joules + self.data_gen_joules
-        active_energy = self.chip_energy_joules + self.packet_joules + \
-            self.loading_joules + self.saving_joules
-        return baseline_energy + idle_energy + active_energy
+        return self.__loading_energy_j
 
     @property
-    def chip_energy_joules(self) -> float:
+    def saving_energy_j(self) -> float:
+        """ Get the saving energy in Joules
         """
-        Energy used by all SpiNNaker chips during active simulation
-        running, in Joules.
-
-        :rtype: float
-        """
-        return self.__chip_energy
-
-    @chip_energy_joules.setter
-    def chip_energy_joules(self, value: float):
-        self.__chip_energy = float(value)
+        return self.__saving_energy_j
 
     @property
-    def fpga_total_energy_joules(self) -> float:
+    def other_energy_j(self) -> float:
+        """ Get the other energy in Joules
         """
-        Energy used by all FPGAs in total, in Joules.
-
-        :rtype: float
-        """
-        return self.__fpga_total_energy
-
-    @fpga_total_energy_joules.setter
-    def fpga_total_energy_joules(self, value: float):
-        self.__fpga_total_energy = float(value)
+        return self.__other_energy_j
 
     @property
-    def fpga_exec_energy_joules(self) -> float:
+    def total_energy_j(self) -> float:
+        """ Get the total energy in Joules
         """
-        Energy used by all FPGAs during active simulation running, in
-        Joules. This is *included* in the total FPGA energy.
+        return (
+            self.__exec_energy_j + self.__mapping_energy_j +
+            self.__loading_energy_j + self.__saving_energy_j +
+            self.__other_energy_j)
 
-        :rtype: float
-        """
-        return self.__fpga_exec_energy
+    def __sub__(self, other: Self) -> Self:
+        if not isinstance(other, PowerUsed):
+            raise TypeError(
+                f"Cannot subtract {type(other)} from PowerUsed")
+        if self.n_chips != other.n_chips:
+            raise ValueError(
+                f"Cannot subtract PowerUsed with different n_chips "
+                f"({self.n_chips} != {other.n_chips})")
+        if self.n_cores != other.n_cores:
+            raise ValueError(
+                f"Cannot subtract PowerUsed with different n_cores "
+                f"({self.n_cores} != {other.n_cores})")
+        if self.n_boards != other.n_boards:
+            raise ValueError(
+                f"Cannot subtract PowerUsed with different n_boards "
+                f"({self.n_boards} != {other.n_boards})")
+        if self.n_frames != other.n_frames:
+            raise ValueError(
+                f"Cannot subtract PowerUsed with different n_frames "
+                f"({self.n_frames} != {other.n_frames})")
 
-    @fpga_exec_energy_joules.setter
-    def fpga_exec_energy_joules(self, value: float):
-        self.__fpga_exec_energy = float(value)
+        return PowerUsed(
+            self.n_chips, self.n_cores,
+            self.n_boards, self.n_frames,
+            self.exec_time_s - other.exec_time_s,
+            self.mapping_time_s - other.mapping_time_s,
+            self.loading_time_s - other.loading_time_s,
+            self.saving_time_s - other.saving_time_s,
+            self.other_time_s - other.other_time_s,
+            self.exec_energy_j - other.exec_energy_j,
+            self.mapping_energy_j - other.mapping_energy_j,
+            self.loading_energy_j - other.loading_energy_j,
+            self.saving_energy_j - other.saving_energy_j,
+            self.other_energy_j - other.other_energy_j)
 
-    @property
-    def baseline_joules(self) -> float:
-        """
-        Baseline/idle energy used, in Joules. This is used by things like the
-        frames the SpiNNaker boards are held in, the cooling system, etc.
+    def __add__(self, other: Self) -> Self:
+        if not isinstance(other, PowerUsed):
+            raise TypeError(
+                f"Cannot add {type(other)} to PowerUsed")
+        if self.n_chips != other.n_chips:
+            raise ValueError(
+                f"Cannot add PowerUsed with different n_chips "
+                f"({self.n_chips} != {other.n_chips})")
+        if self.n_cores != other.n_cores:
+            raise ValueError(
+                f"Cannot add PowerUsed with different n_cores "
+                f"({self.n_cores} != {other.n_cores})")
+        if self.n_boards != other.n_boards:
+            raise ValueError(
+                f"Cannot add PowerUsed with different n_boards "
+                f"({self.n_boards} != {other.n_boards})")
+        if self.n_frames != other.n_frames:
+            raise ValueError(
+                f"Cannot add PowerUsed with different n_frames "
+                f"({self.n_frames} != {other.n_frames})")
 
-        :rtype: float
-        """
-        return self.__baseline_energy
-
-    @baseline_joules.setter
-    def baseline_joules(self, value: float):
-        self.__baseline_energy = float(value)
-
-    @property
-    def packet_joules(self) -> float:
-        """
-        Energy used by packet transmission, in Joules.
-
-        :rtype: float
-        """
-        return self.__packet_energy
-
-    @packet_joules.setter
-    def packet_joules(self, value: float):
-        self.__packet_energy = float(value)
-
-    @property
-    def mapping_joules(self) -> float:
-        """
-        Energy used during the mapping phase, in Joules. Assumes that
-        the SpiNNaker system has been shut down.
-
-        :rtype: float
-        """
-        return self.__mapping_energy
-
-    @mapping_joules.setter
-    def mapping_joules(self, value: float):
-        self.__mapping_energy = float(value)
-
-    @property
-    def data_gen_joules(self) -> float:
-        """
-        Energy used during the data generation phase, in Joules. Assumes
-        that the SpiNNaker system has been shut down.
-
-        :rtype: float
-        """
-        return self.__data_gen_energy
-
-    @data_gen_joules.setter
-    def data_gen_joules(self, value: float):
-        self.__data_gen_energy = float(value)
-
-    @property
-    def loading_joules(self) -> float:
-        """
-        Energy used during data loading, in Joules.
-
-        :rtype: float
-        """
-        return self.__loading_energy
-
-    @loading_joules.setter
-    def loading_joules(self, value: float):
-        self.__loading_energy = float(value)
-
-    @property
-    def saving_joules(self) -> float:
-        """
-        Energy used during data extraction, in Joules.
-
-        :rtype: float
-        """
-        return self.__saving_energy
-
-    @saving_joules.setter
-    def saving_joules(self, value: float):
-        self.__saving_energy = float(value)
-
-    def get_router_active_energy_joules(self, x: int, y: int) -> float:
-        """
-        Energy used (above idle baseline) by a particular router, in Joules.
-
-        Unused routers always report 0.0 for this.
-
-        :param int x:
-        :param int y:
-        :rtype: float
-        """
-        return self.__router_energy.get((x, y), 0.0)
-
-    def add_router_active_energy(self, x: int, y: int, joules: float):
-        """
-        Adds energy for a particular router.
-        It can be called multiple times per router.
-
-        Only intended to be used during construction of this object.
-
-        :param int x:
-        :param int y:
-        :param float joules: the energy to add for this router, in Joules.
-        """
-        self.__router_energy[x, y] += float(joules)
-
-    @property
-    def active_routers(self) -> Iterable[Tuple[int, int]]:
-        """
-        Enumeration of the coordinates of the routers that can report
-        active energy usage.
-
-        :rtype: iterable(tuple(int, int))
-        """
-        return self.__router_energy.keys()
-
-    def get_core_active_energy_joules(self, x: int, y: int, p: int) -> float:
-        """
-        Energy used (above idle baseline) by a particular core, in Joules.
-
-        Unused cores always report 0.0 for this.
-
-        :param int x:
-        :param int y:
-        :param int p:
-        :rtype: float
-        """
-        return self.__core_energy.get((x, y, p), 0.0)
-
-    def add_core_active_energy(self, x: int, y: int, p: int, joules: float):
-        """
-        Adds energy for a particular core.
-        It can be called multiple times per core.
-
-        Only intended to be used during construction of this object.
-
-        :param int x:
-        :param int y:
-        :param int p:
-        :param float joules: the energy to add for this core, in Joules.
-        """
-        self.__core_energy[x, y, p] += float(joules)
-
-    @property
-    def active_cores(self) -> Iterable[Tuple[int, int, int]]:
-        """
-        Enumeration of the coordinates of the cores that can report active
-        energy usage.
-
-        :rtype: iterable(tuple(int, int, int))
-        """
-        return self.__core_energy.keys()
+        return PowerUsed(
+            self.n_chips, self.n_cores,
+            self.n_boards, self.n_frames,
+            self.exec_time_s + other.exec_time_s,
+            self.mapping_time_s + other.mapping_time_s,
+            self.loading_time_s + other.loading_time_s,
+            self.saving_time_s + other.saving_time_s,
+            self.other_time_s + other.other_time_s,
+            self.exec_energy_j + other.exec_energy_j,
+            self.mapping_energy_j + other.mapping_energy_j,
+            self.loading_energy_j + other.loading_energy_j,
+            self.saving_energy_j + other.saving_energy_j,
+            self.other_energy_j + other.other_energy_j)

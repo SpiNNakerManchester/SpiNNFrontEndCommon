@@ -83,6 +83,7 @@ class _FecDataModel(object):
         "_database_file_path",
         "_database_socket_addresses",
         "_ds_database_path",
+        "_energy_checkpoints",
         "_executable_targets",
         "_executable_types",
         "_first_machine_time_step",
@@ -101,6 +102,7 @@ class _FecDataModel(object):
         "_none_labelled_edge_count",
         "_notification_protocol",
         "_max_run_time_steps",
+        "_measured_run_time_ms",
         "_monitor_map",
         "_reset_number",
         "_run_number",
@@ -190,6 +192,8 @@ class _FecDataModel(object):
         self._first_machine_time_step = 0
         self._run_step: Optional[int] = None
         self._n_run_steps: Optional[int] = None
+        self._measured_run_time_ms: int = 0
+        self._energy_checkpoints: List[int] = []
 
     def _clear_notification_protocol(self) -> None:
         if self._notification_protocol:
@@ -251,6 +255,17 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return 0.0
         return (cls.__fec_data._current_run_timesteps *
                 cls.get_simulation_time_step_ms())
+
+    @classmethod
+    def get_measured_run_time_ms(cls) -> int:
+        """
+        The measured time of the runs up to this point in ms
+
+        Will be zero if not yet run
+
+        :rtype: int
+        """
+        return cls.__fec_data._measured_run_time_ms
 
     # _allocation_controller
     @classmethod
@@ -1359,3 +1374,28 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :rtype: iterable(LiveOutputDevice)
         """
         return iter(cls.__fec_data._live_output_devices)
+
+    @classmethod
+    def add_energy_checkpoint(cls, checkpoint_ms: int):
+        """
+        Add an energy checkpoint.
+
+        :param checkpoint: The checkpoint to be added in milliseconds
+        """
+        cls.__fec_data._energy_checkpoints.append(checkpoint_ms)
+
+    @classmethod
+    def iterate_energy_checkpoints(cls) -> Iterable[int]:
+        """
+        Iterate over energy checkpoints.
+
+        :rtype: iterable(int)
+        """
+        return iter(cls.__fec_data._energy_checkpoints)
+
+    @classmethod
+    def clear_energy_checkpoints(cls) -> None:
+        """
+        Clear all energy checkpoints.
+        """
+        cls.__fec_data._energy_checkpoints.clear()

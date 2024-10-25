@@ -23,16 +23,14 @@ class TimerWork(Enum):
     OTHER = (auto(), "Other")
     GET_MACHINE = (auto(), "Turning on Machine")
     LOADING = (auto(), "Loading Stage")
-    # LOADING
-    BITFIELD = (auto(), "BitField work")
+    LOADING_DATA = (auto(), "Loading Data")
     # Only for on Machine Compression
     COMPRESSING = (auto(), "Compressing")
     CONTROL = (auto(), "Control")
     SYNAPSE = (auto(), "Expanding Synapse")
     RUNNING = (auto(), "Running")
-    EXTRACTING = (auto(), "Extracting")
-    # TODO is in right to treat this separately
-    EXTRACT_DATA = (auto(), "Extracting")
+    EXTRACTING = (auto(), "Extracting Stage")
+    EXTRACT_DATA = (auto(), "Extracting Data")
     REPORT = (auto(), "Reporting")
 
     def __new__(cls, *args) -> 'TimerWork':

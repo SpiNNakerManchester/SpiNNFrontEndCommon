@@ -208,6 +208,22 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             self.__fec_data._current_run_timesteps
         self.__fec_data._current_run_timesteps += increment
 
+    def increment_measured_run_time_ms(self, increment: int):
+        """
+        Increment the measured run time milliseconds
+
+        :param increment: The milliseconds measured for this do_run loop
+        :type increment: int
+        """
+
+        if not isinstance(increment, int):
+            raise TypeError("increment should be an int")
+        if increment < 0:
+            raise ConfigurationException(
+                f"increment {increment} must not be negative")
+
+        self.__fec_data._measured_run_time_ms += increment
+
     def set_max_run_time_steps(self, max_run_time_steps: int):
         """
         Sets the max_run_time_steps value
