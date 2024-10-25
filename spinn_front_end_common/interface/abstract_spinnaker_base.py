@@ -670,13 +670,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.info("Running forever")
             self._do_run(None, n_sync_steps)
         else:
-            logger.warning("Current simulation could run for {}ms",
+            logger.warning("Due to recording this simulation should not be run "
+                           "longer than {}ms",
                          self._data_writer.get_max_run_time_steps())
-            logger.info("Running forever hoping a stop happens "
-                        "before data space runs out.")
+            logger.info("Running until stop is called.")
             self._do_run(None, n_sync_steps)
-            #raise ConfigurationException(
-            #    "Run forever not possible without setting max_record_time")
 
         # Indicate that the signal handler needs to act
         if self.__is_main_thread():
