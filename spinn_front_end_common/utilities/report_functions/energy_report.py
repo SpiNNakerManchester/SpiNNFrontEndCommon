@@ -65,7 +65,7 @@ class EnergyReport(object):
         f.write(f"Simulation cores used: {power_used.n_cores}\n\n")
         f.write(f"Simulation execution time: {power_used.exec_time_s} "
                 "seconds\n")
-        f.write(f"Simulation exection energy: {power_used.total_energy_j}"
+        f.write(f"Simulation execution energy: {power_used.exec_energy_j}"
                 " Joules\n\n")
         f.write(f"Mapping time: {power_used.mapping_time_s} seconds\n")
         f.write(f"Mapping energy: {power_used.mapping_energy_j} Joules\n\n")
