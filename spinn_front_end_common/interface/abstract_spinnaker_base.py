@@ -116,7 +116,8 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.exceptions import (
+    ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
     fixed_route_from_machine_report,
@@ -576,12 +577,15 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If we have never run before, or the graph has changed,
         # start by performing mapping
-        if (self._data_writer.get_requires_mapping() and
+        if (self._data_writer.get_requires_data_generation() and
                 self._data_writer.is_ran_last()):
             self.stop()
-            raise NotImplementedError(
-                "The network cannot be changed between runs without"
-                " resetting")
+            if self._data_writer.get_requires_mapping():
+                raise NotImplementedError(
+                    "The network cannot be changed between runs without"
+                    " resetting")
+            else:
+                raise SpinnFrontEndException("The network needs to be reset")
 
         # If we have reset and the graph has changed, stop any running
         # application
@@ -1742,6 +1746,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             load_system_data_specs()
+            self._data_writer.data_specification_loaded()
 
     def _execute_load_system_executable_images(self) -> None:
         """
@@ -1926,6 +1931,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             reload_dsg_regions()
+            self._data_writer.data_specification_loaded()
 
     def _execute_graph_provenance_gatherer(self) -> None:
         """
