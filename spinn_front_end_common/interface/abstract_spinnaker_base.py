@@ -601,7 +601,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             self._add_dependent_verts_and_edges_for_application_graph()
 
-            if get_config_bool("Buffers", "use_auto_pause_and_resume"):
+            if ((get_config_bool("Buffers", "use_auto_pause_and_resume"))
+                    or (run_time is None)):
                 self._data_writer.set_plan_n_timesteps(get_config_int(
                     "Buffers", "minimum_auto_time_steps"))
             else:
