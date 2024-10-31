@@ -138,7 +138,7 @@ class _ApplicationRunner(object):
                 scaled_runtime + SAFETY_FINISH_TIME)
             with state_condition:
                 state_condition.wait(scaled_runtime - SAFETY_FINISH_TIME)
-                if not FecDataView.is_no_stop_requested():
+                if FecDataView.is_stop_requested():
                     self.__send_pause()
             sleep(SAFETY_FINISH_TIME * 2)
             self._wait_for_end(timeout=time_threshold)
