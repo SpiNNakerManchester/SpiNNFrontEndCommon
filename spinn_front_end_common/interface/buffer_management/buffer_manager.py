@@ -330,9 +330,9 @@ class BufferManager(object):
                 progress.update(len(data))
 
         if not sent_message:
-            raise BufferableRegionTooSmall(
-                f"The buffer size {bytes_to_go} is too small for any data to "
-                f"be added for region {region} of vertex {vertex}")
+            raise SpinnFrontEndException(
+                f"Unable to create message for {region=} on {vertex=} "
+                f"while is_empty reports false")
 
         # If there are no more messages and there is space, add a stop request
         if (not vertex.is_next_timestamp(region) and
