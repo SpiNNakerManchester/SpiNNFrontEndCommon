@@ -470,6 +470,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         first_machine_time_step = FecDataView.get_first_machine_time_step()
         run_until_timesteps = FecDataView.get_current_run_timesteps()
+        if run_until_timesteps is None:
+            run_until_timesteps = FecDataView.get_run_number()
         if (self._first_machine_time_step == first_machine_time_step and
                 self._run_until_timesteps == run_until_timesteps):
             return
