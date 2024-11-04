@@ -122,6 +122,15 @@ class PowerUsed(object):
         return self.__other_time_s
 
     @property
+    def total_time_s(self) -> float:
+        """ Get the total time in seconds
+        """
+        return (
+            self.__exec_time_s + self.__mapping_time_s +
+            self.__loading_time_s + self.__saving_time_s +
+            self.__other_time_s)
+
+    @property
     def exec_energy_j(self) -> float:
         """ Get the execution energy in Joules
         """
