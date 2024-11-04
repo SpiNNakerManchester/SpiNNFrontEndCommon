@@ -67,7 +67,7 @@ class SendsBuffersFromHostPreBufferedImpl(
 
     @overrides(AbstractSendsBuffersFromHost.get_next_key)
     def get_next_key(self, region: int) -> int:
-        return self.send_buffers[region].next_key
+        return self.send_buffers[region].next_key()
 
     @overrides(AbstractSendsBuffersFromHost.is_empty)
     def is_empty(self, region: int) -> bool:
