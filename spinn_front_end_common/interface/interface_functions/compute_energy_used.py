@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Final, List, Optional
+from typing import Final, Optional
 from spinn_utilities.config_holder import get_config_bool
 from spinn_machine import Machine
 from spinn_machine.version.abstract_version import (
@@ -75,7 +75,7 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
         timesteps = FecDataView.get_current_run_timesteps()
         if timesteps is not None:
             ts_factor = FecDataView.get_time_scale_factor()
-            execute_on_machine_ms = timesteps * ts_factor
+            execute_on_machine_ms = int(round(timesteps * ts_factor))
         else:
             execute_on_machine_ms = FecDataView.get_measured_run_time_ms()
 
@@ -135,7 +135,7 @@ def _calculate_n_frames(machine: Machine) -> int:
 
 def _extract_router_packets(
         prefix: str, version: AbstractVersion) -> RouterPackets:
-    packets_per_chip = defaultdict(dict)
+    packets_per_chip: RouterPackets = defaultdict(dict)
     with ProvenanceReader() as db:
         for name in version.get_router_report_packet_types():
             for (x, y, value) in db.get_router_by_chip(f"{prefix}{name}"):
@@ -144,7 +144,7 @@ def _extract_router_packets(
 
 
 def _extract_cores_active_time(
-        checkpoint: Optional[int] = None) -> List[float]:
+        checkpoint: Optional[int] = None) -> ChipActiveTime:
     key = PROVENANCE_TIME_KEY
     if checkpoint is not None:
         key = f"{PROVENANCE_TIME_KEY}_{checkpoint}"

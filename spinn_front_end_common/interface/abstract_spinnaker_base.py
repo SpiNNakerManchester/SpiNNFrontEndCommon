@@ -2011,7 +2011,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
 
-            # TODO runtime is None
             power_used = compute_energy_used()
 
             energy_provenance_reporter(power_used)
