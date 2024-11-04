@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing_extensions import Self
+from typing import Any
 
 
 class PowerUsed(object):
@@ -160,7 +160,7 @@ class PowerUsed(object):
             self.__loading_energy_j + self.__saving_energy_j +
             self.__other_energy_j)
 
-    def __sub__(self, other: PowerUsed) -> PowerUsed:
+    def __sub__(self, other: Any) -> "PowerUsed":
         if not isinstance(other, PowerUsed):
             raise TypeError(
                 f"Cannot subtract {type(other)} from PowerUsed")
@@ -195,7 +195,7 @@ class PowerUsed(object):
             self.saving_energy_j - other.saving_energy_j,
             self.other_energy_j - other.other_energy_j)
 
-    def __add__(self, other: PowerUsed) -> PowerUsed:
+    def __add__(self, other: Any) -> "PowerUsed":
         if not isinstance(other, PowerUsed):
             raise TypeError(
                 f"Cannot add {type(other)} to PowerUsed")
