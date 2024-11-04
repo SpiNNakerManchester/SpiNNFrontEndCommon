@@ -182,45 +182,45 @@ def compute_energy_over_time(
     """
     Compute the energy used by a simulation running on SpiNNaker.
 
-    :param float waiting_ms: time spent waiting for things to happen in general
-    :param float setup_ms: time spent setting up the simulation
-    :param float get_machine_ms: time spent getting the machine
-    :param float mapping_ms: time spent mapping to the machine
-    :param float loading_ms:
+    :param waiting_ms: time spent waiting for things to happen in general
+    :param setup_ms: time spent setting up the simulation
+    :param get_machine_ms: time spent getting the machine
+    :param mapping_ms: time spent mapping to the machine
+    :param loading_ms:
         time spent loading the simulation onto the passive machine
-    :param float data_loading_ms:
+    :param data_loading_ms:
         time spent loading data onto the machine actively using the machine to
         load the data
-    :param float expansion_ms: time spent expanding the data on the machine
-    :param float data_extraction_ms:
+    :param expansion_ms: time spent expanding the data on the machine
+    :param data_extraction_ms:
         time spent extracting data from the machine actively using the machine
         to extract the data
-    :param float run_other_ms:
+    :param run_other_ms:
         time spent in running but not the active machine time, just in between
         calls to other things
-    :param float run_loop_ms:
+    :param run_loop_ms:
         time spent in running but not the active machine time, just in the
         run loop itself
-    :param float execute_on_machine_ms:
+    :param execute_on_machine_ms:
         time spent executing the simulation on the machine actively using it
-    :param float resetting_ms: time spent resetting the simulation
-    :param float shutting_down_ms: time spent shutting down the simulation
-    :param ~.AbstractVersion version: the version of the machine
-    :param int n_chips: number of chips that make up the machine
-    :param int n_boards: number of boards that make up the machine
-    :param int n_frames: number of frames that make up the machine
-    :param int n_cores: number of cores that are used by the simulation
-    :param ChipActiveTime load_chip_active_time:
+    :param resetting_ms: time spent resetting the simulation
+    :param shutting_down_ms: time spent shutting down the simulation
+    :param version: the version of the machine
+    :param n_chips: number of chips that make up the machine
+    :param n_boards: number of boards that make up the machine
+    :param n_frames: number of frames that make up the machine
+    :param n_cores: number of cores that are used by the simulation
+    :param load_chip_active_time:
         time that each core was active during loading
-    :param ChipActiveTime extraction_chip_active_time:
+    :param extraction_chip_active_time:
         time that each core was active during extraction
-    :param ChipActiveTime run_chip_active_time:
+    :param run_chip_active_time:
         time that each core was active during running
-    :param RouterPackets load_router_packets:
+    :param load_router_packets:
         packets sent by the machine during loading
-    :param RouterPackets extraction_router_packets:
+    :param extraction_router_packets:
         packets sent by the machine during extraction
-    :param RouterPackets run_router_packets:
+    :param run_router_packets:
         packets sent by the machine during running
     """
 
