@@ -28,6 +28,7 @@ from spinn_front_end_common.interface.interface_functions\
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
         PROVENANCE_TIME_KEY, ChipPowerMonitorMachineVertex)
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 #: milliseconds per second
 _MS_PER_SECOND: Final = 1000.0
@@ -104,6 +105,8 @@ def compute_energy_used(
         chips_used = set()
         n_cores = 0
         for pl in FecDataView.iterate_placemements():
+            if not isinstance(pl, AbstractHasAssociatedBinary):
+                continue
             if (pl.vertex.get_binary_start_type() != ExecutableType.SYSTEM and
                     not isinstance(pl.vertex, ChipPowerMonitorMachineVertex)):
                 chips_used.add((pl.x, pl.y))
