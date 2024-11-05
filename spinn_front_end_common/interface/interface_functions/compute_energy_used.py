@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Final, Optional
+from typing import Final, Optional, cast
 from spinn_utilities.config_holder import get_config_bool
 from spinn_machine import Machine
 from spinn_machine.version.abstract_version import (
@@ -105,10 +105,12 @@ def compute_energy_used(
         chips_used = set()
         n_cores = 0
         for pl in FecDataView.iterate_placemements():
-            if not isinstance(pl, AbstractHasAssociatedBinary):
+            if not isinstance(pl.vertex, AbstractHasAssociatedBinary):
                 continue
-            if (pl.vertex.get_binary_start_type() != ExecutableType.SYSTEM and
-                    not isinstance(pl.vertex, ChipPowerMonitorMachineVertex)):
+            vertex: AbstractHasAssociatedBinary = cast(
+                AbstractHasAssociatedBinary, pl.vertex)
+            if (vertex.get_binary_start_type() != ExecutableType.SYSTEM and
+                    not isinstance(vertex, ChipPowerMonitorMachineVertex)):
                 chips_used.add((pl.x, pl.y))
                 n_cores += 1
         n_chips = len(chips_used)
