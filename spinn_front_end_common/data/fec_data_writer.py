@@ -189,24 +189,20 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :param increment: The timesteps for this do_run loop
         :type increment: int or None
         """
-        if increment is None:
-            current = self.__fec_data._current_run_timesteps
-            if current != 0 and current is not None:
-                raise NotImplementedError("Run forever after another run")
-            self.__fec_data._current_run_timesteps = None
-            return
-
-        if not isinstance(increment, int):
-            raise TypeError("increment should be an int (or None")
-        if increment < 0:
-            raise ConfigurationException(
-                f"increment {increment} must not be negative")
-
         if self.__fec_data._current_run_timesteps is None:
-            raise NotImplementedError("Run after run forever")
+            raise NotImplementedError("Run after run until stopped")
         self.__fec_data._first_machine_time_step = \
             self.__fec_data._current_run_timesteps
-        self.__fec_data._current_run_timesteps += increment
+
+        if increment is None:
+            self.__fec_data._current_run_timesteps = None
+        elif isinstance(increment, int):
+            if increment < 0:
+                raise ConfigurationException(
+                    f"increment {increment} must not be negative")
+            self.__fec_data._current_run_timesteps += increment
+        else:
+            raise TypeError("increment should be an int (or None")
 
     def set_max_run_time_steps(self, max_run_time_steps: int):
         """
