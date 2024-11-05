@@ -204,6 +204,12 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         else:
             raise TypeError("increment should be an int (or None")
 
+    def set_current_run_timesteps(self, current_run_timesteps: int) -> None:
+        if self.__fec_data._current_run_timesteps is not None:
+            raise NotImplementedError(
+                "Can only be called once after a run forever")
+        self.__fec_data._current_run_timesteps = current_run_timesteps
+
     def set_max_run_time_steps(self, max_run_time_steps: int):
         """
         Sets the max_run_time_steps value

@@ -114,17 +114,21 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(ConfigurationException):
             writer.increment_current_run_timesteps(-1)
         writer.increment_current_run_timesteps(95)
-        with self.assertRaises(NotImplementedError):
-            writer.increment_current_run_timesteps(None)
+        writer.increment_current_run_timesteps(None)
 
     def test_run_forever(self):
         writer = FecDataWriter.setup()
         writer.increment_current_run_timesteps(None)
         self.assertEqual(0, FecDataView.get_first_machine_time_step())
         self.assertIsNone(FecDataView.get_current_run_timesteps())
+        with self.assertRaises(NotImplementedError):
+            writer.increment_current_run_timesteps(None)
+        writer.set_current_run_timesteps(100)
         writer.increment_current_run_timesteps(None)
         with self.assertRaises(NotImplementedError):
             writer.increment_current_run_timesteps(100)
+        writer.set_current_run_timesteps(100)
+        writer.increment_current_run_timesteps(100)
 
     def test_current_run_times_ms(self):
         writer = FecDataWriter.setup()
