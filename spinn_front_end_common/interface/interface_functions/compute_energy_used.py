@@ -18,6 +18,7 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_machine import Machine
 from spinn_machine.version.abstract_version import (
     AbstractVersion, ChipActiveTime, RouterPackets)
+from spinnman.model.enums.executable_type import ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     GlobalProvenance, ProvenanceReader, TimerCategory, TimerWork)
@@ -25,8 +26,8 @@ from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.interface.interface_functions\
     .load_data_specification import load_using_advanced_monitors
 from spinn_front_end_common.utility_models\
-    .chip_power_monitor_machine_vertex import PROVENANCE_TIME_KEY
-from spinnman.model.enums.executable_type import ExecutableType
+    .chip_power_monitor_machine_vertex import (
+        PROVENANCE_TIME_KEY, ChipPowerMonitorMachineVertex)
 
 #: milliseconds per second
 _MS_PER_SECOND: Final = 1000.0
@@ -101,9 +102,12 @@ def compute_energy_used(
 
     if active_only:
         chips_used = set()
+        n_cores = 0
         for pl in FecDataView.iterate_placemements():
-            if pl.vertex.get_binary_start_type() != ExecutableType.SYSTEM:
+            if (pl.vertex.get_binary_start_type() != ExecutableType.SYSTEM and
+                    not isinstance(pl.vertex, ChipPowerMonitorMachineVertex)):
                 chips_used.add((pl.x, pl.y))
+                n_cores += 1
         n_chips = len(chips_used)
         n_frames = 0
         n_boards = 0
