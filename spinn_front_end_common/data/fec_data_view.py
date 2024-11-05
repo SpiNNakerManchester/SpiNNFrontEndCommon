@@ -186,7 +186,7 @@ class _FecDataModel(object):
         """
         Clears timing and other data that should changed every reset.
         """
-        self._current_run_timesteps: Optional[int] = 0
+        self._current_run_timesteps: int = 0
         self._first_machine_time_step = 0
         self._run_step: Optional[int] = None
         self._n_run_steps: Optional[int] = None

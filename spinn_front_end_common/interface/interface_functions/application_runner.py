@@ -129,37 +129,39 @@ class _ApplicationRunner(object):
             process = GetCurrentTimeProcess(
                 FecDataView.get_scamp_connection_selector())
             latest_runtime = process.get_latest_runtime(n_cores, core_subsets)
-        else:
+        elif run_until_complete:
             # Wait for the application to finish
-            self._run_wait(
-                run_until_complete, runtime, time_threshold)
+            logger.info("Application started; waiting until finished")
+            self._wait_for_end()
+            core_subsets = FecDataView.get_cores_for_type(
+                ExecutableType.USES_SIMULATION_INTERFACE)
+            n_cores = len(core_subsets)
+            process = GetCurrentTimeProcess(
+                FecDataView.get_scamp_connection_selector())
+            latest_runtime = process.get_latest_runtime(n_cores, core_subsets)
+        else:
+            self._run_wait(runtime, time_threshold)
 
         # Send stop notification to external applications
         notification_interface.send_stop_pause_notification()
         return latest_runtime
 
     def _run_wait(
-            self, run_until_complete: bool, runtime: Optional[float],
-            time_threshold: Optional[float]):
+            self, runtime: Optional[float], time_threshold: Optional[float]):
         """
-        :param bool run_until_complete:
         :param int runtime:
         :param float time_threshold:
         """
-        if not run_until_complete:
-            assert runtime is not None
-            factor = (FecDataView.get_time_scale_factor() /
-                      MICRO_TO_MILLISECOND_CONVERSION)
-            scaled_runtime = runtime * factor
-            time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
-            logger.info(
-                "Application started; waiting {}s for it to stop",
-                time_to_wait)
-            sleep(time_to_wait)
-            self._wait_for_end(timeout=time_threshold)
-        else:
-            logger.info("Application started; waiting until finished")
-            self._wait_for_end()
+        assert runtime is not None
+        factor = (FecDataView.get_time_scale_factor() /
+                  MICRO_TO_MILLISECOND_CONVERSION)
+        scaled_runtime = runtime * factor
+        time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
+        logger.info(
+            "Application started; waiting {}s for it to stop",
+            time_to_wait)
+        sleep(time_to_wait)
+        self._wait_for_end(timeout=time_threshold)
 
     def _wait_for_start(self, timeout: Optional[float] = None):
         """

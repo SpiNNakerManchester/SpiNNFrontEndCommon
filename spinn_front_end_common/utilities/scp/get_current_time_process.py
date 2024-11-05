@@ -98,6 +98,10 @@ class GetCurrentTimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
             self, progress: ProgressBar, response: _GetCurrentTimeResponse):
         progress.update()
         current_time = response.current_time
+        header = response.sdp_header
+        print(f"Current time from {header.destination_chip_x}, "
+              f"{header.destination_chip_y}, {header.destination_cpu}: "
+              f"{current_time}")
         if self.__latest_time is None or current_time > self.__latest_time:
             self.__latest_time = current_time
 

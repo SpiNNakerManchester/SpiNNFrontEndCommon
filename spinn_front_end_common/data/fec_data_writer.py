@@ -190,8 +190,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :type increment: int or None
         """
         if increment is None:
-            # Indicates that we are about to "run forever"; keep until later
-            self.__fec_data._current_run_timesteps = None
+            # Indicates that we are about to "run forever"; do nothing
             return
 
         if not isinstance(increment, int):
@@ -218,8 +217,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise ConfigurationException(
                 f"current_run_timesteps {current_run_timesteps} must not be "
                 "negative")
-        if self.__fec_data._current_run_timesteps is not None:
-            raise NotImplementedError("Data has not been updated correctly!")
         self.__fec_data._current_run_timesteps = current_run_timesteps
 
     def set_max_run_time_steps(self, max_run_time_steps: int):
