@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import sys
 import unittest
 from spinn_utilities.config_holder import set_config
 # hack do not copy
@@ -123,6 +124,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIsNone(FecDataView.get_current_run_timesteps())
         with self.assertRaises(NotImplementedError):
             writer.increment_current_run_timesteps(None)
+        writer.set_max_run_time_steps(sys.maxsize)
         writer.set_current_run_timesteps(100)
         writer.increment_current_run_timesteps(None)
         with self.assertRaises(NotImplementedError):

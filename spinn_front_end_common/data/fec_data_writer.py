@@ -205,9 +205,23 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("increment should be an int (or None")
 
     def set_current_run_timesteps(self, current_run_timesteps: int) -> None:
+        """
+        Allows the end of a run forever to set the runtime read from the cores
+
+        :param current_run_timesteps:
+        :return:
+        """
         if self.__fec_data._current_run_timesteps is not None:
             raise NotImplementedError(
                 "Can only be called once after a run forever")
+        first = self.__fec_data._first_machine_time_step
+        if first > current_run_timesteps:
+            raise NotImplementedError(
+                f"Time does not go backwards! "
+                f"{first=} > {current_run_timesteps=}")
+        if first + self.get_max_run_time_steps() < current_run_timesteps:
+            logger.warning(
+                "Last run was longer than duration supported by recording")
         self.__fec_data._current_run_timesteps = current_run_timesteps
 
     def set_max_run_time_steps(self, max_run_time_steps: int):
