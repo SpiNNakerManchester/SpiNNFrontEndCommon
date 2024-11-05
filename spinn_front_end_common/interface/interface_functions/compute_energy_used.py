@@ -26,15 +26,26 @@ from spinn_front_end_common.interface.interface_functions\
     .load_data_specification import load_using_advanced_monitors
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import PROVENANCE_TIME_KEY
+from spinnman.model.enums.executable_type import ExecutableType
 
 #: milliseconds per second
 _MS_PER_SECOND: Final = 1000.0
 
 
-def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
+def compute_energy_used(
+        checkpoint: Optional[int] = None, active_only: bool = False,
+        include_frame: bool = True) -> PowerUsed:
     """
     This algorithm does the actual work of computing energy used by a
     simulation (or other application) running on SpiNNaker.
+
+    :param int checkpoint: the time at which to compute execution energy up to
+    :param bool active_only:
+        whether to only compute actively used parts i.e. just include the chip
+        and core energy used, not the extra for the frame and board
+    :param bool include_frame:
+        whether to include the frame energy in the calculation, or just assume
+        an isolated board / set of boards
 
     :rtype: PowerUsed
     """
@@ -87,6 +98,17 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     n_chips = machine.n_chips
     n_cores = FecDataView.get_n_placements()
     n_frames = _calculate_n_frames(machine)
+
+    if active_only:
+        chips_used = set()
+        for pl in FecDataView.iterate_placemements():
+            if pl.vertex.get_binary_start_type() != ExecutableType.SYSTEM:
+                chips_used.add((pl.x, pl.y))
+        n_chips = len(chips_used)
+        n_frames = 0
+        n_boards = 0
+    if not include_frame:
+        n_frames = 0
 
     run_chip_active_time = _extract_cores_active_time(checkpoint)
     load_chip_active_time = _make_extra_monitor_core_use(
