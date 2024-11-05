@@ -54,7 +54,9 @@ class _GetCurrentTimeRequest(AbstractSCPRequest[CheckOKResponse]):
 
 class _GetCurrentTimeResponse(AbstractSCPResponse):
 
-    __slots__ = "__current_time"
+    __slots__ = (
+        "__current_time",
+    )
 
     def __init__(self):
         super().__init__()
@@ -72,6 +74,8 @@ class _GetCurrentTimeResponse(AbstractSCPResponse):
 
     @property
     def current_time(self) -> int:
+        """ Get the current time from the response
+        """
         return self.__current_time
 
 
@@ -82,7 +86,9 @@ class GetCurrentTimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     .. note::
         The cores must be using the simulation interface.
     """
-    __slots__ = ("__latest_time")
+    __slots__ = (
+        "__latest_time",
+    )
 
     def __init__(self, connection_selector):
         super().__init__(connection_selector)
@@ -92,7 +98,7 @@ class GetCurrentTimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
             self, progress: ProgressBar, response: _GetCurrentTimeResponse):
         progress.update()
         current_time = response.current_time
-        if current_time > self.__latest_time:
+        if self.__latest_time is None or current_time > self.__latest_time:
             self.__latest_time = current_time
 
     def get_latest_runtime(
