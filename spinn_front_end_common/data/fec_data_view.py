@@ -313,13 +313,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._buffer_manager
 
     @classmethod
-    def get_first_machine_time_step(cls) -> Optional[int]:
+    def get_first_machine_time_step(cls) -> int:
         """
         The start of this or the next do_run loop time in steps.
-
-        Will be `None` if in run forever mode
-
-        :rtype: int or None
         """
         return cls.__fec_data._first_machine_time_step
 

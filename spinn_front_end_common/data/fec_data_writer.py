@@ -189,34 +189,39 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :param increment: The timesteps for this do_run loop
         :type increment: int or None
         """
-        if increment is None:
-            # Indicates that we are about to "run forever"; do nothing
-            return
-
-        if not isinstance(increment, int):
-            raise TypeError("increment must be an int (or None)")
-        if increment < 0:
-            raise ConfigurationException(
-                f"increment {increment} must not be negative")
-
         if self.__fec_data._current_run_timesteps is None:
-            raise NotImplementedError("Data has not been updated correctly!")
+            raise NotImplementedError("Run after run until stopped")
         self.__fec_data._first_machine_time_step = \
             self.__fec_data._current_run_timesteps
-        self.__fec_data._current_run_timesteps += increment
 
-    def set_current_run_timesteps(self, current_run_timesteps: int):
-        """
-        Sets the current_run_timesteps.
+        if increment is None:
+            self.__fec_data._current_run_timesteps = None
+        elif isinstance(increment, int):
+            if increment < 0:
+                raise ConfigurationException(
+                    f"increment {increment} must not be negative")
+            self.__fec_data._current_run_timesteps += increment
+        else:
+            raise TypeError("increment should be an int (or None")
 
-        :param int current_run_timesteps:
+    def set_current_run_timesteps(self, current_run_timesteps: int) -> None:
         """
-        if not isinstance(current_run_timesteps, int):
-            raise TypeError("current_run_timesteps must be an int")
-        if current_run_timesteps < 0:
-            raise ConfigurationException(
-                f"current_run_timesteps {current_run_timesteps} must not be "
-                "negative")
+        Allows the end of a run forever to set the runtime read from the cores
+
+        :param current_run_timesteps:
+        :return:
+        """
+        if self.__fec_data._current_run_timesteps is not None:
+            raise NotImplementedError(
+                "Can only be called once after a run forever")
+        first = self.__fec_data._first_machine_time_step
+        if first > current_run_timesteps:
+            raise NotImplementedError(
+                f"Time does not go backwards! "
+                f"{first=} > {current_run_timesteps=}")
+        if first + self.get_max_run_time_steps() < current_run_timesteps:
+            logger.warning(
+                "Last run was longer than duration supported by recording")
         self.__fec_data._current_run_timesteps = current_run_timesteps
 
     def set_max_run_time_steps(self, max_run_time_steps: int):
