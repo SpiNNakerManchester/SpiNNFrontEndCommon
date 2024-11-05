@@ -28,6 +28,7 @@ from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException, ExecutableFailedToStopException)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
+from spinn_front_end_common.utilities.scp import GetCurrentTimeProcess
 
 SAFETY_FINISH_TIME = 0.1
 
@@ -39,7 +40,7 @@ _LIMIT = 10
 
 def application_runner(
         runtime: Optional[float], time_threshold: Optional[float],
-        run_until_complete: bool, state_condition: Condition):
+        run_until_complete: bool, state_condition: Condition) -> Optional[int]:
     """
     Ensures all cores are initialised correctly, ran, and completed
     successfully.
@@ -48,9 +49,13 @@ def application_runner(
     :param int time_threshold:
     :param bool run_until_complete:
     :param Condition state_condition:
+    :return:
+        The current latest time-step if runtime is None and
+        run_until_complete is False, else None
+    :rtype: int or None
     :raises ConfigurationException:
     """
-    _ApplicationRunner().run_app(
+    return _ApplicationRunner().run_app(
         runtime, time_threshold, run_until_complete, state_condition)
 
 
@@ -68,14 +73,17 @@ class _ApplicationRunner(object):
 
     def run_app(
             self, runtime: Optional[float], time_threshold: Optional[float],
-            run_until_complete: bool, state_condition: Condition):
+            run_until_complete: bool,
+            state_condition: Condition) -> Optional[int]:
         """
         :param int runtime:
         :param int time_threshold:
         :param bool run_until_complete:
         :param Condition state_condition:
-        :return: Number of synchronisation changes
-        :rtype: int
+        :return:
+            The current latest time-step if runtime is None and
+            run_until_complete is False, else None
+        :rtype: int or None
         :raises ConfigurationException:
         """
         logger.info("*** Running simulation... *** ")
@@ -107,12 +115,20 @@ class _ApplicationRunner(object):
         # Send start notification to external applications
         notification_interface.send_start_resume_notification()
 
+        latest_runtime = None
         if runtime is None and not run_until_complete:
             with state_condition:
                 while FecDataView.is_no_stop_requested():
                     state_condition.wait()
             self.__send_pause()
             self._wait_for_end()
+
+            core_subsets = FecDataView.get_cores_for_type(
+                ExecutableType.USES_SIMULATION_INTERFACE)
+            n_cores = len(core_subsets)
+            process = GetCurrentTimeProcess(
+                FecDataView.get_scamp_connection_selector())
+            latest_runtime = process.get_latest_runtime(n_cores, core_subsets)
         else:
             # Wait for the application to finish
             self._run_wait(
@@ -120,6 +136,7 @@ class _ApplicationRunner(object):
 
         # Send stop notification to external applications
         notification_interface.send_stop_pause_notification()
+        return latest_runtime
 
     def _run_wait(
             self, run_until_complete: bool, runtime: Optional[float],
