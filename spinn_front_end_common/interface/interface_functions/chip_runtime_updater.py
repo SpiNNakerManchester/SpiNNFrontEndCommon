@@ -45,7 +45,7 @@ def chip_runtime_updater(n_sync_steps: int):
         current_timesteps = 0
     else:
         infinite_run = False
-        current_timesteps = FecDataView.get_first_machine_time_step() or 0
+        current_timesteps = FecDataView.get_first_machine_time_step()
 
     process = UpdateRuntimeProcess(FecDataView.get_scamp_connection_selector())
     process.update_runtime(
