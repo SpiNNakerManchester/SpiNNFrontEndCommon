@@ -133,12 +133,16 @@ class _ApplicationRunner(object):
             # Wait for the application to finish
             logger.info("Application started; waiting until finished")
             self._wait_for_end()
-            core_subsets = FecDataView.get_cores_for_type(
-                ExecutableType.USES_SIMULATION_INTERFACE)
-            n_cores = len(core_subsets)
-            process = GetCurrentTimeProcess(
-                FecDataView.get_scamp_connection_selector())
-            latest_runtime = process.get_latest_runtime(n_cores, core_subsets)
+            # This could be a run_until_complete but with a fixed number of
+            # untimed steps; in that case we don't need to update the time
+            if runtime is None:
+                core_subsets = FecDataView.get_cores_for_type(
+                    ExecutableType.USES_SIMULATION_INTERFACE)
+                n_cores = len(core_subsets)
+                process = GetCurrentTimeProcess(
+                    FecDataView.get_scamp_connection_selector())
+                latest_runtime = process.get_latest_runtime(
+                    n_cores, core_subsets)
         else:
             self._run_wait(runtime, time_threshold)
 
