@@ -1254,10 +1254,6 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
         log_debug("Last time of stop notification request: %d",
                 last_stop_notification_request);
 
-        // Subtract 1 from the time so this tick gets done again on the next
-        // run
-        time = simulation_ticks - 1;
-
         simulation_ready_to_read();
         return;
     }

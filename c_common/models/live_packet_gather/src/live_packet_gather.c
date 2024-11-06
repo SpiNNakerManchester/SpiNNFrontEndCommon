@@ -330,10 +330,6 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     if (simulation_is_finished()) {
         simulation_handle_pause_resume(NULL);
 
-        // Subtract 1 from the time so this tick gets done again on the next
-        // run
-        time--;
-
         simulation_ready_to_read();
     }
 }
