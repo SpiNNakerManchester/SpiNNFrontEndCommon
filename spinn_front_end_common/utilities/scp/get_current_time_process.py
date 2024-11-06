@@ -14,8 +14,10 @@
 
 from functools import partial
 import struct
+import logging
 from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.messages.sdp import SDPHeader, SDPFlag
 from spinnman.messages.scp.abstract_messages import (
@@ -28,28 +30,7 @@ from spinnman.model.enums import (
 from spinnman.messages.scp.enums import SCPResult
 from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
 
-
-class _GetCurrentTimeRequest(AbstractSCPRequest[CheckOKResponse]):
-    def __init__(self, x: int, y: int, p: int):
-        """
-        :param int x:
-        :param int y:
-        :param int p:
-        """
-        # pylint: disable=too-many-arguments
-        sdp_flags = SDPFlag.REPLY_EXPECTED
-
-        super().__init__(
-            SDPHeader(
-                flags=sdp_flags,
-                destination_port=SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
-                destination_cpu=p, destination_chip_x=x, destination_chip_y=y),
-            SCPRequestHeader(
-                command=SDP_RUNNING_MESSAGE_CODES.SDP_GET_CURRENT_TIME_CODE))
-
-    @overrides(AbstractSCPRequest.get_scp_response)
-    def get_scp_response(self) -> CheckOKResponse:
-        return _GetCurrentTimeResponse()
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class _GetCurrentTimeResponse(AbstractSCPResponse):
@@ -79,6 +60,29 @@ class _GetCurrentTimeResponse(AbstractSCPResponse):
         return self.__current_time
 
 
+class _GetCurrentTimeRequest(AbstractSCPRequest[_GetCurrentTimeResponse]):
+    def __init__(self, x: int, y: int, p: int):
+        """
+        :param int x:
+        :param int y:
+        :param int p:
+        """
+        # pylint: disable=too-many-arguments
+        sdp_flags = SDPFlag.REPLY_EXPECTED
+
+        super().__init__(
+            SDPHeader(
+                flags=sdp_flags,
+                destination_port=SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
+                destination_cpu=p, destination_chip_x=x, destination_chip_y=y),
+            SCPRequestHeader(
+                command=SDP_RUNNING_MESSAGE_CODES.SDP_GET_CURRENT_TIME_CODE))
+
+    @overrides(AbstractSCPRequest.get_scp_response)
+    def get_scp_response(self) -> _GetCurrentTimeResponse:
+        return _GetCurrentTimeResponse()
+
+
 class GetCurrentTimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     """
     How to update the target running time of a set of cores.
@@ -88,22 +92,22 @@ class GetCurrentTimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     """
     __slots__ = (
         "__latest_time",
+        "__earliest_time"
     )
 
     def __init__(self, connection_selector):
         super().__init__(connection_selector)
         self.__latest_time = None
+        self.__earliest_time = None
 
     def __receive_response(
             self, progress: ProgressBar, response: _GetCurrentTimeResponse):
         progress.update()
         current_time = response.current_time
-        header = response.sdp_header
-        print(f"Current time from {header.destination_chip_x}, "
-              f"{header.destination_chip_y}, {header.destination_cpu}: "
-              f"{current_time}")
         if self.__latest_time is None or current_time > self.__latest_time:
             self.__latest_time = current_time
+        if self.__earliest_time is None or current_time < self.__earliest_time:
+            self.__earliest_time = current_time
 
     def get_latest_runtime(
             self, n_cores: int, core_subsets: CoreSubsets) -> int:
@@ -122,4 +126,12 @@ class GetCurrentTimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
                         callback=partial(self.__receive_response, progress))
         self._finish()
         self.check_for_error()
+
+        if self.__earliest_time != self.__latest_time:
+            logger.warning(
+                "The cores did not all stop on the same time-step; on the "
+                "next run, the simulation will start at the latest time of "
+                f"{self.__latest_time}.  For information, the earliest time "
+                f"was {self.__earliest_time}.")
+
         return self.__latest_time
