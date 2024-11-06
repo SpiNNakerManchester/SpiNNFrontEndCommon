@@ -494,7 +494,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         keys = get_keys(key_base, self.vertex_slice)
         for atom in range(self.vertex_slice.n_atoms):
             for tick in sorted(self._send_buffer_times[atom]):
-                if first_time_step <= tick <= end_time_step:
+                if first_time_step <= tick < end_time_step:
                     self._send_buffer.add_key(tick, keys[atom])
 
     def _fill_send_buffer_1d(self, key_base: int):
@@ -514,7 +514,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             return
         keys = get_keys(key_base, self.vertex_slice)
         for tick in sorted(self._send_buffer_times):
-            if first_time_step <= tick <= end_time_step:
+            if first_time_step <= tick < end_time_step:
                 self._send_buffer.add_keys(tick, keys)
 
     @staticmethod
