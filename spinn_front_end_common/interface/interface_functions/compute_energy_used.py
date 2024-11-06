@@ -86,11 +86,8 @@ def compute_energy_used(
         execute_on_machine_ms = checkpoint
     else:
         timesteps = FecDataView.get_current_run_timesteps()
-        if timesteps is not None:
-            ts_factor = FecDataView.get_time_scale_factor()
-            execute_on_machine_ms = int(round(timesteps * ts_factor))
-        else:
-            execute_on_machine_ms = FecDataView.get_measured_run_time_ms()
+        ts_factor = FecDataView.get_time_scale_factor()
+        execute_on_machine_ms = int(round(timesteps * ts_factor))
 
     run_loop_ms -= execute_on_machine_ms
 
