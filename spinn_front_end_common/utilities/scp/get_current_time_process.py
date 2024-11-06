@@ -15,6 +15,7 @@
 from functools import partial
 import struct
 import logging
+from typing import Optional
 from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -23,7 +24,6 @@ from spinnman.messages.sdp import SDPHeader, SDPFlag
 from spinnman.messages.scp.abstract_messages import (
     AbstractSCPRequest, AbstractSCPResponse)
 from spinnman.messages.scp import SCPRequestHeader
-from spinnman.messages.scp.impl import CheckOKResponse
 from spinnman.processes import AbstractMultiConnectionProcess
 from spinnman.model.enums import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
@@ -83,7 +83,8 @@ class _GetCurrentTimeRequest(AbstractSCPRequest[_GetCurrentTimeResponse]):
         return _GetCurrentTimeResponse()
 
 
-class GetCurrentTimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
+class GetCurrentTimeProcess(
+        AbstractMultiConnectionProcess[_GetCurrentTimeResponse]):
     """
     How to update the target running time of a set of cores.
 
@@ -110,7 +111,7 @@ class GetCurrentTimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
             self.__earliest_time = current_time
 
     def get_latest_runtime(
-            self, n_cores: int, core_subsets: CoreSubsets) -> int:
+            self, n_cores: int, core_subsets: CoreSubsets) -> Optional[int]:
         """
         :param ~spinn_machine.CoreSubsets core_subsets:
         :param int n_cores: Number of cores being updated
