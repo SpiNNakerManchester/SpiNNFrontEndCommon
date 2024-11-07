@@ -155,7 +155,6 @@ class BufferedSendingRegion(object):
             return bool(self._buffer[timestamp])
         return False
 
-    @property
     def next_key(self) -> int:
         """
         The next key to be sent.
