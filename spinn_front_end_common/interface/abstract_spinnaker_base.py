@@ -557,8 +557,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Only binaries that use the simulation interface can be"
                     " run more than once")
 
-        self._adjust_config(run_time)
-
         # Install the Control-C handler
         if self.__is_main_thread():
             signal.signal(signal.SIGINT, self.__signal_handler)
