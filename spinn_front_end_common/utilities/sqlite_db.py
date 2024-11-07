@@ -120,7 +120,12 @@ class SQLiteDB(object):
             # https://stackoverflow.com/a/21794758/301832
             self.__db = sqlite3.connect(
                 f"{db_uri}?mode=ro", uri=True, timeout=timeout)
+            # can not run a ddl file
+            ddl_file = None
         else:
+            if os.path.exists(database_file):
+                # No need to run the ddl_file again
+                ddl_file = None
             self.__db = sqlite3.connect(database_file, timeout=timeout)
 
         # We want to assume control over transactions ourselves
@@ -131,7 +136,7 @@ class SQLiteDB(object):
         if text_factory is not None:
             self.__db.text_factory = text_factory
 
-        if not read_only and ddl_file:
+        if ddl_file:
             with open(ddl_file, encoding="utf-8") as f:
                 sql = f.read()
             self.__db.executescript(sql)
