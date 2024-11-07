@@ -129,6 +129,7 @@ Enumerations</h2></td></tr>
 , <a class="el" href="simulation_8h.html#aecb935c0ee1f0574fe403361369301d5ae1f9d7108bb374a827d2908be32b697e">IOBUF_CLEAR</a> = 9
 , <br />
 &#160;&#160;<a class="el" href="simulation_8h.html#aecb935c0ee1f0574fe403361369301d5a22507047922c1ce8c921c8d193e67126">CMD_PAUSE</a> = 10
+, <a class="el" href="simulation_8h.html#aecb935c0ee1f0574fe403361369301d5a415ab305bf68a199248d80c11f3fba1b">CMD_GET_TIME</a> = 11
 <br />
  }</td></tr>
 <tr class="memdesc:aecb935c0ee1f0574fe403361369301d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">the commands that the simulation control protocol may send  <a href="simulation_8h.html#aecb935c0ee1f0574fe403361369301d5">More...</a><br /></td></tr>
@@ -333,7 +334,7 @@ provenance_data_elements[]</td>
 
 <p>the definition of the callback used by provenance data functions </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00073">73</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00075">75</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
 
 </div>
 </div>
@@ -351,7 +352,7 @@ provenance_data_elements[]</td>
 
 <p>the definition of the callback used by pause and resume </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00076">76</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00078">78</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
 
 </div>
 </div>
@@ -368,7 +369,7 @@ provenance_data_elements[]</td>
 </div><div class="memdoc">
 <p>the definition of the callback used by pause and resume when exit command is sent and models want to do cleaning up </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00080">80</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00082">82</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
 
 </div>
 </div>
@@ -386,7 +387,7 @@ provenance_data_elements[]</td>
 
 <p>the definition of the callback used to call a function once at start </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00083">83</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00085">85</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
 
 </div>
 </div>
@@ -414,6 +415,8 @@ provenance_data_elements[]</td>
 <tr><td class="fieldname"><a id="aecb935c0ee1f0574fe403361369301d5ae1f9d7108bb374a827d2908be32b697e" name="aecb935c0ee1f0574fe403361369301d5ae1f9d7108bb374a827d2908be32b697e"></a>IOBUF_CLEAR&#160;</td><td class="fielddoc"><p>Clears the IOBUF. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="aecb935c0ee1f0574fe403361369301d5a22507047922c1ce8c921c8d193e67126" name="aecb935c0ee1f0574fe403361369301d5a22507047922c1ce8c921c8d193e67126"></a>CMD_PAUSE&#160;</td><td class="fielddoc"><p>Asks the application to pause. This relies on the application using simulation_is_finished which can then handle the pause status better. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aecb935c0ee1f0574fe403361369301d5a415ab305bf68a199248d80c11f3fba1b" name="aecb935c0ee1f0574fe403361369301d5a415ab305bf68a199248d80c11f3fba1b"></a>CMD_GET_TIME&#160;</td><td class="fielddoc"><p>Get the current simulation time. </p>
 </td></tr>
 </table>
 
@@ -505,7 +508,7 @@ provenance_data_elements[]</td>
 </li>
 </ol>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00354">354</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00370">370</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -593,7 +596,7 @@ provenance_data_elements[]</td>
 </li>
 </ol>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00140">140</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8h_source.html#l00142">142</a> of file <a class="el" href="simulation_8h_source.html">simulation.h</a>.</p>
 
 </div>
 </div>
@@ -621,7 +624,7 @@ provenance_data_elements[]</td>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00398">398</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00414">414</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -660,7 +663,7 @@ provenance_data_elements[]</td>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00402">402</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00418">418</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -688,7 +691,7 @@ provenance_data_elements[]</td>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00409">409</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00425">425</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -716,7 +719,7 @@ provenance_data_elements[]</td>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00413">413</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00429">429</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -852,7 +855,7 @@ provenance_data_elements[]</td>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if successful, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00307">307</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00323">323</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -880,7 +883,7 @@ provenance_data_elements[]</td>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00317">317</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00333">333</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -920,7 +923,7 @@ provenance_data_elements[]</td>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if successful, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00330">330</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00346">346</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -948,7 +951,7 @@ provenance_data_elements[]</td>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00350">350</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00366">366</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -976,7 +979,7 @@ provenance_data_elements[]</td>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00417">417</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00433">433</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -1004,7 +1007,7 @@ provenance_data_elements[]</td>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00421">421</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00437">437</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -1027,7 +1030,7 @@ provenance_data_elements[]</td>
 <p>determine if the simulation is finished. Will also pause the simulation for resynchronisation if requested (see simulation_set_sync_steps). </p>
 <dl class="section return"><dt>Returns</dt><dd>true if the simulation is finished, false if not. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00428">428</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00444">444</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>

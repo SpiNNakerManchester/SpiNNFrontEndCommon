@@ -773,6 +773,12 @@
       <anchor>aecb935c0ee1f0574fe403361369301d5a22507047922c1ce8c921c8d193e67126</anchor>
       <arglist></arglist>
     </member>
+    <member kind="enumvalue">
+      <name>CMD_GET_TIME</name>
+      <anchorfile>simulation_8h.html</anchorfile>
+      <anchor>aecb935c0ee1f0574fe403361369301d5a415ab305bf68a199248d80c11f3fba1b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function">
       <type>bool</type>
       <name>simulation_initialise</name>
