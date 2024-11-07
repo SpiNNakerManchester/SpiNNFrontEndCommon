@@ -282,6 +282,22 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
         spin1_msg_free(msg);
         break;
 
+    case CMD_GET_TIME:
+        // send the current time back
+        msg->cmd_rc = RC_OK;
+        // The length is 12 for the header + 4 for the time (in arg1)
+        msg->length = 16;
+        msg->arg1 = *pointer_to_current_time;
+        uint dest_port = msg->dest_port;
+        uint dest_addr = msg->dest_addr;
+        msg->dest_port = msg->srce_port;
+        msg->srce_port = dest_port;
+        msg->dest_addr = msg->srce_addr;
+        msg->srce_addr = dest_addr;
+        spin1_send_sdp_msg(msg, 10);
+        spin1_msg_free(msg);
+        break;
+
     default:
         // should never get here
         log_error("received packet with unknown command code %d",
