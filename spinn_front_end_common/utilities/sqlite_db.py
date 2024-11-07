@@ -124,7 +124,7 @@ class SQLiteDB(object):
             ddl_file = None
         else:
             if os.path.exists(database_file):
-                # No need to run the ddl_file again
+                # No need to run the DDL file again
                 ddl_file = None
             self.__db = sqlite3.connect(database_file, timeout=timeout)
 
