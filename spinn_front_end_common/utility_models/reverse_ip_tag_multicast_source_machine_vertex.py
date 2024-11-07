@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from __future__ import annotations
+
+import sys
 from enum import IntEnum
 import logging
 import math
@@ -452,18 +454,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         else:
             self._clear_send_buffer()
 
-    @staticmethod
-    def _is_in_range(
-            step: int, first_step: Optional[int],
-            end_step: Optional[int]) -> bool:
-        """
-        :param int step: The time step to check
-        :param int first_step: The smallest support step
-        :param int end_step: The step after the end
-        """
-        first_step = first_step or 0
-        return end_step is None or (first_step <= step < end_step)
-
     def _fill_send_buffer(self) -> None:
         """
         Fill the send buffer with keys to send.
@@ -500,13 +490,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
         assert self._send_buffer_times is not None
 
         first_time_step = FecDataView.get_first_machine_time_step()
-        end_time_step = FecDataView.get_current_run_timesteps()
+        end_time_step = FecDataView.get_current_run_timesteps() or sys.maxsize
         if first_time_step == end_time_step:
             return
         keys = get_keys(key_base, self.vertex_slice)
         for atom in range(self.vertex_slice.n_atoms):
             for tick in sorted(self._send_buffer_times[atom]):
-                if self._is_in_range(tick, first_time_step, end_time_step):
+                if first_time_step <= tick < end_time_step:
                     self._send_buffer.add_key(tick, keys[atom])
 
     def _fill_send_buffer_1d(self, key_base: int):
@@ -521,12 +511,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
         assert self._send_buffer_times is not None
 
         first_time_step = FecDataView.get_first_machine_time_step()
-        end_time_step = FecDataView.get_current_run_timesteps()
+        end_time_step = FecDataView.get_current_run_timesteps() or sys.maxsize
         if first_time_step == end_time_step:
             return
         keys = get_keys(key_base, self.vertex_slice)
         for tick in sorted(self._send_buffer_times):
-            if self._is_in_range(tick, first_time_step, end_time_step):
+            if first_time_step <= tick < end_time_step:
                 self._send_buffer.add_keys(tick, keys)
 
     @staticmethod

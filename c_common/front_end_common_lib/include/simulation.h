@@ -66,7 +66,9 @@ typedef enum simulation_commands {
     IOBUF_CLEAR = 9,
     //! Asks the application to pause.  This relies on the application using
     //! simulation_is_finished which can then handle the pause status better.
-    CMD_PAUSE = 10
+    CMD_PAUSE = 10,
+    //! Get the current simulation time
+    CMD_GET_TIME = 11,
 } simulation_commands;
 
 //! the definition of the callback used by provenance data functions
