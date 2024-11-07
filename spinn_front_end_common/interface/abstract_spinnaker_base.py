@@ -599,7 +599,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             self._add_dependent_verts_and_edges_for_application_graph()
 
-            if get_config_bool("Buffers", "use_auto_pause_and_resume"):
+            if ((get_config_bool("Buffers", "use_auto_pause_and_resume"))
+                    or (run_time is None)):
                 self._data_writer.set_plan_n_timesteps(get_config_int(
                     "Buffers", "minimum_auto_time_steps"))
             else:
@@ -666,20 +667,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         elif run_time is None and self._run_until_complete:
             logger.info("Running until complete")
             self._do_run(None, n_sync_steps)
-        elif (not get_config_bool(
-                "Buffers", "use_auto_pause_and_resume") or
-                not is_per_timestep_sdram):
-            logger.info("Running forever")
-            self._do_run(None, n_sync_steps)
         else:
-            logger.info("Running forever in steps of {}ms",
-                        self._data_writer.get_max_run_time_steps())
-            while self._data_writer.is_no_stop_requested():
-                logger.info(f"Run {self._data_writer.next_run_step()}")
-                self._do_run(
-                    self._data_writer.get_max_run_time_steps(), n_sync_steps)
-            self._data_writer.clear_run_steps()
-
+            if is_per_timestep_sdram:
+                logger.warning("Due to recording this simulation "
+                               "should not be run longer than {}ms",
+                               self._data_writer.get_max_run_time_steps())
+            logger.info("Running until stop is called by another thread")
+            self._do_run(None, n_sync_steps)
         # Indicate that the signal handler needs to act
         if self.__is_main_thread():
             self._raise_keyboard_interrupt = False

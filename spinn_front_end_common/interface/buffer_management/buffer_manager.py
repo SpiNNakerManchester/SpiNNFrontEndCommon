@@ -30,7 +30,7 @@ from pacman.model.placements import Placement
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import (
-    BufferableRegionTooSmall, SpinnFrontEndException)
+    SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
@@ -330,9 +330,9 @@ class BufferManager(object):
                 progress.update(len(data))
 
         if not sent_message:
-            raise BufferableRegionTooSmall(
-                f"The buffer size {bytes_to_go} is too small for any data to "
-                f"be added for region {region} of vertex {vertex}")
+            raise SpinnFrontEndException(
+                f"Unable to create message for {region=} on {vertex=} "
+                f"while is_empty reports false.")
 
         # If there are no more messages and there is space, add a stop request
         if (not vertex.is_next_timestamp(region) and
