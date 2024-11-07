@@ -62,11 +62,17 @@ class EnergyReport(object):
         f.write(f"Simulation used {power_used.n_boards} boards, "
                 f"in {power_used.n_frames} frames "
                 f"made up of {power_used.n_chips} chips\n")
-        f.write(f"Simulation cores used: {power_used.n_cores}\n\n")
+        f.write(f"Simulation cores used: {power_used.n_cores} in total, "
+                f"{power_used.n_active_cores} actively on "
+                f"{power_used.n_active_chips} chips\n\n")
         f.write(f"Simulation execution time: {power_used.exec_time_s} "
                 "seconds\n")
         f.write(f"Simulation execution energy: {power_used.exec_energy_j}"
                 " Joules\n\n")
+        f.write(f"Simulation execution energy (active chips and cores only): "
+                f"{power_used.exec_energy_cores_j} Joules\n")
+        f.write(f"Simulation execution energy (ignoring frame power): "
+                f"{power_used.exec_energy_boards_j} Joules\n\n")
         f.write(f"Mapping time: {power_used.mapping_time_s} seconds\n")
         f.write(f"Mapping energy: {power_used.mapping_energy_j} Joules\n\n")
 

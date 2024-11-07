@@ -34,20 +34,12 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 _MS_PER_SECOND: Final = 1000.0
 
 
-def compute_energy_used(
-        checkpoint: Optional[int] = None, active_only: bool = False,
-        include_frame: bool = True) -> PowerUsed:
+def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     """
     This algorithm does the actual work of computing energy used by a
     simulation (or other application) running on SpiNNaker.
 
     :param int checkpoint: the time at which to compute execution energy up to
-    :param bool active_only:
-        whether to only compute actively used parts i.e. just include the chip
-        and core energy used, not the extra for the frame and board
-    :param bool include_frame:
-        whether to include the frame energy in the calculation, or just assume
-        an isolated board / set of boards
 
     :rtype: PowerUsed
     """
@@ -98,23 +90,18 @@ def compute_energy_used(
     n_cores = FecDataView.get_n_placements()
     n_frames = _calculate_n_frames(machine)
 
-    if active_only:
-        chips_used = set()
-        n_cores = 0
-        for pl in FecDataView.iterate_placemements():
-            if not isinstance(pl.vertex, AbstractHasAssociatedBinary):
-                continue
-            vertex: AbstractHasAssociatedBinary = cast(
-                AbstractHasAssociatedBinary, pl.vertex)
-            if (vertex.get_binary_start_type() != ExecutableType.SYSTEM and
-                    not isinstance(vertex, ChipPowerMonitorMachineVertex)):
-                chips_used.add((pl.x, pl.y))
-                n_cores += 1
-        n_chips = len(chips_used)
-        n_frames = 0
-        n_boards = 0
-    if not include_frame:
-        n_frames = 0
+    active_chips_used = set()
+    n_active_cores = 0
+    for pl in FecDataView.iterate_placemements():
+        if not isinstance(pl.vertex, AbstractHasAssociatedBinary):
+            continue
+        vertex: AbstractHasAssociatedBinary = cast(
+            AbstractHasAssociatedBinary, pl.vertex)
+        if (vertex.get_binary_start_type() != ExecutableType.SYSTEM and
+                not isinstance(vertex, ChipPowerMonitorMachineVertex)):
+            active_chips_used.add((pl.x, pl.y))
+            n_active_cores += 1
+    n_active_chips = len(active_chips_used)
 
     run_chip_active_time = _extract_cores_active_time(checkpoint)
     load_chip_active_time = _make_extra_monitor_core_use(
@@ -133,9 +120,10 @@ def compute_energy_used(
         waiting_ms, setup_ms, get_machine_ms, mapping_ms, loading_ms,
         data_loading_ms, expansion_ms, data_extraction_ms, run_other_ms,
         run_loop_ms, execute_on_machine_ms, resetting_ms, shutting_down_ms,
-        version, n_chips, n_boards, n_frames, n_cores, load_chip_active_time,
-        extraction_chip_active_time, run_chip_active_time, load_router_packets,
-        extraction_router_packets, run_router_packets)
+        version, n_chips, n_active_chips, n_boards, n_frames, n_cores,
+        n_active_cores, load_chip_active_time, extraction_chip_active_time,
+        run_chip_active_time, load_router_packets, extraction_router_packets,
+        run_router_packets)
 
 
 def _calculate_n_frames(machine: Machine) -> int:
@@ -200,7 +188,8 @@ def compute_energy_over_time(
         expansion_ms: float, data_extraction_ms: float, run_other_ms: float,
         run_loop_ms: float, execute_on_machine_ms: float,
         resetting_ms: float, shutting_down_ms: float, version: AbstractVersion,
-        n_chips: int, n_boards: int, n_frames: int, n_cores: int,
+        n_chips: int, n_active_chips: int, n_boards: int, n_frames: int,
+        n_cores: int, n_active_cores: int,
         load_chip_active_time: ChipActiveTime,
         extraction_chip_active_time: ChipActiveTime,
         run_chip_active_time: ChipActiveTime,
@@ -235,9 +224,11 @@ def compute_energy_over_time(
     :param shutting_down_ms: time spent shutting down the simulation
     :param version: the version of the machine
     :param n_chips: number of chips that make up the machine
+    :param n_active_chips: number of chips active in simulation
     :param n_boards: number of boards that make up the machine
     :param n_frames: number of frames that make up the machine
     :param n_cores: number of cores that are used by the simulation
+    :param n_active_cores: number of cores actively used by the simulation
     :param load_chip_active_time:
         time that each core was active during loading
     :param extraction_chip_active_time:
@@ -286,8 +277,15 @@ def compute_energy_over_time(
     exec_energy_j = version.get_active_energy(
         exec_time_s, n_frames, n_boards, n_chips,
         run_chip_active_time, run_router_packets)
+    exec_energy_cores_j = version.get_active_energy(
+        exec_time_s, 0, 0, n_active_chips, run_chip_active_time,
+        run_router_packets)
+    exec_energy_boards_j = version.get_active_energy(
+        exec_time_s, 0, n_boards, n_chips, run_chip_active_time,
+        run_router_packets)
 
     return PowerUsed(
-        n_chips, n_cores, n_boards, n_frames, exec_time_s, mapping_time_s,
-        loading_time_s, saving_time_s, other_time_s, exec_energy_j,
+        n_chips, n_active_chips, n_cores, n_active_cores, n_boards, n_frames,
+        exec_time_s, mapping_time_s, loading_time_s, saving_time_s,
+        other_time_s, exec_energy_j, exec_energy_cores_j, exec_energy_boards_j,
         mapping_energy_j, loading_energy_j, saving_energy_j, other_energy_j)
