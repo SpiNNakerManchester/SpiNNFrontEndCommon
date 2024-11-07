@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Final, Optional, cast
+from typing import Final, Optional, cast, Dict, Tuple
 from spinn_utilities.config_holder import get_config_bool
 from spinn_machine import Machine
 from spinn_machine.version.abstract_version import (
@@ -90,7 +90,7 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     n_cores = FecDataView.get_n_placements()
     n_frames = _calculate_n_frames(machine)
 
-    active_chips_used = set()
+    active_cores: Dict[Tuple[int, int], int] = defaultdict(int)
     n_active_cores = 0
     for pl in FecDataView.iterate_placemements():
         if not isinstance(pl.vertex, AbstractHasAssociatedBinary):
@@ -99,11 +99,11 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
             AbstractHasAssociatedBinary, pl.vertex)
         if (vertex.get_binary_start_type() != ExecutableType.SYSTEM and
                 not isinstance(vertex, ChipPowerMonitorMachineVertex)):
-            active_chips_used.add((pl.x, pl.y))
+            active_cores[(pl.x, pl.y)] += 1
             n_active_cores += 1
-    n_active_chips = len(active_chips_used)
+    n_active_chips = len(active_cores)
 
-    run_chip_active_time = _extract_cores_active_time(checkpoint)
+    run_chip_active_time = _extract_cores_active_time(checkpoint, active_cores)
     load_chip_active_time = _make_extra_monitor_core_use(
         data_loading_ms, machine, version.n_scamp_cores + 2,
         version.n_scamp_cores + 1)
@@ -160,12 +160,14 @@ def _extract_router_packets(
 
 
 def _extract_cores_active_time(
-        checkpoint: Optional[int] = None) -> ChipActiveTime:
+        checkpoint: Optional[int],
+        active_cores: Dict[Tuple[int, int], int]) -> ChipActiveTime:
     key = PROVENANCE_TIME_KEY
     if checkpoint is not None:
         key = f"{PROVENANCE_TIME_KEY}_{checkpoint}"
     with ProvenanceReader() as db:
-        data = {(x, y): value for (x, y, value) in db.get_monitor_by_chip(key)}
+        data = {(x, y): (value, active_cores[x, y])
+                for (x, y, value) in db.get_monitor_by_chip(key)}
     return data
 
 
@@ -178,7 +180,7 @@ def _make_extra_monitor_core_use(
         n_monitors = extra_monitors_per_chip
         if chip.ip_address is not None:
             n_monitors += extra_monitors_per_board
-        core_use[chip.x, chip.y] = n_monitors * time_s
+        core_use[chip.x, chip.y] = (n_monitors * time_s, n_monitors)
     return core_use
 
 
