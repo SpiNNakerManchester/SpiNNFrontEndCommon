@@ -44,6 +44,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
+from spinn_front_end_common.interface.provenance import (
+    AbstractProvidesProvenanceDataFromMachine)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
@@ -57,7 +59,8 @@ CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
+        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost,
+        AbstractProvidesProvenanceDataFromMachine):
     """
     Machine vertex for C code representing functionality to record
     idle times in a machine graph.
@@ -249,15 +252,23 @@ class ChipPowerMonitorMachineVertex(
             logger.warning(
                 "Chip Power monitor has lost data on chip({}, {})",
                 placement.x, placement.y)
+        results = numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 19)
+        return results
 
-        time_for_recorded_sample_s = (
-            self._sampling_frequency *
-            self.__n_samples_per_recording) / 1000000
-        results = (
-            numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 19) /
-            self.__n_samples_per_recording) * time_for_recorded_sample_s
+    @overrides(AbstractProvidesProvenanceDataFromMachine
+               .get_provenance_data_from_machine)
+    def get_provenance_data_from_machine(self, placement: Placement):
+        # We do this to make sure we actually store the data
+        results = self.get_recorded_data(placement)
+        # Get record times in milliseconds
         record_times = results[:, 0] * self._sampling_frequency / 1000
         activity = results[:, 1:].astype("float")
+        physical_p = FecDataView().get_physical_core_id(
+            placement.xy, placement.p)
+        # Set the activity of *this* core to 0, as we don't want to measure
+        # that!
+        activity[:, physical_p] = 0
+        time_for_recorded_sample_s = self._sampling_frequency / 1000000
         activity_times = activity * time_for_recorded_sample_s
         for checkpoint in FecDataView().iterate_energy_checkpoints():
             # Find all activity up to the check point
@@ -270,7 +281,6 @@ class ChipPowerMonitorMachineVertex(
                 db.insert_monitor(
                     placement.x, placement.y,
                     f"{PROVENANCE_TIME_KEY}_{checkpoint}", activity_time)
-        FecDataView().clear_energy_checkpoints()
         activity_count = activity.sum()
         activity_time = activity_times.sum()
         with ProvenanceWriter() as db:
@@ -278,4 +288,3 @@ class ChipPowerMonitorMachineVertex(
                 placement.x, placement.y, PROVENANCE_COUNT_KEY, activity_count)
             db.insert_monitor(
                 placement.x, placement.y, PROVENANCE_TIME_KEY, activity_time)
-        return results

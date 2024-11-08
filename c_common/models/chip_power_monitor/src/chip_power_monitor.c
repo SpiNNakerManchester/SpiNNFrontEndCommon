@@ -181,10 +181,8 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
 
         recording_finalise();
 
-        // Subtract 1 from the time so this tick gets done again on the next
-        // run
-        time--;
-
+        // Invert the time calculation so that any time read is correct
+        time = (time * sample_frequency) / timer;
         simulation_ready_to_read();
 
         return;
