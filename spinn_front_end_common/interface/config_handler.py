@@ -72,6 +72,7 @@ class ConfigHandler(object):
         self._debug_configs()
         self._previous_handler()
         self._reserve_system_vertices()
+        self._ensure_provenance_for_energy_report()
 
     def __toggle_config(self, section: str, option: str, to_false: List[str],
                         to_true: List[str]):
@@ -243,3 +244,8 @@ class ConfigHandler(object):
             f.write("\n")
             f.write("Traceback of setup call:\n")
             traceback.print_stack(file=f)
+
+    def _ensure_provenance_for_energy_report(self):
+        if get_config_bool("Reports", "write_energy_report"):
+            set_config("Reports", "read_router_provenance_data", "True")
+            set_config("Reports", "read_placements_provenance_data", "True")
