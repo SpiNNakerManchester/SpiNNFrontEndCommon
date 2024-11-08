@@ -120,7 +120,7 @@ class SQLiteDB(object):
             # https://stackoverflow.com/a/21794758/301832
             self.__db = sqlite3.connect(
                 f"{db_uri}?mode=ro", uri=True, timeout=timeout)
-            # can not run a ddl file
+            # can not run a DDL file
             ddl_file = None
         else:
             if os.path.exists(database_file):
