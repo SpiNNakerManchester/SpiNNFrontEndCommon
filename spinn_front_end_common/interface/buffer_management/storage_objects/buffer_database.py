@@ -18,6 +18,8 @@ from typing import Optional, Tuple
 from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utility_models.chip_power_monitor_machine_vertex \
+    import PROVENANCE_CORE_KEY
 
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 #: Name of the database in the data folder
@@ -575,3 +577,20 @@ class BufferDatabase(BaseDatabase):
                 """, (x, y, p)):
             return str(row["core_name"], 'utf8')
         return None
+
+    def get_power_monitor_core(self, x, y) -> int:
+        """
+        Gets the power monitor core for chip x, y
+
+        :param str description:
+        :return: list of tuples x, y, value)
+        :rtype: list(tuple(int, int, float))
+        """
+        for row in self.execute(
+                """
+                SELECT the_value
+                FROM monitor_provenance
+                WHERE x = ? AND y = ? AND description = ?
+                """, (x, y, PROVENANCE_CORE_KEY)):
+            return int(row["the_value"])
+        raise LookupError(f"No power monitor core for {x=} {y=}")

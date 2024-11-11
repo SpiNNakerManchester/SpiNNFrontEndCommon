@@ -28,7 +28,7 @@ from spinn_front_end_common.interface.interface_functions\
     .load_data_specification import load_using_advanced_monitors
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
-        PROVENANCE_CORE_KEY, RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
+        RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
@@ -174,15 +174,12 @@ def _extract_cores_active_time(
         checkpoint: Optional[int], active_cores: Dict[Tuple[int, int], int],
         version: AbstractVersion) -> ChipActiveTime:
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
-    # Get the data from the cores
-    with ProvenanceReader() as db:
-        core = {
-            (x, y): value for x, y, value in db.get_monitor_by_chip(
-                PROVENANCE_CORE_KEY)}
 
     chip_activity: ChipActiveTime = {}
     with BufferDatabase() as buff_db:
-        for (x, y), p in core.items():
+        for (x, y), n_cores in active_cores.items():
+            # Find the core that was used on this chip for power monitoring
+            p = buff_db.get_power_monitor_core(x, y)
             # Get time per sample in seconds (frequency in microseconds)
             time_for_recorded_sample_s = sampling_frequency / _US_PER_SECOND
             data, _missing = buff_db.get_recording(x, y, p, RECORDING_CHANNEL)
@@ -203,7 +200,7 @@ def _extract_cores_active_time(
             # If checkpoint is specified, filter the times
             if checkpoint is not None:
                 activity_times = activity_times[record_times < checkpoint]
-            chip_activity[x, y] = (activity_times.sum(), active_cores[x, y])
+            chip_activity[x, y] = (activity_times.sum(), n_cores)
     return chip_activity
 
 
