@@ -2094,6 +2094,7 @@
     <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
     <includes id="data__specification_8h" name="data_specification.h" local="no" import="no" module="no" objc="no">data_specification.h</includes>
     <class kind="struct">sample_params</class>
+    <class kind="struct">recording</class>
     <member kind="define">
       <type>#define</type>
       <name>NUM_RANDOM_BITS</name>
@@ -2250,11 +2251,11 @@
       <arglist></arglist>
     </member>
     <member kind="variable" static="yes">
-      <type>static uint32_t</type>
-      <name>core_counters</name>
+      <type>static struct recording</type>
+      <name>recording</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>aaca75ef938bfbe962dd43f506d5f86d1</anchor>
-      <arglist>[NUM_CPUS]</arglist>
+      <anchor>addb04bd4f16d417ec72f5d677c214d85</anchor>
+      <arglist></arglist>
     </member>
     <member kind="variable" static="yes">
       <type>static uint32_t</type>
@@ -8723,6 +8724,11 @@
       <anchor>a35c422f0e368bbb7dbee23f9f27588fe</anchor>
       <arglist>[MAX_PACKET_SIZE]</arglist>
     </member>
+  </compound>
+  <compound kind="struct">
+    <name>recording</name>
+    <filename>chip__power__monitor_8c.html</filename>
+    <anchor>structrecording</anchor>
   </compound>
   <compound kind="struct">
     <name>recording_channel_t</name>
