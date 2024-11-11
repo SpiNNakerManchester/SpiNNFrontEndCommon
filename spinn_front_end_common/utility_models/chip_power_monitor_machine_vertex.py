@@ -232,7 +232,7 @@ class ChipPowerMonitorMachineVertex(
                                recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
-    def __write_recording_metadata(self, placement: Placement):
+    def __write_recording_metadata(self, placement: Placement) -> None:
         physical_p = FecDataView().get_physical_core_id(
             placement.xy, placement.p)
         with ProvenanceWriter() as db:
