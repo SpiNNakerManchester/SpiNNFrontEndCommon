@@ -2017,6 +2017,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs any reports based on provenance.
         """
 
+    def _execute_clear_router_diagnostic_counters(self) -> None:
+        """
+        Runs, times and logs the clear_router_diagnostic_counters if required.
+        """
+        with FecTimer("Clear Router Diagnostic Counters",
+                      TimerWork.CONTROL) as timer:
+            if timer.skip_if_virtual_board():
+                return
+            transceiver = FecDataView().get_transceiver()
+            for chip in FecDataView.get_machine().chips:
+                transceiver.clear_router_diagnostic_counters(chip.x, chip.y)
+
     def _execute_clear_io_buf(self) -> None:
         """
         Runs, times and logs the ChipIOBufClearer if required.
@@ -2126,9 +2138,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type run_time: int or None
         """
         self._execute_router_provenance_gatherer("Run", TimerWork.EXTRACTING)
-        for chip in FecDataView.get_machine().chips:
-            FecDataView().get_transceiver().clear_router_diagnostic_counters(
-                chip.x, chip.y)
+        self._execute_clear_router_diagnostic_counters()
         self._execute_extract_iobuff()
         self._execute_buffer_extractor()
         self._execute_clear_io_buf()
