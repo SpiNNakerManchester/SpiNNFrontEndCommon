@@ -42,10 +42,11 @@ from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
+from spinn_front_end_common.interface.buffer_management.storage_objects\
+    .buffer_database import PROVENANCE_CORE_KEY
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
-PROVENANCE_CORE_KEY = "Power_Monitor_Core"
 RECORDING_CHANNEL = 0
 
 RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD

@@ -18,11 +18,9 @@ from typing import Optional, Tuple
 from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
-from spinn_front_end_common.utility_models.chip_power_monitor_machine_vertex \
-    import PROVENANCE_CORE_KEY
 
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
-#: Name of the database in the data folder
+PROVENANCE_CORE_KEY = "Power_Monitor_Core"
 
 
 def _timestamp():
