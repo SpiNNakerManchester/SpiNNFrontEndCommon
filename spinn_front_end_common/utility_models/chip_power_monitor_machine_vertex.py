@@ -46,8 +46,6 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
 PROVENANCE_CORE_KEY = "Power_Monitor_Core"
-PROVENANCE_PHYSICAL_CORE_KEY = "Power_Monitor_Physical_Core"
-PROVENANCE_SAMPLING_FREQUENCY_KEY = "Power_Monitor_Sampling_Frequency"
 RECORDING_CHANNEL = 0
 
 RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD
@@ -66,7 +64,7 @@ class ChipPowerMonitorMachineVertex(
         This is an unusual machine vertex, in that it has no associated
         application vertex.
     """
-    __slots__ = ("_sampling_frequency", "__n_samples_per_recording")
+    __slots__ = ("__sampling_frequency", "__n_samples_per_recording")
 
     class _REGIONS(IntEnum):
         # data regions
@@ -77,32 +75,24 @@ class ChipPowerMonitorMachineVertex(
     #: which channel in the recording region has the recorded samples
     _SAMPLE_RECORDING_CHANNEL = 0
 
-    def __init__(self, label: str, sampling_frequency: int):
+    def __init__(self, label: str):
         """
         :param str label: vertex label
         :param int sampling_frequency: how often to sample, in microseconds
         """
         super().__init__(
             label=label, app_vertex=None, vertex_slice=None)
-        self._sampling_frequency = sampling_frequency
+        self.__sampling_frequency = get_config_int(
+            "EnergyMonitor", "sampling_frequency")
         self.__n_samples_per_recording = get_config_int(
             "EnergyMonitor", "n_samples_per_recording_entry")
-
-    @property
-    def sampling_frequency(self) -> int:
-        """
-        How often to sample, in microseconds.
-
-        :rtype: int
-        """
-        return self._sampling_frequency
 
     @property
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> AbstractSDRAM:
         # The number of sample per step does not have to be an int
         samples_per_step = (FecDataView.get_hardware_time_step_us() /
-                            self._sampling_frequency)
+                            self.__sampling_frequency)
         recording_per_step = samples_per_step / self.__n_samples_per_recording
         max_recording_per_step = math.ceil(recording_per_step)
         overflow_recordings = max_recording_per_step - recording_per_step
@@ -154,7 +144,7 @@ class ChipPowerMonitorMachineVertex(
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG)
         spec.write_value(self.__n_samples_per_recording)
-        spec.write_value(self._sampling_frequency)
+        spec.write_value(self.__sampling_frequency)
 
     def _write_setup_info(self, spec):
         """
@@ -227,20 +217,12 @@ class ChipPowerMonitorMachineVertex(
         :rtype: int
         """
         recording_time = (
-            self._sampling_frequency * self.__n_samples_per_recording)
+            self.__sampling_frequency * self.__n_samples_per_recording)
         n_entries = math.floor(FecDataView.get_hardware_time_step_us() /
                                recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
     def __write_recording_metadata(self, placement: Placement) -> None:
-        physical_p = FecDataView().get_physical_core_id(
-            placement.xy, placement.p)
         with ProvenanceWriter() as db:
             db.insert_monitor(
-                placement.x, placement.y, PROVENANCE_PHYSICAL_CORE_KEY,
-                physical_p)
-            db.insert_monitor(
                 placement.x, placement.y, PROVENANCE_CORE_KEY, placement.p)
-            db.insert_monitor(
-                placement.x, placement.y, PROVENANCE_SAMPLING_FREQUENCY_KEY,
-                self._sampling_frequency)

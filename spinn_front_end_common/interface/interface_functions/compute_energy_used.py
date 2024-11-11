@@ -15,7 +15,7 @@
 from collections import defaultdict
 from typing import Final, Optional, cast, Dict, Tuple
 import numpy
-from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_machine import Machine
 from spinn_machine.version.abstract_version import (
     AbstractVersion, ChipActiveTime, RouterPackets)
@@ -28,9 +28,7 @@ from spinn_front_end_common.interface.interface_functions\
     .load_data_specification import load_using_advanced_monitors
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
-        PROVENANCE_CORE_KEY, PROVENANCE_PHYSICAL_CORE_KEY,
-        PROVENANCE_SAMPLING_FREQUENCY_KEY, RECORDING_CHANNEL,
-        ChipPowerMonitorMachineVertex)
+        PROVENANCE_CORE_KEY, RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
@@ -175,34 +173,30 @@ def _extract_router_packets(
 def _extract_cores_active_time(
         checkpoint: Optional[int], active_cores: Dict[Tuple[int, int], int],
         version: AbstractVersion) -> ChipActiveTime:
+    sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     # Get the data from the cores
     with ProvenanceReader() as db:
         core = {
             (x, y): value for x, y, value in db.get_monitor_by_chip(
                 PROVENANCE_CORE_KEY)}
-        physical_core = {
-            (x, y): value for x, y, value in db.get_monitor_by_chip(
-                PROVENANCE_PHYSICAL_CORE_KEY)}
-        frequency = {
-            (x, y): value for x, y, value in db.get_monitor_by_chip(
-                PROVENANCE_SAMPLING_FREQUENCY_KEY)}
 
     chip_activity: ChipActiveTime = {}
     with BufferDatabase() as buff_db:
         for (x, y), p in core.items():
             # Get time per sample in seconds (frequency in microseconds)
-            time_for_recorded_sample_s = frequency[x, y] / _US_PER_SECOND
+            time_for_recorded_sample_s = sampling_frequency / _US_PER_SECOND
             data, _missing = buff_db.get_recording(x, y, p, RECORDING_CHANNEL)
             results = numpy.frombuffer(data, dtype=numpy.uint32).reshape(
                 -1, version.max_cores_per_chip + 1)
             # Get record times in milliseconds (frequency in microseconds)
-            record_times = results[:, 0] * frequency[x, y] / _US_PER_MS
+            record_times = results[:, 0] * sampling_frequency / _US_PER_MS
             # The remaining columns are the counts of active / inactive at
             # each sample point
             activity = results[:, 1:].astype(numpy.float64)
             # Set the activity of *this* core to 0, as we don't want to
             # measure that!
-            activity[:, physical_core[x, y]] = 0
+            physical_core = FecDataView.get_physical_core_id((x, y), p)
+            activity[:, physical_core] = 0
             # Convert to actual active time, assuming the core is fully active
             # or fully inactive between samples
             activity_times = activity * time_for_recorded_sample_s
