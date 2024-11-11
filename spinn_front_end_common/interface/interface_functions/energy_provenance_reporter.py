@@ -19,16 +19,13 @@ from spinn_front_end_common.utilities.utility_objs import PowerUsed
 #: The simple properties of PowerUsed object to be reported
 _BASIC_PROPERTIES = (
     # Counts
-    "num_chips", "num_cores", "num_fpgas", "num_frames",
+    "n_chips", "n_cores", "n_boards", "n_frames",
     # Times (in seconds)
-    "total_time_secs", "booted_time_secs", "mapping_time_secs",
-    "data_gen_time_secs", "loading_time_secs", "exec_time_secs",
-    "saving_time_secs",
+    "exec_time_s", "mapping_time_s", "loading_time_s",
+    "saving_time_s", "other_time_s",
     # Energies (in Joules)
-    "total_energy_joules", "baseline_joules",
-    "fpga_total_energy_joules", "fpga_exec_energy_joules",
-    "packet_joules", "mapping_joules", "data_gen_joules",
-    "loading_joules", "chip_energy_joules", "saving_joules")
+    "exec_energy_j", "mapping_energy_j", "loading_energy_j",
+    "saving_energy_j", "other_energy_j")
 #: The main provenance key we use
 _PROV_KEY = "power_provenance"
 
@@ -44,21 +41,9 @@ def energy_provenance_reporter(power_used: PowerUsed):
         for prop in _BASIC_PROPERTIES:
             db.insert_power(
                 __prop_name(prop), getattr(power_used, prop))
-            for x, y, p in power_used.active_cores:
-                db.insert_core(
-                    x, y, p, "Energy (Joules)",
-                    power_used.get_core_active_energy_joules(x, y, p))
-            for x, y in power_used.active_routers:
-                db.insert_router(
-                    x, y, "Energy (Joules)",
-                    power_used.get_router_active_energy_joules(x, y))
 
 
 def __prop_name(name: str) -> str:
     name = name.capitalize()
-    name = re.sub(r"_time_secs$", r" time (seconds)", name)
-    return re.sub(r"(_energy)?_joules", r" energy (Joules)", name)
-
-
-def __router_name(x: int, y: int) -> str:
-    return f"router@{x},{y} energy (Joules)"
+    name = re.sub(r"_time_s$", r" time (seconds)", name)
+    return re.sub(r"_energy_j$", r" energy (Joules)", name)
