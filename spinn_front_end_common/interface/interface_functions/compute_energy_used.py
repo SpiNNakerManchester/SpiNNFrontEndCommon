@@ -187,7 +187,7 @@ def _extract_cores_active_time(
             (x, y): value for x, y, value in db.get_monitor_by_chip(
                 PROVENANCE_SAMPLING_FREQUENCY_KEY)}
 
-    chip_activity: Dict[Tuple[int, int], float] = {}
+    chip_activity: ChipActiveTime = {}
     with BufferDatabase() as buff_db:
         for (x, y), p in core.items():
             # Get time per sample in seconds (frequency in microseconds)
