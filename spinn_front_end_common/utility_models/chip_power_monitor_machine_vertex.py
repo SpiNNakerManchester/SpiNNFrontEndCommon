@@ -17,8 +17,6 @@ import logging
 from enum import IntEnum
 from typing import List
 
-import numpy
-
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -44,8 +42,6 @@ from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
-from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
@@ -61,8 +57,7 @@ CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost,
-        AbstractProvidesProvenanceDataFromMachine):
+        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
     """
     Machine vertex for C code representing functionality to record
     idle times in a machine graph.
@@ -147,6 +142,8 @@ class ChipPowerMonitorMachineVertex(
 
         # End-of-Spec:
         spec.end_specification()
+
+        self.__write_recording_metadata(placement)
 
     def _write_configuration_region(self, spec: DataSpecificationGenerator):
         """
@@ -235,31 +232,7 @@ class ChipPowerMonitorMachineVertex(
                                recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
-    def get_recorded_data(self, placement: Placement) -> numpy.ndarray:
-        """
-        Get data from SDRAM given placement and buffer manager.
-        Also arranges for provenance data to be available.
-
-        :param ~pacman.model.placements.Placement placement:
-            the location on machine to get data from
-        :return: results, an array with 1 dimension of uint32 values
-        :rtype: ~numpy.ndarray
-        """
-        # for buffering output info is taken form the buffer manager
-        # get raw data as a byte array
-        buffer_manager = FecDataView.get_buffer_manager()
-        record_raw, data_missing = buffer_manager.get_recording(
-            placement, RECORDING_CHANNEL)
-        if data_missing:
-            logger.warning(
-                "Chip Power monitor has lost data on chip({}, {})",
-                placement.x, placement.y)
-        results = numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 19)
-        return results
-
-    @overrides(AbstractProvidesProvenanceDataFromMachine
-               .get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, placement: Placement):
+    def __write_recording_metadata(self, placement: Placement):
         physical_p = FecDataView().get_physical_core_id(
             placement.xy, placement.p)
         with ProvenanceWriter() as db:
