@@ -14,7 +14,8 @@
 
 from collections import defaultdict
 from typing import Final, Optional, cast, Dict, Tuple
-from spinn_utilities.config_holder import get_config_bool
+import numpy
+from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_machine import Machine
 from spinn_machine.version.abstract_version import (
     AbstractVersion, ChipActiveTime, RouterPackets)
@@ -27,11 +28,17 @@ from spinn_front_end_common.interface.interface_functions\
     .load_data_specification import load_using_advanced_monitors
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
-        PROVENANCE_TIME_KEY, ChipPowerMonitorMachineVertex)
+        RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BufferDatabase
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 #: milliseconds per second
 _MS_PER_SECOND: Final = 1000.0
+#: microseconds per millisecond
+_US_PER_MS: Final = 1000.0
+#: microseconds per second
+_US_PER_SECOND: Final = 1000000.0
 
 
 def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
@@ -106,7 +113,8 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
             n_active_cores += 1
     n_active_chips = len(active_cores)
 
-    run_chip_active_time = _extract_cores_active_time(checkpoint, active_cores)
+    run_chip_active_time = _extract_cores_active_time(
+        checkpoint, active_cores, version)
     load_chip_active_time = _make_extra_monitor_core_use(
         data_loading_ms, machine, version.n_scamp_cores + 2,
         version.n_scamp_cores + 1)
@@ -163,15 +171,37 @@ def _extract_router_packets(
 
 
 def _extract_cores_active_time(
-        checkpoint: Optional[int],
-        active_cores: Dict[Tuple[int, int], int]) -> ChipActiveTime:
-    key = PROVENANCE_TIME_KEY
-    if checkpoint is not None:
-        key = f"{PROVENANCE_TIME_KEY}_{checkpoint}"
-    with ProvenanceReader() as db:
-        data = {(x, y): (value, active_cores[x, y])
-                for (x, y, value) in db.get_monitor_by_chip(key)}
-    return data
+        checkpoint: Optional[int], active_cores: Dict[Tuple[int, int], int],
+        version: AbstractVersion) -> ChipActiveTime:
+    sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
+
+    chip_activity: ChipActiveTime = {}
+    with BufferDatabase() as buff_db:
+        for (x, y), n_cores in active_cores.items():
+            # Find the core that was used on this chip for power monitoring
+            p = buff_db.get_power_monitor_core(x, y)
+            # Get time per sample in seconds (frequency in microseconds)
+            time_for_recorded_sample_s = sampling_frequency / _US_PER_SECOND
+            data, _missing = buff_db.get_recording(x, y, p, RECORDING_CHANNEL)
+            results = numpy.frombuffer(data, dtype=numpy.uint32).reshape(
+                -1, version.max_cores_per_chip + 1)
+            # Get record times in milliseconds (frequency in microseconds)
+            record_times = results[:, 0] * sampling_frequency / _US_PER_MS
+            # The remaining columns are the counts of active / inactive at
+            # each sample point
+            activity = results[:, 1:].astype(numpy.float64)
+            # Set the activity of *this* core to 0, as we don't want to
+            # measure that!
+            physical_core = FecDataView.get_physical_core_id((x, y), p)
+            activity[:, physical_core] = 0
+            # Convert to actual active time, assuming the core is fully active
+            # or fully inactive between samples
+            activity_times = activity * time_for_recorded_sample_s
+            # If checkpoint is specified, filter the times
+            if checkpoint is not None:
+                activity_times = activity_times[record_times < checkpoint]
+            chip_activity[x, y] = (activity_times.sum(), n_cores)
+    return chip_activity
 
 
 def _make_extra_monitor_core_use(

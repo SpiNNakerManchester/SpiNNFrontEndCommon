@@ -17,8 +17,6 @@ import logging
 from enum import IntEnum
 from typing import List
 
-import numpy
-
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -44,23 +42,21 @@ from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
-from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine)
+from spinn_front_end_common.interface.buffer_management.storage_objects\
+    .buffer_database import PROVENANCE_CORE_KEY
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
-PROVENANCE_COUNT_KEY = "Power_Monitor_Total_Activity_Count"
-PROVENANCE_TIME_KEY = "Power_Monitor_Total_Activity_Time"
+RECORDING_CHANNEL = 0
 
-RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD
+RECORDING_SIZE_PER_ENTRY = 19 * BYTES_PER_WORD
 DEFAULT_MALLOCS_USED = 3
 CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost,
-        AbstractProvidesProvenanceDataFromMachine):
+        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
     """
     Machine vertex for C code representing functionality to record
     idle times in a machine graph.
@@ -69,7 +65,7 @@ class ChipPowerMonitorMachineVertex(
         This is an unusual machine vertex, in that it has no associated
         application vertex.
     """
-    __slots__ = ("_sampling_frequency", "__n_samples_per_recording")
+    __slots__ = ("__sampling_frequency", "__n_samples_per_recording")
 
     class _REGIONS(IntEnum):
         # data regions
@@ -80,32 +76,24 @@ class ChipPowerMonitorMachineVertex(
     #: which channel in the recording region has the recorded samples
     _SAMPLE_RECORDING_CHANNEL = 0
 
-    def __init__(self, label: str, sampling_frequency: int):
+    def __init__(self, label: str):
         """
         :param str label: vertex label
         :param int sampling_frequency: how often to sample, in microseconds
         """
         super().__init__(
             label=label, app_vertex=None, vertex_slice=None)
-        self._sampling_frequency = sampling_frequency
+        self.__sampling_frequency = get_config_int(
+            "EnergyMonitor", "sampling_frequency")
         self.__n_samples_per_recording = get_config_int(
             "EnergyMonitor", "n_samples_per_recording_entry")
-
-    @property
-    def sampling_frequency(self) -> int:
-        """
-        How often to sample, in microseconds.
-
-        :rtype: int
-        """
-        return self._sampling_frequency
 
     @property
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> AbstractSDRAM:
         # The number of sample per step does not have to be an int
         samples_per_step = (FecDataView.get_hardware_time_step_us() /
-                            self._sampling_frequency)
+                            self.__sampling_frequency)
         recording_per_step = samples_per_step / self.__n_samples_per_recording
         max_recording_per_step = math.ceil(recording_per_step)
         overflow_recordings = max_recording_per_step - recording_per_step
@@ -146,6 +134,8 @@ class ChipPowerMonitorMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
+        self.__write_recording_metadata(placement)
+
     def _write_configuration_region(self, spec: DataSpecificationGenerator):
         """
         Write the data needed by the C code to configure itself.
@@ -155,7 +145,7 @@ class ChipPowerMonitorMachineVertex(
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG)
         spec.write_value(self.__n_samples_per_recording)
-        spec.write_value(self._sampling_frequency)
+        spec.write_value(self.__sampling_frequency)
 
     def _write_setup_info(self, spec):
         """
@@ -228,63 +218,12 @@ class ChipPowerMonitorMachineVertex(
         :rtype: int
         """
         recording_time = (
-            self._sampling_frequency * self.__n_samples_per_recording)
+            self.__sampling_frequency * self.__n_samples_per_recording)
         n_entries = math.floor(FecDataView.get_hardware_time_step_us() /
                                recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
-    def get_recorded_data(self, placement: Placement) -> numpy.ndarray:
-        """
-        Get data from SDRAM given placement and buffer manager.
-        Also arranges for provenance data to be available.
-
-        :param ~pacman.model.placements.Placement placement:
-            the location on machine to get data from
-        :return: results, an array with 1 dimension of uint32 values
-        :rtype: ~numpy.ndarray
-        """
-        # for buffering output info is taken form the buffer manager
-        # get raw data as a byte array
-        buffer_manager = FecDataView.get_buffer_manager()
-        record_raw, data_missing = buffer_manager.get_recording(
-            placement, self._SAMPLE_RECORDING_CHANNEL)
-        if data_missing:
-            logger.warning(
-                "Chip Power monitor has lost data on chip({}, {})",
-                placement.x, placement.y)
-        results = numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 19)
-        return results
-
-    @overrides(AbstractProvidesProvenanceDataFromMachine
-               .get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, placement: Placement):
-        # We do this to make sure we actually store the data
-        results = self.get_recorded_data(placement)
-        # Get record times in milliseconds
-        record_times = results[:, 0] * self._sampling_frequency / 1000
-        activity = results[:, 1:].astype("float")
-        physical_p = FecDataView().get_physical_core_id(
-            placement.xy, placement.p)
-        # Set the activity of *this* core to 0, as we don't want to measure
-        # that!
-        activity[:, physical_p] = 0
-        time_for_recorded_sample_s = self._sampling_frequency / 1000000
-        activity_times = activity * time_for_recorded_sample_s
-        for checkpoint in FecDataView().iterate_energy_checkpoints():
-            # Find all activity up to the check point
-            activity_before = activity[record_times < checkpoint].sum()
-            activity_time = activity_times[record_times < checkpoint].sum()
-            with ProvenanceWriter() as db:
-                db.insert_monitor(
-                    placement.x, placement.y,
-                    f"{PROVENANCE_COUNT_KEY}_{checkpoint}", activity_before)
-                db.insert_monitor(
-                    placement.x, placement.y,
-                    f"{PROVENANCE_TIME_KEY}_{checkpoint}", activity_time)
-        activity_count = activity.sum()
-        activity_time = activity_times.sum()
+    def __write_recording_metadata(self, placement: Placement) -> None:
         with ProvenanceWriter() as db:
             db.insert_monitor(
-                placement.x, placement.y, PROVENANCE_COUNT_KEY, activity_count)
-            db.insert_monitor(
-                placement.x, placement.y, PROVENANCE_TIME_KEY, activity_time)
+                placement.x, placement.y, PROVENANCE_CORE_KEY, placement.p)
