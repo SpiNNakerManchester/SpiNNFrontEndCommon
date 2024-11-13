@@ -131,7 +131,8 @@ def test_database_interface():
 
     _make_m_vertices(app_vertex_1, 10, 10)
     _make_m_vertices(app_vertex_2, 20, 20)
-    params = LivePacketGatherParameters(label="LiveSpikeReceiver")
+    params = LivePacketGatherParameters(
+        label="LiveSpikeReceiver", port=10000, hostname="localhost")
     lpg_vertex = LivePacketGather(params, label="LiveSpikeReceiver")
     writer.add_vertex(lpg_vertex)
     writer.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
