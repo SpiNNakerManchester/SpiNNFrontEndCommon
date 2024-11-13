@@ -36,8 +36,7 @@ class LivePacketGatherParameters(object):
         "_received_key_mask", "_translate_keys", "_translated_key_right_shift")
 
     def __init__(
-            self, port: Optional[int] = None, hostname: Optional[str] = None,
-            tag=None, strip_sdp=True,
+            self, port: int, hostname: str, tag=None, strip_sdp=True,
             use_prefix=False, key_prefix=None, prefix_type=None,
             message_type=EIEIOType.KEY_32_BIT, right_shift=0,
             payload_as_time_stamps=True, use_payload_prefix=True,
@@ -89,7 +88,7 @@ class LivePacketGatherParameters(object):
         self._translated_key_right_shift = translated_key_right_shift
 
     @property
-    def port(self) -> Optional[int]:
+    def port(self) -> int:
         """
         Where to send data from SpiNNaker:
         the port of the listening UDP socket.
@@ -99,7 +98,7 @@ class LivePacketGatherParameters(object):
         return self._port
 
     @property
-    def hostname(self) -> Optional[str]:
+    def hostname(self) -> str:
         """
         Where to send data from SpiNNaker: the host name of the listening UDP
         socket.
