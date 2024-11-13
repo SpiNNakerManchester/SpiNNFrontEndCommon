@@ -17,10 +17,12 @@ from .load_mc_routes_process import LoadMCRoutesProcess
 from .reinjector_control_process import ReinjectorControlProcess
 from .update_runtime_process import UpdateRuntimeProcess
 from .get_current_time_process import GetCurrentTimeProcess
+from .send_pause_process import SendPauseProcess
 
 __all__ = (
     "ClearIOBUFProcess",
     "LoadMCRoutesProcess",
     "ReinjectorControlProcess",
     "UpdateRuntimeProcess",
-    "GetCurrentTimeProcess")
+    "GetCurrentTimeProcess",
+    "SendPauseProcess")
