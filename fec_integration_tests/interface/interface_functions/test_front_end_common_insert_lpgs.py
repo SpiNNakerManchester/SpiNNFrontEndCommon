@@ -57,8 +57,8 @@ class TestInsertLPGs(unittest.TestCase):
             'payload_prefix': None,
             'payload_right_shift': 0,
             'number_of_packets_sent_per_time_step': 0,
-            'hostname': None,
-            'port': None,
+            'hostname': 'localhost',
+            'port': 1000,
             'strip_sdp': None,
             'tag': None,
             'label': "Test"}
