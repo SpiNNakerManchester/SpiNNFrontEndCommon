@@ -1250,7 +1250,8 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
         if (recording_flags > 0) {
             recording_finalise();
         }
-
+        // clear the next buffer time
+        next_buffer_time = 0;
         log_debug("Last time of stop notification request: %d",
                 last_stop_notification_request);
 
