@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.placements import Placement, Placements
 from spinn_front_end_common.data import FecDataView
@@ -29,10 +28,8 @@ def sample_chip_power_monitor() -> ChipPowerMonitorMachineVertex:
 
     :rtype: ChipPowerMonitorMachineVertex
     """
-    sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     return ChipPowerMonitorMachineVertex(
-        "Sample ChipPowerMonitorMachineVertex",
-        sampling_frequency=sampling_frequency)
+        "Sample ChipPowerMonitorMachineVertex")
 
 
 def insert_chip_power_monitors_to_graphs(placements: Placements):
@@ -41,7 +38,6 @@ def insert_chip_power_monitors_to_graphs(placements: Placements):
 
     :param ~pacman.model.placements.Placements placements:
     """
-    sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     machine = FecDataView.get_machine()
     # create progress bar
     progress = ProgressBar(
@@ -49,7 +45,6 @@ def insert_chip_power_monitors_to_graphs(placements: Placements):
 
     for chip in progress.over(machine.chips):
         vertex = ChipPowerMonitorMachineVertex(
-            f"ChipPowerMonitor on {chip.x}, {chip.y}",
-            sampling_frequency=sampling_frequency)
+            f"ChipPowerMonitor on {chip.x}, {chip.y}")
         p = pick_core_for_system_placement(placements, chip)
         placements.add_placement(Placement(vertex, chip.x, chip.y, p))
