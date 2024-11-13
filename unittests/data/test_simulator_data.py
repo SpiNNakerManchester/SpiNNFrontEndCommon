@@ -454,8 +454,8 @@ class TestSimulatorData(unittest.TestCase):
         self.assertFalse(FecDataView.has_live_packet_recorder_params())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_live_packet_recorder_params()
-        lpg1 = LivePacketGatherParameters(1)
-        lpg2 = LivePacketGatherParameters(2)
+        lpg1 = LivePacketGatherParameters(1, hostname="localhost")
+        lpg2 = LivePacketGatherParameters(2, hostname="localhost")
         vertex1 = SimpleTestVertex(1, "1")
         vertex2 = SimpleTestVertex(2, "2")
         vertex3 = SimpleTestVertex(3, "3")
