@@ -20,9 +20,12 @@ from time import sleep
 from typing import (
     Callable, Dict, Iterable, List, Optional, Set, Tuple, Union,
     cast)
+
 from typing_extensions import TypeGuard
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once
+
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement, KeyDataElement)
 from spinnman.messages.eieio import EIEIOType, AbstractEIEIOMessage
@@ -37,6 +40,7 @@ from spinnman.utilities.utility_functions import reprogram_tag_to_listener
 from spinnman.messages.eieio import (
     read_eieio_command_message, read_eieio_data_message)
 from spinnman.spalloc import SpallocEIEIOConnection, SpallocEIEIOListener
+
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import (
     DatabaseConnection, DatabaseReader)
@@ -189,7 +193,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__expect_scp_response_lock = Condition()
         self.__scp_response_received: Optional[bytes] = None
 
-    def add_send_label(self, label: str):
+    def add_send_label(self, label: str) -> None:
         """
         Adds a send label.
 
@@ -204,7 +208,7 @@ class LiveEventConnection(DatabaseConnection):
             self.__pause_stop_callbacks[label] = list()
             self.__init_callbacks[label] = list()
 
-    def add_receive_label(self, label: str):
+    def add_receive_label(self, label: str) -> None:
         """
         Adds a receive label is possible.
 
@@ -225,7 +229,8 @@ class LiveEventConnection(DatabaseConnection):
             self.__pause_stop_callbacks[label] = list()
             self.__init_callbacks[label] = list()
 
-    def add_init_callback(self, label: str, init_callback: _InitCallback):
+    def add_init_callback(
+            self, label: str, init_callback: _InitCallback) -> None:
         """
         Add a callback to be called to initialise a vertex.
 
@@ -243,7 +248,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def add_receive_callback(
             self, label: str, live_event_callback: _RcvTimeCallback,
-            translate_key: bool = True):
+            translate_key: bool = True) -> None:
         """
         Add a callback for the reception of time events from a vertex.
 
@@ -276,7 +281,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def add_receive_no_time_callback(
             self, label: str, live_event_callback: _RcvCallback,
-            translate_key: bool = True):
+            translate_key: bool = True) -> None:
         """
         Add a callback for the reception of live events from a vertex.
 
@@ -295,7 +300,8 @@ class LiveEventConnection(DatabaseConnection):
         self.__no_time_event_callbacks[label_id].append(
             (live_event_callback, translate_key))
 
-    def add_start_callback(self, label: str, start_callback: _Callback):
+    def add_start_callback(
+            self, label: str, start_callback: _Callback) -> None:
         """
         Add a callback for the start of the simulation.
 
@@ -314,7 +320,7 @@ class LiveEventConnection(DatabaseConnection):
         self.add_start_resume_callback(label, start_callback)
 
     def add_start_resume_callback(
-            self, label: str, start_resume_callback: _Callback):
+            self, label: str, start_resume_callback: _Callback) -> None:
         """
         Add a callback for the start and resume state of the simulation.
 
@@ -328,7 +334,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__start_resume_callbacks[label].append(start_resume_callback)
 
     def add_pause_stop_callback(
-            self, label: str, pause_stop_callback: _Callback):
+            self, label: str, pause_stop_callback: _Callback) -> None:
         """
         Add a callback for the pause and stop state of the simulation.
 
@@ -341,7 +347,7 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__pause_stop_callbacks[label].append(pause_stop_callback)
 
-    def __read_database_callback(self, db_reader: DatabaseReader):
+    def __read_database_callback(self, db_reader: DatabaseReader) -> None:
         """
         :param DatabaseReader db_reader:
         """
@@ -366,8 +372,8 @@ class LiveEventConnection(DatabaseConnection):
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep / 1000.0)
 
-    def __init_sender(
-            self, database: DatabaseReader, vertex_sizes: Dict[str, int]):
+    def __init_sender(self, database: DatabaseReader,
+                      vertex_sizes: Dict[str, int]) -> None:
         """
         :param DatabaseReader database:
         :param dict(str,int) vertex_sizes:
@@ -387,8 +393,8 @@ class LiveEventConnection(DatabaseConnection):
                 database.get_atom_id_to_key_mapping(label)
             vertex_sizes[label] = len(self._atom_id_to_key[label])
 
-    def __init_receivers(
-            self, database: DatabaseReader, vertex_sizes: Dict[str, int]):
+    def __init_receivers(self, database: DatabaseReader,
+                         vertex_sizes: Dict[str, int]) -> None:
         """
         :param DatabaseReader database:
         :param dict(str,int) vertex_sizes:
@@ -477,7 +483,8 @@ class LiveEventConnection(DatabaseConnection):
             self.__receiver_connection.close()
             self.__receiver_connection = None
 
-    def __launch_thread(self, kind: str, label: str, callback: _Callback):
+    def __launch_thread(
+            self, kind: str, label: str, callback: _Callback) -> None:
         thread = Thread(
             target=callback, args=(label, self),
             name=(f"{kind} callback thread for live_event_connection "
@@ -564,7 +571,7 @@ class LiveEventConnection(DatabaseConnection):
             raise ConfigurationException("no receive labels defined")
         return self.__receive_labels[label_id]
 
-    def __handle_time_packet(self, packet: EIEIODataMessage):
+    def __handle_time_packet(self, packet: EIEIODataMessage) -> None:
         key_times_labels: Dict[int, Dict[int, List[int]]] = defaultdict(
             lambda: defaultdict(list))
         atoms_times_labels: Dict[int, Dict[int, List[int]]] = defaultdict(
@@ -598,7 +605,7 @@ class LiveEventConnection(DatabaseConnection):
                     else:
                         c_back(label, time, key_times_labels[time][label_id])
 
-    def __handle_no_time_packet(self, packet: EIEIODataMessage):
+    def __handle_no_time_packet(self, packet: EIEIODataMessage) -> None:
         while packet.is_next_element:
             element = packet.next_element
             if not isinstance(element, (
@@ -628,13 +635,13 @@ class LiveEventConnection(DatabaseConnection):
             else:
                 self.__handle_unknown_key(key)
 
-    def __handle_unknown_key(self, key: int):
+    def __handle_unknown_key(self, key: int) -> None:
         if key not in self.__error_keys:
             self.__error_keys.add(key)
             logger.warning("Received unexpected key {}", key)
 
     def send_event(self, label: str, atom_id: int,
-                   send_full_keys: bool = False):
+                   send_full_keys: bool = False) -> None:
         """
         Send an event from a single atom.
 
@@ -649,7 +656,7 @@ class LiveEventConnection(DatabaseConnection):
         self.send_events(label, [atom_id], send_full_keys)
 
     def send_events(self, label: str, atom_ids: List[int],
-                    send_full_keys: bool = False):
+                    send_full_keys: bool = False) -> None:
         """
         Send a number of events.
 
@@ -688,7 +695,7 @@ class LiveEventConnection(DatabaseConnection):
                 sleep(0.1)
 
     def send_event_with_payload(
-            self, label: str, atom_id: int, payload: int):
+            self, label: str, atom_id: int, payload: int) -> None:
         """
         Send an event with a payload from a single atom.
 
@@ -701,7 +708,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def send_events_with_payloads(
             self, label: str,
-            atom_ids_and_payloads: List[Tuple[int, int]]):
+            atom_ids_and_payloads: List[Tuple[int, int]]) -> None:
         """
         Send a number of events with payloads.
 
@@ -732,7 +739,7 @@ class LiveEventConnection(DatabaseConnection):
                 sleep(0.1)
 
     def send_eieio_message(
-            self, message: AbstractEIEIOMessage, label: str):
+            self, message: AbstractEIEIOMessage, label: str) -> None:
         """
         Send an EIEIO message (using one-way the live input) to the
         vertex with the given label.
@@ -748,7 +755,7 @@ class LiveEventConnection(DatabaseConnection):
         self._send(message, x, y, p, ip_address)
 
     def _send(self, message: AbstractEIEIOMessage, x: int, y: int, p: int,
-              ip_address: str):
+              ip_address: str) -> None:
         """
         Send an EIEIO message to a particular core.
 

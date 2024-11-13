@@ -26,7 +26,7 @@ import threading
 import types
 from threading import Condition
 from typing import (
-    Dict, Iterable, Optional, Sequence, Tuple, Type,
+    Any, Dict, Iterable, Optional, Sequence, Tuple, Type,
     TypeVar, Union, cast, final)
 
 import ebrains_drive  # type: ignore[import]
@@ -2455,7 +2455,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         transceiver.send_signal(self._data_writer.get_app_id(), sync_signal)
 
     @staticmethod
-    def __reset_object(obj) -> None:
+    def __reset_object(obj: Any) -> None:
         # Reset an object if appropriate
         if isinstance(obj, AbstractCanReset):
             obj.reset_to_first_timestep()
