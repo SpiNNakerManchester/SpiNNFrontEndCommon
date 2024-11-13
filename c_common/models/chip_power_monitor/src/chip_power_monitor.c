@@ -179,6 +179,10 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
     if (simulation_is_finished()) {
         simulation_handle_pause_resume(resume_callback);
 
+        if (sample_count > 0) {
+            record_aggregate_sample();
+        }
+
         recording_finalise();
 
         // Invert the time calculation so that any time read is correct
