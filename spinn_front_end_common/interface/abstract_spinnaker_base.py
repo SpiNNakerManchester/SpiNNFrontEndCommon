@@ -535,6 +535,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         return threading.get_ident() == threading.main_thread().ident
 
+    def __run_verify(self):
+        # verify that we can keep doing auto pause and resume
+        if self._data_writer.is_ran_ever():
+            can_keep_running = all(
+                executable_type.supports_auto_pause_and_resume
+                for executable_type in
+                self._data_writer.get_executable_types())
+            if not can_keep_running:
+                raise NotImplementedError(
+                    "Only binaries that use the simulation interface can be"
+                    " run more than once")
+
     def __run(self, run_time: Optional[float], sync_time: float):
         """
         The main internal run function.
@@ -546,16 +558,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._should_run():
             return
 
-        # verify that we can keep doing auto pause and resume
-        if self._data_writer.is_ran_ever():
-            can_keep_running = all(
-                executable_type.supports_auto_pause_and_resume
-                for executable_type in
-                self._data_writer.get_executable_types())
-            if not can_keep_running:
-                raise NotImplementedError(
-                    "Only binaries that use the simulation interface can be"
-                    " run more than once")
+        self.__run_verify()
 
         # Install the Control-C handler
         if self.__is_main_thread():
