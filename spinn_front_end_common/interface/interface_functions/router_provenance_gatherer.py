@@ -28,11 +28,13 @@ from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def router_provenance_gatherer() -> None:
+def router_provenance_gatherer(provenance_prefix: str = "") -> None:
     """
     Gathers diagnostics from the routers.
+
+    :param str provenance_prefix: The prefix to add to the provenance names
     """
-    _RouterProvenanceGatherer().add_router_provenance_data()
+    _RouterProvenanceGatherer().add_router_provenance_data(provenance_prefix)
 
 
 class _RouterProvenanceGatherer(object):
@@ -41,9 +43,11 @@ class _RouterProvenanceGatherer(object):
     """
     __slots__ = ()
 
-    def add_router_provenance_data(self) -> None:
+    def add_router_provenance_data(self, provenance_prefix: str) -> None:
         """
         Writes the provenance data of the router diagnostics
+
+        :param str provenance_prefix: The prefix to add to the provenance names
         """
         count = len(FecDataView.get_uncompressed().routing_tables) \
             + FecDataView.get_machine().n_chips + 1
@@ -61,14 +65,14 @@ class _RouterProvenanceGatherer(object):
         for router_table in progress.over(
                 FecDataView.get_uncompressed().routing_tables, False):
             seen_chips.add(self._add_router_table_diagnostic(
-                router_table, reinjection_data))
+                router_table, reinjection_data, provenance_prefix))
 
         # Get what info we can for chips where there are problems or no table
         for chip in progress.over(sorted(
                 FecDataView.get_machine().chips, key=lambda c: (c.x, c.y))):
             if (chip.x, chip.y) not in seen_chips:
                 self._add_unseen_router_chip_diagnostic(
-                    chip, reinjection_data)
+                    chip, reinjection_data, provenance_prefix)
 
     def __get_router_diagnostics(self, chip: Chip) -> RouterDiagnostics:
         return FecDataView.get_transceiver().get_router_diagnostics(
@@ -76,7 +80,8 @@ class _RouterProvenanceGatherer(object):
 
     def _add_router_table_diagnostic(
             self, table: AbstractMulticastRoutingTable,
-            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]]) -> XY:
+            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]],
+            prefix: str) -> XY:
         """
         :param ~.AbstractMulticastRoutingTable table:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
@@ -91,12 +96,14 @@ class _RouterProvenanceGatherer(object):
                 chip.x, chip.y, exc_info=True)
             return (-1, -1)  # Not a chip location
         status = self.__get_status(reinjection_data, chip)
-        self.__router_diagnostics(chip, diagnostics, status, True, table)
+        self.__router_diagnostics(
+            chip, diagnostics, status, True, table, prefix)
         return chip.x, chip.y
 
     def _add_unseen_router_chip_diagnostic(
             self, chip: Chip,
-            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]]):
+            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]],
+            prefix: str):
         """
         :param ~.Chip chip:
         :param dict(Chip,ReInjectionStatus) reinjection_data:
@@ -110,7 +117,8 @@ class _RouterProvenanceGatherer(object):
                 diagnostics.n_local_multicast_packets or
                 diagnostics.n_external_multicast_packets):
             status = self.__get_status(reinjection_data, chip)
-            self.__router_diagnostics(chip, diagnostics, status, False, None)
+            self.__router_diagnostics(
+                chip, diagnostics, status, False, None, prefix)
 
     @staticmethod
     def __get_status(
@@ -126,7 +134,8 @@ class _RouterProvenanceGatherer(object):
     def __router_diagnostics(
             self, chip: Chip, diagnostics: RouterDiagnostics,
             status: Optional[ReInjectionStatus], expected: bool,
-            table: Optional[AbstractMulticastRoutingTable]):
+            table: Optional[AbstractMulticastRoutingTable],
+            prefix: str):
         """
         Describes the router diagnostics for one router.
 
@@ -152,15 +161,15 @@ class _RouterProvenanceGatherer(object):
 
         with ProvenanceWriter() as db:
             db.insert_router(
-                x, y, "Local_Multicast_Packets",
+                x, y, f"{prefix}Local_Multicast_Packets",
                 diagnostics.n_local_multicast_packets, expected)
 
             db.insert_router(
-                x, y, "External_Multicast_Packets",
+                x, y, f"{prefix}External_Multicast_Packets",
                 diagnostics.n_external_multicast_packets, expected)
 
             db.insert_router(
-                x, y, "Dropped_Multicast_Packets",
+                x, y, f"{prefix}Dropped_Multicast_Packets",
                 diagnostics.n_dropped_multicast_packets, expected)
             if has_dropped and (not has_reinjection or missing_stuff):
                 db.insert_report(
@@ -171,7 +180,8 @@ class _RouterProvenanceGatherer(object):
                     f"scale factor or reducing the number of atoms per core.")
 
             db.insert_router(
-                x, y, "Dropped_Multicast_Packets_via_local_transmission",
+                x, y,
+                f"{prefix}Dropped_Multicast_Packets_via_local_transmission",
                 diagnostics.user_3, expected)
             if diagnostics.user_3 > 0:
                 db.insert_report(
@@ -183,7 +193,7 @@ class _RouterProvenanceGatherer(object):
                     "and the router table entries for this chip.")
 
             db.insert_router(
-                x, y, "default_routed_external_multicast_packets",
+                x, y, f"{prefix}default_routed_external_multicast_packets",
                 diagnostics.user_2, expected)
             if diagnostics.user_2 > 0 and not (
                     table and table.number_of_defaultable_entries):
@@ -198,46 +208,47 @@ class _RouterProvenanceGatherer(object):
 
             if table:
                 db.insert_router(
-                    x, y, "Entries", table.number_of_entries, expected)
+                    x, y, f"{prefix}Entries", table.number_of_entries,
+                    expected)
                 routes = set()
                 for ent in table.multicast_routing_entries:
                     routes.add(ent.spinnaker_route)
                 db.insert_router(x, y, "Unique_Routes", len(routes), expected)
 
             db.insert_router(
-                x, y, "Local_P2P_Packets",
+                x, y, f"{prefix}Local_P2P_Packets",
                 diagnostics.n_local_peer_to_peer_packets, expected)
 
             db.insert_router(
-                x, y, "External_P2P_Packets",
+                x, y, f"{prefix}External_P2P_Packets",
                 diagnostics.n_external_peer_to_peer_packets, expected)
 
             db.insert_router(
-                x, y, "Dropped_P2P_Packets",
+                x, y, f"{prefix}Dropped_P2P_Packets",
                 diagnostics.n_dropped_peer_to_peer_packets, expected)
 
             db.insert_router(
-                x, y, "Local_NN_Packets",
+                x, y, f"{prefix}Local_NN_Packets",
                 diagnostics.n_local_nearest_neighbour_packets, expected)
 
             db.insert_router(
-                x, y, "External_NN_Packets",
+                x, y, f"{prefix}External_NN_Packets",
                 diagnostics.n_external_nearest_neighbour_packets, expected)
 
             db.insert_router(
-                x, y, "Dropped_NN_Packets",
+                x, y, f"{prefix}Dropped_NN_Packets",
                 diagnostics.n_dropped_nearest_neighbour_packets, expected)
 
             db.insert_router(
-                x, y, "Local_FR_Packets",
+                x, y, f"{prefix}Local_FR_Packets",
                 diagnostics.n_local_fixed_route_packets, expected)
 
             db.insert_router(
-                x, y, "External_FR_Packets",
+                x, y, f"{prefix}External_FR_Packets",
                 diagnostics.n_external_fixed_route_packets, expected)
 
             db.insert_router(
-                x, y, "Dropped_FR_Packets",
+                x, y, f"{prefix}Dropped_FR_Packets",
                 diagnostics.n_dropped_fixed_route_packets, expected)
             if diagnostics.n_dropped_fixed_route_packets > 0:
                 db.insert_report(
@@ -249,7 +260,8 @@ class _RouterProvenanceGatherer(object):
                     "fixed route packets.")
 
             db.insert_router(
-                x, y, "Error status", diagnostics.error_status, expected)
+                x, y, f"{prefix}Error status", diagnostics.error_status,
+                expected)
             if diagnostics.error_status > 0:
                 db.insert_report(
                     f"The router on {x}, {y} has a non-zero error status. "
@@ -261,11 +273,11 @@ class _RouterProvenanceGatherer(object):
                 return  # rest depends on status
 
             db.insert_router(
-                x, y, "Received_For_Reinjection",
+                x, y, f"{prefix}Received_For_Reinjection",
                 status.n_dropped_packets, expected)
 
             db.insert_router(
-                x, y, "Missed_For_Reinjection",
+                x, y, f"{prefix}Missed_For_Reinjection",
                 status.n_missed_dropped_packets, expected)
             if status.n_missed_dropped_packets > 0:
                 db.insert_report(
@@ -273,7 +285,7 @@ class _RouterProvenanceGatherer(object):
                     f"{status.n_missed_dropped_packets} packets.")
 
             db.insert_router(
-                x, y, "Reinjection_Overflows",
+                x, y, f"{prefix}Reinjection_Overflows",
                 status.n_dropped_packet_overflows, expected,)
             if status.n_dropped_packet_overflows > 0:
                 db.insert_report(
@@ -281,10 +293,12 @@ class _RouterProvenanceGatherer(object):
                     f"{status.n_dropped_packet_overflows} packets.")
 
             db.insert_router(
-                x, y, "Reinjected", status.n_reinjected_packets, expected)
+                x, y, f"{prefix}Reinjected", status.n_reinjected_packets,
+                expected)
 
             db.insert_router(
-                x, y, "Dumped_from_a_Link", status.n_link_dumps, expected)
+                x, y, f"{prefix}Dumped_from_a_Link", status.n_link_dumps,
+                expected)
             if status.n_link_dumps > 0:
                 db.insert_report(
                     f"The extra monitor on {x}, {y} has detected that "
@@ -297,8 +311,8 @@ class _RouterProvenanceGatherer(object):
                     f"and so this number may be an overestimate.")
 
             db.insert_router(
-                x, y, "Dumped_from_a_processor", status.n_processor_dumps,
-                expected)
+                x, y, f"{prefix}Dumped_from_a_processor",
+                status.n_processor_dumps, expected)
             if status.n_processor_dumps > 0:
                 db.insert_report(
                     f"The extra monitor on {x}, {y} has detected that "

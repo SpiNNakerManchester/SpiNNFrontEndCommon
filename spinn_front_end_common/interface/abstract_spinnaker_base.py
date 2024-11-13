@@ -557,8 +557,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Only binaries that use the simulation interface can be"
                     " run more than once")
 
-        self._adjust_config(run_time)
-
         # Install the Control-C handler
         if self.__is_main_thread():
             signal.signal(signal.SIGINT, self.__signal_handler)
@@ -1756,7 +1754,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         with FecTimer("Load Application data specification",
-                      TimerWork.LOADING) as timer:
+                      TimerWork.LOADING_DATA) as timer:
             if timer.skip_if_virtual_board():
                 return
             return load_application_data_specs()
@@ -1892,6 +1890,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._report_memory_on_chip()
             self._report_compressed(compressed)
         self._execute_application_load_executables()
+        self._execute_router_provenance_gatherer("Load", TimerWork.LOADING)
 
         FecTimer.end_category(TimerCategory.LOADING)
 
@@ -1951,19 +1950,20 @@ class AbstractSpinnakerBase(ConfigHandler):
                 timer.skip(str(ex))
                 return
 
-    def _execute_router_provenance_gatherer(self) -> None:
+    def _execute_router_provenance_gatherer(
+            self, prefix: str, phase: TimerWork) -> None:
         """
         Runs, times and log the RouterProvenanceGatherer if requested.
         """
         with FecTimer(
-                "Router provenance gatherer", TimerWork.EXTRACTING) as timer:
+                "Router provenance gatherer", phase) as timer:
             if timer.skip_if_cfg_false("Reports",
                                        "read_router_provenance_data"):
                 return
             if timer.skip_if_virtual_board():
                 return
             try:
-                router_provenance_gatherer()
+                router_provenance_gatherer(prefix)
             except DataNotYetAvialable as ex:
                 timer.skip(str(ex))
                 return
@@ -1991,7 +1991,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._execute_graph_provenance_gatherer()
         self._execute_placements_provenance_gatherer()
-        self._execute_router_provenance_gatherer()
         self._execute_profile_data_gatherer()
 
     def _report_energy(self) -> None:
@@ -2004,7 +2003,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
 
-            # TODO runtime is None
             power_used = compute_energy_used()
 
             energy_provenance_reporter(power_used)
@@ -2018,6 +2016,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs any reports based on provenance.
         """
+
+    def _execute_clear_router_diagnostic_counters(self) -> None:
+        """
+        Runs, times and logs the clear_router_diagnostic_counters if required.
+        """
+        with FecTimer("Clear Router Diagnostic Counters",
+                      TimerWork.CONTROL) as timer:
+            if timer.skip_if_virtual_board():
+                return
+            transceiver = FecDataView().get_transceiver()
+            for chip in FecDataView.get_machine().chips:
+                transceiver.clear_router_diagnostic_counters(chip.x, chip.y)
 
     def _execute_clear_io_buf(self) -> None:
         """
@@ -2127,11 +2137,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param run_time: the run duration in milliseconds.
         :type run_time: int or None
         """
+        self._execute_router_provenance_gatherer("Run", TimerWork.EXTRACTING)
+        self._execute_clear_router_diagnostic_counters()
         self._execute_extract_iobuff()
         self._execute_buffer_extractor()
         self._execute_clear_io_buf()
+        self._execute_router_provenance_gatherer(
+            "Extract", TimerWork.EXTRACTING)
 
-        # FinaliseTimingData never needed as just pushed self._ to inputs
         self._do_read_provenance()
         self._report_energy()
         self._do_provenance_reports()
