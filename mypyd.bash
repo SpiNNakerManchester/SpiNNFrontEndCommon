@@ -25,4 +25,5 @@ man="../SpiNNMan/spinnman"
 pacman="../PACMAN/pacman"
 spalloc="../spalloc/spalloc_client"
 
-mypy --python-version 3.8 $utils $machine $man $pacman $spalloc spinn_front_end_common unittests
+mypy --python-version 3.8 --disallow-untyped-defs $utils $machine $man $pacman $spalloc spinn_front_end_common
+
