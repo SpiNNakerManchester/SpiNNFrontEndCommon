@@ -14,8 +14,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.overrides import overrides
 from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
+from pacman.model.resources import AbstractSDRAM
+
 from .abstract_has_associated_binary import AbstractHasAssociatedBinary
 if TYPE_CHECKING:
     from spinn_front_end_common.interface.ds import DataSpecificationGenerator
@@ -40,4 +44,10 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
         :param ~pacman.model.placements.Placement placement:
             The placement the vertex is located at
         """
+        raise NotImplementedError
+
+    @property
+    @overrides(MachineVertex.sdram_required)
+    @abstractmethod
+    def sdram_required(self) -> AbstractSDRAM:
         raise NotImplementedError

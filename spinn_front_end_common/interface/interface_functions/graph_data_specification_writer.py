@@ -62,7 +62,8 @@ class _GraphDataSpecificationWriter(object):
 
     def __init__(self) -> None:
         self._sdram_usage: Dict[Tuple[int, int], int] = defaultdict(lambda: 0)
-        self._vertices_by_chip = defaultdict(list)
+        self._vertices_by_chip: Dict[Tuple[int, int],
+            List[AbstractGeneratesDataSpecification]] = defaultdict(list)
 
     def run(self,
             placement_order: Optional[Sequence[Placement]] = None) -> str:
@@ -103,16 +104,6 @@ class _GraphDataSpecificationWriter(object):
                 if generated and isinstance(
                         vertex, AbstractRewritesDataSpecification):
                     vertices_to_reset.append(vertex)
-
-                # If the spec wasn't generated directly, and there is an
-                # application vertex, try with that
-                if not generated and vertex.app_vertex is not None:
-                    generated = self.__generate_data_spec_for_vertices(
-                        placement, vertex.app_vertex, ds_db)
-                    if generated and isinstance(
-                            vertex.app_vertex,
-                            AbstractRewritesDataSpecification):
-                        vertices_to_reset.append(vertex.app_vertex)
 
             # Ensure that the vertices know their regions have been reloaded
             for rewriter in vertices_to_reset:
