@@ -15,7 +15,7 @@
 from collections import defaultdict
 import logging
 import os
-from typing import Iterable, List, Sequence, Optional
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -36,9 +36,10 @@ from spinn_front_end_common.utilities.utility_calls import get_report_writer
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def graph_data_specification_writer(placement_order=None):
+def graph_data_specification_writer(
+        placement_order: Optional[Sequence[Placement]] = None) -> str:
     """
-    :param list(~pacman.model.placements.Placement) placement_order:
+    :param placement_order:
         the optional order in which placements should be examined
     :return: Path to DSG targets database
     :rtype: str
@@ -59,11 +60,12 @@ class _GraphDataSpecificationWriter(object):
         # Dict of list of vertices by chip coordinates
         "_vertices_by_chip")
 
-    def __init__(self):
-        self._sdram_usage = defaultdict(lambda: 0)
+    def __init__(self) -> None:
+        self._sdram_usage: Dict[Tuple[int, int], int] = defaultdict(lambda: 0)
         self._vertices_by_chip = defaultdict(list)
 
-    def run(self, placement_order: Optional[Sequence[Placement]] = None):
+    def run(self,
+            placement_order: Optional[Sequence[Placement]] = None) -> str:
         """
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
@@ -195,7 +197,7 @@ class _GraphDataSpecificationWriter(object):
             f"Too much SDRAM has been used on {x}, {y}.  Vertices and"
             f" their usage on that chip is as follows:\n{memory_usage}")
 
-    def _run_check_queries(self, ds_db: DsSqlliteDatabase):
+    def _run_check_queries(self, ds_db: DsSqlliteDatabase) -> None:
         msg = ""
         for x, y, p, region, reference, lbl in ds_db.get_unlinked_references():
             if lbl is None:
