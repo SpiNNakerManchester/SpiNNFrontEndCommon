@@ -150,7 +150,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             f.writelines(self._get_timestamp())
 
     def set_allocation_controller(self, allocation_controller: Optional[
-            MachineAllocationController]):
+            MachineAllocationController]) -> None:
         """
         Sets the allocation controller variable.
 
@@ -170,7 +170,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                     "Expecting only the SpallocJobController to be proxying")
             self.__fec_data._spalloc_job = allocation_controller.job
 
-    def set_buffer_manager(self, buffer_manager: BufferManager):
+    def set_buffer_manager(self, buffer_manager: BufferManager) -> None:
         """
         Sets the Buffer manager variable.
 
@@ -180,7 +180,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("buffer_manager must be a BufferManager")
         self.__fec_data._buffer_manager = buffer_manager
 
-    def increment_current_run_timesteps(self, increment: Optional[int]):
+    def increment_current_run_timesteps(self, increment: Optional[int]) -> None:
         """
         Increment the current_run_timesteps and sets first_machine_time_step.
 
@@ -224,7 +224,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 "Last run was longer than duration supported by recording")
         self.__fec_data._current_run_timesteps = current_run_timesteps
 
-    def set_max_run_time_steps(self, max_run_time_steps: int):
+    def set_max_run_time_steps(self, max_run_time_steps: int) -> None:
         """
         Sets the max_run_time_steps value
 
@@ -240,7 +240,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def set_up_timings(
             self, simulation_time_step_us: Optional[int],
             time_scale_factor: Optional[float],
-            default_time_scale_factor: Optional[float] = None):
+            default_time_scale_factor: Optional[float] = None) -> None:
         """
         Set up timings for the simulation.
 
@@ -276,7 +276,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise
 
     def _set_simulation_time_step(
-            self, simulation_time_step_us: Optional[int]):
+            self, simulation_time_step_us: Optional[int]) -> None:
         """
         :param simulation_time_step_us:
             An explicitly specified time step for the simulation.  If `None`,
@@ -307,7 +307,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def _set_time_scale_factor(
             self, time_scale_factor: Optional[float],
-            default_time_scale_factor: Optional[float]):
+            default_time_scale_factor: Optional[float]) -> None:
         """
         Set up time_scale_factor.
 
@@ -374,7 +374,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_system_multicast_routing_data(
             self, data: Tuple[
-                MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]):
+                MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]) -> None:
         """
         Sets the system_multicast_routing_data.
 
@@ -398,7 +398,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._data_in_multicast_routing_tables = routing_tables
         self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
 
-    def set_ipaddress(self, ip_address: str):
+    def set_ipaddress(self, ip_address: str) -> None:
         """
         :param str ip_address:
         """
@@ -407,7 +407,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._ipaddress = ip_address
 
     def set_fixed_routes(
-            self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]):
+            self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]) -> None:
         """
         :param fixed_routes:
         :type fixed_routes:
@@ -417,7 +417,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("fixed_routes must be a dict")
         self.__fec_data._fixed_routes = fixed_routes
 
-    def set_java_caller(self, java_caller: JavaCaller):
+    def set_java_caller(self, java_caller: JavaCaller) -> None:
         """
         :param JavaCaller java_caller:
         """
@@ -432,7 +432,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._next_sync_signal = Signal.SYNC0
 
     def set_executable_types(self, executable_types: Dict[
-            ExecutableType, CoreSubsets]):
+            ExecutableType, CoreSubsets]) -> None:
         """
         :param executable_types:
         :type executable_types: dict(
@@ -443,15 +443,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("executable_types must be a Dict")
         self.__fec_data._executable_types = executable_types
 
-    def set_live_packet_gatherer_parameters(self, params):
-        """
-        testing method will not work outside of mock
-        """
-        if not self._is_mocked():
-            raise NotImplementedError("This call is only for testing")
-        self.__fec_data._live_packet_recorder_params = params
-
-    def set_database_file_path(self, database_file_path: Optional[str]):
+    def set_database_file_path(
+            self, database_file_path: Optional[str]) -> None:
         """
         Sets the database_file_path variable. Possibly to `None`.
 
@@ -462,7 +455,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("database_file_path must be a str or None")
         self.__fec_data._database_file_path = database_file_path
 
-    def set_executable_targets(self, executable_targets: ExecutableTargets):
+    def set_executable_targets(
+            self, executable_targets: ExecutableTargets) -> None:
         """
         Sets the executable_targets
 
@@ -472,7 +466,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("executable_targets must be a ExecutableTargets")
         self.__fec_data._executable_targets = executable_targets
 
-    def set_ds_database_path(self, ds_database_path: str):
+    def set_ds_database_path(self, ds_database_path: str) -> None:
         """
         Sets the Data Spec targets database.
 
@@ -489,7 +483,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             "DataSpeedUpPacketGatherMachineVertex)")
 
     def set_gatherer_map(self, gatherer_map: Dict[
-            Chip, DataSpeedUpPacketGatherMachineVertex]):
+            Chip, DataSpeedUpPacketGatherMachineVertex]) -> None:
         """
         Sets the map of Chip to Gatherer Vertices.
 
@@ -516,7 +510,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             "ExtraMonitorSupportMachineVertex)")
 
     def set_monitor_map(self, monitor_map: Dict[
-            Chip, ExtraMonitorSupportMachineVertex]):
+            Chip, ExtraMonitorSupportMachineVertex]) -> None:
         """
         Sets the map of Chip to Monitor Vertices.
 
@@ -540,7 +534,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._monitor_map = monitor_map
 
     def set_notification_protocol(
-            self, notification_protocol: NotificationProtocol):
+            self, notification_protocol: NotificationProtocol) -> None:
         """
         Sets the notification_protocol.
 
@@ -564,11 +558,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     @classmethod
     @overrides(FecDataView.add_vertex)
-    def add_vertex(cls, vertex: ApplicationVertex):
+    def add_vertex(cls, vertex: ApplicationVertex) -> None:
         # Avoid the safety check in FecDataView
         PacmanDataWriter.add_vertex(vertex)
 
-    def set_n_run_steps(self, n_run_steps: int):
+    def set_n_run_steps(self, n_run_steps: int) -> None:
         """
         Sets the number of expected run-steps
 

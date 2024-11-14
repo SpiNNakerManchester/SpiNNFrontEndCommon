@@ -42,7 +42,7 @@ def profile_data_gatherer() -> None:
                 _write(placement, profile_data, provenance_file_path)
 
 
-def _write(p: Placement, profile_data: ProfileData, directory: str):
+def _write(p: Placement, profile_data: ProfileData, directory: str) -> None:
     """
     :param ~.Placement p:
     :param ProfileData profile_data:
