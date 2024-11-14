@@ -15,7 +15,8 @@
 from __future__ import annotations
 import logging
 import os
-from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
+from typing import (
+    cast, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union)
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
 from pacman.model.graphs import AbstractVertex
@@ -37,10 +38,6 @@ if TYPE_CHECKING:
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
 INIT_SQL = "db.sql"
-
-
-def _extract_int(x):
-    return None if x is None else int(x)
 
 
 class DatabaseWriter(SQLiteDB):
@@ -97,7 +94,7 @@ class DatabaseWriter(SQLiteDB):
         """
         return self._database_path
 
-    def __insert(self, sql: str, *args) -> int:
+    def __insert(self, sql: str, *args: Union[str, int, None]) -> int:
         """
         :param str sql:
         :rtype: int
@@ -160,7 +157,7 @@ class DatabaseWriter(SQLiteDB):
         self.__vertex_to_id[m_vertex] = m_vertex_id
         return m_vertex_id
 
-    def add_system_params(self, runtime: Optional[float]):
+    def add_system_params(self, runtime: Optional[float]) -> None:
         """
         Write system parameters into the database.
 
@@ -231,7 +228,7 @@ class DatabaseWriter(SQLiteDB):
 
     def create_atom_to_event_id_mapping(
             self, machine_vertices: Optional[
-                Iterable[Tuple[MachineVertex, str]]]):
+                Iterable[Tuple[MachineVertex, str]]]) -> None:
         """
         :param machine_vertices:
         :type machine_vertices:
@@ -271,7 +268,7 @@ class DatabaseWriter(SQLiteDB):
             )
 
     def create_device_atom_event_id_mapping(
-            self, devices: Iterable[LiveOutputDevice]):
+            self, devices: Iterable[LiveOutputDevice]) -> None:
         """
         Add output mappings for devices.
         """
