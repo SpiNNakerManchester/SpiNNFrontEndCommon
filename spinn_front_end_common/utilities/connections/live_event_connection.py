@@ -547,7 +547,7 @@ class LiveEventConnection(DatabaseConnection):
                 return True
             return False
 
-    def __do_receive_packet(self, data: bytes):
+    def __do_receive_packet(self, data: bytes) -> None:
         if self.__handle_scp_packet(data):
             return
 
@@ -555,7 +555,8 @@ class LiveEventConnection(DatabaseConnection):
         try:
             header = _ONE_SHORT.unpack_from(data)[0]
             if header & 0xC000 == 0x4000:
-                return read_eieio_command_message(data, 0)
+                read_eieio_command_message(data, 0)
+                return
             packet: EIEIODataMessage = read_eieio_data_message(data, 0)
             if packet.eieio_header.is_time:
                 self.__handle_time_packet(packet)
