@@ -630,7 +630,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._do_load()
 
         # Run for each of the given steps
-        if run_time is not None:
+        if n_machine_time_steps is not None:
             if get_config_bool("Buffers", "use_auto_pause_and_resume"):
                 steps = self._generate_steps(n_machine_time_steps)
             else:
@@ -726,7 +726,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.set_max_run_time_steps(max_time_steps)
 
-    def _generate_steps(self, n_steps: Optional[int]) -> Sequence[int]:
+    def _generate_steps(self, n_steps: int) -> Sequence[int]:
         """
         Generates the list of "timer" runs. These are usually in terms of
         time steps, but need not be.
@@ -735,7 +735,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: list of time step lengths
         :rtype: list(int)
         """
-        if n_steps is None or n_steps == 0:
+        if n_steps == 0:
             return [0]
         n_steps_per_segment = self._data_writer.get_max_run_time_steps()
         n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
