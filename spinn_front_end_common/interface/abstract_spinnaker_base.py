@@ -496,7 +496,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if run_time is None:
             # TODO does this make sense?
-            # see https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/1243
+            # https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/1243
             if FecDataView.has_allocation_controller():
                 FecDataView.get_allocation_controller().extend_allocation(0.0)
             self._data_writer.set_plan_n_timesteps(get_config_int(
