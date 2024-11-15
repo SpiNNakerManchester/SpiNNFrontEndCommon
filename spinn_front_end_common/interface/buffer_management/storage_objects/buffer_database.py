@@ -23,7 +23,7 @@ _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 PROVENANCE_CORE_KEY = "Power_Monitor_Core"
 
 
-def _timestamp():
+def _timestamp() -> int:
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 
@@ -311,7 +311,7 @@ class BufferDatabase(BaseDatabase):
         assert region_id is not None
         return region_id
 
-    def store_setup_data(self):
+    def store_setup_data(self) -> None:
         """
         Stores data passed into simulator setup
 
@@ -332,7 +332,7 @@ class BufferDatabase(BaseDatabase):
                 FecDataView.get_hardware_time_step_ms(),
                 FecDataView.get_time_scale_factor()))
 
-    def start_new_extraction(self):
+    def start_new_extraction(self) -> int:
         """
         Stores the metadata for the extractions about to occur
 
@@ -364,7 +364,7 @@ class BufferDatabase(BaseDatabase):
         raise LookupError("No Extraction id found")
 
     def store_recording(self, x: int, y: int, p: int, region: int,
-                        missing: bool, data: bytes):
+                        missing: bool, data: bytes) -> None:
         """
         Store some information in the corresponding buffer for a
         specific chip, core and recording region.
@@ -396,7 +396,7 @@ class BufferDatabase(BaseDatabase):
 
     def store_download(
             self, x: int, y: int, p: int, region: int, missing: bool,
-            data: bytes):
+            data: bytes) -> None:
         """
         Store some information in the corresponding buffer for a
         specific chip, core and recording region.
@@ -524,12 +524,13 @@ class BufferDatabase(BaseDatabase):
                 VALUES(?, ?, ?)
                 """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
-    def _set_core_name(self, x: int, y: int, p: int, core_name: Optional[str]):
+    def _set_core_name(
+            self, x: int, y: int, p: int, core_name: Optional[str]) -> None:
         """
         :param int x:
         :param int y:
         :param int p:
-        :param str core_name:
+        :param core_name:
         """
         try:
             self.execute(
@@ -576,14 +577,11 @@ class BufferDatabase(BaseDatabase):
             return str(row["core_name"], 'utf8')
         return None
 
-    def get_power_monitor_core(self, x, y) -> int:
+    def get_power_monitor_core(self, x: int, y: int) -> int:
         """
         Gets the power monitor core for chip x, y
 
-        :param str description:
-        :return: list of tuples x, y, value)
-        :rtype: list(tuple(int, int, float))
-        """
+       """
         for row in self.execute(
                 """
                 SELECT the_value

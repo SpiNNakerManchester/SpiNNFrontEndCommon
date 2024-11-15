@@ -24,6 +24,7 @@ from pacman.model.placements import Placement
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset)
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 
@@ -74,7 +75,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
         raise NotImplementedError
 
-    def reserve_provenance_data_region(self, spec) -> None:
+    def reserve_provenance_data_region(
+            self, spec: DataSpecificationGenerator ) -> None:
         """
         :param ~data_specification.DataSpecificationGenerator spec:
             The data specification being written.
@@ -142,7 +144,7 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     def parse_system_provenance_items(
             self, label: str, x: int, y: int, p: int,
-            provenance_data: Sequence[int]):
+            provenance_data: Sequence[int]) -> None:
         """
         Given some words of provenance data, convert the portion of them that
         describes the system provenance into proper provenance items.
@@ -246,7 +248,7 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     def parse_extra_provenance_items(
             self, label: str, x: int, y: int, p: int,
-            provenance_data: Sequence[int]):
+            provenance_data: Sequence[int]) -> None:
         # pylint: disable=unused-argument
         """
         Convert the remaining provenance words (those not in the standard set)
@@ -273,7 +275,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine.
         get_provenance_data_from_machine,
         extend_doc=False)
-    def get_provenance_data_from_machine(self, placement: Placement):
+    def get_provenance_data_from_machine(self, placement: Placement) -> None:
         """
         Retrieve the provenance data.
 

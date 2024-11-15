@@ -17,7 +17,9 @@ import logging
 import os
 import time
 from datetime import timedelta
-from typing import List, Optional, Tuple, Union, TYPE_CHECKING
+from typing import List, Optional, Tuple, Type, Union, TYPE_CHECKING
+from types import TracebackType
+
 from typing_extensions import Literal, Self
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
@@ -288,7 +290,9 @@ class FecTimer(object):
         """
         return timedelta(microseconds=time_diff / _NANO_TO_MICRO)
 
-    def __exit__(self, exc_type, exc_value, traceback) -> Literal[False]:
+    def __exit__(self, exc_type: Optional[Type],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Literal[False]:
         if self._start_time is None:
             return False
         time_taken = self._stop_timer()
@@ -325,7 +329,7 @@ class FecTimer(object):
         return time_now
 
     @classmethod
-    def _change_category(cls, category: TimerCategory):
+    def _change_category(cls, category: TimerCategory) -> None:
         """
         This method should only be called via the View!
 
@@ -338,7 +342,8 @@ class FecTimer(object):
         cls._category_time = time_now
 
     @classmethod
-    def start_category(cls, category: TimerCategory, machine_on=None):
+    def start_category(cls, category: TimerCategory,
+                       machine_on: Optional[bool] = None) -> None:
         """
         This method should only be called via the View!
 
@@ -355,7 +360,7 @@ class FecTimer(object):
             cls._machine_on = machine_on
 
     @classmethod
-    def end_category(cls, category: TimerCategory):
+    def end_category(cls, category: TimerCategory) -> None:
         """
         This method should only be
         called via the View!

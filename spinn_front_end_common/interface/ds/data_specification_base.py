@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Sequence, TextIO, Union
+from typing import Any, Optional, Sequence, TextIO, Union
 
 import numpy
 
@@ -59,7 +59,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         self._region_num: Optional[int] = None
         self._size: Optional[int] = None
 
-    def _report(self, *args) -> None:
+    def _report(self, *args: Any) -> None:
         if self._report_writer is not None:
             text = "".join(
                 (repr(arg) if isinstance(arg, bytes) else str(arg))
@@ -70,7 +70,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         if self._report_writer is not None:
             self._report_writer.flush()
 
-    def comment(self, comment: str):
+    def comment(self, comment: str) -> None:
         """
         Write a comment to the text version of the specification.
 
@@ -84,7 +84,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
     @abstractmethod
     def reserve_memory_region(
             self, region: int, size: int, label: Optional[str] = None,
-            reference: Optional[int] = None):
+            reference: Optional[int] = None) -> None:
         """
         Insert command to reserve a memory region.
 
@@ -103,7 +103,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
     @abstractmethod
     def reference_memory_region(
-            self, region: int, ref: int, label: Optional[str] = None):
+            self, region: int, ref: int, label: Optional[str] = None) -> None:
         """
         Insert command to reference another memory region.
 
@@ -118,7 +118,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         """
         raise NotImplementedError
 
-    def switch_write_focus(self, region: int):
+    def switch_write_focus(self, region: int) -> None:
         """
         Insert command to switch the region being written to.
 
@@ -137,7 +137,8 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         if self._size <= 0:
             raise DataSpecException(f"No size set for region {region}")
 
-    def write_value(self, data: Union[int, float], data_type=DataType.UINT32):
+    def write_value(self, data: Union[int, float],
+                    data_type: DataType = DataType.UINT32) -> None:
         """
         Insert command to write a value (once) to the current write pointer,
         causing the write pointer to move on by the number of bytes required
@@ -170,7 +171,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         if len(as_bytes) > data_type.size:
             self._flush()
             raise ValueError(
-                f"{data}:{data_type.name} as bytes was {as_bytes} "
+                f"{data}:{data_type.name} as bytes was {as_bytes!r} "
                 f"when only {data_type.size} bytes expected")
         if len(self._content) % 4 != 0:  # check we are at a word boundary
             if len(as_bytes) % data_type.size != 0:
@@ -184,7 +185,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
     def write_array(self, array_values: Union[
             Sequence[int], Sequence[float], numpy.ndarray],
-            data_type=DataType.UINT32):
+            data_type:DataType = DataType.UINT32) -> None:
         """
         Insert command to write an array, causing the write pointer
         to move on by (data type size * the array size), in bytes.
@@ -195,7 +196,8 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         """
         assert self._content is not None
         assert self._content_debug is not None
-        data = numpy.array(array_values, dtype=data_type.numpy_typename)
+        data: numpy.ndarray = numpy.array(
+            array_values, dtype=data_type.numpy_typename)
 
         encoded = data.tobytes()
 
