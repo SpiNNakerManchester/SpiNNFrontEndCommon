@@ -363,8 +363,11 @@ class LiveEventConnection(DatabaseConnection):
 
         for label, vertex_size in vertex_sizes.items():
             for init_callback in self.__init_callbacks[label]:
+                logger.info("LiveEventConnection: calling init callback {}",
+                            init_callback)
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep / 1000.0)
+        logger.info("LiveEventConnection: database read")
 
     def __init_sender(
             self, database: DatabaseReader, vertex_sizes: Dict[str, int]):
