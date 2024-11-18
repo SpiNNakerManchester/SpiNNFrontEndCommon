@@ -214,7 +214,7 @@ class DsSqlliteDatabase(SQLiteDB):
         raise DsDatabaseException(f"Region {region_num} not set")
 
     def set_reference(self, x: int, y: int, p: int, region_num: int,
-                      reference: int, ref_label: Optional[str]):
+                      reference: int, ref_label: Optional[str]) -> None:
         """
         Writes a outgoing region_reference into the database
 
@@ -305,7 +305,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def set_region_content(
             self, x: int, y: int, p: int, region_num: int, content: bytes,
-            content_debug: Optional[str]):
+            content_debug: Optional[str]) -> None:
         """
         Sets the content for this region
 
@@ -416,7 +416,8 @@ class DsSqlliteDatabase(SQLiteDB):
             return row["total"]
         raise DsDatabaseException("Query failed unexpectedly")
 
-    def set_start_address(self, x: int, y: int, p: int, start_address: int):
+    def set_start_address(
+            self, x: int, y: int, p: int, start_address: int) -> None:
         """
         Sets the base address for a core and calculates pointers
 
@@ -456,8 +457,8 @@ class DsSqlliteDatabase(SQLiteDB):
             return row["start_address"]
         raise DsDatabaseException(f"No core {x=} {y=} {p=}")
 
-    def set_region_pointer(
-            self, x: int, y: int, p: int, region_num: int, pointer: int):
+    def set_region_pointer(self, x: int, y: int, p: int, region_num: int,
+                           pointer: int) -> None:
         """
         Sets the pointer to the start of the address for this x, y, p region.
 

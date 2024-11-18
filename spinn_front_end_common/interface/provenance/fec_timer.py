@@ -62,7 +62,7 @@ class FecTimer(object):
     APPLICATION_RUNNER = "Application runner"
 
     @classmethod
-    def setup(cls, simulator: AbstractSpinnakerBase):
+    def setup(cls, simulator: AbstractSpinnakerBase) -> None:
         """
         Checks and saves cfg values so they don't have to be read each time
 
@@ -88,7 +88,7 @@ class FecTimer(object):
         self._start_time = time.perf_counter_ns()
         return self
 
-    def _report(self, message: str):
+    def _report(self, message: str) -> None:
         if self._provenance_path is not None:
             with open(self._provenance_path, "a", encoding="utf-8") as p_file:
                 p_file.write(f"{message}\n")
@@ -96,14 +96,14 @@ class FecTimer(object):
             logger.info(message)
 
     def _insert_timing(
-            self, time_taken: timedelta, skip_reason: Optional[str]):
+            self, time_taken: timedelta, skip_reason: Optional[str]) -> None:
         if self._category_id is not None:
             with GlobalProvenance() as db:
                 db.insert_timing(
                     self._category_id, self._algorithm, self._work,
                     time_taken, skip_reason)
 
-    def skip(self, reason: str):
+    def skip(self, reason: str) -> None:
         """
         Records that the algorithms is being skipped and ends the timer.
 
@@ -256,7 +256,7 @@ class FecTimer(object):
         self.skip(reason)
         return True
 
-    def error(self, reason: str):
+    def error(self, reason: str) -> None:
         """
          Ends an algorithm timing and records that it failed.
 

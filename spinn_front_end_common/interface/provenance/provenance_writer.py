@@ -52,7 +52,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         super().__init__(database_file)
 
-    def insert_power(self, description: str, the_value: _SqliteTypes):
+    def insert_power(self, description: str, the_value: _SqliteTypes) -> None:
         """
         Inserts a general power value into the `power_provenance` table.
 
@@ -70,7 +70,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_gatherer(
             self, x: int, y: int, address: int, bytes_read: int, run: int,
-            description: str, the_value: _SqliteTypes):
+            description: str, the_value: _SqliteTypes) -> None:
         """
         Records provenance into the `gatherer_provenance` table.
 
@@ -91,15 +91,15 @@ class ProvenanceWriter(BaseDatabase):
             VALUES(?, ?, ?, ?, ?, ?, ?)
             """, [x, y, address, bytes_read, run, description, the_value])
 
-    def insert_monitor(
-            self, x: int, y: int, description: str, the_value: _SqliteTypes):
+    def insert_monitor(self, x: int, y: int, description: str,
+                       the_value: _SqliteTypes) -> None:
         """
         Inserts data into the `monitor_provenance` table.
 
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
         :param str description: type of value
-        :param int the_value: data
+        :param the_value: data
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
@@ -113,7 +113,7 @@ class ProvenanceWriter(BaseDatabase):
     def insert_router(
             self, x: int, y: int, description: str,
             the_value: Union[int, float],
-            expected: bool = True):
+            expected: bool = True) -> None:
         """
         Inserts data into the `router_provenance` table.
 
@@ -135,7 +135,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_core(
             self, x: int, y: int, p: int, description: str,
-            the_value: _SqliteTypes):
+            the_value: _SqliteTypes) -> None:
         """
         Inserts data for a specific core into the `core_provenance` table.
 
@@ -155,7 +155,7 @@ class ProvenanceWriter(BaseDatabase):
             VALUES(?, ?, ?)
             """, [core_id, description, the_value])
 
-    def insert_report(self, message: str):
+    def insert_report(self, message: str) -> None:
         """
         Save and if applicable logs a message to the `reports` table.
 
@@ -184,7 +184,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_connector(
             self, pre_population: str, post_population: str, the_type: str,
-            description: str, the_value: _SqliteTypes):
+            description: str, the_value: _SqliteTypes) -> None:
         """
         Inserts edge data into the `connector_provenance`
 
@@ -207,7 +207,7 @@ class ProvenanceWriter(BaseDatabase):
              the_value])
 
     def insert_board_provenance(self, connections: Optional[
-            Dict[Tuple[int, int], str]]):
+            Dict[Tuple[int, int], str]]) -> None:
         """
         Write the connection details retrieved from spalloc_client job to the
         `boards_provenance` table.
@@ -227,7 +227,7 @@ class ProvenanceWriter(BaseDatabase):
             """, ((x, y, ipaddress)
                   for ((x, y), ipaddress) in connections.items()))
 
-    def _test_log_locked(self, text):
+    def _test_log_locked(self, text:str) -> None:
         """
         THIS IS A TESTING METHOD.
 

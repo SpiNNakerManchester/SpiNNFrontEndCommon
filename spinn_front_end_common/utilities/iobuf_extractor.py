@@ -227,7 +227,7 @@ class IOBufExtractor(object):
 
     def __extract_iobufs_for_binary(
             self, core_subsets: CoreSubsets, binary: str,
-            error_entries: List[str], warn_entries: List[str]):
+            error_entries: List[str], warn_entries: List[str]) -> None:
         """
         :param ~.CoreSubsets core_subsets: Where the binary is deployed
         :param str binary: What binary was deployed there.
@@ -252,7 +252,7 @@ class IOBufExtractor(object):
 
     def __process_one_iobuf(
             self, iobuf: IOBuffer, file_path: str, replacer: Replacer,
-            error_entries: List[str], warn_entries: List[str]):
+            error_entries: List[str], warn_entries: List[str]) -> None:
         """
         :param ~.IOBuffer iobuf:
         :param str file_path:
@@ -300,8 +300,8 @@ class IOBufExtractor(object):
         return io_buffers
 
     @staticmethod
-    def __add_value_if_match(
-            regex: Pattern, line: str, entries: List[str], iobuf: IOBuffer):
+    def __add_value_if_match(regex: Pattern, line: str,
+                             entries: List[str], iobuf: IOBuffer) -> None:
         """
         :param ~typing.Pattern regex:
         :param str line:
