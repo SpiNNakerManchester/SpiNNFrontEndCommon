@@ -144,7 +144,6 @@ class DatabaseConnection(UDPConnection):
             # Call the callback
             with DatabaseReader(database_path) as db_reader:
                 for db_callback in self.__database_callbacks:
-                    logger.info("Calling database callback {}", db_callback)
                     db_callback(db_reader)
         else:
             logger.warning("Database path was empty - assuming no database")

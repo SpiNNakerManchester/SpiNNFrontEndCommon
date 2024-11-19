@@ -179,9 +179,6 @@ class NotificationProtocol(object):
         if self.__wait_for_read_confirmation:
             for c in self.__database_message_connections:
                 try:
-                    logger.info(
-                        "Waiting for confirmation from {}:{}",
-                        c.remote_ip_address, c.remote_port)
                     c.receive_eieio_message()
                     logger.info(
                         "** Confirmation from {}:{} received, continuing **",
