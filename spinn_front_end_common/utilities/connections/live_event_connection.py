@@ -367,11 +367,8 @@ class LiveEventConnection(DatabaseConnection):
 
         for label, vertex_size in vertex_sizes.items():
             for init_callback in self.__init_callbacks[label]:
-                logger.info("LiveEventConnection: calling init callback {}",
-                            init_callback)
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep / 1000.0)
-        logger.info("LiveEventConnection: database read")
 
     def __init_sender(
             self, database: DatabaseReader, vertex_sizes: Dict[str, int]):
@@ -438,7 +435,6 @@ class LiveEventConnection(DatabaseConnection):
                 self.__receiver_connection)
             self.__receiver_listener.add_callback(self.__do_receive_packet)
             self.__receiver_listener.start()
-            logger.info("Sending tag update messages")
             self.__send_tag_messages_now()
 
     def __get_live_input_details(
@@ -494,7 +490,6 @@ class LiveEventConnection(DatabaseConnection):
 
     def __do_start_resume(self) -> None:
         while self.__tag_update_thread is not None:
-            logger.info("Waiting for last tag update thread to finish...")
             sleep(0.5)
         for label, callbacks in self.__start_resume_callbacks.items():
             for callback in callbacks:
@@ -515,7 +510,6 @@ class LiveEventConnection(DatabaseConnection):
                 self.__launch_thread("pause_stop", label, callback)
         if self.__tag_update_thread is not None:
             self.__tag_update_thread.join()
-            logger.info("LiveEventConnection: tag update thread stopped")
             self.__tag_update_thread = None
 
     def __send_tag_messages_thread(self) -> None:
