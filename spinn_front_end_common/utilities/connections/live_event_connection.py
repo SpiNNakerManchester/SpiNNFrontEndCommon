@@ -513,9 +513,10 @@ class LiveEventConnection(DatabaseConnection):
         for label, callbacks in self.__pause_stop_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
-        self.__tag_update_thread.join()
-        logger.info("LiveEventConnection: tag update thread stopped")
-        self.__tag_update_thread = None
+        if self.__tag_update_thread is not None:
+            self.__tag_update_thread.join()
+            logger.info("LiveEventConnection: tag update thread stopped")
+            self.__tag_update_thread = None
 
     def __send_tag_messages_thread(self) -> None:
         if self.__receiver_connection is None:
