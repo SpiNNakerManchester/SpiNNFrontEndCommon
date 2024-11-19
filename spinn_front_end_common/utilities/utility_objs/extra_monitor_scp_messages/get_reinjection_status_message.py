@@ -70,8 +70,8 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
         result = self.scp_response_header.result
         if result != SCPResult.RC_OK:
             raise SpinnmanUnexpectedResponseCodeException(
-                "Get packet reinjection status", self._command_code,
-                result.name)
+                "Get packet reinjection status",
+                str(self._command_code), result.name)
         self._reinjection_status = ReInjectionStatus(data, offset)
 
     @property
