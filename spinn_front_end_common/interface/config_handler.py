@@ -75,7 +75,7 @@ class ConfigHandler(object):
         self._ensure_provenance_for_energy_report()
 
     def __toggle_config(self, section: str, option: str, to_false: List[str],
-                        to_true: List[str]):
+                        to_true: List[str]) -> None:
         previous = get_config_str(section, option).lower()
         if previous in to_true:
             set_config(section, option, "True")
@@ -144,7 +144,7 @@ class ConfigHandler(object):
         self._replaced_cfg("Reports", "report_enabled",
                            "[Mode]mode = Production to turn off most reports")
 
-    def _error_on_previous(self, option) -> None:
+    def _error_on_previous(self, option: str) -> None:
         try:
             get_config_str_list("Mapping", option)
         except NoOptionError:
@@ -155,7 +155,7 @@ class ConfigHandler(object):
             "See https://spinnakermanchester.github.io/common_pages/"
             "Algorithms.html.")
 
-    def _replaced_cfg(self, section: str, previous: str, new: str):
+    def _replaced_cfg(self, section: str, previous: str, new: str) -> None:
         if has_config_option(section, previous):
             if get_config_bool(section, previous):
                 raise ConfigurationException(
@@ -165,7 +165,7 @@ class ConfigHandler(object):
                 logger.warning(f"cfg setting [{section}] {previous} "
                                f"is no longer supported! Use {new} instead")
 
-    def _reserve_system_vertices(self):
+    def _reserve_system_vertices(self) -> None:
         """
         Reserves the sizes for the system vertices
         """
@@ -181,7 +181,7 @@ class ConfigHandler(object):
 
     def _remove_excess_folders(
             self, max_kept: int, starting_directory: str,
-            remove_errored_folders: Optional[bool]):
+            remove_errored_folders: Optional[bool]) -> None:
         try:
             files_in_report_folder = os.listdir(starting_directory)
 
@@ -245,7 +245,7 @@ class ConfigHandler(object):
             f.write("Traceback of setup call:\n")
             traceback.print_stack(file=f)
 
-    def _ensure_provenance_for_energy_report(self):
+    def _ensure_provenance_for_energy_report(self) -> None:
         if get_config_bool("Reports", "write_energy_report"):
             set_config("Reports", "read_router_provenance_data", "True")
             set_config("Reports", "read_placements_provenance_data", "True")

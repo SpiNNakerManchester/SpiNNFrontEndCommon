@@ -13,13 +13,15 @@
 # limitations under the License.
 
 from spinn_utilities.progress_bar import ProgressBar
+
+from pacman.model.placements import Placement
+
 from spinn_front_end_common.interface.ds import (
     DsSqlliteDatabase, DataSpecificationReloader)
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.data import FecDataView
-
 
 def reload_dsg_regions() -> None:
     """
@@ -33,7 +35,8 @@ def reload_dsg_regions() -> None:
             regenerate_data_spec(placement, ds_database)
 
 
-def regenerate_data_spec(placement, ds_database) -> bool:
+def regenerate_data_spec(
+        placement: Placement, ds_database: DsSqlliteDatabase) -> bool:
     """
     Regenerate a data specification for a placement.
 

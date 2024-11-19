@@ -30,7 +30,7 @@ _BASIC_PROPERTIES = (
 _PROV_KEY = "power_provenance"
 
 
-def energy_provenance_reporter(power_used: PowerUsed):
+def energy_provenance_reporter(power_used: PowerUsed) -> None:
     """
     Converts the power usage information into provenance data.
 

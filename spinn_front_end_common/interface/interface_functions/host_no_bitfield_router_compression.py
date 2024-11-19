@@ -139,7 +139,8 @@ class Compression(object):
             raise SpinnFrontEndException(
                 f"The router compressor failed on {self.__failures}")
 
-    def _load_routing_table(self, table: AbstractMulticastRoutingTable):
+    def _load_routing_table(
+            self, table: AbstractMulticastRoutingTable) -> None:
         """
         :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
             the router table to load
