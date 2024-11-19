@@ -509,7 +509,7 @@ class LiveEventConnection(DatabaseConnection):
     def __do_stop_pause(self) -> None:
         with self.__send_tag_update_thread_lock:
             self.__is_running = False
-            self.__send_tag_update_thread_lock.notifyAll()
+            self.__send_tag_update_thread_lock.notify_all()
         for label, callbacks in self.__pause_stop_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
@@ -556,7 +556,7 @@ class LiveEventConnection(DatabaseConnection):
                     data[_SCP_DEST_CPU_BYTE] == _SCP_RESPONSE_DEST):
                 self.__scp_response_received = data
                 self.__expect_scp_response = False
-                self.__expect_scp_response_lock.notifyAll()
+                self.__expect_scp_response_lock.notify_all()
                 return True
             return False
 
@@ -800,6 +800,6 @@ class LiveEventConnection(DatabaseConnection):
     def close(self) -> None:
         with self.__send_tag_update_thread_lock:
             self.__is_running = False
-            self.__send_tag_update_thread_lock.notifyAll()
+            self.__send_tag_update_thread_lock.notify_all()
         self.__handle_possible_rerun_state()
         super().close()
