@@ -564,7 +564,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     @classmethod
     @overrides(FecDataView.add_vertex)
-    def add_vertex(cls, vertex: ApplicationVertex):
+    def add_vertex(cls, vertex: ApplicationVertex) -> None:
         # Avoid the safety check in FecDataView
         PacmanDataWriter.add_vertex(vertex)
 
