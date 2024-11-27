@@ -96,8 +96,6 @@ class NotificationProtocol(object):
         """
         logger.info("** Sending start / resume message to external sources "
                     "to state the simulation has started or resumed. **")
-        if self.__wait_for_read_confirmation:
-            self.wait_for_confirmation()
         eieio_command_message = NotificationProtocolStartResume()
         for c in self.__database_message_connections:
             try:
