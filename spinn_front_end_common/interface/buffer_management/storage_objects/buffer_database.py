@@ -14,8 +14,10 @@
 
 from sqlite3 import Binary, IntegrityError
 import time
-from typing import Optional, Tuple
+from typing import cast, Optional, Tuple
 from spinn_utilities.config_holder import get_config_bool
+from spinnman.model.enums.executable_type import ExecutableType
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
@@ -524,37 +526,50 @@ class BufferDatabase(BaseDatabase):
                 VALUES(?, ?, ?)
                 """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
-    def _set_core_name(self, x: int, y: int, p: int, core_name: Optional[str]):
+    def _set_core_name(self, x: int, y: int, p: int, core_name: Optional[str],
+                       executable_type: int):
         """
-        :param int x:
-        :param int y:
-        :param int p:
-        :param str core_name:
+        Set the core name and executable type.
         """
         try:
             self.execute(
                 """
-                INSERT INTO core (x, y, processor, core_name)
-                VALUES (?, ?, ? ,?)
-                """, (x, y, p, core_name))
+                INSERT INTO core (x, y, processor, core_name, executable_type)
+                VALUES (?, ?, ? ,?, ?)
+                """, (x, y, p, core_name, executable_type))
         except IntegrityError:
             self.execute(
                 """
-                UPDATE core SET core_name = ?
+                UPDATE core SET core_name = ?, executable_type = ?
                 WHERE x = ? AND y = ? and processor = ?
-                """, (core_name, x, y, p))
+                """, (core_name, executable_type, x, y, p))
 
     def store_vertex_labels(self) -> None:
         """
-        Goes though all placement an monitor cores to set a label.
+        Goes through all placement and monitor cores to set a label.
         """
+        # pylint: disable=import-outside-toplevel
+        from spinn_front_end_common.utility_models \
+            .chip_power_monitor_machine_vertex \
+            import (ChipPowerMonitorMachineVertex)
+        type_value: Optional[int]
         for placement in FecDataView.iterate_placemements():
-            self._set_core_name(
-                placement.x, placement.y, placement.p, placement.vertex.label)
+            if isinstance(placement.vertex, AbstractHasAssociatedBinary):
+                if isinstance(placement.vertex, ChipPowerMonitorMachineVertex):
+                    type_value = len(ExecutableType)
+                else:
+                    vertex: AbstractHasAssociatedBinary = cast(
+                        AbstractHasAssociatedBinary, placement.vertex)
+                    type_value = vertex.get_binary_start_type().value
+            else:
+                type_value = None
+            self._set_core_name(placement.x, placement.y, placement.p,
+                                placement.vertex.label, type_value)
+        system = ExecutableType.SYSTEM.value
         for chip in FecDataView.get_machine().chips:
             for p in chip.scamp_processors_ids:
-                self._set_core_name(
-                    chip.x, chip.y, p, f"SCAMP(OS)_{chip.x}:{chip.y}")
+                self._set_core_name(chip.x, chip.y, p,
+                                    f"SCAMP(OS)_{chip.x}:{chip.y}", system)
 
     def get_core_name(self, x: int, y: int, p: int) -> Optional[str]:
         """

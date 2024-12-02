@@ -22,10 +22,18 @@ CREATE TABLE IF NOT EXISTS core(
 	x INTEGER NOT NULL,
 	y INTEGER NOT NULL,
 	processor INTEGER NOT NULL,
-	core_name STRING);
+	core_name STRING,
+    executable_type INTEGER);
 -- Every processor has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
 	x ASC, y ASC, processor ASC);
+
+CREATE VIEW IF NOT EXISTS active_cores AS
+    SELECT x, y, COUNT(processor) AS n_cores
+    FROM core
+    WHERE executable_type < 4
+    GROUP BY x, y
+    ORDER BY x, y;
 
 CREATE TABLE IF NOT EXISTS setup(
     setup_id INTEGER PRIMARY KEY CHECK (setup_id = 0),

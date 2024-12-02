@@ -130,7 +130,6 @@ def _report_iobuf_messages(
     :param ~logging.Logger logger:
     :param str filename_template:
     """
-    # Import in this function to prevent circular import issue
     iobuf_reader = IOBufExtractor(
         cores,
         filename_template=filename_template, suppress_progress=False)
