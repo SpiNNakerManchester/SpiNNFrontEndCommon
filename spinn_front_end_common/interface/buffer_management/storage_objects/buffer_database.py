@@ -527,9 +527,9 @@ class BufferDatabase(BaseDatabase):
                 """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
     def _set_core_name(self, x: int, y: int, p: int, core_name: Optional[str],
-                       executable_type: int):
+                       executable_type: Optional[int]):
         """
-        Set the core name and executable type.
+        Set the core name and executable type or another related value.
         """
         try:
             self.execute(
