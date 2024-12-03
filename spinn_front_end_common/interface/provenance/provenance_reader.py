@@ -77,13 +77,12 @@ class ProvenanceReader(BaseDatabase):
                          row_factory=None, text_factory=None)
 
     @classmethod
-    def reset_db(cls, reset_number: int,
-                 read_only: Optional[bool] = None) -> "ProvenanceReader":
+    def reset_db(cls, reset_number: int) -> "ProvenanceReader":
         """
         Retrieves a NeoBufferDatabase for this segment.
         """
         database_file = cls.reset_file(reset_number)
-        return ProvenanceReader(database_file, read_only)
+        return ProvenanceReader(database_file)
 
     def run_query(self, query: str, params: Iterable[_SqliteTypes] = ()
                   ) -> List[Sequence[_SqliteTypes]]:
