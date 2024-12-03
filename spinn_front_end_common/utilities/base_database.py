@@ -15,7 +15,7 @@
 import os
 import sqlite3
 import time
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 from typing_extensions import TypeAlias
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -25,9 +25,12 @@ _DDL_FILE = os.path.join(os.path.dirname(__file__),
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 _SqliteTypes: TypeAlias = Union[str, int, float, bytes, None]
 
+reset_cache: Dict[int, str] = {}
+
 
 def _timestamp():
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
+
 
 
 class BaseDatabase(SQLiteDB):
@@ -65,6 +68,14 @@ class BaseDatabase(SQLiteDB):
         super().__init__(
             self._database_file, read_only=read_only, row_factory=row_factory,
             text_factory=text_factory, ddl_file=_DDL_FILE)
+        reset = FecDataView.get_reset_number()
+        if (reset not in reset_cache or
+                reset_cache[reset] != database_file):
+            reset_cache[reset] = database_file
+
+    @classmethod
+    def reset_file(cls, reset_number) -> str:
+        return reset_cache[reset_number]
 
     @classmethod
     def default_database_file(cls) -> str:
