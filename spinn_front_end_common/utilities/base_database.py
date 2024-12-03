@@ -69,11 +69,11 @@ class BaseDatabase(SQLiteDB):
             text_factory=text_factory, ddl_file=_DDL_FILE)
         reset = FecDataView.get_reset_number()
         if (reset not in reset_cache or
-                reset_cache[reset] != database_file):
-            reset_cache[reset] = database_file
+                reset_cache[reset] != self._database_file):
+            reset_cache[reset] = self._database_file
 
     @classmethod
-    def reset_file(cls, reset_number) -> str:
+    def reset_file(cls, reset_number: int) -> str:
         """
         Provides the database file uses during this reset
         """
