@@ -32,7 +32,6 @@ def _timestamp():
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 
-
 class BaseDatabase(SQLiteDB):
     """
     Specific implementation of the Database for SQLite 3.
