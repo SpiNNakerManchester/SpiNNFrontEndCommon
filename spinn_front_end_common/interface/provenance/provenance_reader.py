@@ -76,6 +76,14 @@ class ProvenanceReader(BaseDatabase):
         super().__init__(provenance_data_path, read_only=True,
                          row_factory=None, text_factory=None)
 
+    @classmethod
+    def reset_db(cls, reset_number: int) -> "ProvenanceReader":
+        """
+        Retrieves a ProvenanceReader for this segment.
+        """
+        database_file = cls.reset_file(reset_number)
+        return ProvenanceReader(database_file)
+
     def run_query(self, query: str, params: Iterable[_SqliteTypes] = ()
                   ) -> List[Sequence[_SqliteTypes]]:
         """

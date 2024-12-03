@@ -45,6 +45,14 @@ class BufferDatabase(BaseDatabase):
 
     __slots__ = ()
 
+    @classmethod
+    def reset_db(cls, reset_number: int) -> "BufferDatabase":
+        """
+        Retrieves a BufferDatabase for this segment.
+        """
+        database_file = cls.reset_file(reset_number)
+        return BufferDatabase(database_file)
+
     def clear_recording_region(
             self, x: int, y: int, p: int, region: int) -> bool:
         """
