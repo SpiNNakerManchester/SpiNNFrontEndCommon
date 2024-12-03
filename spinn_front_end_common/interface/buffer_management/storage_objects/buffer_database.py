@@ -46,12 +46,12 @@ class BufferDatabase(BaseDatabase):
     __slots__ = ()
 
     @classmethod
-    def reset_db(cls, segment_number: int,
+    def reset_db(cls, reset_number: int,
                  read_only: Optional[bool] = None) -> "BufferDatabase":
         """
         Retrieves a NeoBufferDatabase for this segment.
         """
-        database_file = cls.reset_file(segment_number)
+        database_file = cls.reset_file(reset_number)
         return BufferDatabase(database_file, read_only)
 
     def clear_recording_region(
