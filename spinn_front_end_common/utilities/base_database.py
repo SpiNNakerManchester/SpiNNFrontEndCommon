@@ -74,6 +74,9 @@ class BaseDatabase(SQLiteDB):
 
     @classmethod
     def reset_file(cls, reset_number) -> str:
+        """
+        Provides the database file uses during this reset
+        """
         return reset_cache[reset_number]
 
     @classmethod

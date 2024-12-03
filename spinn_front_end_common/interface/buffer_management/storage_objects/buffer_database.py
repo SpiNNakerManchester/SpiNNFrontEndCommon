@@ -48,7 +48,7 @@ class BufferDatabase(BaseDatabase):
     @classmethod
     def reset_db(cls, reset_number: int) -> "BufferDatabase":
         """
-        Retrieves a NeoBufferDatabase for this segment.
+        Retrieves a BufferDatabase for this segment.
         """
         database_file = cls.reset_file(reset_number)
         return BufferDatabase(database_file)

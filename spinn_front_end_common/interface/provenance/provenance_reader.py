@@ -79,7 +79,7 @@ class ProvenanceReader(BaseDatabase):
     @classmethod
     def reset_db(cls, reset_number: int) -> "ProvenanceReader":
         """
-        Retrieves a NeoBufferDatabase for this segment.
+        Retrieves a ProvenanceReader for this segment.
         """
         database_file = cls.reset_file(reset_number)
         return ProvenanceReader(database_file)
