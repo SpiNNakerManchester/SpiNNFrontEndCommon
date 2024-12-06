@@ -52,19 +52,25 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     """
     # Get data from provenance
     with GlobalProvenance() as db:
-        waiting_ms = db.get_category_timer_sum(TimerCategory.WAITING)
-        setup_ms = db.get_timer_sum_by_category(TimerCategory.SETTING_UP)
-        get_machine_ms = db.get_timer_sum_by_category(
+        waiting_ms = db.get_category_timer_sum_by_reset(TimerCategory.WAITING)
+        setup_ms = db.get_timer_sum_by_category_and_reset(
+            TimerCategory.SETTING_UP)
+        get_machine_ms = db.get_timer_sum_by_category_and_reset(
             TimerCategory.GET_MACHINE)
 
-        mapping_ms = db.get_timer_sum_by_category(TimerCategory.MAPPING)
-        loading_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
+        mapping_ms = db.get_timer_sum_by_category_and_reset(
+            TimerCategory.MAPPING)
+        loading_ms = db.get_timer_sum_by_category_and_reset(
+            TimerCategory.LOADING)
 
-        run_other_ms = db.get_timer_sum_by_category(TimerCategory.RUN_OTHER)
-        run_loop_ms = db.get_timer_sum_by_category(TimerCategory.RUN_LOOP)
-        resetting_ms = db.get_timer_sum_by_category(TimerCategory.RESETTING)
+        run_other_ms = db.get_timer_sum_by_category_and_reset(
+            TimerCategory.RUN_OTHER)
+        run_loop_ms = db.get_timer_sum_by_category_and_reset(
+            TimerCategory.RUN_LOOP)
+        resetting_ms = db.get_timer_sum_by_category_and_reset(
+            TimerCategory.RESETTING)
 
-        shutting_down_ms = db.get_timer_sum_by_category(
+        shutting_down_ms = db.get_timer_sum_by_category_and_reset(
             TimerCategory.SHUTTING_DOWN)
 
         # Separate out processes that are part of the others but that happen

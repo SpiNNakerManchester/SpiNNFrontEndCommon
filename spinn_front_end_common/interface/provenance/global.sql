@@ -22,6 +22,10 @@ CREATE TABLE IF NOT EXISTS version_provenance(
     description STRING NOT NULL,
     the_value STRING NOT NULL);
 
+CREATE TABLE IF NOT EXISTS run_reset_mapping(
+    n_run INTEGER NOT NULL PRIMARY KEY,
+    n_reset INTEGER NOT NULL);
+
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for algorithm timings
 CREATE TABLE IF NOT EXISTS timer_provenance(
@@ -33,13 +37,13 @@ CREATE TABLE IF NOT EXISTS timer_provenance(
     skip_reason STRING);
 
 CREATE VIEW IF NOT EXISTS full_timer_view AS
-    SELECT timer_id, category, algorithm, work, machine_on, timer_provenance.time_taken, n_run, n_loop, skip_reason
-    FROM timer_provenance ,category_timer_provenance
-	WHERE timer_provenance.category_id = category_timer_provenance.category_id
+    SELECT timer_id, category, algorithm, work, machine_on, timer_provenance.time_taken, n_reset, n_run, n_loop, skip_reason
+    FROM timer_provenance ,category_timer_view
+	WHERE timer_provenance.category_id = category_timer_view.category_id
     ORDER BY timer_id;
 
 CREATE VIEW IF NOT EXISTS timer_view AS
-    SELECT category, algorithm, work, machine_on, time_taken, n_run, n_loop
+    SELECT category, algorithm, work, machine_on, time_taken, n_reset, n_run, n_loop
     FROM full_timer_view
     WHERE skip_reason is NULL
     ORDER BY timer_id;
@@ -53,6 +57,13 @@ CREATE TABLE IF NOT EXISTS category_timer_provenance(
     machine_on BOOL NOT NULL,
     n_run INTEGER NOT NULL,
     n_loop INTEGER);
+
+CREATE VIEW IF NOT EXISTS category_timer_view as
+    SELECT category_id, category, time_taken, machine_on, n_reset, n_run, n_loop
+    FROM
+        category_timer_provenance
+    NATURAL JOIN
+        run_reset_mapping;
 
 ---------------------------------------------------------------------
 -- A table to store log.info
