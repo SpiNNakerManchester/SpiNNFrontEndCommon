@@ -107,20 +107,23 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     n_frames = _calculate_n_frames(machine)
 
     active_cores: Dict[Tuple[int, int], int] = defaultdict(int)
+    power_cores: Dict[Tuple[int, int], int] = {}
     n_active_cores = 0
     for pl in FecDataView.iterate_placemements():
         if not isinstance(pl.vertex, AbstractHasAssociatedBinary):
             continue
         vertex: AbstractHasAssociatedBinary = cast(
             AbstractHasAssociatedBinary, pl.vertex)
-        if (vertex.get_binary_start_type() != ExecutableType.SYSTEM and
-                not isinstance(vertex, ChipPowerMonitorMachineVertex)):
-            active_cores[(pl.x, pl.y)] += 1
-            n_active_cores += 1
+        if vertex.get_binary_start_type() != ExecutableType.SYSTEM:
+            if isinstance(vertex, ChipPowerMonitorMachineVertex):
+                power_cores[(pl.x, pl.y)] = pl.p
+            else:
+                active_cores[(pl.x, pl.y)] += 1
+                n_active_cores += 1
     n_active_chips = len(active_cores)
 
     run_chip_active_time = _extract_cores_active_time(
-        checkpoint, active_cores, version)
+        checkpoint, active_cores, power_cores, version)
     load_chip_active_time = _make_extra_monitor_core_use(
         data_loading_ms, machine, version.n_scamp_cores + 2,
         version.n_scamp_cores + 1)
@@ -178,6 +181,7 @@ def _extract_router_packets(
 
 def _extract_cores_active_time(
         checkpoint: Optional[int], active_cores: Dict[Tuple[int, int], int],
+        power_cores: Dict[Tuple[int, int], int],
         version: AbstractVersion) -> ChipActiveTime:
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
 
@@ -185,7 +189,7 @@ def _extract_cores_active_time(
     with BufferDatabase() as buff_db:
         for (x, y), n_cores in active_cores.items():
             # Find the core that was used on this chip for power monitoring
-            p = buff_db.get_power_monitor_core(x, y)
+            p = power_cores[(x, y)]
             # Get time per sample in seconds (frequency in microseconds)
             time_for_recorded_sample_s = sampling_frequency / _US_PER_SECOND
             data, _missing = buff_db.get_recording(x, y, p, RECORDING_CHANNEL)

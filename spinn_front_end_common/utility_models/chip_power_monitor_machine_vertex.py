@@ -134,8 +134,6 @@ class ChipPowerMonitorMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-        self.__write_recording_metadata(placement)
-
     def _write_configuration_region(self, spec: DataSpecificationGenerator):
         """
         Write the data needed by the C code to configure itself.
@@ -222,8 +220,3 @@ class ChipPowerMonitorMachineVertex(
         n_entries = math.floor(FecDataView.get_hardware_time_step_us() /
                                recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
-
-    def __write_recording_metadata(self, placement: Placement) -> None:
-        with ProvenanceWriter() as db:
-            db.insert_monitor_value(
-                placement.x, placement.y, PROVENANCE_CORE_KEY, placement.p)
