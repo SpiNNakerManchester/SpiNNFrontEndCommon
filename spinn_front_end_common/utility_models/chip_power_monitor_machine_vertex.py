@@ -227,5 +227,5 @@ class ChipPowerMonitorMachineVertex(
 
     def __write_recording_metadata(self, placement: Placement) -> None:
         with ProvenanceWriter() as db:
-            db.insert_monitor(
+            db.insert_monitor_value(
                 placement.x, placement.y, PROVENANCE_CORE_KEY, placement.p)

@@ -96,13 +96,28 @@ class ProvenanceWriter(BaseDatabase):
         """
         Inserts data into the `monitor_provenance` table.
 
+        Will only save data is write_provance is on.
+
+        :param int x: X coordinate of the chip
+        :param int y: Y coordinate of the chip
+        :param str description: type of value
+        :param int the_value: data
+        """
+        if get_config_bool("Reports", "write_provenance"):
+            self.insert_monitor_value(x, y, description, the_value)
+
+    def insert_monitor_value(
+            self, x: int, y: int, description: str, the_value: _SqliteTypes):
+        """
+        Inserts data into the `monitor_provenance` table.
+
+        Always saves the data even if write_provence is off.
+
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
         :param str description: type of value
         :param the_value: data
         """
-        if not get_config_bool("Reports", "write_provenance"):
-            return
         self.execute(
             """
             INSERT INTO monitor_provenance(
