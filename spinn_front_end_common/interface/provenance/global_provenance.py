@@ -101,6 +101,11 @@ class GlobalProvenance(SQLiteDB):
             """, [description, the_value])
 
     def insert_run_reset_mapping(self) -> None:
+        """
+        Inserts a mapping between rest number and run number
+
+        :return:
+        """
         self.execute(
             """
             INSERT INTO run_reset_mapping(
