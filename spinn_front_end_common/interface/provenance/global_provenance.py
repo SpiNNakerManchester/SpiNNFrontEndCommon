@@ -316,28 +316,6 @@ class GlobalProvenance(SQLiteDB):
         except IndexError:
             return 0
 
-    def get_category_timer_sum(self, category: TimerCategory) -> int:
-        """
-        Get the total runtime for one category of algorithms
-
-        :param TimerCategory category:
-        :return: total off all run times with this category
-        :rtype: int
-        """
-        query = """
-             SELECT sum(time_taken)
-             FROM category_timer_provenance
-             WHERE category = ?
-             """
-        data = self.run_query(query, [category.category_name])
-        try:
-            info = data[0][0]
-            if info is None:
-                return 0
-            return info
-        except IndexError:
-            return 0
-
     def get_category_timer_sum_by_reset(self, category: TimerCategory,
                                         n_reset: Optional[int] = None) -> int:
         """
