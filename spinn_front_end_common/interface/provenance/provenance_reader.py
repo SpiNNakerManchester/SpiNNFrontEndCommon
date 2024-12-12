@@ -17,7 +17,6 @@ from typing import Iterable, List, Optional, Sequence, Tuple, Union, cast
 from typing_extensions import TypeAlias
 from spinn_utilities.typing.coords import XYP
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.base_database import (
     BaseDatabase, _SqliteTypes)
 
@@ -45,22 +44,6 @@ class ProvenanceReader(BaseDatabase):
     """
 
     __slots__ = ()
-
-    @classmethod
-    def get_last_run_database_path(cls) -> str:
-        """
-        Get the path of the current provenance database of the last run.
-
-       .. warning::
-            Calling this method between start/reset and run may result in a
-            path to a database not yet created.
-
-        :raises ValueError:
-            if the system is in a state where path can't be retrieved,
-            for example before run is called
-        """
-        return os.path.join(
-            FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
 
     def __init__(self, provenance_data_path: Optional[str] = None):
         """
