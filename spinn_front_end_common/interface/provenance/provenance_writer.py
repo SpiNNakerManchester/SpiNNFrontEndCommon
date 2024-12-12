@@ -17,6 +17,7 @@ from typing import Dict, Optional, Tuple, Union
 from spinn_utilities.config_holder import (
     get_config_int_or_none, get_config_bool)
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import (
     BaseDatabase, _SqliteTypes)
 
@@ -61,12 +62,13 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
+        run = FecDataView.get_run_number()
         self.execute(
             """
             INSERT INTO power_provenance(
-                description, the_value)
-            VALUES(?, ?)
-            """, [description, the_value])
+                run, description, the_value)
+            VALUES(?, ?, ?)
+            """, [run, description, the_value])
 
     def insert_gatherer(
             self, x: int, y: int, address: int, bytes_read: int, run: int,

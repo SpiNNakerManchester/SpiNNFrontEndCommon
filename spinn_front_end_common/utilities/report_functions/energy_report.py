@@ -30,8 +30,10 @@ class EnergyReport(object):
 
     __slots__ = ()
 
-    # energy report file name
-    _SUMMARY_FILENAME = "energy_report.rpt"
+    @classmethod
+    def file_name(cls, n_run:int):
+        """ Name of the Energy report file for this run """
+        return f"energy_report_{n_run}.rpt"
 
     def write_energy_report(self, power_used: PowerUsed):
         """
@@ -43,7 +45,8 @@ class EnergyReport(object):
         report_dir = FecDataView.get_run_dir_path()
 
         # summary report path
-        summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
+        summary_report = os.path.join(
+            report_dir, self.file_name(FecDataView.get_run_number()))
 
         # create summary report
         with open(summary_report, "w", encoding="utf-8") as f:
