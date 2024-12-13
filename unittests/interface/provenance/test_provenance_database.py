@@ -61,7 +61,8 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_power("total time (seconds)", 6.81)
         with ProvenanceReader() as db:
             data = db.run_query("select * from power_provenance")
-            power = [(1, 1, 'num_cores', 34.0), (2, 1, 'total time (seconds)', 6.81)]
+            power = [(1, 1, 'num_cores', 34.0),
+                     (2, 1, 'total time (seconds)', 6.81)]
             self.assertListEqual(data, power)
 
     def test_timings(self):
