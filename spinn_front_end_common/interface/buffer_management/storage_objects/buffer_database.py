@@ -60,7 +60,7 @@ class BufferDatabase(BaseDatabase):
         :return: True if any region was changed
         :rtype: bool
         """
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT recording_region_id FROM recording_region_view
                 WHERE x = ? AND y = ? AND processor = ?
@@ -81,7 +81,7 @@ class BufferDatabase(BaseDatabase):
         :param region_id: region to clear
         :return:
         """
-        self.execute(
+        self.cursor().execute(
             """
             UPDATE recording_data SET
             content = CAST('' AS BLOB), content_len = 0, missing_data = 2
@@ -107,7 +107,7 @@ class BufferDatabase(BaseDatabase):
         :param int region_id:
         :rtype: memoryview, bool
         """
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT count(*) as n_extractions,
                 SUM(content_len) as total_content_length
@@ -131,7 +131,7 @@ class BufferDatabase(BaseDatabase):
         :param int region_id:
         :rtype: memoryview
         """
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT content, missing_data
                 FROM recording_data
@@ -158,7 +158,7 @@ class BufferDatabase(BaseDatabase):
             last_extraction_id = self.get_last_extraction_id()
             extraction_id = last_extraction_id + 1 + extraction_id
 
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT content, missing_data
                 FROM recording_data
@@ -183,7 +183,7 @@ class BufferDatabase(BaseDatabase):
             last_extraction_id = self.get_last_extraction_id()
             extraction_id = last_extraction_id + 1 + extraction_id
 
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT content, missing_data
                 FROM download_data
@@ -208,7 +208,7 @@ class BufferDatabase(BaseDatabase):
         c_buffer = bytearray(total_content_length)
         missing_data = False
         idx = 0
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT content, missing_data FROM recording_data
                 WHERE recording_region_id = ? ORDER BY extraction_id ASC
@@ -221,7 +221,7 @@ class BufferDatabase(BaseDatabase):
 
     def _find_existing_recording_region_id(
             self, x: int, y: int, p: int, region: int) -> Optional[int]:
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT recording_region_id
                 FROM recording_region_view
@@ -234,7 +234,7 @@ class BufferDatabase(BaseDatabase):
 
     def _find_existing_download_region_id(
             self, x: int, y: int, p: int, region: int) -> Optional[int]:
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT download_region_id
                 FROM download_region_view
@@ -277,7 +277,7 @@ class BufferDatabase(BaseDatabase):
             return region_info
 
         core_id = self._get_core_id(x, y, p)
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO recording_region(
                 core_id, local_region_index)
@@ -301,7 +301,7 @@ class BufferDatabase(BaseDatabase):
             return region_info
 
         core_id = self._get_core_id(x, y, p)
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO download_region(
                 core_id, local_region_index)
@@ -316,14 +316,14 @@ class BufferDatabase(BaseDatabase):
         Stores data passed into simulator setup
 
         """
-        for _ in self.execute(
+        for _ in self.cursor().execute(
                 """
                 SELECT hardware_time_step_ms
                 FROM setup
                 """):
             return
 
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO setup(
                 setup_id, hardware_time_step_ms, time_scale_factor)
@@ -338,7 +338,7 @@ class BufferDatabase(BaseDatabase):
 
         """
         run_timesteps = FecDataView.get_current_run_timesteps() or 0
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO extraction(run_timestep, n_run, n_loop, extract_time)
             VALUES(?, ?, ?, ?)
@@ -354,7 +354,7 @@ class BufferDatabase(BaseDatabase):
         Get the id of the current/ last extraction
 
         """
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT max(extraction_id) as max_id
                 FROM extraction
@@ -384,7 +384,7 @@ class BufferDatabase(BaseDatabase):
         datablob = Binary(data)
         region_id = self._get_recording_region_id(x, y, p, region)
         extraction_id = self.get_last_extraction_id()
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO recording_data(
                 recording_region_id, extraction_id, content, content_len,
@@ -417,7 +417,7 @@ class BufferDatabase(BaseDatabase):
         datablob = Binary(data)
         download_region_id = self._get_download_region_id(x, y, p, region)
         extraction_id = self.get_last_extraction_id()
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO download_data(
                 download_region_id, extraction_id, content, content_len,
@@ -518,7 +518,7 @@ class BufferDatabase(BaseDatabase):
         job = FecDataView.get_spalloc_job()
         if job is not None:
             config = job.get_session_credentials_for_db()
-            self.executemany(
+            self.cursor().executemany(
                 """
                 INSERT INTO proxy_configuration(kind, name, value)
                 VALUES(?, ?, ?)
@@ -533,13 +533,13 @@ class BufferDatabase(BaseDatabase):
         :param core_name:
         """
         try:
-            self.execute(
+            self.cursor().execute(
                 """
                 INSERT INTO core (x, y, processor, core_name)
                 VALUES (?, ?, ? ,?)
                 """, (x, y, p, core_name))
         except IntegrityError:
-            self.execute(
+            self.cursor().execute(
                 """
                 UPDATE core SET core_name = ?
                 WHERE x = ? AND y = ? and processor = ?
@@ -568,7 +568,7 @@ class BufferDatabase(BaseDatabase):
         :param int p: core p
         :rtype: str or None
         """
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT core_name
                 FROM core
@@ -582,7 +582,7 @@ class BufferDatabase(BaseDatabase):
         Gets the power monitor core for chip x, y
 
        """
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT the_value
                 FROM monitor_provenance

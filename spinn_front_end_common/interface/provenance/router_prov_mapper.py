@@ -15,8 +15,10 @@
 import argparse
 import os
 # pylint: disable=no-name-in-module
+from types import TracebackType
 from typing import (
-    Any, ContextManager, FrozenSet, Iterable, List, Optional, Tuple, cast)
+    Any, ContextManager, FrozenSet, Iterable, List, Optional, Tuple, Type,
+    cast)
 import sqlite3
 from types import ModuleType
 
@@ -70,14 +72,16 @@ class Plotter(ContextManager[SQLiteDB]):
     def __enter__(self) -> SQLiteDB:
         return self._db.__enter__()
 
-    def __exit__(self, *args) -> Literal[False]:
-        return self._db.__exit__(*args)
+    def __exit__(self, exc_type: Optional[Type],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+        return self._db.__exit__(exc_type, exc_val, exc_tb)
 
     def __do_chip_query(self, description: str) -> Iterable[sqlite3.Row]:
         # Does the query in one of two ways, depending on schema version
         if self.__have_insertion_order:
             try:
-                return self._db.execute("""
+                return self._db.cursor().execute("""
                     SELECT source_name AS "source", x, y,
                         description_name AS "description",
                         the_value AS "value"
@@ -90,7 +94,7 @@ class Plotter(ContextManager[SQLiteDB]):
                 if "no such column: insertion_order" != str(e):
                     raise
                 self.__have_insertion_order = False
-        return self._db.execute("""
+        return self._db.cursor().execute("""
             SELECT source_name AS "source", x, y,
                 description_name AS "description",
                 MAX(the_value) AS "value"
@@ -110,8 +114,8 @@ class Plotter(ContextManager[SQLiteDB]):
             FROM provenance_view
             WHERE x IS NOT NULL AND p IS NULL AND "description" IS NOT NULL
             """
-        return frozenset(row["description"] for row in self._db.execute(
-            query))
+        return frozenset(row["description"]
+                         for row in self._db.cursor().execute(query))
 
     def get_per_chip_prov_details(self, info: str) -> Tuple[
             str, int, int, numpy.ndarray]:
@@ -147,7 +151,7 @@ class Plotter(ContextManager[SQLiteDB]):
         # Does the query in one of two ways, depending on schema version
         if self.__have_insertion_order:
             try:
-                return self._db.execute("""
+                return self._db.cursor().execute("""
                     SELECT "source", x, y, "description",
                         SUM("value") AS "value"
                     FROM (
@@ -164,7 +168,7 @@ class Plotter(ContextManager[SQLiteDB]):
                 if "no such column: insertion_order" != str(e):
                     raise
                 self.__have_insertion_order = False
-        return self._db.execute("""
+        return self._db.cursor().execute("""
             SELECT "source", x, y, "description",
                 SUM("value") AS "value"
             FROM (
@@ -190,7 +194,8 @@ class Plotter(ContextManager[SQLiteDB]):
                 AND "description" IS NOT NULL
             """
         return frozenset(
-            cast(str, row["description"]) for row in self._db.execute(query))
+            cast(str, row["description"])
+            for row in self._db.cursor().execute(query))
 
     def get_sum_chip_prov_details(self, info: str) -> Tuple[
             str, int, int, numpy.ndarray]:
@@ -234,7 +239,7 @@ class Plotter(ContextManager[SQLiteDB]):
                 "matplotlib and seaborn to plot router provenance")
         return cls.__pyplot, cls.__seaborn
 
-    def plot_per_core_data(self, key: str, output_filename: str):
+    def plot_per_core_data(self, key: str, output_filename: str) -> None:
         """
         Plots the metadata for this key/term to the file at a core level
 
@@ -258,7 +263,7 @@ class Plotter(ContextManager[SQLiteDB]):
         plot.savefig(output_filename, bbox_inches='tight')
         plot.close()
 
-    def plot_per_chip_data(self, key: str, output_filename: str):
+    def plot_per_chip_data(self, key: str, output_filename: str) -> None:
         """
         Plots the metadata for this key/term to the file at a chip level
 

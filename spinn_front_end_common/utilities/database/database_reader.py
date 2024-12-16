@@ -44,7 +44,8 @@ class DatabaseReader(SQLiteDB):
             job_url = None
             cookies = {}
             headers = {}
-            for row in self.execute("""
+            for row in self.cursor().execute(
+                    """
                     SELECT kind, name, value FROM proxy_configuration
                     """):
                 kind, name, value = row
@@ -75,7 +76,7 @@ class DatabaseReader(SQLiteDB):
         """
         return {
             row["event"]: row["atom"]
-            for row in self.execute(
+            for row in self.cursor().execute(
                 """
                 SELECT * FROM label_event_atom_view
                 WHERE label = ?
@@ -91,7 +92,7 @@ class DatabaseReader(SQLiteDB):
         """
         return {
             row["atom"]: row["event"]
-            for row in self.execute(
+            for row in self.cursor().execute(
                 """
                 SELECT * FROM label_event_atom_view
                 WHERE label = ?
@@ -109,7 +110,7 @@ class DatabaseReader(SQLiteDB):
             chip_x, chip_y)
         :rtype: tuple(str, int, bool, str, int, int, int)
         """
-        self.execute(
+        self.cursor().execute(
             """
             SELECT * FROM app_output_tag_view
             WHERE pre_vertex_label = ?
@@ -130,7 +131,7 @@ class DatabaseReader(SQLiteDB):
         :return: The value of the parameter
         :rtype: float or None
         """
-        self.execute(
+        self.cursor().execute(
             """
             SELECT value FROM configuration_parameters
             WHERE parameter_id = ?
@@ -149,7 +150,7 @@ class DatabaseReader(SQLiteDB):
         """
         return [
             (int(row["x"]), int(row["y"]), int(row["p"]))
-            for row in self.execute(
+            for row in self.cursor().execute(
                 """
                 SELECT x, y, p FROM application_vertex_placements
                 WHERE vertex_label = ?
@@ -164,7 +165,7 @@ class DatabaseReader(SQLiteDB):
         :return: The IP address of the Ethernet to use to contact the chip
         :rtype: str or None
         """
-        self.execute(
+        self.cursor().execute(
             """
             SELECT eth_ip_address FROM chip_eth_info
             WHERE x = ? AND y = ? OR x = 0 AND y = 0

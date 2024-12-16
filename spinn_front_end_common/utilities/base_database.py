@@ -86,14 +86,14 @@ class BaseDatabase(SQLiteDB):
         :param int p:
         :rtype: int
         """
-        for row in self.execute(
+        for row in self.cursor().execute(
                 """
                 SELECT core_id FROM core
                 WHERE x = ? AND y = ? AND processor = ?
                 LIMIT 1
                 """, (x, y, p)):
             return row["core_id"]
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO core(x, y, processor) VALUES(?, ?, ?)
             """, (x, y, p))

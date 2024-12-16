@@ -61,7 +61,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO power_provenance(
                 description, the_value)
@@ -84,7 +84,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO gatherer_provenance(
                 x, y, address, bytes, run, description, the_value)
@@ -118,7 +118,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param the_value: data
         """
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO monitor_provenance(
                 x, y, description, the_value)
@@ -141,7 +141,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO router_provenance(
                 x, y, description, the_value, expected)
@@ -163,7 +163,7 @@ class ProvenanceWriter(BaseDatabase):
         if not get_config_bool("Reports", "write_provenance"):
             return
         core_id = self._get_core_id(x, y, p)
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO core_provenance(
                 core_id, description, the_value)
@@ -182,7 +182,7 @@ class ProvenanceWriter(BaseDatabase):
         if not get_config_bool("Reports", "write_provenance"):
             logger.warning(message)
             return
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO reports(message)
             VALUES(?)
@@ -211,7 +211,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
-        self.execute(
+        self.cursor().execute(
             """
             INSERT OR IGNORE INTO connector_provenance(
                 pre_population, post_population, the_type, description,
@@ -234,7 +234,7 @@ class ProvenanceWriter(BaseDatabase):
             return
         if not connections:
             return
-        self.executemany(
+        self.cursor().executemany(
             """
             INSERT OR IGNORE INTO boards_provenance(
             ethernet_x, ethernet_y, ip_addres)
@@ -249,7 +249,7 @@ class ProvenanceWriter(BaseDatabase):
         This will lock the database and then try to do a log
         """
         # lock the database
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO reports(message)
             VALUES(?)

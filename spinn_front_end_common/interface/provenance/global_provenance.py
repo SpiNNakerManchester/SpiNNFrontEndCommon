@@ -93,7 +93,7 @@ class GlobalProvenance(SQLiteDB):
         :param str description: The package for which the version applies
         :param str the_value: The version to be recorded
         """
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO version_provenance(
                 description, the_value)
@@ -109,7 +109,7 @@ class GlobalProvenance(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO category_timer_provenance(
                 category, machine_on, n_run, n_loop)
@@ -132,7 +132,7 @@ class GlobalProvenance(SQLiteDB):
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (delta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
-        self.execute(
+        self.cursor().execute(
             """
             UPDATE category_timer_provenance
             SET
@@ -157,7 +157,7 @@ class GlobalProvenance(SQLiteDB):
         time_taken = (
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (delta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO timer_provenance(
                 category_id, algorithm, work, time_taken, skip_reason)
@@ -175,7 +175,7 @@ class GlobalProvenance(SQLiteDB):
         """
         if timestamp is None:
             timestamp = datetime.now()
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO p_log_provenance(
                 timestamp, level, message)
@@ -190,7 +190,7 @@ class GlobalProvenance(SQLiteDB):
         This will lock the database and then try to do a log
         """
         # lock the database
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO version_provenance(
                 description, the_value)
@@ -230,7 +230,7 @@ class GlobalProvenance(SQLiteDB):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
-        for row in self.execute(query, list(params)):
+        for row in self.cursor().execute(query, list(params)):
             results.append(row)
         return results
 

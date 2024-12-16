@@ -105,7 +105,7 @@ class ProvenanceReader(BaseDatabase):
             statement
         :rtype: list(tuple or ~sqlite3.Row)
         """
-        return list(self.execute(query, list(params)))
+        return list(self.cursor().execute(query, list(params)))
 
     def cores_with_late_spikes(self) -> List[Tuple[int, int, int, int]]:
         """
