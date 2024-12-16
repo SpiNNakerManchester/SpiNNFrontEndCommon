@@ -338,7 +338,7 @@ class DataType(Enum):
         np.int64,
         "0.63 signed fixed point number"))  # rounding problem for max
 
-    def __new__(cls, value:int, size: int, min_val: Decimal, max_val: Decimal,
+    def __new__(cls, value: int, size: int, min_val: Decimal, max_val: Decimal,
                 scale: Decimal, struct_encoding: str, apply_scale: bool,
                 force_cast: Optional[Callable[[Any], int]],
                 numpy_typename: type, _doc: str) -> 'DataType':

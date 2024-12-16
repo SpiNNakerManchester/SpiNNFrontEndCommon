@@ -185,7 +185,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
     def write_array(self, array_values: Union[
             Sequence[int], Sequence[float], numpy.ndarray],
-            data_type:DataType = DataType.UINT32) -> None:
+            data_type: DataType = DataType.UINT32) -> None:
         """
         Insert command to write an array, causing the write pointer
         to move on by (data type size * the array size), in bytes.

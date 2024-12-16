@@ -23,6 +23,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.data import FecDataView
 
+
 def reload_dsg_regions() -> None:
     """
     Reloads DSG regions where needed.

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 from spinn_utilities.config_holder import (
     get_config_int_or_none, get_config_bool)
 from spinn_utilities.log import FormatAdapter
@@ -242,7 +242,7 @@ class ProvenanceWriter(BaseDatabase):
             """, ((x, y, ipaddress)
                   for ((x, y), ipaddress) in connections.items()))
 
-    def _test_log_locked(self, text:str) -> None:
+    def _test_log_locked(self, text: str) -> None:
         """
         THIS IS A TESTING METHOD.
 

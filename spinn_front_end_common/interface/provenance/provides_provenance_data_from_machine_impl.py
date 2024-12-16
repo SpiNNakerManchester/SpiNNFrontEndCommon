@@ -76,7 +76,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         raise NotImplementedError
 
     def reserve_provenance_data_region(
-            self, spec: DataSpecificationGenerator ) -> None:
+            self, spec: DataSpecificationGenerator) -> None:
         """
         :param ~data_specification.DataSpecificationGenerator spec:
             The data specification being written.

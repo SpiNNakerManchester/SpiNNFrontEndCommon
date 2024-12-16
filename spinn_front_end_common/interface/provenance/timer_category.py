@@ -31,7 +31,7 @@ class TimerCategory(Enum):
     RESETTING = (auto(), "Resetting")
     SHUTTING_DOWN = (auto(), "Shutting down")
 
-    def __new__(cls, value:int, category_name: str) -> 'TimerCategory':
+    def __new__(cls, value: int, __: str) -> 'TimerCategory':
         obj = object.__new__(cls)
         obj._value_ = value
         return obj

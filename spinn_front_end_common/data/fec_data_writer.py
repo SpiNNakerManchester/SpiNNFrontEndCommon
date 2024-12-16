@@ -180,7 +180,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("buffer_manager must be a BufferManager")
         self.__fec_data._buffer_manager = buffer_manager
 
-    def increment_current_run_timesteps(self, increment: Optional[int]) -> None:
+    def increment_current_run_timesteps(
+            self, increment: Optional[int]) -> None:
         """
         Increment the current_run_timesteps and sets first_machine_time_step.
 
