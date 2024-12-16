@@ -63,7 +63,8 @@ class _GraphDataSpecificationWriter(object):
     def __init__(self) -> None:
         self._sdram_usage: Dict[Tuple[int, int], int] = defaultdict(lambda: 0)
         self._vertices_by_chip: Dict[Tuple[int, int],
-                List[AbstractGeneratesDataSpecification]] = defaultdict(list)
+                                List[AbstractGeneratesDataSpecification]] =\
+            defaultdict(list)
 
     def run(self,
             placement_order: Optional[Sequence[Placement]] = None) -> str:
