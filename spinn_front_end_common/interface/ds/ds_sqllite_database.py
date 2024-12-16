@@ -65,7 +65,7 @@ class DsSqlliteDatabase(SQLiteDB):
         super().__init__(
             database_file, ddl_file=_DDL_FILE if self._init_file else None)
 
-    def _context_entered(self):
+    def _context_entered(self) -> None:
         super()._context_entered()
         if self._init_file:
             self.__init_ethernets()
@@ -88,7 +88,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 for ethernet in eth_chips))
 
     def set_core(self, x: int, y: int, p: int,
-                 vertex: AbstractHasAssociatedBinary):
+                 vertex: AbstractHasAssociatedBinary) -> None:
         """
         Creates a database record for the core with this x,y,z
 
@@ -145,7 +145,7 @@ class DsSqlliteDatabase(SQLiteDB):
                  row["ethernet_x"], row["ethernet_y"]))
         return core_infos
 
-    def _set_chip(self, x: int, y: int):
+    def _set_chip(self, x: int, y: int) -> None:
         """
         :param int x:
         :param int y:
@@ -167,7 +167,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def set_memory_region(
             self, x: int, y: int, p: int, region_num: int, size: int,
-            reference: Optional[int], label: Optional[str]):
+            reference: Optional[int], label: Optional[str]) -> int:
         """
         Writes the information to reserve a memory region into the database
 

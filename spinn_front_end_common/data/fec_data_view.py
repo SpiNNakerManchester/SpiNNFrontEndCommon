@@ -870,7 +870,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             cls.get_provenance_dir_path(), "system_provenance_data")
 
     @classmethod
-    def _child_folder(cls, parent, child_name, must_create=False):
+    def _child_folder(cls, parent: str, child_name: str,
+                      must_create: bool = False) -> str:
         """
         :param str parent:
         :param str child_name:
@@ -979,7 +980,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def add_live_packet_gatherer_parameters(
             cls, live_packet_gatherer_params: LivePacketGatherParameters,
             vertex_to_record_from: ApplicationVertex,
-            partition_ids: Iterable[str]):
+            partition_ids: Iterable[str]) -> None:
         """
         Adds parameters for a new live packet gatherer (LPG) if needed, or
         adds to the tracker for parameters.
@@ -1252,7 +1253,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def add_database_socket_address(
-            cls, database_socket_address: SocketAddress):
+            cls, database_socket_address: SocketAddress) -> None:
         """
         Adds a socket address to the list of known addresses.
 
@@ -1267,7 +1268,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def add_database_socket_addresses(
-            cls, database_socket_addresses: Optional[Iterable[SocketAddress]]):
+            cls, database_socket_addresses: Optional[Iterable[SocketAddress]]
+            ) -> None:
         """
         Adds all socket addresses to the list of known addresses.
 
@@ -1297,7 +1299,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def add_live_output_vertex(
-            cls, vertex: ApplicationVertex, partition_id: str):
+            cls, vertex: ApplicationVertex, partition_id: str) -> None:
         """
         Add a vertex that is to be output live, and so wants its atom IDs
         recorded in the database.
@@ -1324,9 +1326,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return iter(cls.__fec_data._live_output_vertices)
 
     @classmethod
-    def get_next_ds_references(cls, number):
+    def get_next_ds_references(cls, number: int) -> List[int]:
         """
-        Get a a list of unique data specification references
+        Get a list of unique data specification references
 
         These will be unique since the last hard reset
 
@@ -1339,7 +1341,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return list(references)
 
     @classmethod
-    def add_live_output_device(cls, device: LiveOutputDevice):
+    def add_live_output_device(cls, device: LiveOutputDevice) -> None:
         """
         Add a live output device.
 

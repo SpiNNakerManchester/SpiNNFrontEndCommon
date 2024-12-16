@@ -106,8 +106,8 @@ class ProvenanceWriter(BaseDatabase):
         if get_config_bool("Reports", "write_provenance"):
             self.insert_monitor_value(x, y, description, the_value)
 
-    def insert_monitor_value(
-            self, x: int, y: int, description: str, the_value: _SqliteTypes):
+    def insert_monitor_value(self, x: int, y: int, description: str,
+                             the_value: _SqliteTypes) -> None:
         """
         Inserts data into the `monitor_provenance` table.
 

@@ -26,7 +26,7 @@ _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 _SqliteTypes: TypeAlias = Union[str, int, float, bytes, None]
 
 
-def _timestamp():
+def _timestamp() -> int:
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 

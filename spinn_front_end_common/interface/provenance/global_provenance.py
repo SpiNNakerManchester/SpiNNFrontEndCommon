@@ -86,7 +86,7 @@ class GlobalProvenance(SQLiteDB):
         SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE,
                           row_factory=None, text_factory=None)
 
-    def insert_version(self, description: str, the_value: str):
+    def insert_version(self, description: str, the_value: str) -> None:
         """
         Inserts data into the version_provenance table
 
@@ -100,7 +100,8 @@ class GlobalProvenance(SQLiteDB):
             VALUES(?, ?)
             """, [description, the_value])
 
-    def insert_category(self, category: TimerCategory, machine_on: bool):
+    def insert_category(
+            self, category: TimerCategory, machine_on: bool) -> int:
         """
         Inserts category into the category_timer_provenance  returning id
 
@@ -119,7 +120,8 @@ class GlobalProvenance(SQLiteDB):
              FecDataView.get_run_step()])
         return self.lastrowid
 
-    def insert_category_timing(self, category_id: int, delta: timedelta):
+    def insert_category_timing(
+            self, category_id: int, delta: timedelta) -> None:
         """
         Inserts run time into the category
 
@@ -140,7 +142,7 @@ class GlobalProvenance(SQLiteDB):
 
     def insert_timing(
             self, category: int, algorithm: str, work: TimerWork,
-            delta: timedelta, skip_reason: Optional[str]):
+            delta: timedelta, skip_reason: Optional[str]) -> None:
         """
         Inserts algorithms run times into the timer_provenance table
 
@@ -164,7 +166,7 @@ class GlobalProvenance(SQLiteDB):
             [category, algorithm, work.work_name, time_taken, skip_reason])
 
     def store_log(self, level: int, message: str,
-                  timestamp: Optional[datetime] = None):
+                  timestamp: Optional[datetime] = None) -> None:
         """
         Stores log messages into the database
 
@@ -181,7 +183,7 @@ class GlobalProvenance(SQLiteDB):
             """,
             [timestamp, level, message])
 
-    def _test_log_locked(self, text: str):
+    def _test_log_locked(self, text: str) -> None:
         """
         THIS IS A TESTING METHOD.
 
