@@ -127,7 +127,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_router(
             self, x: int, y: int, description: str,
-            the_value: Union[int, float],
+            the_value: int,
             expected: bool = True) -> None:
         """
         Inserts data into the `router_provenance` table.

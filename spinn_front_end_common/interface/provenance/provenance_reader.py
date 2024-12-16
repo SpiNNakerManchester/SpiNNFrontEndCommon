@@ -23,7 +23,7 @@ from spinn_front_end_common.utilities.base_database import (
 
 #: Basic types supported natively by SQLite
 _MonitorItem: TypeAlias = Tuple[int, int, _SqliteTypes]
-_RouterItem: TypeAlias = Tuple[int, int, Union[int, float]]
+_RouterItem: TypeAlias = Tuple[int, int, int]
 
 
 class ProvenanceReader(BaseDatabase):
