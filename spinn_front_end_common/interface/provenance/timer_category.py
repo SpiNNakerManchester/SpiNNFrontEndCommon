@@ -31,12 +31,12 @@ class TimerCategory(Enum):
     RESETTING = (auto(), "Resetting")
     SHUTTING_DOWN = (auto(), "Shutting down")
 
-    def __new__(cls, *args) -> 'TimerCategory':
+    def __new__(cls, value:int, category_name: str) -> 'TimerCategory':
         obj = object.__new__(cls)
-        obj._value_ = args[0]
+        obj._value_ = value
         return obj
 
-    def __init__(self, __, category_name: str):
+    def __init__(self, __: int, category_name: str) -> None:
         self._category_name = category_name
 
     @property

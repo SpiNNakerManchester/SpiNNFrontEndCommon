@@ -119,7 +119,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
         raise NotImplementedError
 
     @abstractmethod
-    def rewind(self, region: int):
+    def rewind(self, region: int) -> None:
         """
         Rewinds the internal buffer in preparation of re-sending the spikes.
 
