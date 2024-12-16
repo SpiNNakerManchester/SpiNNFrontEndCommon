@@ -34,8 +34,8 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def generate_data_specification(
-            self, spec: DataSpecificationGenerator, placement: Placement):
+    def generate_data_specification(self, spec: DataSpecificationGenerator,
+                                    placement: Placement) -> None:
         """
         Generate a data specification.
 
