@@ -50,4 +50,5 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
     @overrides(MachineVertex.sdram_required)
     @abstractmethod
     def sdram_required(self) -> AbstractSDRAM:
+        # pylint: disable=missing-function-docstring
         raise NotImplementedError

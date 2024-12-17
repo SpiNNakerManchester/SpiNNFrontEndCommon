@@ -15,12 +15,11 @@
 import argparse
 import os
 # pylint: disable=no-name-in-module
-from types import TracebackType
+import sqlite3
+from types import ModuleType, TracebackType
 from typing import (
     Any, ContextManager, FrozenSet, Iterable, List, Optional, Tuple, Type,
     cast)
-import sqlite3
-from types import ModuleType
 
 import numpy
 from typing_extensions import Literal
