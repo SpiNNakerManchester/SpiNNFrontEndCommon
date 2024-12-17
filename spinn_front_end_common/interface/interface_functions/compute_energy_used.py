@@ -24,8 +24,6 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     GlobalProvenance, ProvenanceReader, TimerCategory, TimerWork)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
-from spinn_front_end_common.interface.interface_functions\
-    .load_data_specification import load_using_advanced_monitors
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
         RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
@@ -69,10 +67,8 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
 
         # Separate out processes that are part of the others but that happen
         # on the machine, so we can account for active machine, not idle
-        data_loading_ms = 0
-        if load_using_advanced_monitors():
-            data_loading_ms = db.get_timer_sum_by_work(TimerWork.LOADING_DATA)
-            loading_ms -= data_loading_ms
+        data_loading_ms = db.get_timer_sum_by_work(TimerWork.LOADING_DATA)
+        loading_ms -= data_loading_ms
         data_extraction_ms = 0
         if get_config_bool("Machine", "enable_advanced_monitor_support"):
             data_extraction_ms = db.get_timer_sum_by_work(
