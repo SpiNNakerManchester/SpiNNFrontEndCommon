@@ -126,8 +126,6 @@ NOTIFY_PORT = 19999
 #: The number of clock cycles per micro-second (at 200Mhz)
 CLOCKS_PER_US = 200
 
-PROVENANCE_DB = "provenance.sqlite3"
-
 #: SDRAM Tag used by the compressor to find the routing tables
 COMPRESSOR_SDRAM_TAG = 1
 

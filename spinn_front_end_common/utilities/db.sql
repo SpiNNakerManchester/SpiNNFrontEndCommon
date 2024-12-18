@@ -133,6 +133,7 @@ CREATE TABLE IF NOT EXISTS proxy_configuration(
 -- Except for engery used by cores or routers
 CREATE TABLE IF NOT EXISTS power_provenance(
     power_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run INTEGER NOT NULL,
     description STRING NOT NULL,
     the_value FLOAT NOT NULL);
 
