@@ -519,14 +519,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             self._data_writer.set_plan_n_timesteps(n_machine_time_steps)
 
-        if not get_config_bool("Buffers", "use_auto_pause_and_resume"):
-            if (self._data_writer.get_max_run_time_steps() <
-                    n_machine_time_steps):
-                raise ConfigurationException(
-                    "The SDRAM required by one or more vertices is based on "
-                    "the run time, so the run time is limited to "
-                    f"{self._data_writer.get_max_run_time_steps()} time steps")
-
         logger.info(
             f"Simulating for {n_machine_time_steps} "
             f"{self._data_writer.get_simulation_time_step_ms()} ms timesteps "
@@ -620,7 +612,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # build the graphs to modify with system requirements
         if self._data_writer.get_requires_mapping():
-            self._do_mapping(total_run_time)
+            self._do_mapping(total_run_time, n_machine_time_steps)
 
         if not self._data_writer.is_ran_last():
             self._do_write_metadata()
@@ -689,7 +681,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                         ApplicationEdge(v, dpt_vtx), edge_identifier)
 
     @final
-    def _deduce_data_n_timesteps(self) -> None:
+    def _deduce_data_n_timesteps(
+            self, n_machine_time_steps: Optional[int]) -> None:
         """
         Operates the auto pause and resume functionality by figuring out
         how many timer ticks a simulation can run before SDRAM runs out,
@@ -723,6 +716,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             if sdram.per_timestep:
                 max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
                 max_time_steps = min(max_time_steps, max_this_chip)
+
+        if not get_config_bool("Buffers", "use_auto_pause_and_resume"):
+            if (max_time_steps < n_machine_time_steps):
+                raise ConfigurationException(
+                    "The SDRAM required by one or more vertices is based on "
+                    "the run time, so the run time is limited to "
+                    f"{max_time_steps} time steps")
 
         self._data_writer.set_max_run_time_steps(max_time_steps)
 
@@ -1372,7 +1372,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._data_writer.get_transceiver().control_sync(do_sync)
 
-    def _do_mapping(self, total_run_time: Optional[float]) -> None:
+    def _do_mapping(self, total_run_time: Optional[float],
+                    n_machine_time_steps: Optional[int]) -> None:
         """
         Runs, times and logs all the algorithms in the mapping stage.
 
@@ -1426,7 +1427,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_locate_executable_start_type()
         self._execute_buffer_manager_creator()
 
-        self._deduce_data_n_timesteps()
+        self._deduce_data_n_timesteps(n_machine_time_steps)
         FecTimer.end_category(TimerCategory.MAPPING)
 
     # Overridden by spy which adds placement_order
