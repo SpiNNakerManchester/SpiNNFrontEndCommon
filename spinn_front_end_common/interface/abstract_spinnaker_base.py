@@ -718,7 +718,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 max_time_steps = min(max_time_steps, max_this_chip)
 
         if not get_config_bool("Buffers", "use_auto_pause_and_resume"):
-            if (max_time_steps < n_machine_time_steps):
+            if ((n_machine_time_steps is not None and)
+                    (max_time_steps < n_machine_time_steps)):
                 raise ConfigurationException(
                     "The SDRAM required by one or more vertices is based on "
                     "the run time, so the run time is limited to "
