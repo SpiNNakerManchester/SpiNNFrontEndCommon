@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Union, cast
+from typing import Optional, TextIO, Union, cast
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import DataSpecException
@@ -35,7 +35,7 @@ class DataSpecificationGenerator(DataSpecificationBase):
             vertex: Union[
                 AbstractGeneratesDataSpecification,
                 AbstractRewritesDataSpecification],
-            ds_db: DsSqlliteDatabase, report_writer=None):
+            ds_db: DsSqlliteDatabase, report_writer: Optional[TextIO] = None):
         """
         :param int x:
         :param int y:
@@ -66,7 +66,7 @@ class DataSpecificationGenerator(DataSpecificationBase):
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
             self, region: int, size: int, label: Optional[str] = None,
-            reference: Optional[int] = None):
+            reference: Optional[int] = None) -> None:
         self._report("RESERVE memRegion=", region, " size=", size,
                      (f" label='{label}'" if label else None),
                      (f" REF {reference}" if reference is not None else None))
@@ -80,7 +80,7 @@ class DataSpecificationGenerator(DataSpecificationBase):
 
     @overrides(DataSpecificationBase.reference_memory_region)
     def reference_memory_region(
-            self, region: int, ref: int, label: Optional[str] = None):
+            self, region: int, ref: int, label: Optional[str] = None) -> None:
         self._report("REFERENCE memRegion=", region, " ref=", ref,
                      (f" label='{label}'" if label else None))
 

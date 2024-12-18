@@ -1,3 +1,4 @@
+
 # Copyright (c) 2015 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -176,7 +177,7 @@ class BufferManager(object):
             return extra_mon_data
 
     @staticmethod
-    def _verify_data(extra_mon_data: bytes, txrx_data: bytes):
+    def _verify_data(extra_mon_data: bytes, txrx_data: bytes) -> None:
         sm = difflib.SequenceMatcher(a=extra_mon_data, b=txrx_data)
         failed_index = -1
         for (tag, i1, i2, j1, j2) in sm.get_opcodes():
@@ -236,7 +237,7 @@ class BufferManager(object):
         """
 
     def clear_recorded_data(
-            self, x: int, y: int, p: int, recording_region_id: int):
+            self, x: int, y: int, p: int, recording_region_id: int) -> None:
         """
         Removes the recorded data stored in memory.
 
@@ -286,7 +287,7 @@ class BufferManager(object):
 
     def _send_initial_messages(
             self, vertex: AbstractSendsBuffersFromHost, region: int,
-            progress: ProgressBar):
+            progress: ProgressBar) -> None:
         """
         Send the initial set of messages.
 
@@ -379,7 +380,7 @@ class BufferManager(object):
             self.__python_extract_no_monitors(recording_placements)
 
     def __python_extract_with_monitors(
-            self, recording_placements: List[Placement]):
+            self, recording_placements: List[Placement]) -> None:
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
             Where to get the data from.
@@ -398,7 +399,7 @@ class BufferManager(object):
             self.__python_extract_no_monitors(recording_placements)
 
     def __python_extract_no_monitors(
-            self, recording_placements: List[Placement]):
+            self, recording_placements: List[Placement]) -> None:
         """
         :param list(~pacman.model.placements.Placement) recording_placements:
             Where to get the data from.
@@ -526,7 +527,7 @@ class BufferManager(object):
                 f"{recording_region_id} but there is no data"
             ) from lookup_error
 
-    def _retreive_by_placement(self, placement: Placement):
+    def _retreive_by_placement(self, placement: Placement) -> None:
         """
         Retrieve the data for a vertex; must be locked first.
 

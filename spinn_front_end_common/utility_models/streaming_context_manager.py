@@ -13,7 +13,8 @@
 # limitations under the License.
 from __future__ import annotations
 # pylint: disable=no-name-in-module
-from typing import ContextManager, Iterable, TYPE_CHECKING
+from types import TracebackType
+from typing import ContextManager, Iterable, Optional, Type, TYPE_CHECKING
 from typing_extensions import Literal
 if TYPE_CHECKING:
     from .data_speed_up_packet_gatherer_machine_vertex import (
@@ -40,7 +41,9 @@ class StreamingContextManager(ContextManager[None]):
         for gatherer in self._gatherers:
             gatherer.set_cores_for_data_streaming()
 
-    def __exit__(self, _type, _value, _tb) -> Literal[False]:
+    def __exit__(self, exc_type: Optional[Type],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Literal[False]:
         for gatherer in self._gatherers:
             gatherer.unset_cores_for_data_streaming()
         for gatherer in self._gatherers:

@@ -98,7 +98,7 @@ class BuffersSentDeque(object):
             self._sent_stop_message = True
             self.add_message_to_send(EventStopRequest())
 
-    def add_message_to_send(self, message: AbstractEIEIOMessage):
+    def add_message_to_send(self, message: AbstractEIEIOMessage) -> None:
         """
         Add a message to send.  The message is converted to a sequenced
         message.

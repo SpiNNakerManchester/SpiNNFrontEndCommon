@@ -58,7 +58,7 @@ class ProfileData(object):
         self._tags: Dict[str, Tuple[numpy.ndarray, numpy.ndarray]] = dict()
         self._max_time: float = 0.0
 
-    def add_data(self, data: bytes):
+    def add_data(self, data: bytes) -> None:
         """
         Add profiling data read from the profile section.
 
@@ -96,9 +96,9 @@ class ProfileData(object):
             self._add_tag_data(
                 entry_tags, entry_times_ms, exit_tags, exit_times_ms, tag)
 
-    def _add_tag_data(
-            self, entry_tags: numpy.ndarray, entry_times: numpy.ndarray,
-            exit_tags: numpy.ndarray, exit_times: numpy.ndarray, tag: int):
+    def _add_tag_data(self, entry_tags: numpy.ndarray,
+                      entry_times: numpy.ndarray, exit_tags: numpy.ndarray,
+                      exit_times: numpy.ndarray, tag: int) -> None:
         """
         :param ~numpy.ndarray entry_tags:
         :param ~numpy.ndarray entry_times:

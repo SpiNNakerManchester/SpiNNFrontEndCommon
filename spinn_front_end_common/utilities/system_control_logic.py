@@ -33,7 +33,7 @@ def run_system_application(
         filename_template: str, binaries_to_track: Optional[List[str]] = None,
         progress_bar: Optional[ProgressBar] = None,
         logger: Optional[FormatAdapter] = None,
-        timeout: Optional[float] = None):
+        timeout: Optional[float] = None) -> None:
     """
     Executes the given _system_ application.
     Used for on-chip expander, compressors, etc.
@@ -124,7 +124,7 @@ def run_system_application(
 
 def _report_iobuf_messages(
         cores: ExecutableTargets, logger: Optional[FormatAdapter],
-        filename_template: str):
+        filename_template: str) -> None:
     """
     :param ~spinnman.model.ExecutableTargets cores:
     :param ~logging.Logger logger:
@@ -142,7 +142,8 @@ def _report_iobuf_messages(
             logger.error("{}", entry)
 
 
-def _load_application(executable_targets: ExecutableTargets, app_id: int):
+def _load_application(
+        executable_targets: ExecutableTargets, app_id: int) -> None:
     """
     Execute a set of binaries that make up a complete application on
     specified cores, wait for them to be ready and then start all of the

@@ -33,12 +33,12 @@ class TimerWork(Enum):
     EXTRACT_DATA = (auto(), "Extracting Data")
     REPORT = (auto(), "Reporting")
 
-    def __new__(cls, *args) -> 'TimerWork':
+    def __new__(cls, value: int, __: str) -> 'TimerWork':
         obj = object.__new__(cls)
-        obj._value_ = args[0]
+        obj._value_ = value
         return obj
 
-    def __init__(self, __, work_name: str):
+    def __init__(self, __: int, work_name: str):
         self._work_name = work_name
 
     @property

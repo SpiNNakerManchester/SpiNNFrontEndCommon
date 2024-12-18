@@ -74,5 +74,5 @@ class SendsBuffersFromHostPreBufferedImpl(
         return len(self.send_buffers[region].timestamps) == 0
 
     @overrides(AbstractSendsBuffersFromHost.rewind)
-    def rewind(self, region: int):
+    def rewind(self, region: int) -> None:
         self.send_buffers[region].rewind()

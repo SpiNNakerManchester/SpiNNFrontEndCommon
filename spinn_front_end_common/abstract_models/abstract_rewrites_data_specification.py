@@ -32,8 +32,8 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def regenerate_data_specification(
-            self, spec: DataSpecificationReloader, placement: Placement):
+    def regenerate_data_specification(self, spec: DataSpecificationReloader,
+                                      placement: Placement) -> None:
         """
         Regenerate the data specification, only generating regions that
         have changed and need to be reloaded.
@@ -55,7 +55,7 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
         raise NotImplementedError
 
     @abstractmethod
-    def set_reload_required(self, new_value: bool):
+    def set_reload_required(self, new_value: bool) -> None:
         """
         Indicate that the regions have been reloaded.
 

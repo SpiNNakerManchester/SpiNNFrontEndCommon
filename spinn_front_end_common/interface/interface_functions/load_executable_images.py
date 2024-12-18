@@ -59,8 +59,8 @@ def load_sys_images() -> None:
         raise e
 
 
-def _load_images(
-        filter_predicate: Callable[[ExecutableType], bool], label: str):
+def _load_images(filter_predicate: Callable[[ExecutableType], bool],
+                 label: str) -> None:
     """
     :param callable(ExecutableType,bool) filter_predicate:
     :param str label
@@ -107,7 +107,7 @@ def filter_targets(
     return cores
 
 
-def _start_simulation(cores: ExecutableTargets, app_id: int):
+def _start_simulation(cores: ExecutableTargets, app_id: int) -> None:
     """
     :param ~.ExecutableTargets cores:
         Possible subset of all ExecutableTargets to start

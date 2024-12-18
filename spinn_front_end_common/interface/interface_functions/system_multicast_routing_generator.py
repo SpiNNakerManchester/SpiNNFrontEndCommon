@@ -14,7 +14,7 @@
 
 from collections import defaultdict
 import logging
-from typing import Dict, Tuple, Set, Optional, cast
+from typing import Dict, List, Tuple, Set, Optional, cast
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
@@ -174,7 +174,8 @@ class _SystemMulticastRoutingGenerator(object):
         return tree
 
     def _add_routing_entry(
-            self, chip: Chip, key: int, *, processor_id=None, link_ids=None):
+            self, chip: Chip, key: int, *, processor_id: Optional[int] = None,
+            link_ids: Optional[List[int]] = None) -> None:
         """
         Adds a routing entry on this chip, creating the table if needed.
 
@@ -203,8 +204,8 @@ class _SystemMulticastRoutingGenerator(object):
             routing_entry=routing_entry)
         table.add_multicast_routing_entry(entry)
 
-    def _add_routing_entries(
-            self, ethernet_chip: Chip, tree: Dict[Chip, Tuple[Chip, int]]):
+    def _add_routing_entries(self, ethernet_chip: Chip,
+                             tree: Dict[Chip, Tuple[Chip, int]]) -> None:
         """
         Adds the routing entries based on the tree.
 

@@ -84,7 +84,7 @@ class SpallocJobController(MachineAllocationController):
         return self._job
 
     @overrides(MachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time: float):
+    def extend_allocation(self, new_total_run_time: float) -> None:
         # Does Nothing in this allocator - machines are held until exit
         pass
 
@@ -193,7 +193,7 @@ class SpallocJobController(MachineAllocationController):
         return self.__use_proxy
 
     @overrides(MachineAllocationController.make_report)
-    def make_report(self, filename: str):
+    def make_report(self, filename: str) -> None:
         with open(filename, "w", encoding="utf-8") as report:
             report.write(f"Job: {self._job}")
 
@@ -217,7 +217,7 @@ class _OldSpallocJobController(MachineAllocationController):
         super().__init__("SpallocJobController", host)
 
     @overrides(MachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time: float):
+    def extend_allocation(self, new_total_run_time: float) -> None:
         # Does Nothing in this allocator - machines are held until exit
         pass
 
@@ -233,7 +233,7 @@ class _OldSpallocJobController(MachineAllocationController):
         """
         return self._job.power
 
-    def set_power(self, power: bool):
+    def set_power(self, power: bool) -> None:
         """
         :param bool power:
         """
@@ -388,27 +388,20 @@ def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[
     :param int n_boards: The number of boards required
     :rtype: tuple(str, dict(tuple(int,int),str), MachineAllocationController)
     """
-    host, port, user = parse_old_spalloc(
+    host, port, owner = parse_old_spalloc(
         spalloc_server, get_config_int("Machine", "spalloc_port"),
         get_config_str("Machine", "spalloc_user"))
-    spalloc_kwargs = {
-        'hostname': host,
-        'port': port,
-        'owner': user
-    }
-    spalloc_machine = get_config_str_or_none("Machine", "spalloc_machine")
-
-    if spalloc_machine is not None:
-        spalloc_kwargs['machine'] = spalloc_machine
+    machine = get_config_str_or_none("Machine", "spalloc_machine")
 
     job, hostname, scamp_connection_data = _launch_checked_job_old(
-        n_boards, spalloc_kwargs)
+        n_boards, host, port, owner, machine)
     machine_allocation_controller = _OldSpallocJobController(job, hostname)
     return (hostname, scamp_connection_data, machine_allocation_controller)
 
 
-def _launch_checked_job_old(n_boards: int, spalloc_kwargs: dict) -> Tuple[
-        Job, str, Dict[XY, str]]:
+def _launch_checked_job_old(
+        n_boards: int, host: str, port: int, owner: str,
+        machine: Optional[str]) -> Tuple[Job, str, Dict[XY, str]]:
     """
     :rtype: tuple(~.Job, str, dict(tuple(int,int),str))
     """
@@ -417,7 +410,8 @@ def _launch_checked_job_old(n_boards: int, spalloc_kwargs: dict) -> Tuple[
     avoid_jobs = []
     try:
         while True:
-            job = Job(n_boards, **spalloc_kwargs)
+            job = Job(n_boards, hostname=host, port=port, owner=owner,
+                      machine=machine)
             try:
                 job.wait_until_ready()
                 # get param from jobs before starting, so that hanging doesn't
@@ -454,4 +448,5 @@ def _launch_checked_job_old(n_boards: int, spalloc_kwargs: dict) -> Tuple[
                     del connections[key]
         for avoid_job in avoid_jobs:
             avoid_job.destroy("Asked to avoid by cfg")
+    assert hostname is not None
     return job, hostname, connections

@@ -24,7 +24,8 @@ from spinnman.messages.sdp import SDPHeader, SDPFlag
 from spinnman.messages.scp.abstract_messages import (
     AbstractSCPRequest, AbstractSCPResponse)
 from spinnman.messages.scp import SCPRequestHeader
-from spinnman.processes import AbstractMultiConnectionProcess
+from spinnman.processes import (
+    AbstractMultiConnectionProcess, MostDirectConnectionSelector)
 from spinnman.model.enums import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinnman.messages.scp.enums import SCPResult
@@ -39,12 +40,12 @@ class _GetCurrentTimeResponse(AbstractSCPResponse):
         "__current_time",
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.__current_time = None
+        self.__current_time: Optional[int] = None
 
     @overrides(AbstractSCPResponse.read_data_bytestring)
-    def read_data_bytestring(self, data: bytes, offset: int):
+    def read_data_bytestring(self, data: bytes, offset: int) -> None:
         result = self.scp_response_header.result
         # We can accept a no-reply response here; that could just mean
         # that the count wasn't complete (but might be enough anyway)
@@ -57,6 +58,7 @@ class _GetCurrentTimeResponse(AbstractSCPResponse):
     def current_time(self) -> int:
         """ Get the current time from the response
         """
+        assert self.__current_time is not None
         return self.__current_time
 
 
@@ -96,13 +98,13 @@ class GetCurrentTimeProcess(
         "__earliest_time"
     )
 
-    def __init__(self, connection_selector):
+    def __init__(self, connection_selector: MostDirectConnectionSelector):
         super().__init__(connection_selector)
-        self.__latest_time = None
-        self.__earliest_time = None
+        self.__latest_time: Optional[int] = None
+        self.__earliest_time: Optional[int] = None
 
-    def __receive_response(
-            self, progress: ProgressBar, response: _GetCurrentTimeResponse):
+    def __receive_response(self, progress: ProgressBar,
+                           response: _GetCurrentTimeResponse) -> None:
         progress.update()
         current_time = response.current_time
         if self.__latest_time is None or current_time > self.__latest_time:

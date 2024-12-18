@@ -40,7 +40,8 @@ def board_chip_report() -> None:
         _write_report(writer, machine, progress_bar)
 
 
-def _write_report(writer: TextIO, machine: Machine, progress_bar: ProgressBar):
+def _write_report(
+        writer: TextIO, machine: Machine, progress_bar: ProgressBar) -> None:
     """
     :param ~io.FileIO writer:
     :param ~spinn_machine.Machine machine:

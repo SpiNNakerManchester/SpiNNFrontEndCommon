@@ -35,7 +35,7 @@ def splitter_selector() -> None:
             vertex_selector(app_vertex)
 
 
-def vertex_selector(app_vertex: ApplicationVertex):
+def vertex_selector(app_vertex: ApplicationVertex) -> None:
     """
     Main point for selecting a splitter object for a given app vertex.
 

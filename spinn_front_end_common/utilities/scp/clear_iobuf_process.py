@@ -51,11 +51,11 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     __slots__ = ()
 
     def __receive_response(
-            self, progress: ProgressBar, _response: CheckOKResponse):
+            self, progress: ProgressBar, _response: CheckOKResponse) -> None:
         progress.update()
 
     def clear_iobuf(self, core_subsets: CoreSubsets,
-                    n_cores: Optional[int] = None):
+                    n_cores: Optional[int] = None) -> None:
         """
         :param ~spinn_machine.CoreSubsets core_subsets:
         :param int n_cores: Defaults to the number of cores in `core_subsets`.

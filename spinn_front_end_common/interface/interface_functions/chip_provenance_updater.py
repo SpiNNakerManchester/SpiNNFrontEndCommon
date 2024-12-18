@@ -28,7 +28,7 @@ _ONE_WORD = struct.Struct("<I")
 _LIMIT = 10
 
 
-def chip_provenance_updater(all_core_subsets: CoreSubsets):
+def chip_provenance_updater(all_core_subsets: CoreSubsets) -> None:
     """
     Forces all cores to generate provenance data, and then exit.
 
@@ -88,7 +88,7 @@ class _ChipProvenanceUpdater(object):
 
     def _update_provenance(
             self, total_processors: int, processors_completed: int,
-            progress: ProgressBar):
+            progress: ProgressBar) -> None:
         """
         :param int total_processors:
         :param int processors_completed:

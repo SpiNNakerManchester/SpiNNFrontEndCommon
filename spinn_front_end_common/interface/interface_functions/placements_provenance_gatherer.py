@@ -25,7 +25,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def placements_provenance_gatherer(
-        n_placements: int, placements: Iterable[Placement]):
+        n_placements: int, placements: Iterable[Placement]) -> None:
     """
     Gets provenance information from the specified placements.
 
@@ -47,7 +47,7 @@ def placements_provenance_gatherer(
             logger.warning("{}", error)
 
 
-def _add_placement_provenance(placement: Placement, errors: List[str]):
+def _add_placement_provenance(placement: Placement, errors: List[str]) -> None:
     """
     :param ~.Placement placement:
     :param list(str) errors:

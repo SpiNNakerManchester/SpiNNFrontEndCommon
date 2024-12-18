@@ -69,12 +69,12 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     __slots__ = ()
 
     def __receive_response(
-            self, progress: ProgressBar, _response: CheckOKResponse):
+            self, progress: ProgressBar, _response: CheckOKResponse) -> None:
         progress.update()
 
-    def update_runtime(
-            self, current_time: int, run_time: int, infinite_run: bool,
-            core_subsets: CoreSubsets, n_cores: int, n_sync_steps: int):
+    def update_runtime(self, current_time: int, run_time: int,
+                       infinite_run: bool, core_subsets: CoreSubsets,
+                       n_cores: int, n_sync_steps: int) -> None:
         """
         :param int current_time:
         :param int run_time:

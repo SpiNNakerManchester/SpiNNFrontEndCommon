@@ -15,7 +15,8 @@
 from __future__ import annotations
 import logging
 import os
-from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
+from typing import (
+    cast, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union)
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
 from pacman.model.graphs import AbstractVertex
@@ -37,10 +38,6 @@ if TYPE_CHECKING:
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
 INIT_SQL = "db.sql"
-
-
-def _extract_int(x):
-    return None if x is None else int(x)
 
 
 class DatabaseWriter(SQLiteDB):
@@ -97,13 +94,13 @@ class DatabaseWriter(SQLiteDB):
         """
         return self._database_path
 
-    def __insert(self, sql: str, *args) -> int:
+    def __insert(self, sql: str, *args: Union[str, int, None]) -> int:
         """
         :param str sql:
         :rtype: int
         """
         try:
-            self.execute(sql, args)
+            self.cursor().execute(sql, args)
             return self.lastrowid
         except Exception:
             logger.exception("problem with insertion; argument types are {}",
@@ -121,7 +118,7 @@ class DatabaseWriter(SQLiteDB):
                 x_dimension, y_dimension)
             VALUES(?, ?)
             """, machine.width, machine.height)
-        self.executemany(
+        self.cursor().executemany(
             """
             INSERT INTO Machine_chip(
                 no_processors, chip_x, chip_y, machine_id,
@@ -160,13 +157,13 @@ class DatabaseWriter(SQLiteDB):
         self.__vertex_to_id[m_vertex] = m_vertex_id
         return m_vertex_id
 
-    def add_system_params(self, runtime: Optional[float]):
+    def add_system_params(self, runtime: Optional[float]) -> None:
         """
         Write system parameters into the database.
 
         :param int runtime: the amount of time the application is to run for
         """
-        self.executemany(
+        self.cursor().executemany(
             """
             INSERT INTO configuration_parameters (
                 parameter_id, value)
@@ -188,7 +185,7 @@ class DatabaseWriter(SQLiteDB):
         job = FecDataView.get_spalloc_job()
         if job is not None:
             config = job.get_session_credentials_for_db()
-            self.executemany(
+            self.cursor().executemany(
                 """
                 INSERT INTO proxy_configuration(kind, name, value)
                 VALUES(?, ?, ?)
@@ -203,7 +200,7 @@ class DatabaseWriter(SQLiteDB):
             if placement.vertex not in self.__vertex_to_id:
                 self.__add_machine_vertex(placement.vertex)
         # add records
-        self.executemany(
+        self.cursor().executemany(
             """
             INSERT INTO Placements(
                 vertex_id, chip_x, chip_y, chip_p, machine_id)
@@ -218,7 +215,7 @@ class DatabaseWriter(SQLiteDB):
         Adds the tags into the database.
         """
         tags = FecDataView.get_tags()
-        self.executemany(
+        self.cursor().executemany(
             """
             INSERT INTO IP_tags(
                 vertex_id, tag, board_address, ip_address, port,
@@ -231,7 +228,7 @@ class DatabaseWriter(SQLiteDB):
 
     def create_atom_to_event_id_mapping(
             self, machine_vertices: Optional[
-                Iterable[Tuple[MachineVertex, str]]]):
+                Iterable[Tuple[MachineVertex, str]]]) -> None:
         """
         :param machine_vertices:
         :type machine_vertices:
@@ -262,7 +259,7 @@ class DatabaseWriter(SQLiteDB):
                         f"{key_vertices[key]}")
                 key_vertices[key] = m_vertex
             m_vertex_id = self.__vertex_to_id[m_vertex]
-            self.executemany(
+            self.cursor().executemany(
                 """
                 INSERT INTO event_to_atom_mapping(
                     vertex_id, event_id, atom_id)
@@ -271,14 +268,14 @@ class DatabaseWriter(SQLiteDB):
             )
 
     def create_device_atom_event_id_mapping(
-            self, devices: Iterable[LiveOutputDevice]):
+            self, devices: Iterable[LiveOutputDevice]) -> None:
         """
         Add output mappings for devices.
         """
         for device in devices:
             for m_vertex, atom_keys in device.get_device_output_keys().items():
                 m_vertex_id = self.__vertex_to_id[m_vertex]
-                self.executemany(
+                self.cursor().executemany(
                     """
                     INSERT INTO event_to_atom_mapping(
                         vertex_id, event_id, atom_id)
@@ -329,7 +326,7 @@ class DatabaseWriter(SQLiteDB):
             for (m_vertex, part_id, lpg_m_vertex) in
             self._get_machine_lpg_mappings(part))
 
-        self.executemany(
+        self.cursor().executemany(
             """
             INSERT INTO m_vertex_to_lpg_vertex(
                 pre_vertex_id, partition_id, post_vertex_id)

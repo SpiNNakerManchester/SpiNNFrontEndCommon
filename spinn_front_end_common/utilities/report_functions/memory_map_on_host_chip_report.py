@@ -57,7 +57,8 @@ def memory_map_on_host_chip_report() -> None:
                     file_name)
 
 
-def _describe_mem_map(f: TextIO, txrx: Transceiver, x: int, y: int, p: int):
+def _describe_mem_map(
+        f: TextIO, txrx: Transceiver, x: int, y: int, p: int) -> None:
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """

@@ -173,7 +173,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         return self.__send_buffer_times
 
     @send_buffer_times.setter
-    def send_buffer_times(self, send_buffer_times: _SendBufferTimes):
+    def send_buffer_times(self, send_buffer_times: _SendBufferTimes) -> None:
         self.__send_buffer_times = send_buffer_times
         for vertex in self.machine_vertices:
             send_buffer_times_to_set = self.__send_buffer_times
@@ -183,7 +183,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
                     vertex_slice.get_raster_ids()]
             vertex.send_buffer_times = send_buffer_times_to_set
 
-    def enable_recording(self, new_state: bool = True):
+    def enable_recording(self, new_state: bool = True) -> None:
         """
         Turns on or of the recording for this vertex.
 

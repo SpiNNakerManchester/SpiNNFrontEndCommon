@@ -68,7 +68,7 @@ def _emergency_state_check() -> None:
 
 
 def _emergency_iobuf_extract(
-        executable_targets: Optional[ExecutableTargets] = None):
+        executable_targets: Optional[ExecutableTargets] = None) -> None:
     """
     :param executable_targets:
         The specific targets to extract, or `None` for all
@@ -81,7 +81,7 @@ def _emergency_iobuf_extract(
 
 
 def emergency_recover_state_from_failure(
-        vertex: AbstractHasAssociatedBinary, placement: Placement):
+        vertex: AbstractHasAssociatedBinary, placement: Placement) -> None:
     """
     Used to get at least *some* information out of a core when something
     goes badly wrong. Not a replacement for what abstract spinnaker base does.

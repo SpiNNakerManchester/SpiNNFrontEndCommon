@@ -211,7 +211,7 @@ def router_report_from_paths() -> None:
 
 
 def _write_one_router_partition_report(
-        f: TextIO, partition: ApplicationEdgePartition):
+        f: TextIO, partition: ApplicationEdgePartition) -> None:
     """
     :param ~io.FileIO f:
     :param AbstractSingleSourcePartition partition:
@@ -263,7 +263,7 @@ def partitioner_report() -> None:
             file_name)
 
 
-def _write_one_vertex_partition(f: TextIO, vertex: ApplicationVertex):
+def _write_one_vertex_partition(f: TextIO, vertex: ApplicationVertex) -> None:
     """
     :param ~io.FileIO f:
     :param ~pacman.model.graphs.application.ApplicationVertex vertex:
@@ -314,7 +314,7 @@ def placement_report_with_application_graph_by_vertex() -> None:
 
 
 def _write_one_vertex_application_placement(
-        f: TextIO, vertex: ApplicationVertex):
+        f: TextIO, vertex: ApplicationVertex) -> None:
     """
     :param ~io.FileIO f:
     :param ~pacman.model.graphs.application.ApplicationVertex vertex:
@@ -379,7 +379,7 @@ def placement_report_with_application_graph_by_core() -> None:
             file_name)
 
 
-def _write_one_chip_application_placement(f: TextIO, chip: Chip):
+def _write_one_chip_application_placement(f: TextIO, chip: Chip) -> None:
     """
     :param ~io.FileIO f:
     :param ~spinn_machine.Chip chip:
@@ -452,7 +452,7 @@ def sdram_usage_report_per_chip() -> None:
 
 def _sdram_usage_report_per_chip_with_timesteps(
         f: TextIO, timesteps: Optional[int], progress: ProgressBar,
-        end_progress: bool, details: bool):
+        end_progress: bool, details: bool) -> None:
     """
     :param ~io.FileIO f:
     :param int timesteps: Either the plan or data timesteps
@@ -502,8 +502,8 @@ def _sdram_usage_report_per_chip_with_timesteps(
             pass
 
 
-def routing_info_report(
-        extra_allocations: Iterable[Tuple[ApplicationVertex, str]] = ()):
+def routing_info_report(extra_allocations: Iterable[
+        Tuple[ApplicationVertex, str]] = ()) -> None:
     """
     Generates a report which says which keys is being allocated to each
     vertex.
@@ -532,7 +532,7 @@ def routing_info_report(
 
 def _write_vertex_virtual_keys(
         f: TextIO, pre_vertex: ApplicationVertex, part_id: str,
-        routing_infos: RoutingInfo):
+        routing_infos: RoutingInfo) -> None:
     """
     :param ~io.FileIO f:
     :param ~pacman.model.graphs.application.ApplicationVertex pre_vertex:
@@ -572,7 +572,7 @@ def router_report_from_router_tables() -> None:
 
 
 def router_report_from_compressed_router_tables(
-        routing_tables: MulticastRoutingTables):
+        routing_tables: MulticastRoutingTables) -> None:
     """
     Report the compressed routing tables.
 
@@ -590,8 +590,8 @@ def router_report_from_compressed_router_tables(
             generate_routing_table(routing_table, top_level_folder)
 
 
-def generate_routing_table(
-        routing_table: AbstractMulticastRoutingTable, top_level_folder: str):
+def generate_routing_table(routing_table: AbstractMulticastRoutingTable,
+                           top_level_folder: str) -> None:
     """
     :param routing_table: The routing table to describe
     :type routing_table:
@@ -641,7 +641,7 @@ def _compression_ratio(uncompressed: int, compressed: int) -> float:
 
 
 def generate_comparison_router_report(
-        compressed_routing_tables: MulticastRoutingTables):
+        compressed_routing_tables: MulticastRoutingTables) -> None:
     """
     Make a report on comparison of the compressed and uncompressed
     routing tables.

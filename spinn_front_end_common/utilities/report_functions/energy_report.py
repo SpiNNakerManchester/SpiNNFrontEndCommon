@@ -33,7 +33,7 @@ class EnergyReport(object):
     # energy report file name
     _SUMMARY_FILENAME = "energy_report.rpt"
 
-    def write_energy_report(self, power_used: PowerUsed):
+    def write_energy_report(self, power_used: PowerUsed) -> None:
         """
         Writes the report.
 
@@ -50,7 +50,7 @@ class EnergyReport(object):
             self._write_summary_report(f, power_used)
 
     @classmethod
-    def _write_summary_report(cls, f: TextIO, power_used: PowerUsed):
+    def _write_summary_report(cls, f: TextIO, power_used: PowerUsed) -> None:
         """
         Write summary file.
 

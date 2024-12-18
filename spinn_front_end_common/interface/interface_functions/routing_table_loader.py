@@ -17,7 +17,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.data import FecDataView
 
 
-def routing_table_loader(router_tables: MulticastRoutingTables):
+def routing_table_loader(router_tables: MulticastRoutingTables) -> None:
     """
     Loads routes into initialised routers.
 

@@ -47,7 +47,7 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
         self.__targeted_lpgs: Set[Tuple[
             LivePacketGatherMachineVertex, MachineVertex, str]] = set()
 
-    def create_sys_vertices(self, system_placements: Placements):
+    def create_sys_vertices(self, system_placements: Placements) -> None:
         """
         Special way of making LPG machine vertices, where one is placed
         on each Ethernet-enabled chip.
@@ -66,7 +66,7 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
             self.__m_vertices_by_ethernet[eth.x, eth.y] = lpg_vtx
 
     @overrides(AbstractSplitterCommon.create_machine_vertices)
-    def create_machine_vertices(self, chip_counter: ChipCounter):
+    def create_machine_vertices(self, chip_counter: ChipCounter) -> None:
         # Skip here, and do later!  This is a special case...
         pass
 

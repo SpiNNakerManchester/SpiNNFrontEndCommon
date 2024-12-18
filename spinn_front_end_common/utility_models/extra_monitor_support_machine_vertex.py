@@ -16,7 +16,8 @@ from enum import Enum, IntEnum
 import logging
 import struct
 # pylint: disable=no-name-in-module
-from typing import Dict, Iterable, Optional, ContextManager
+from typing import Dict, Iterable, Optional, ContextManager, Type
+from types import TracebackType
 
 from typing_extensions import Literal
 
@@ -263,8 +264,8 @@ class ExtraMonitorSupportMachineVertex(
         return "extra_monitor_support.aplx"
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(
-            self, spec: DataSpecificationGenerator, placement: Placement):
+    def generate_data_specification(self, spec: DataSpecificationGenerator,
+                                    placement: Placement) -> None:
         # storing for future usage
         self.__placement = placement
         chip = placement.chip
@@ -279,7 +280,7 @@ class ExtraMonitorSupportMachineVertex(
         spec.end_specification()
 
     def _generate_data_speed_up_out_config(
-            self, spec: DataSpecificationGenerator):
+            self, spec: DataSpecificationGenerator) -> None:
         """
         :param ~.DataSpecificationGenerator spec: spec file
         """
@@ -295,7 +296,7 @@ class ExtraMonitorSupportMachineVertex(
         spec.write_value(Gatherer.END_FLAG_KEY)
 
     def _generate_reinjection_config(
-            self, spec: DataSpecificationGenerator, chip: Chip):
+            self, spec: DataSpecificationGenerator, chip: Chip) -> None:
         """
         :param ~.DataSpecificationGenerator spec: spec file
         :param ~.Chip chip:
@@ -322,7 +323,7 @@ class ExtraMonitorSupportMachineVertex(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y])
 
     def _generate_data_speed_up_in_config(
-            self, spec: DataSpecificationGenerator, chip: Chip):
+            self, spec: DataSpecificationGenerator, chip: Chip) -> None:
         """
         :param ~.DataSpecificationGenerator spec: spec file
         :param ~.Chip chip: the chip where this monitor will run
@@ -365,7 +366,8 @@ class ExtraMonitorSupportMachineVertex(
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
         return route
 
-    def _generate_provenance_area(self, spec: DataSpecificationGenerator):
+    def _generate_provenance_area(
+            self, spec: DataSpecificationGenerator) -> None:
         """
         :param ~.DataSpecificationGenerator spec: spec file
         """
@@ -392,7 +394,7 @@ class ExtraMonitorSupportMachineVertex(
 
     @overrides(AbstractProvidesProvenanceDataFromMachine.
                get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, placement: Placement):
+    def get_provenance_data_from_machine(self, placement: Placement) -> None:
         # No standard provenance region, so no standard provenance data
         # But we do have our own.
         x, y = placement.x, placement.y
@@ -415,7 +417,7 @@ class ExtraMonitorSupportMachineVertex(
         return _Recoverer(self, self.placement)
 
     def reset_reinjection_counters(self, extra_monitor_cores_to_set: Iterable[
-            ExtraMonitorSupportMachineVertex]):
+            ExtraMonitorSupportMachineVertex]) -> None:
         """
         Resets the counters for reinjection.
 
@@ -463,7 +465,7 @@ class ExtraMonitorSupportMachineVertex(
             self, point_to_point: Optional[bool] = None,
             multicast: Optional[bool] = None,
             nearest_neighbour: Optional[bool] = None,
-            fixed_route: Optional[bool] = None):
+            fixed_route: Optional[bool] = None) -> None:
         """
         :param point_to_point:
             If point to point should be set, or `None` if left as before
@@ -547,7 +549,9 @@ class _Recoverer:
     def __enter__(self) -> Placement:
         return self.__placement
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> Literal[False]:
+    def __exit__(self, exc_type: Optional[Type],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Literal[False]:
         if exc_val:
             emergency_recover_state_from_failure(self.__vtx, self.__placement)
         return False

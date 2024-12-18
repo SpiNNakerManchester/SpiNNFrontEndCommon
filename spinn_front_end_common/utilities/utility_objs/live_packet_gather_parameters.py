@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Any, Optional
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 from pacman.model.resources.iptag_resource import IPtagResource
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -36,14 +36,20 @@ class LivePacketGatherParameters(object):
         "_received_key_mask", "_translate_keys", "_translated_key_right_shift")
 
     def __init__(
-            self, port: int, hostname: str, tag=None, strip_sdp=True,
-            use_prefix=False, key_prefix=None, prefix_type=None,
-            message_type=EIEIOType.KEY_32_BIT, right_shift=0,
-            payload_as_time_stamps=True, use_payload_prefix=True,
-            payload_prefix=None, payload_right_shift=0,
-            number_of_packets_sent_per_time_step=0, label=None,
-            received_key_mask=0xFFFFFFFF,
-            translate_keys=False, translated_key_right_shift=0) -> None:
+            self, port: int, hostname: str, tag: Optional[int] = None,
+            strip_sdp: bool = True, use_prefix: bool = False,
+            key_prefix: Optional[int] = None,
+            prefix_type: Optional[EIEIOPrefix] = None,
+            message_type: EIEIOType = EIEIOType.KEY_32_BIT,
+            right_shift: int = 0,
+            payload_as_time_stamps: bool = True,
+            use_payload_prefix: bool = True,
+            payload_prefix: Optional[int] = None, payload_right_shift: int = 0,
+            number_of_packets_sent_per_time_step: int = 0,
+            label: Optional[str] = None,
+            received_key_mask: int = 0xFFFFFFFF,
+            translate_keys: bool = False,
+            translated_key_right_shift: int = 0) -> None:
         """
         :raises ConfigurationException:
             If the parameters passed are known to be an invalid combination.
@@ -135,11 +141,9 @@ class LivePacketGatherParameters(object):
         return self._use_prefix
 
     @property
-    def key_prefix(self) -> int:
+    def key_prefix(self) -> Optional[int]:
         """
         The EIEIO key prefix to remove from messages.
-
-        :rtype: int
         """
         return self._key_prefix
 
@@ -189,11 +193,9 @@ class LivePacketGatherParameters(object):
         return self._use_payload_prefix
 
     @property
-    def payload_prefix(self) -> int:
+    def payload_prefix(self) -> Optional[int]:
         """
         The payload prefix to remove if applying compaction.
-
-        :rtype: int
         """
         return self._payload_prefix
 
@@ -216,11 +218,9 @@ class LivePacketGatherParameters(object):
         return self._n_packets_per_time_step
 
     @property
-    def label(self) -> str:
+    def label(self) -> Optional[str]:
         """
         A label.
-
-        :rtype: str
         """
         return self._label
 
@@ -263,7 +263,9 @@ class LivePacketGatherParameters(object):
             strip_sdp=self.strip_sdp, tag=self.tag,
             traffic_identifier=TRAFFIC_IDENTIFIER)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, LivePacketGatherParameters):
+            return False
         return (self._port == other.port and
                 self._hostname == other.hostname and
                 self._tag == other.tag and
@@ -286,10 +288,10 @@ class LivePacketGatherParameters(object):
                 self._translated_key_right_shift ==
                 other.translated_key_right_shift)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         data = (
             self._port, self._tag, self._strip_sdp, self._use_prefix,
             self._key_prefix, self._prefix_type, self._message_type,

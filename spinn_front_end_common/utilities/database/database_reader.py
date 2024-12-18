@@ -30,14 +30,6 @@ class DatabaseReader(SQLiteDB):
         self.__job: Optional[SpallocJob] = None
         self.__looked_for_job = False
 
-    def __exec_one(self, query, *args):
-        self.execute(query + " LIMIT 1", args)
-        return self.fetchone()
-
-    @staticmethod
-    def __r2t(row, *args):
-        return tuple(None if row is None else row[key] for key in args)
-
     def get_job(self) -> Optional[SpallocJob]:
         """
         Get the job described in the database. If no job exists, direct
@@ -52,7 +44,8 @@ class DatabaseReader(SQLiteDB):
             job_url = None
             cookies = {}
             headers = {}
-            for row in self.execute("""
+            for row in self.cursor().execute(
+                    """
                     SELECT kind, name, value FROM proxy_configuration
                     """):
                 kind, name, value = row
@@ -83,7 +76,7 @@ class DatabaseReader(SQLiteDB):
         """
         return {
             row["event"]: row["atom"]
-            for row in self.execute(
+            for row in self.cursor().execute(
                 """
                 SELECT * FROM label_event_atom_view
                 WHERE label = ?
@@ -99,7 +92,7 @@ class DatabaseReader(SQLiteDB):
         """
         return {
             row["atom"]: row["event"]
-            for row in self.execute(
+            for row in self.cursor().execute(
                 """
                 SELECT * FROM label_event_atom_view
                 WHERE label = ?
@@ -117,15 +110,17 @@ class DatabaseReader(SQLiteDB):
             chip_x, chip_y)
         :rtype: tuple(str, int, bool, str, int, int, int)
         """
-        return self.__r2t(
-            self.__exec_one(
-                """
-                SELECT * FROM app_output_tag_view
-                WHERE pre_vertex_label = ?
-                    AND post_vertex_label LIKE ?
-                """, label, str(receiver_label) + "%"),
-            "ip_address", "port", "strip_sdp", "board_address", "tag",
-            "chip_x", "chip_y")
+        self.cursor().execute(
+            """
+            SELECT * FROM app_output_tag_view
+            WHERE pre_vertex_label = ?
+            AND post_vertex_label LIKE ?
+            LIMIT 1
+            """, (label, str(receiver_label) + "%"))
+        row = self.fetchone()
+        return (row["ip_address"], row["port"], row["strip_sdp"],
+                row["board_address"], row["tag"], row["chip_x"],
+                row["chip_y"])
 
     def get_configuration_parameter_value(
             self, parameter_name: str) -> Optional[float]:
@@ -136,16 +131,14 @@ class DatabaseReader(SQLiteDB):
         :return: The value of the parameter
         :rtype: float or None
         """
-        row = self.__exec_one(
+        self.cursor().execute(
             """
             SELECT value FROM configuration_parameters
             WHERE parameter_id = ?
-            """, parameter_name)
+            LIMIT 1
+            """, (parameter_name,))
+        row = self.fetchone()
         return None if row is None else float(row["value"])
-
-    @staticmethod
-    def __xyp(row) -> Tuple[int, int, int]:
-        return int(row["x"]), int(row["y"]), int(row["p"])
 
     def get_placements(self, label: str) -> List[Tuple[int, int, int]]:
         """
@@ -156,7 +149,8 @@ class DatabaseReader(SQLiteDB):
         :rtype: list(tuple(int, int, int))
         """
         return [
-            self.__xyp(row) for row in self.execute(
+            (int(row["x"]), int(row["y"]), int(row["p"]))
+            for row in self.cursor().execute(
                 """
                 SELECT x, y, p FROM application_vertex_placements
                 WHERE vertex_label = ?
@@ -171,11 +165,13 @@ class DatabaseReader(SQLiteDB):
         :return: The IP address of the Ethernet to use to contact the chip
         :rtype: str or None
         """
-        row = self.__exec_one(
+        self.cursor().execute(
             """
             SELECT eth_ip_address FROM chip_eth_info
             WHERE x = ? AND y = ? OR x = 0 AND y = 0
             ORDER BY x DESC
-            """, x, y)
+            LIMIT 1
+            """, (x, y))
+        row = self.fetchone()
         # Should only fail if no machine is present or a bad XY given!
         return None if row is None else row["eth_ip_address"]

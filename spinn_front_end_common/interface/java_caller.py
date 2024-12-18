@@ -187,7 +187,7 @@ class JavaCaller(object):
             self._machine_json_path = write_json_machine(progress_bar=False)
         return self._machine_json_path
 
-    def set_placements(self, used_placements: Iterable[Placement]):
+    def set_placements(self, used_placements: Iterable[Placement]) -> None:
         """
         Passes in the placements leaving this class to decide pass it to
         Java.
@@ -218,7 +218,7 @@ class JavaCaller(object):
             raise SpinnFrontEndException("placements not set")
         return self.__placement_json
 
-    def _json_placement(self, placement: Placement):
+    def _json_placement(self, placement: Placement) -> JsonObject:
         """
         :param ~pacman.model.placements.Placement placement:
         :rtype: dict
@@ -318,7 +318,7 @@ class JavaCaller(object):
                     "y": chip.y,
                     "p": self._monitor_cores[chip]}
                 if chip in by_chip:
-                    json_placements = [
+                    json_placements: JsonArray = [
                         self._json_placement(placement)
                         for placement in by_chip[chip]]
                     if json_placements:
@@ -355,7 +355,7 @@ class JavaCaller(object):
 
         return path
 
-    def _run_java(self, *args: str):
+    def _run_java(self, *args: str) -> None:
         """
         Does the actual running of `JavaSpiNNaker`. Arguments are those that
         will be processed by the `main` method on the Java side.

@@ -184,7 +184,7 @@ VERIFY_SENT_DATA = False
 _PROVENANCE_DATA_SIZE: Final = _FOUR_WORDS.size
 
 
-def ceildiv(dividend, divisor) -> int:
+def ceildiv(dividend: float, divisor: int) -> int:
     """
     How to divide two possibly-integer numbers and round up.
     """
@@ -323,7 +323,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._last_status: Optional[ReInjectionStatus] = None
 
     def __throttled_send(
-            self, message: SDPMessage, connection: SCAMPConnection):
+            self, message: SDPMessage, connection: SCAMPConnection) -> None:
         """
         Slows down transmissions to allow SpiNNaker to keep up.
 
@@ -363,8 +363,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ExecutableType.SYSTEM
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(
-            self, spec: DataSpecificationGenerator, placement: Placement):
+    def generate_data_specification(self, spec: DataSpecificationGenerator,
+                                    placement: Placement) -> None:
         # pylint: disable=unsubscriptable-object
         # update my placement for future knowledge
         self.__placement = placement
@@ -430,7 +430,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             raise SpinnFrontEndException("placement not known")
         return self.__placement
 
-    def _reserve_memory_regions(self, spec: DataSpecificationGenerator):
+    def _reserve_memory_regions(
+            self, spec: DataSpecificationGenerator) -> None:
         """
         Writes the DSG regions memory sizes. Static so that it can be used
         by the application vertex.
@@ -454,8 +455,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         return "data_speed_up_packet_gatherer.aplx"
 
     def _generate_data_in_report(
-            self, time_diff, data_size: int, x: int, y: int,
-            address_written_to: int, missing_seq_nums):
+            self, time_diff: datetime.timedelta, data_size: int, x: int,
+            y: int, address_written_to: int) -> None:
         """
         Writes the data in report for this stage.
 
@@ -467,8 +468,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int y:
             the location in machine where the data was written to Y axis
         :param int address_written_to: where in SDRAM it was written to
-        :param list(set(int)) missing_seq_nums:
-            the set of missing sequence numbers per data transmission attempt
         """
         dir_path = FecDataView.get_run_dir_path()
         in_report_path = os.path.join(dir_path, self.IN_REPORT_NAME)
@@ -493,13 +492,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         with open(in_report_path, "a", encoding="utf-8") as writer:
             writer.write(
                 f"{x}\t\t {y}\t\t {address_written_to}\t\t {data_size}\t\t"
-                f"\t\t {time_took_ms}\t\t\t {mbs}\t\t {missing_seq_nums}\n")
+                f"\t\t {time_took_ms}\t\t\t {mbs}\t\t "
+                f"{self._missing_seq_nums_data_in}\n")
 
     def send_data_into_spinnaker(
             self, x: int, y: int, base_address: int,
             data: Union[BinaryIO, bytes, str, int], *,
             n_bytes: Optional[int] = None, offset: int = 0,
-            cpu: int = 0):  # pylint: disable=unused-argument
+            cpu: int = 0) -> None:  # pylint: disable=unused-argument
         """
         Sends a block of data into SpiNNaker to a given chip.
 
@@ -555,13 +555,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         if get_config_bool("Reports", "write_data_speed_up_reports"):
             self._generate_data_in_report(
                 x=x, y=y, time_diff=end - start,
-                data_size=n_bytes, address_written_to=base_address,
-                missing_seq_nums=self._missing_seq_nums_data_in)
+                data_size=n_bytes, address_written_to=base_address)
 
     @staticmethod
     def __verify_sent_data(
             original_data: bytes, verified_data: bytes, x: int, y: int,
-            base_address: int, n_bytes: int):
+            base_address: int, n_bytes: int) -> None:
         if original_data != verified_data:
             log.error("VARIANCE: chip:{},{} address:{} len:{}",
                       x, y, base_address, n_bytes)
@@ -609,7 +608,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _send_data_via_extra_monitors(
             self, destination_chip: Chip, start_address: int,
-            data_to_write: bytes):
+            data_to_write: bytes) -> None:
         """
         Sends data using the extra monitor cores.
 
@@ -745,7 +744,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _outgoing_retransmit_missing_seq_nums(
             self, data_to_write: bytes, missing: Set[int],
-            connection: SCAMPConnection):
+            connection: SCAMPConnection) -> None:
         """
         Transmits back into SpiNNaker the missing data based off missing
         sequence numbers.
@@ -818,7 +817,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         # return message for sending, and the length in data sent
         return self.__make_data_in_message(packet_data), packet_data_length
 
-    def __send_location(self, start_address: int, connection: SCAMPConnection):
+    def __send_location(
+            self, start_address: int, connection: SCAMPConnection) -> None:
         """
         Send location as separate message.
 
@@ -843,7 +843,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _send_all_data_based_packets(
             self, data_to_write: bytes, start_address: int,
-            connection: SCAMPConnection):
+            connection: SCAMPConnection) -> None:
         """
         Send all the data as one block.
 
@@ -907,7 +907,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         FecDataView.get_monitor_by_xy(0, 0).load_system_mc_routes()
 
-    def set_router_wait1_timeout(self, timeout: Tuple[int, int]):
+    def set_router_wait1_timeout(self, timeout: Tuple[int, int]) -> None:
         """
         Set the wait1 field for a set of routers.
 
@@ -926,7 +926,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def set_router_wait2_timeout(self, timeout: Tuple[int, int]):
+    def set_router_wait2_timeout(self, timeout: Tuple[int, int]) -> None:
         """
         Set the wait2 field for a set of routers.
 
@@ -1144,7 +1144,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             entry = fixed_routes[(link.destination_x, link.destination_y)]
         return routers
 
-    def _report_routers_used_for_out(self, placement: Placement):
+    def _report_routers_used_for_out(self, placement: Placement) -> None:
         """
         Write the used routers into a report.
 
@@ -1349,7 +1349,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def __write_into_view(
             self, view_start_position: int, view_end_position: int,
-            data: bytes, data_start_position: int, data_end_position: int):
+            data: bytes, data_start_position: int,
+            data_end_position: int) -> None:
         """
         Puts data into the view.
 
@@ -1411,7 +1412,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractProvidesProvenanceDataFromMachine
                .get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, placement: Placement):
+    def get_provenance_data_from_machine(self, placement: Placement) -> None:
         x, y, p = placement.x, placement.y, placement.p
         # Get the App Data for the core
         data = FecDataView.read_memory(

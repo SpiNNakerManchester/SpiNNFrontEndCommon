@@ -26,7 +26,7 @@ class LoadMCRoutesProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     """
     __slots__ = ()
 
-    def load_application_mc_routes(self, core_subsets: CoreSubsets):
+    def load_application_mc_routes(self, core_subsets: CoreSubsets) -> None:
         """
         Load the saved application multicast routes.
 
@@ -39,7 +39,7 @@ class LoadMCRoutesProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
                     self._send_request(LoadApplicationMCRoutesMessage(
                         core_subset.x, core_subset.y, processor_id))
 
-    def load_system_mc_routes(self, core_subsets: CoreSubsets):
+    def load_system_mc_routes(self, core_subsets: CoreSubsets) -> None:
         """
         Load the saved system multicast routes.
 

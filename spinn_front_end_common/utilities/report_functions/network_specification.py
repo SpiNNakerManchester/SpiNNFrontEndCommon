@@ -39,7 +39,7 @@ def network_specification() -> None:
                          " for writing.", filename)
 
 
-def _write_report(f: TextIO, vertex: ApplicationVertex):
+def _write_report(f: TextIO, vertex: ApplicationVertex) -> None:
     """
     :param ~io.FileIO f:
     :param ~pacman.model.graphs.application.ApplicationVertex vertex:

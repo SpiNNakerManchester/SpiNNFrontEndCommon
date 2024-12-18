@@ -116,7 +116,7 @@ class CommandSenderMachineVertex(
             self, start_resume_commands: Iterable[MultiCastCommand],
             pause_stop_commands: Iterable[MultiCastCommand],
             timed_commands: Iterable[MultiCastCommand],
-            vertex_to_send_to: AbstractVertex):
+            vertex_to_send_to: AbstractVertex) -> None:
         """
         Add commands to be sent down a given edge.
 
@@ -191,7 +191,8 @@ class CommandSenderMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec: DataSpecificationGenerator, placement: Placement):
+            self, spec: DataSpecificationGenerator,
+            placement: Placement) -> None:
         routing_infos = FecDataView.get_routing_infos()
         av = self.app_vertex
         assert av is not None
@@ -242,7 +243,7 @@ class CommandSenderMachineVertex(
 
     def _write_basic_commands(
             self, commands: List[MultiCastCommand],
-            spec: DataSpecificationGenerator):
+            spec: DataSpecificationGenerator) -> None:
         """
         :param list(MultiCastCommand) commands:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -256,7 +257,7 @@ class CommandSenderMachineVertex(
 
     def _write_timed_commands(
             self, timed_commands: List[MultiCastCommand],
-            spec: DataSpecificationGenerator):
+            spec: DataSpecificationGenerator) -> None:
         """
         :param list(MultiCastCommand) timed_commands:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -271,7 +272,7 @@ class CommandSenderMachineVertex(
     @classmethod
     def __write_command(
             cls, command: MultiCastCommand,
-            spec: DataSpecificationGenerator):
+            spec: DataSpecificationGenerator) -> None:
         """
         :param MultiCastCommand command:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -287,7 +288,7 @@ class CommandSenderMachineVertex(
 
     def _reserve_memory_regions(
             self, spec: DataSpecificationGenerator, time_command_size: int,
-            start_command_size: int, end_command_size: int):
+            start_command_size: int, end_command_size: int) -> None:
         """
         Reserve SDRAM space for memory areas:
 
@@ -399,7 +400,7 @@ class CommandSenderMachineVertex(
                parse_extra_provenance_items)
     def parse_extra_provenance_items(
             self, label: str, x: int, y: int, p: int,
-            provenance_data: Sequence[int]):
+            provenance_data: Sequence[int]) -> None:
         # pylint: disable=unused-argument
         n_commands_sent, = provenance_data
         with ProvenanceWriter() as db:

@@ -59,10 +59,10 @@ class SendPauseProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     __slots__ = ()
 
     def __receive_response(
-            self, progress: ProgressBar, _response: CheckOKResponse):
+            self, progress: ProgressBar, _response: CheckOKResponse) -> None:
         progress.update()
 
-    def send_pause(self, core_subsets: CoreSubsets, n_cores: int):
+    def send_pause(self, core_subsets: CoreSubsets, n_cores: int) -> None:
         """
         :param ~spinn_machine.CoreSubsets core_subsets:
         :param int n_cores: Number of cores being updated

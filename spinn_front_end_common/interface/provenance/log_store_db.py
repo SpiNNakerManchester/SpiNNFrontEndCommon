@@ -29,7 +29,7 @@ class LogStoreDB(LogStore):
     @overrides(LogStore.store_log)
     def store_log(
             self, level: int, message: str,
-            timestamp: Optional[datetime] = None):
+            timestamp: Optional[datetime] = None) -> None:
         try:
             with GlobalProvenance() as db:
                 db.store_log(level, message, timestamp)

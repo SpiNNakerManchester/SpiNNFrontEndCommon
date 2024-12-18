@@ -317,7 +317,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return ((header_size + EIEIOType.KEY_32_BIT.key_bytes) *
                 keys_per_timestep)
 
-    def _install_send_buffer(self, send_buffer_times: _SBT):
+    def _install_send_buffer(self, send_buffer_times: _SBT) -> None:
         """
         :param ~numpy.ndarray send_buffer_times:
         """
@@ -339,7 +339,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._send_buffer_times = None
         self._send_buffers = {}
 
-    def _install_virtual_key(self, n_keys: int):
+    def _install_virtual_key(self, n_keys: int) -> None:
         """
         :param int n_keys:
         """
@@ -443,7 +443,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return self._send_buffer_times
 
     @send_buffer_times.setter
-    def send_buffer_times(self, send_buffer_times: _SendBufferTimes):
+    def send_buffer_times(self, send_buffer_times: _SendBufferTimes) -> None:
         """
         :type send_buffer_times:
             ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
@@ -477,7 +477,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 # Work with a single list
                 self._fill_send_buffer_1d(key_to_send)
 
-    def _fill_send_buffer_2d(self, key_base: int):
+    def _fill_send_buffer_2d(self, key_base: int) -> None:
         """
         Add the keys with different times for each atom.
         Can be overridden to override keys.
@@ -497,7 +497,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 if first_time_step <= tick < end_time_step:
                     self._send_buffer.add_key(tick, keys[atom])
 
-    def _fill_send_buffer_1d(self, key_base: int):
+    def _fill_send_buffer_1d(self, key_base: int) -> None:
         """
         Add the keys from the given vertex slice within the given time
         range into the given send buffer, with the same times for each
@@ -539,7 +539,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         mask = 0xFFFFFFFF - max_key
         return mask
 
-    def enable_recording(self, new_state: bool = True):
+    def enable_recording(self, new_state: bool = True) -> None:
         """
         Enable recording of the keys sent.
 
@@ -547,7 +547,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         self._is_recording = new_state
 
-    def _reserve_regions(self, spec: DataSpecificationGenerator):
+    def _reserve_regions(self, spec: DataSpecificationGenerator) -> None:
         """
         :param ~.DataSpecificationGenerator spec:
         """
@@ -595,7 +595,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(self, spec: DataSpecificationGenerator):
+    def _write_configuration(self, spec: DataSpecificationGenerator) -> None:
         """
         :param ~.DataSpecificationGenerator spec:
         """
@@ -657,8 +657,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(
-            self, spec: DataSpecificationGenerator, placement: Placement):
+    def generate_data_specification(self, spec: DataSpecificationGenerator,
+                                    placement: Placement) -> None:
         self.update_virtual_key()
 
         # Reserve regions
@@ -753,7 +753,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return self._send_buffers
 
     @send_buffers.setter
-    def send_buffers(self, value: Dict[int, BufferedSendingRegion]):
+    def send_buffers(self, value: Dict[int, BufferedSendingRegion]) -> None:
         self._send_buffers = value
 
     @overrides(SendsBuffersFromHostPreBufferedImpl.get_regions)
@@ -764,7 +764,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return self._send_buffers.keys()
 
     @overrides(SendsBuffersFromHostPreBufferedImpl.rewind)
-    def rewind(self, region: int):
+    def rewind(self, region: int) -> None:
         # reset theses so fill send buffer will run when send_buffers called
         self._first_machine_time_step = None
         self._run_until_timesteps = None
@@ -790,7 +790,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
     def parse_extra_provenance_items(
             self, label: str, x: int, y: int, p: int,
-            provenance_data: Sequence[int]):
+            provenance_data: Sequence[int]) -> None:
         n_rcv, n_snt, bad_key, bad_pkt, late = provenance_data
 
         with ProvenanceWriter() as db:

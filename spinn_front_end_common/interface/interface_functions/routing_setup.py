@@ -43,7 +43,8 @@ def routing_setup() -> None:
         _set_router_diagnostic_filters(table.x, table.y, transceiver)
 
 
-def _set_router_diagnostic_filters(x: int, y: int, transceiver: Transceiver):
+def _set_router_diagnostic_filters(
+        x: int, y: int, transceiver: Transceiver) -> None:
     """
     :param int x:
     :param int y:

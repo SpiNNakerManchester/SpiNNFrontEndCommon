@@ -58,7 +58,7 @@ class _HBPJobController(MachineAllocationController):
         super().__init__("HBPJobController")
 
     @overrides(MachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time: float):
+    def extend_allocation(self, new_total_run_time: float) -> None:
         r = requests.get(self._extend_lease_url, params={
             "runTime": str(new_total_run_time)}, timeout=10)
         r.raise_for_status()
@@ -69,12 +69,12 @@ class _HBPJobController(MachineAllocationController):
         r.raise_for_status()
         return r.json()
 
-    def _release(self, machine_name: str):
+    def _release(self, machine_name: str) -> None:
         r = requests.delete(self._release_machine_url, params={
             "machineName": machine_name}, timeout=10)
         r.raise_for_status()
 
-    def _set_power(self, machine_name: str, power_on: bool):
+    def _set_power(self, machine_name: str, power_on: bool) -> None:
         r = requests.put(self._set_power_url, params={
             "machineName": machine_name, "on": str(power_on)}, timeout=10)
         r.raise_for_status()
@@ -105,7 +105,7 @@ class _HBPJobController(MachineAllocationController):
         """
         return self._power_on
 
-    def set_power(self, power: bool):
+    def set_power(self, power: bool) -> None:
         """
         Sets the power to the new state.
 

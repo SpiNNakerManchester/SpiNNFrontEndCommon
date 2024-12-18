@@ -51,7 +51,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         thread.start()
 
     @abstractmethod
-    def extend_allocation(self, new_total_run_time: float):
+    def extend_allocation(self, new_total_run_time: float) -> None:
         """
         Extend the allocation of the machine from the original run time.
 
@@ -191,7 +191,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         """
         return False
 
-    def make_report(self, filename: str):
+    def make_report(self, filename: str) -> None:
         """
         Asks the controller to make a report of details of allocations.
         By default, this does nothing.
