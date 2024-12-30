@@ -26,8 +26,9 @@ import threading
 import types
 from threading import Condition
 from typing import (
-    Dict, Iterable, Optional, Sequence, Tuple, Type,
+    Any, Dict, Iterable, Optional, Sequence, Tuple, Type,
     TypeVar, Union, cast, final)
+from types import FrameType
 
 import ebrains_drive  # type: ignore[import]
 from numpy import __version__ as numpy_version
@@ -245,7 +246,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Cleanup reports folder based on cfg", TimerWork.REPORT):
             self.__reset_remove_data()
 
-    def __reset_remove_data(self):
+    def __reset_remove_data(self) -> None:
         run_dir = self._data_writer.get_run_dir_path()
 
         if not get_config_bool("Reports", "keep_json_files"):
@@ -276,7 +277,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 except OSError:
                     pass
 
-    def _stop_remove_data(self):
+    def _stop_remove_data(self) -> None:
         with FecTimer("Cleanup reports folder based on cfg", TimerWork.REPORT):
             self.__reset_remove_data()
 
@@ -298,7 +299,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if get_config_bool("Java", "use_java"):
             self._data_writer.set_java_caller(JavaCaller())
 
-    def __signal_handler(self, _signal, _frame) -> None:
+    def __signal_handler(
+            self, _signal: int, _frame: Optional[FrameType]) -> None:
         """
         Handles closing down of script via keyboard interrupt
 
@@ -398,7 +400,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def exception_handler(
             self, exc_type: Type[BaseException], value: BaseException,
-            traceback_obj: Optional[types.TracebackType]):
+            traceback_obj: Optional[types.TracebackType]) -> None:
         """
         Handler of exceptions.
 
@@ -427,7 +429,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Therefore the run call will exit immediately.")
         return False
 
-    def run_until_complete(self, n_steps: Optional[int] = None):
+    def run_until_complete(self, n_steps: Optional[int] = None) -> None:
         """
         Run a simulation until it completes.
 
@@ -441,7 +443,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run(n_steps, sync_time=0.0)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
 
-    def run(self, run_time: Optional[float], sync_time: float = 0):
+    def run(self, run_time: Optional[float], sync_time: float = 0) -> None:
         """
         Run a simulation for a fixed amount of time.
 
@@ -526,7 +528,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             f"{self._data_writer.get_hardware_time_step_us()} us")
         return n_machine_time_steps, total_run_time
 
-    def _run(self, run_time: Optional[float], sync_time: float):
+    def _run(self, run_time: Optional[float], sync_time: float) -> None:
         self._data_writer.start_run()
 
         try:
@@ -648,7 +650,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.__run_control_c_handler_off()
 
     @final
-    def _add_commands_to_command_sender(self, system_placements: Placements):
+    def _add_commands_to_command_sender(
+            self, system_placements: Placements) -> None:
         """
         Runs, times and logs the VirtualMachineGenerator if required.
 
@@ -828,7 +831,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
 
-    def _get_known_machine(self, total_run_time: float = 0.0):
+    def _get_known_machine(self, total_run_time: float = 0.0) -> None:
         """
         The Python machine description object.
 
@@ -899,7 +902,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             network_specification()
 
-    def _execute_split_lpg_vertices(self, system_placements: Placements):
+    def _execute_split_lpg_vertices(
+            self, system_placements: Placements) -> None:
         """
         Runs, times and logs the SplitLPGVertices if required.
         """
@@ -951,7 +955,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_n_chips_in_graph(splitter_partitioner())
 
     def _execute_insert_chip_power_monitors(
-            self, system_placements: Placements):
+            self, system_placements: Placements) -> None:
         """
         Run, time and log the InsertChipPowerMonitorsToGraphs if required.
 
@@ -963,7 +967,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @final
     def _execute_insert_extra_monitor_vertices(
-            self, system_placements: Placements):
+            self, system_placements: Placements) -> None:
         """
         Run, time and log the InsertExtraMonitorVerticesToGraphs if required.
         """
@@ -1006,7 +1010,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         cores -= ethernets * self._data_writer.get_ethernet_monitor_cores()
         return cores
 
-    def _execute_application_placer(self, system_placements: Placements):
+    def _execute_application_placer(
+            self, system_placements: Placements) -> None:
         """
         Runs, times and logs the Application Placer.
 
@@ -1019,7 +1024,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_placements(place_application_graph(
                 system_placements))
 
-    def _do_placer(self, system_placements: Placements):
+    def _do_placer(self, system_placements: Placements) -> None:
         """
         Runs, times and logs one of the placers.
 
@@ -1148,7 +1153,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @final
     def _execute_global_allocate(
-            self, extra_allocations: Iterable[Tuple[ApplicationVertex, str]]):
+            self, extra_allocations: Iterable[
+                Tuple[ApplicationVertex, str]]) -> None:
         """
         Runs, times and logs the Global Zoned Routing Info Allocator.
 
@@ -1164,7 +1170,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @final
     def _execute_flexible_allocate(
-            self, extra_allocations: Iterable[Tuple[ApplicationVertex, str]]):
+            self, extra_allocations: Iterable[
+                Tuple[ApplicationVertex, str]]) -> None:
         """
         Runs, times and logs the Zoned Routing Info Allocator.
 
@@ -1595,7 +1602,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         pre_compress = "BitField" not in name
         return name, pre_compress
 
-    def _compression_skipable(self, tables) -> bool:
+    def _compression_skipable(self, tables: MulticastRoutingTables) -> bool:
         if get_config_bool(
                 "Mapping", "router_table_compress_as_far_as_possible"):
             return False
@@ -1603,7 +1610,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return (tables.get_max_number_of_entries()
                 <= machine.min_n_router_enteries)
 
-    def _execute_pre_compression(self, pre_compress: bool):
+    def _execute_pre_compression(self, pre_compress: bool) -> None:
         name = get_config_str_or_none("Mapping", "precompressor")
         if not pre_compress or name is None:
             # Declare the precompressed data to be the uncompressed data
@@ -1681,7 +1688,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             router_report_from_router_tables()
 
-    def _check_uncompressed_routing_table(self):
+    def _check_uncompressed_routing_table(self) -> None:
         """
         Runs, times and logs the checking of uncompressed table
         """
@@ -2296,7 +2303,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._print_iobuf(errors, warnings)
 
     @staticmethod
-    def _print_iobuf(errors: Iterable[str], warnings: Iterable[str]):
+    def _print_iobuf(errors: Iterable[str], warnings: Iterable[str]) -> None:
         """
         :param list(str) errors:
         :param list(str) warnings:
@@ -2449,7 +2456,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         transceiver.send_signal(self._data_writer.get_app_id(), sync_signal)
 
     @staticmethod
-    def __reset_object(obj) -> None:
+    def __reset_object(obj: Any) -> None:
         # Reset an object if appropriate
         if isinstance(obj, AbstractCanReset):
             obj.reset_to_first_timestep()

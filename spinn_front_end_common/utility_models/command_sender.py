@@ -45,7 +45,7 @@ class CommandSender(
             self, start_resume_commands: Iterable[MultiCastCommand],
             pause_stop_commands: Iterable[MultiCastCommand],
             timed_commands: Iterable[MultiCastCommand],
-            vertex_to_send_to: AbstractVertex):
+            vertex_to_send_to: AbstractVertex) -> None:
         """
         Add commands to be sent down a given edge.
 

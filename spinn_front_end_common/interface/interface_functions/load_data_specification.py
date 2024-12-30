@@ -101,7 +101,7 @@ class _LoadDataSpecification(object):
             receiver.load_application_routing_tables()
 
     # pylint: disable=unused-private-member
-    def __java_app(self, use_monitors: bool):
+    def __java_app(self, use_monitors: bool) -> None:
         """
         :param bool use_monitors:
         """
@@ -119,7 +119,8 @@ class _LoadDataSpecification(object):
         java_caller.load_app_data_specification(use_monitors)
         progress.end()
 
-    def load_data_specs(self, is_system: bool, uses_advanced_monitors: bool):
+    def load_data_specs(
+            self, is_system: bool, uses_advanced_monitors: bool) -> None:
         """
         Execute the data specs for all system targets.
         """
@@ -147,7 +148,8 @@ class _LoadDataSpecification(object):
         FecDataView.get_java_caller().load_system_data_specification()
         progress.end()
 
-    def __python_load(self, is_system: bool, uses_advanced_monitors: bool):
+    def __python_load(
+            self, is_system: bool, uses_advanced_monitors: bool) -> None:
         """
         Does the Data Specification Execution and loading using Python.
         """
@@ -186,8 +188,8 @@ class _LoadDataSpecification(object):
         if uses_advanced_monitors:
             self.__reset_router_timeouts()
 
-    def __python_malloc_core(
-            self, ds_database: DsSqlliteDatabase, x: int, y: int, p: int):
+    def __python_malloc_core(self, ds_database: DsSqlliteDatabase,
+                             x: int, y: int, p: int) -> None:
         region_sizes = ds_database.get_region_sizes(x, y, p)
         total_size = sum(region_sizes.values())
         malloc_size = total_size + APP_PTR_TABLE_BYTE_SIZE

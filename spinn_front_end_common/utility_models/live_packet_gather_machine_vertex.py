@@ -85,7 +85,8 @@ class LivePacketGatherMachineVertex(
         self._lpg_params = lpg_params
         self._incoming_sources: List[Tuple[MachineVertex, str]] = list()
 
-    def add_incoming_source(self, m_vertex: MachineVertex, partition_id: str):
+    def add_incoming_source(
+            self, m_vertex: MachineVertex, partition_id: str) -> None:
         """
         Add a machine vertex source incoming into this gatherer.
 
@@ -130,7 +131,7 @@ class LivePacketGatherMachineVertex(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
     def parse_extra_provenance_items(
             self, label: str, x: int, y: int, p: int,
-            provenance_data: Sequence[int]):
+            provenance_data: Sequence[int]) -> None:
         (lost, lost_payload, events, messages) = provenance_data
 
         with ProvenanceWriter() as db:
@@ -168,8 +169,8 @@ class LivePacketGatherMachineVertex(
 
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(
-            self, spec: DataSpecificationGenerator, placement: Placement):
+    def generate_data_specification(self, spec: DataSpecificationGenerator,
+                                    placement: Placement) -> None:
         tags = FecDataView.get_tags().get_ip_tags_for_vertex(self)
         assert tags is not None
 
@@ -183,7 +184,8 @@ class LivePacketGatherMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    def _reserve_memory_regions(self, spec: DataSpecificationGenerator):
+    def _reserve_memory_regions(
+            self, spec: DataSpecificationGenerator) -> None:
         """
         Reserve SDRAM space for memory areas.
 
@@ -201,8 +203,8 @@ class LivePacketGatherMachineVertex(
             label='config')
         self.reserve_provenance_data_region(spec)
 
-    def _write_configuration_region(
-            self, spec: DataSpecificationGenerator, iptags: List[IPTag]):
+    def _write_configuration_region(self, spec: DataSpecificationGenerator,
+                                    iptags: List[IPTag]) -> None:
         """
         Write the configuration region to the spec.
 
@@ -258,7 +260,7 @@ class LivePacketGatherMachineVertex(
                 spec.write_value(r_info.mask)
                 spec.write_value(vertex.vertex_slice.lo_atom)
 
-    def _write_setup_info(self, spec):
+    def _write_setup_info(self, spec: DataSpecificationGenerator) -> None:
         """
         Write basic info to the system region.
 

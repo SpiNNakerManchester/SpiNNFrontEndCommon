@@ -34,7 +34,7 @@ MERGED_NAME = "bit_fields_merged"
 NOT_APPLICABLE = "N/A"
 
 
-def generate_provenance_item(x: int, y: int, bit_fields_merged: int):
+def generate_provenance_item(x: int, y: int, bit_fields_merged: int) -> None:
     """
     Generates a provenance item in the format BitFieldCompressorReport expects.
 

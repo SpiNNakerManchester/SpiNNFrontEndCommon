@@ -19,7 +19,11 @@ import os
 import pathlib
 import sqlite3
 import struct
-from typing import Optional, Type, Union
+from types import TracebackType
+from typing import Literal, Optional, Type, Union
+
+from typing_extensions import Self
+
 from pacman.exceptions import PacmanValueError
 from spinn_front_end_common.utilities.exceptions import DatabaseException
 
@@ -109,7 +113,7 @@ class SQLiteDB(object):
             The synchronisation level. Doesn't normally need to be altered.
         """
         self.__db = None
-        self.__cursor = None
+        self.__cursor: Optional[sqlite3.Cursor] = None
         if database_file is None:
             self.__db = sqlite3.connect(":memory:")  # Magic name!
             # in-memory DB is never read-only
@@ -155,7 +159,7 @@ class SQLiteDB(object):
         self.__pragma("recursive_triggers", True)
         self.__pragma("trusted_schema", False)
 
-    def _context_entered(self):
+    def _context_entered(self) -> None:
         """
         Work to do when then context is entered.
 
@@ -170,11 +174,13 @@ class SQLiteDB(object):
             self.__db.execute("BEGIN")
         self.__cursor = self.__db.cursor()
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self._context_entered()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Optional[Type],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Literal[False]:
         if self.__db is not None:
             if exc_type is None:
                 self.__db.commit()
@@ -182,6 +188,7 @@ class SQLiteDB(object):
                 self.__db.rollback()
         self.__cursor = None
         self.close()
+        return False
 
     def __del__(self) -> None:
         self.close()
@@ -197,7 +204,7 @@ class SQLiteDB(object):
         except AttributeError:
             self.__db = None
 
-    def __pragma(self, pragma_name: str, value: Union[bool, int, str]):
+    def __pragma(self, pragma_name: str, value: Union[bool, int, str]) -> None:
         """
         Set a database ``PRAGMA``. See the `SQLite PRAGMA documentation
         <https://www.sqlite.org/pragma.html>`_ for details.
@@ -227,33 +234,14 @@ class SQLiteDB(object):
         else:
             raise TypeError("can only set pragmas to bool, int or str")
 
-    def execute(self, sql, parameters=()):
+    def cursor(self) -> sqlite3.Cursor:
         """
-        Executes a query by passing it to the database
-
-        :param str sql:
-        :param parameters:
-        :raises DatabaseException: If there is no cursor.
-            Typically because database was used outside of a with
+        Gets the cursor created by the with statement
         """
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
-        return self.__cursor.execute(sql, parameters)
-
-    def executemany(self, sql, parameters=()):
-        """
-        Repeatedly executes a query by passing it to the database
-
-        :param str sql:
-        :param parameters:
-        :raises DatabaseException: If there is no cursor.
-            Typically because database was used outside of a with
-        """
-        if self.__cursor is None:
-            raise DatabaseException(
-                "This method should only be used inside a with")
-        return self.__cursor.executemany(sql, parameters)
+        return self.__cursor
 
     @property
     def lastrowid(self) -> int:
@@ -267,6 +255,7 @@ class SQLiteDB(object):
         if self.__cursor is None:
             raise DatabaseException(
                 "This method should only be used inside a with")
+        assert self.__cursor.lastrowid is not None
         return self.__cursor.lastrowid
 
     @property
@@ -283,7 +272,7 @@ class SQLiteDB(object):
                 "This method should only be used inside a with")
         return self.__cursor.rowcount
 
-    def fetchone(self):
+    def fetchone(self) -> sqlite3.Row:
         """
         Gets the fetchone from the last query run
 
