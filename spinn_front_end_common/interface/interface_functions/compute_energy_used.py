@@ -24,8 +24,6 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     GlobalProvenance, ProvenanceReader, TimerCategory, TimerWork)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
-from spinn_front_end_common.interface.interface_functions\
-    .load_data_specification import load_using_advanced_monitors
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
         RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
@@ -69,10 +67,8 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
 
         # Separate out processes that are part of the others but that happen
         # on the machine, so we can account for active machine, not idle
-        data_loading_ms = 0
-        if load_using_advanced_monitors():
-            data_loading_ms = db.get_timer_sum_by_work(TimerWork.LOADING_DATA)
-            loading_ms -= data_loading_ms
+        data_loading_ms = db.get_timer_sum_by_work(TimerWork.LOADING_DATA)
+        loading_ms -= data_loading_ms
         data_extraction_ms = 0
         if get_config_bool("Machine", "enable_advanced_monitor_support"):
             data_extraction_ms = db.get_timer_sum_by_work(
@@ -113,14 +109,19 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
             n_active_cores += 1
     n_active_chips = len(active_cores)
 
+    # TODO confirm Power monitors are not included here
+    extra_monitors_per_chip = (version.n_scamp_cores
+                               + FecDataView.get_all_monitor_cores() - 1)
+    extra_monitors_per_board = (version.n_scamp_cores +
+                                FecDataView.get_ethernet_monitor_cores() - 1)
     run_chip_active_time = _extract_cores_active_time(
         checkpoint, active_cores, version)
     load_chip_active_time = _make_extra_monitor_core_use(
-        data_loading_ms, machine, version.n_scamp_cores + 2,
-        version.n_scamp_cores + 1)
+        data_loading_ms, machine, extra_monitors_per_board,
+        extra_monitors_per_chip)
     extraction_chip_active_time = _make_extra_monitor_core_use(
-        data_extraction_ms, machine, version.n_scamp_cores + 2,
-        version.n_scamp_cores + 1)
+        data_extraction_ms, machine, extra_monitors_per_board,
+        extra_monitors_per_chip)
 
     run_router_packets = _extract_router_packets("Run", version)
     load_router_packets = _extract_router_packets("Load", version)
