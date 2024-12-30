@@ -41,7 +41,7 @@ def get_profile_region_size(n_samples: int) -> int:
 
 
 def reserve_profile_region(
-        spec: DataSpecificationGenerator, region: int, n_samples: int):
+        spec: DataSpecificationGenerator, region: int, n_samples: int) -> None:
     """
     Reserves the profile region for recording the profile data.
 
@@ -56,7 +56,7 @@ def reserve_profile_region(
 
 
 def write_profile_region_data(
-        spec: DataSpecificationGenerator, region: int, n_samples: int):
+        spec: DataSpecificationGenerator, region: int, n_samples: int) -> None:
     """
     Writes the profile region data.
 

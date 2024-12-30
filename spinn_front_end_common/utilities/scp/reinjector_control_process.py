@@ -34,7 +34,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
     """
     __slots__ = ()
 
-    def clear_queue(self, core_subsets: CoreSubsets):
+    def clear_queue(self, core_subsets: CoreSubsets) -> None:
         """
         Clear the reinjection queue.
 
@@ -46,7 +46,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
                     self._send_request(ClearReinjectionQueueMessage(
                         core_subset.x, core_subset.y, processor_id))
 
-    def reset_counters(self, core_subsets: CoreSubsets):
+    def reset_counters(self, core_subsets: CoreSubsets) -> None:
         """
         Reset the packet counters.
 
@@ -61,7 +61,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
     @staticmethod
     def __handle_response(
             result: Dict[Chip, ReInjectionStatus],
-            response: GetReinjectionStatusMessageResponse):
+            response: GetReinjectionStatusMessageResponse) -> None:
         """
         :param dict result:
         :param GetReinjectionStatusMessageResponse response:
@@ -113,7 +113,8 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
 
     def set_packet_types(
             self, core_subsets: CoreSubsets, point_to_point: bool,
-            multicast: bool, nearest_neighbour: bool, fixed_route: bool):
+            multicast: bool, nearest_neighbour: bool,
+            fixed_route: bool) -> None:
         """
         Set what types of packets should be reinjected.
 
@@ -131,8 +132,8 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
                         core_subset.x, core_subset.y, processor_id, multicast,
                         point_to_point, fixed_route, nearest_neighbour))
 
-    def set_wait1_timeout(
-            self, mantissa: int, exponent: int, core_subsets: CoreSubsets):
+    def set_wait1_timeout(self, mantissa: int, exponent: int,
+                          core_subsets: CoreSubsets) -> None:
         """
         The wait1 timeout is the time from when a packet is received to
         when emergency routing becomes enabled.
@@ -147,8 +148,8 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
                 self.__set_timeout(
                     core_subset, processor_id, mantissa, exponent, wait=1)
 
-    def set_wait2_timeout(
-            self, mantissa: int, exponent: int, core_subsets: CoreSubsets):
+    def set_wait2_timeout(self, mantissa: int, exponent: int,
+                          core_subsets: CoreSubsets) -> None:
         """
         The wait2 timeout is the time from when a packet has emergency
         routing enabled for it to when it is dropped.
@@ -165,7 +166,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
 
     def __set_timeout(
             self, core: CoreSubset, processor_id: int,
-            mantissa: int, exponent: int, *, wait: int):
+            mantissa: int, exponent: int, *, wait: int) -> None:
         """
         Set a timeout for a router controlled by an extra monitor on a core.
         This is not a parallelised operation in order to aid debugging when

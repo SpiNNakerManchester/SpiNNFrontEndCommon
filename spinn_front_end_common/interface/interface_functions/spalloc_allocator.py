@@ -84,7 +84,7 @@ class SpallocJobController(MachineAllocationController):
         return self._job
 
     @overrides(MachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time: float):
+    def extend_allocation(self, new_total_run_time: float) -> None:
         # Does Nothing in this allocator - machines are held until exit
         pass
 
@@ -193,7 +193,7 @@ class SpallocJobController(MachineAllocationController):
         return self.__use_proxy
 
     @overrides(MachineAllocationController.make_report)
-    def make_report(self, filename: str):
+    def make_report(self, filename: str) -> None:
         with open(filename, "w", encoding="utf-8") as report:
             report.write(f"Job: {self._job}")
 
@@ -217,7 +217,7 @@ class _OldSpallocJobController(MachineAllocationController):
         super().__init__("SpallocJobController", host)
 
     @overrides(MachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time: float):
+    def extend_allocation(self, new_total_run_time: float) -> None:
         # Does Nothing in this allocator - machines are held until exit
         pass
 
@@ -233,7 +233,7 @@ class _OldSpallocJobController(MachineAllocationController):
         """
         return self._job.power
 
-    def set_power(self, power: bool):
+    def set_power(self, power: bool) -> None:
         """
         :param bool power:
         """

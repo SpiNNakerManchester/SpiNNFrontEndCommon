@@ -85,7 +85,8 @@ class DatabaseConnection(UDPConnection):
         thread.daemon = True
         thread.start()
 
-    def add_database_callback(self, database_callback_function: _DBCB):
+    def add_database_callback(
+            self, database_callback_function: _DBCB) -> None:
         """
         Add a database callback to be called when the database is ready.
 
@@ -114,7 +115,7 @@ class DatabaseConnection(UDPConnection):
         finally:
             self.__running = False
 
-    def __process_run_cycle(self, timeout: float):
+    def __process_run_cycle(self, timeout: float) -> None:
         """
         Heart of :py:meth:`__run`.
         """
@@ -133,7 +134,8 @@ class DatabaseConnection(UDPConnection):
         if self.__pause_and_stop_callback is not None:
             self.__pause_stop()
 
-    def __read_db(self, toolchain_address: Tuple[str, int], data: bytes):
+    def __read_db(
+            self, toolchain_address: Tuple[str, int], data: bytes) -> None:
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
@@ -181,7 +183,7 @@ class DatabaseConnection(UDPConnection):
         self.__pause_and_stop_callback()
 
     def __send_command(
-            self, command: CMDS, toolchain_address: Tuple[str, int]):
+            self, command: CMDS, toolchain_address: Tuple[str, int]) -> None:
         self.send_to(EIEIOCommandHeader(command.value).bytestring,
                      toolchain_address)
 

@@ -338,17 +338,20 @@ class DataType(Enum):
         np.int64,
         "0.63 signed fixed point number"))  # rounding problem for max
 
-    def __new__(cls, *args) -> 'DataType':
+    def __new__(cls, value: int, size: int, min_val: Decimal, max_val: Decimal,
+                scale: Decimal, struct_encoding: str, apply_scale: bool,
+                force_cast: Optional[Callable[[Any], int]],
+                numpy_typename: type, _doc: str) -> 'DataType':
         # pylint: disable=protected-access, too-many-arguments
         obj = object.__new__(cls)
-        obj._value_ = args[0]
-        obj.__doc__ = args[-1]
+        obj._value_ = value
+        obj.__doc__ = _doc
         return obj
 
-    def __init__(self, __, size: int, min_val: Decimal, max_val: Decimal,
+    def __init__(self, __: int, size: int, min_val: Decimal, max_val: Decimal,
                  scale: Decimal, struct_encoding: str, apply_scale: bool,
                  force_cast: Optional[Callable[[Any], int]],
-                 numpy_typename: type, _doc: str = ""):
+                 numpy_typename: type, _doc: str) -> None:
         # pylint: disable=protected-access, too-many-arguments
         self._size = size
         self._min = min_val
@@ -391,7 +394,7 @@ class DataType(Enum):
         """
         return self._max
 
-    def check_value(self, value: Union[int, float]):
+    def check_value(self, value: Union[int, float]) -> None:
         """
         Check the value against the allowed min and max
 

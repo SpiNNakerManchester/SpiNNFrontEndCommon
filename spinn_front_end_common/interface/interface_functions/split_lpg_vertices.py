@@ -19,7 +19,7 @@ from spinn_front_end_common.utility_models.live_packet_gather import (
     LivePacketGather, _LPGSplitter)
 
 
-def split_lpg_vertices(system_placements: Placements):
+def split_lpg_vertices(system_placements: Placements) -> None:
     """
     Split any LPG vertices found.
 
