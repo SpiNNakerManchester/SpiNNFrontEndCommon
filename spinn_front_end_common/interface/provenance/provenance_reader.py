@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from typing import Iterable, List, Optional, Sequence, Tuple, Union, cast
+from typing import Iterable, List, Optional, Sequence, Tuple, cast
 from typing_extensions import TypeAlias
 from spinn_utilities.typing.coords import XYP
 from spinn_front_end_common.utilities.base_database import (
@@ -21,7 +21,7 @@ from spinn_front_end_common.utilities.base_database import (
 
 #: Basic types supported natively by SQLite
 _MonitorItem: TypeAlias = Tuple[int, int, _SqliteTypes]
-_RouterItem: TypeAlias = Tuple[int, int, Union[int, float]]
+_RouterItem: TypeAlias = Tuple[int, int, int]
 
 
 class ProvenanceReader(BaseDatabase):
@@ -87,7 +87,7 @@ class ProvenanceReader(BaseDatabase):
             statement
         :rtype: list(tuple or ~sqlite3.Row)
         """
-        return list(self.execute(query, list(params)))
+        return list(self.cursor().execute(query, list(params)))
 
     def cores_with_late_spikes(self) -> List[Tuple[int, int, int, int]]:
         """

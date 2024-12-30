@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS router_provenance(
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
     description STRING NOT NULL,
-    the_value FLOAT NOT NULL,
+    the_value INTEGER NOT NULL,
     expected INTEGER NOT NULL);
 
 -- Compute some basic statistics per router over the router provenance

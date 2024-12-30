@@ -119,8 +119,8 @@ class ChipPowerMonitorMachineVertex(
         return BINARY_FILE_NAME
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(
-            self, spec: DataSpecificationGenerator, placement: Placement):
+    def generate_data_specification(self, spec: DataSpecificationGenerator,
+                                    placement: Placement) -> None:
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -131,7 +131,8 @@ class ChipPowerMonitorMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    def _write_configuration_region(self, spec: DataSpecificationGenerator):
+    def _write_configuration_region(
+            self, spec: DataSpecificationGenerator) -> None:
         """
         Write the data needed by the C code to configure itself.
 
@@ -142,7 +143,7 @@ class ChipPowerMonitorMachineVertex(
         spec.write_value(self.__n_samples_per_recording)
         spec.write_value(self.__sampling_frequency)
 
-    def _write_setup_info(self, spec):
+    def _write_setup_info(self, spec: DataSpecificationGenerator) -> None:
         """
         Writes the system data as required.
 
@@ -160,7 +161,8 @@ class ChipPowerMonitorMachineVertex(
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes))
 
-    def _reserve_memory_regions(self, spec):
+    def _reserve_memory_regions(
+            self, spec: DataSpecificationGenerator) -> None:
         """
         Reserve the DSG memory regions as required.
 

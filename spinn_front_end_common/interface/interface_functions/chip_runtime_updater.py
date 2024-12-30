@@ -17,7 +17,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 
-def chip_runtime_updater(n_sync_steps: int):
+def chip_runtime_updater(n_sync_steps: int) -> None:
     """
     Updates the runtime of an application running on a SpiNNaker machine.
 

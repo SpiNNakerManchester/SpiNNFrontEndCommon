@@ -68,12 +68,12 @@ class _TestMachineVertex(
         return self._requires_regions_to_be_reloaded
 
     @overrides(AbstractRewritesDataSpecification.set_reload_required)
-    def set_reload_required(self, new_value: bool):
+    def set_reload_required(self, new_value: bool) -> None:
         self._requires_regions_to_be_reloaded = new_value
 
     @overrides(AbstractRewritesDataSpecification.regenerate_data_specification)
-    def regenerate_data_specification(
-            self, spec: DataSpecificationReloader, placement: Placement):
+    def regenerate_data_specification(self, spec: DataSpecificationReloader,
+                                      placement: Placement) -> None:
         global regenerate_call_count
         for region_id, size, data in reload_region_data[placement.p]:
             spec.reserve_memory_region(region_id, size)
@@ -91,8 +91,8 @@ class _TestMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(
-            self, spec: DataSpecificationGenerator, placement: Placement):
+    def generate_data_specification(self, spec: DataSpecificationGenerator,
+                                    placement: Placement) -> None:
         raise NotImplementedError()
 
 

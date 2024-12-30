@@ -86,14 +86,14 @@ class GlobalProvenance(SQLiteDB):
         SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE,
                           row_factory=None, text_factory=None)
 
-    def insert_version(self, description: str, the_value: str):
+    def insert_version(self, description: str, the_value: str) -> None:
         """
         Inserts data into the version_provenance table
 
         :param str description: The package for which the version applies
         :param str the_value: The version to be recorded
         """
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO version_provenance(
                 description, the_value)
@@ -114,7 +114,8 @@ class GlobalProvenance(SQLiteDB):
             """,
             [FecDataView.get_run_number(), FecDataView.get_reset_number()])
 
-    def insert_category(self, category: TimerCategory, machine_on: bool):
+    def insert_category(
+            self, category: TimerCategory, machine_on: bool) -> int:
         """
         Inserts category into the category_timer_provenance  returning id
 
@@ -122,7 +123,7 @@ class GlobalProvenance(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO category_timer_provenance(
                 category, machine_on, n_run, n_loop)
@@ -133,7 +134,8 @@ class GlobalProvenance(SQLiteDB):
              FecDataView.get_run_step()])
         return self.lastrowid
 
-    def insert_category_timing(self, category_id: int, delta: timedelta):
+    def insert_category_timing(
+            self, category_id: int, delta: timedelta) -> None:
         """
         Inserts run time into the category
 
@@ -144,7 +146,7 @@ class GlobalProvenance(SQLiteDB):
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (delta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
-        self.execute(
+        self.cursor().execute(
             """
             UPDATE category_timer_provenance
             SET
@@ -154,7 +156,7 @@ class GlobalProvenance(SQLiteDB):
 
     def insert_timing(
             self, category: int, algorithm: str, work: TimerWork,
-            delta: timedelta, skip_reason: Optional[str]):
+            delta: timedelta, skip_reason: Optional[str]) -> None:
         """
         Inserts algorithms run times into the timer_provenance table
 
@@ -169,7 +171,7 @@ class GlobalProvenance(SQLiteDB):
         time_taken = (
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (delta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO timer_provenance(
                 category_id, algorithm, work, time_taken, skip_reason)
@@ -178,7 +180,7 @@ class GlobalProvenance(SQLiteDB):
             [category, algorithm, work.work_name, time_taken, skip_reason])
 
     def store_log(self, level: int, message: str,
-                  timestamp: Optional[datetime] = None):
+                  timestamp: Optional[datetime] = None) -> None:
         """
         Stores log messages into the database
 
@@ -187,7 +189,7 @@ class GlobalProvenance(SQLiteDB):
         """
         if timestamp is None:
             timestamp = datetime.now()
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO p_log_provenance(
                 timestamp, level, message)
@@ -195,14 +197,14 @@ class GlobalProvenance(SQLiteDB):
             """,
             [timestamp, level, message])
 
-    def _test_log_locked(self, text: str):
+    def _test_log_locked(self, text: str) -> None:
         """
         THIS IS A TESTING METHOD.
 
         This will lock the database and then try to do a log
         """
         # lock the database
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO version_provenance(
                 description, the_value)
@@ -242,7 +244,7 @@ class GlobalProvenance(SQLiteDB):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
-        for row in self.execute(query, list(params)):
+        for row in self.cursor().execute(query, list(params)):
             results.append(row)
         return results
 

@@ -55,7 +55,7 @@ class _GraphBinaryGatherer(object):
 
         return self._exe_targets
 
-    def __get_binary(self, placement: Placement):
+    def __get_binary(self, placement: Placement) -> None:
         """
         :param ~pacman.model.placements.Placement placement:
         """

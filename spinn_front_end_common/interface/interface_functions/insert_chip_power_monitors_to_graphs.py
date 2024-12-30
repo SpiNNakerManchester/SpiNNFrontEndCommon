@@ -32,7 +32,7 @@ def sample_chip_power_monitor() -> ChipPowerMonitorMachineVertex:
         "Sample ChipPowerMonitorMachineVertex")
 
 
-def insert_chip_power_monitors_to_graphs(placements: Placements):
+def insert_chip_power_monitors_to_graphs(placements: Placements) -> None:
     """
     Adds chip power monitors into a given graph.
 

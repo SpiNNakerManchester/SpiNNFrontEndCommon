@@ -46,7 +46,8 @@ def locate_executable_start_type() -> Dict[ExecutableType, CoreSubsets]:
     return binary_start_types
 
 
-def __add_vertex_to_subset(placement: Placement, core_subsets: CoreSubsets):
+def __add_vertex_to_subset(
+        placement: Placement, core_subsets: CoreSubsets) -> None:
     """
     :param ~.Placement placement:
     :param ~.CoreSubsets core_subsets:

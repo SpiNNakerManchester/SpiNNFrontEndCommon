@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 from spinn_utilities.config_holder import (
     get_config_int_or_none, get_config_bool)
 from spinn_utilities.log import FormatAdapter
@@ -53,7 +53,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         super().__init__(database_file)
 
-    def insert_power(self, description: str, the_value: _SqliteTypes):
+    def insert_power(self, description: str, the_value: _SqliteTypes) -> None:
         """
         Inserts a general power value into the `power_provenance` table.
 
@@ -63,7 +63,7 @@ class ProvenanceWriter(BaseDatabase):
         if not get_config_bool("Reports", "write_provenance"):
             return
         run = FecDataView.get_run_number()
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO power_provenance(
                 run, description, the_value)
@@ -72,7 +72,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_gatherer(
             self, x: int, y: int, address: int, bytes_read: int, run: int,
-            description: str, the_value: _SqliteTypes):
+            description: str, the_value: _SqliteTypes) -> None:
         """
         Records provenance into the `gatherer_provenance` table.
 
@@ -86,15 +86,15 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO gatherer_provenance(
                 x, y, address, bytes, run, description, the_value)
             VALUES(?, ?, ?, ?, ?, ?, ?)
             """, [x, y, address, bytes_read, run, description, the_value])
 
-    def insert_monitor(
-            self, x: int, y: int, description: str, the_value: _SqliteTypes):
+    def insert_monitor(self, x: int, y: int, description: str,
+                       the_value: _SqliteTypes) -> None:
         """
         Inserts data into the `monitor_provenance` table.
 
@@ -108,8 +108,8 @@ class ProvenanceWriter(BaseDatabase):
         if get_config_bool("Reports", "write_provenance"):
             self.insert_monitor_value(x, y, description, the_value)
 
-    def insert_monitor_value(
-            self, x: int, y: int, description: str, the_value: _SqliteTypes):
+    def insert_monitor_value(self, x: int, y: int, description: str,
+                             the_value: _SqliteTypes) -> None:
         """
         Inserts data into the `monitor_provenance` table.
 
@@ -118,9 +118,9 @@ class ProvenanceWriter(BaseDatabase):
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
         :param str description: type of value
-        :param int the_value: data
+        :param the_value: data
         """
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO monitor_provenance(
                 x, y, description, the_value)
@@ -129,8 +129,8 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_router(
             self, x: int, y: int, description: str,
-            the_value: Union[int, float],
-            expected: bool = True):
+            the_value: int,
+            expected: bool = True) -> None:
         """
         Inserts data into the `router_provenance` table.
 
@@ -143,7 +143,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO router_provenance(
                 x, y, description, the_value, expected)
@@ -152,7 +152,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_core(
             self, x: int, y: int, p: int, description: str,
-            the_value: _SqliteTypes):
+            the_value: _SqliteTypes) -> None:
         """
         Inserts data for a specific core into the `core_provenance` table.
 
@@ -165,14 +165,14 @@ class ProvenanceWriter(BaseDatabase):
         if not get_config_bool("Reports", "write_provenance"):
             return
         core_id = self._get_core_id(x, y, p)
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO core_provenance(
                 core_id, description, the_value)
             VALUES(?, ?, ?)
             """, [core_id, description, the_value])
 
-    def insert_report(self, message: str):
+    def insert_report(self, message: str) -> None:
         """
         Save and if applicable logs a message to the `reports` table.
 
@@ -184,7 +184,7 @@ class ProvenanceWriter(BaseDatabase):
         if not get_config_bool("Reports", "write_provenance"):
             logger.warning(message)
             return
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO reports(message)
             VALUES(?)
@@ -201,7 +201,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_connector(
             self, pre_population: str, post_population: str, the_type: str,
-            description: str, the_value: _SqliteTypes):
+            description: str, the_value: _SqliteTypes) -> None:
         """
         Inserts edge data into the `connector_provenance`
 
@@ -213,7 +213,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
-        self.execute(
+        self.cursor().execute(
             """
             INSERT OR IGNORE INTO connector_provenance(
                 pre_population, post_population, the_type, description,
@@ -224,7 +224,7 @@ class ProvenanceWriter(BaseDatabase):
              the_value])
 
     def insert_board_provenance(self, connections: Optional[
-            Dict[Tuple[int, int], str]]):
+            Dict[Tuple[int, int], str]]) -> None:
         """
         Write the connection details retrieved from spalloc_client job to the
         `boards_provenance` table.
@@ -236,7 +236,7 @@ class ProvenanceWriter(BaseDatabase):
             return
         if not connections:
             return
-        self.executemany(
+        self.cursor().executemany(
             """
             INSERT OR IGNORE INTO boards_provenance(
             ethernet_x, ethernet_y, ip_addres)
@@ -244,14 +244,14 @@ class ProvenanceWriter(BaseDatabase):
             """, ((x, y, ipaddress)
                   for ((x, y), ipaddress) in connections.items()))
 
-    def _test_log_locked(self, text):
+    def _test_log_locked(self, text: str) -> None:
         """
         THIS IS A TESTING METHOD.
 
         This will lock the database and then try to do a log
         """
         # lock the database
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO reports(message)
             VALUES(?)

@@ -28,7 +28,7 @@ class AbstractProvidesProvenanceDataFromMachine(
     __slots__ = ()
 
     @abstractmethod
-    def get_provenance_data_from_machine(self, placement: Placement):
+    def get_provenance_data_from_machine(self, placement: Placement) -> None:
         """
         Get provenance data items for a placement and store them in the
         provenance DB.

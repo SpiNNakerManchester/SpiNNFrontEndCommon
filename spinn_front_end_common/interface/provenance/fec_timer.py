@@ -17,7 +17,9 @@ import logging
 import os
 import time
 from datetime import timedelta
-from typing import List, Optional, Tuple, Union, TYPE_CHECKING
+from typing import List, Optional, Tuple, Type, Union, TYPE_CHECKING
+from types import TracebackType
+
 from typing_extensions import Literal, Self
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
@@ -60,7 +62,7 @@ class FecTimer(object):
     APPLICATION_RUNNER = "Application runner"
 
     @classmethod
-    def setup(cls, simulator: AbstractSpinnakerBase):
+    def setup(cls, simulator: AbstractSpinnakerBase) -> None:
         """
         Checks and saves cfg values so they don't have to be read each time
 
@@ -86,7 +88,7 @@ class FecTimer(object):
         self._start_time = time.perf_counter_ns()
         return self
 
-    def _report(self, message: str):
+    def _report(self, message: str) -> None:
         if self._provenance_path is not None:
             with open(self._provenance_path, "a", encoding="utf-8") as p_file:
                 p_file.write(f"{message}\n")
@@ -94,14 +96,14 @@ class FecTimer(object):
             logger.info(message)
 
     def _insert_timing(
-            self, time_taken: timedelta, skip_reason: Optional[str]):
+            self, time_taken: timedelta, skip_reason: Optional[str]) -> None:
         if self._category_id is not None:
             with GlobalProvenance() as db:
                 db.insert_timing(
                     self._category_id, self._algorithm, self._work,
                     time_taken, skip_reason)
 
-    def skip(self, reason: str):
+    def skip(self, reason: str) -> None:
         """
         Records that the algorithms is being skipped and ends the timer.
 
@@ -254,7 +256,7 @@ class FecTimer(object):
         self.skip(reason)
         return True
 
-    def error(self, reason: str):
+    def error(self, reason: str) -> None:
         """
          Ends an algorithm timing and records that it failed.
 
@@ -288,7 +290,9 @@ class FecTimer(object):
         """
         return timedelta(microseconds=time_diff / _NANO_TO_MICRO)
 
-    def __exit__(self, exc_type, exc_value, traceback) -> Literal[False]:
+    def __exit__(self, exc_type: Optional[Type],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Literal[False]:
         if self._start_time is None:
             return False
         time_taken = self._stop_timer()
@@ -325,7 +329,7 @@ class FecTimer(object):
         return time_now
 
     @classmethod
-    def _change_category(cls, category: TimerCategory):
+    def _change_category(cls, category: TimerCategory) -> None:
         """
         This method should only be called via the View!
 
@@ -338,7 +342,8 @@ class FecTimer(object):
         cls._category_time = time_now
 
     @classmethod
-    def start_category(cls, category: TimerCategory, machine_on=None):
+    def start_category(cls, category: TimerCategory,
+                       machine_on: Optional[bool] = None) -> None:
         """
         This method should only be called via the View!
 
@@ -355,7 +360,7 @@ class FecTimer(object):
             cls._machine_on = machine_on
 
     @classmethod
-    def end_category(cls, category: TimerCategory):
+    def end_category(cls, category: TimerCategory) -> None:
         """
         This method should only be
         called via the View!

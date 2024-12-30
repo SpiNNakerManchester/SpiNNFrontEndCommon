@@ -103,7 +103,7 @@ class _RouterProvenanceGatherer(object):
     def _add_unseen_router_chip_diagnostic(
             self, chip: Chip,
             reinjection_data: Optional[Dict[Chip, ReInjectionStatus]],
-            prefix: str):
+            prefix: str) -> None:
         """
         :param ~.Chip chip:
         :param dict(Chip,ReInjectionStatus) reinjection_data:
@@ -135,7 +135,7 @@ class _RouterProvenanceGatherer(object):
             self, chip: Chip, diagnostics: RouterDiagnostics,
             status: Optional[ReInjectionStatus], expected: bool,
             table: Optional[AbstractMulticastRoutingTable],
-            prefix: str):
+            prefix: str) -> None:
         """
         Describes the router diagnostics for one router.
 
