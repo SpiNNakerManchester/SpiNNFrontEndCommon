@@ -52,7 +52,7 @@ def database_interface(runtime: Optional[float]) -> Optional[str]:
         return writer.database_path
 
 
-def _write_to_db(w: DatabaseWriter, runtime: Optional[float]):
+def _write_to_db(w: DatabaseWriter, runtime: Optional[float]) -> None:
     """
     :param DatabaseWriter w:
     :param int runtime:

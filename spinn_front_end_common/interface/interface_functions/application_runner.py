@@ -152,8 +152,8 @@ class _ApplicationRunner(object):
         notification_interface.send_stop_pause_notification()
         return latest_runtime
 
-    def _run_wait(
-            self, runtime: Optional[float], time_threshold: Optional[float]):
+    def _run_wait(self, runtime: Optional[float],
+                  time_threshold: Optional[float]) -> None:
         """
         :param int runtime:
         :param float time_threshold:
@@ -169,7 +169,7 @@ class _ApplicationRunner(object):
         sleep(time_to_wait)
         self._wait_for_end(timeout=time_threshold)
 
-    def _wait_for_start(self, timeout: Optional[float] = None):
+    def _wait_for_start(self, timeout: Optional[float] = None) -> None:
         """
         :param timeout:
         :type timeout: float or None
@@ -194,7 +194,7 @@ class _ApplicationRunner(object):
                 # fire all signals as required
                 self.__txrx.send_signal(self.__app_id, sync_signal)
 
-    def _wait_for_end(self, timeout: Optional[float] = None):
+    def _wait_for_end(self, timeout: Optional[float] = None) -> None:
         """
         :param timeout:
         :type timeout: float or None

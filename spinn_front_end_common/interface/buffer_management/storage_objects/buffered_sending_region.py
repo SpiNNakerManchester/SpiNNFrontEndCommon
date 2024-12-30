@@ -72,7 +72,7 @@ class BufferedSendingRegion(object):
         self._timestamps: List[int] = list()
         self._current_timestamp_pos: int = 0
 
-    def add_key(self, timestamp: int, key: int):
+    def add_key(self, timestamp: int, key: int) -> None:
         """
         Add a key to be sent at a given time.
 
@@ -84,7 +84,7 @@ class BufferedSendingRegion(object):
             self._buffer[timestamp] = list()
         self._buffer[timestamp].append(key)
 
-    def add_keys(self, timestamp: int, keys: Iterable[int]):
+    def add_keys(self, timestamp: int, keys: Iterable[int]) -> None:
         """
         Add a set of keys to be sent at the given time.
 

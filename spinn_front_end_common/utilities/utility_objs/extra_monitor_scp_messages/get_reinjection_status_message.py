@@ -32,7 +32,7 @@ class GetReinjectionStatusMessage(
     """
     __slots__ = ()
 
-    def __init__(self, x: int, y: int, p: int):
+    def __init__(self, x: int, y: int, p: int) -> None:
         """
         :param int x: The x-coordinate of a chip, between 0 and 255
         :param int y: The y-coordinate of a chip, between 0 and 255
@@ -66,7 +66,7 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
         self._command_code = command_code
 
     @overrides(AbstractSCPResponse.read_data_bytestring)
-    def read_data_bytestring(self, data: bytes, offset: int):
+    def read_data_bytestring(self, data: bytes, offset: int) -> None:
         result = self.scp_response_header.result
         if result != SCPResult.RC_OK:
             raise SpinnmanUnexpectedResponseCodeException(

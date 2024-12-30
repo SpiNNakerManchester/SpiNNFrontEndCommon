@@ -45,7 +45,7 @@ class DataType(Enum):
         represent them and lack of hardware/library support.
     """
     #: 8-bit unsigned integer
-    UINT8: 'DataType' = cast('DataType', (
+    UINT8 = (
         0,
         1,
         Decimal("0"),
@@ -55,9 +55,9 @@ class DataType(Enum):
         False,
         int,
         np.uint8,
-        "8-bit unsigned integer"))
+        "8-bit unsigned integer")
     #: 16-bit unsigned integer
-    UINT16: 'DataType' = cast('DataType', (
+    UINT16 = (
         1,
         2,
         Decimal("0"),
@@ -67,9 +67,9 @@ class DataType(Enum):
         False,
         int,
         np.uint16,
-        "16-bit unsigned integer"))
+        "16-bit unsigned integer")
     #: 32-bit unsigned integer
-    UINT32: 'DataType' = cast('DataType', (
+    UINT32 = (
         2,
         4,
         Decimal("0"),
@@ -79,9 +79,9 @@ class DataType(Enum):
         False,
         int,
         uint32,
-        "32-bit unsigned integer"))
+        "32-bit unsigned integer")
     #: 64-bit unsigned integer
-    UINT64: 'DataType' = cast('DataType', (
+    UINT64 = (
         3,
         8,
         Decimal("0"),
@@ -91,9 +91,9 @@ class DataType(Enum):
         False,
         int,
         np.uint64,
-        "64-bit unsigned integer"))
+        "64-bit unsigned integer")
     #: 8-bit signed integer
-    INT8: 'DataType' = cast('DataType', (
+    INT8 = (
         4,
         1,
         Decimal("-128"),
@@ -103,9 +103,9 @@ class DataType(Enum):
         False,
         int,
         np.int8,
-        "8-bit signed integer"))
+        "8-bit signed integer")
     #: 16-bit signed integer
-    INT16: 'DataType' = cast('DataType', (
+    INT16 = (
         5,
         2,
         Decimal("-32768"),
@@ -115,9 +115,9 @@ class DataType(Enum):
         False,
         int,
         np.int16,
-        "16-bit signed integer"))
+        "16-bit signed integer")
     #: 32-bit signed integer
-    INT32: 'DataType' = cast('DataType', (
+    INT32 = (
         6,
         4,
         Decimal("-2147483648"),
@@ -127,9 +127,9 @@ class DataType(Enum):
         False,
         int,
         np.int32,
-        "32-bit signed integer"))
+        "32-bit signed integer")
     #: 64-bit signed integer
-    INT64: 'DataType' = cast('DataType', (
+    INT64 = (
         7,
         8,
         Decimal("-9223372036854775808"),
@@ -139,9 +139,9 @@ class DataType(Enum):
         False,
         int,
         np.int64,
-        "64-bit signed integer"))
+        "64-bit signed integer")
     #: 8.8 unsigned fixed point number
-    U88: 'DataType' = cast('DataType', (
+    U88 = (
         8,
         2,
         Decimal("0"),
@@ -151,9 +151,9 @@ class DataType(Enum):
         True,
         None,
         np.uint16,
-        "8.8 unsigned fixed point number"))
+        "8.8 unsigned fixed point number")
     #: 16.16 unsigned fixed point number
-    U1616: 'DataType' = cast('DataType', (
+    U1616 = (
         9,
         4,
         Decimal("0"),
@@ -163,10 +163,10 @@ class DataType(Enum):
         True,
         None,
         uint32,
-        "16.16 unsigned fixed point number"))
+        "16.16 unsigned fixed point number")
     #: 32.32 unsigned fixed point number
     #: (use *not* recommended: representability)
-    U3232: 'DataType' = cast('DataType', (
+    U3232 = (
         10,
         8,
         Decimal("0"),
@@ -176,9 +176,9 @@ class DataType(Enum):
         True,
         None,
         np.uint64,
-        "32.32 unsigned fixed point number"))  # rounding problem for max
+        "32.32 unsigned fixed point number")  # rounding problem for max
     #: 8.7 signed fixed point number
-    S87: 'DataType' = cast('DataType', (
+    S87 = (
         11,
         2,
         Decimal("-256"),
@@ -188,9 +188,9 @@ class DataType(Enum):
         True,
         None,
         np.int16,
-        "8.7 signed fixed point number"))
+        "8.7 signed fixed point number")
     #: 16.15 signed fixed point number
-    S1615: 'DataType' = cast('DataType', (
+    S1615 = (
         12,
         4,
         Decimal("-65536"),
@@ -200,10 +200,10 @@ class DataType(Enum):
         True,
         None,
         np.int32,
-        "16.15 signed fixed point number"))
+        "16.15 signed fixed point number")
     #: 32.31 signed fixed point number
     #: (use *not* recommended: representability)
-    S3231: 'DataType' = cast('DataType', (
+    S3231 = (
         13,
         8,
         Decimal("-4294967296"),
@@ -213,9 +213,9 @@ class DataType(Enum):
         True,
         None,
         np.int64,
-        "32.31 signed fixed point number"))  # rounding problem for max
+        "32.31 signed fixed point number")  # rounding problem for max
     #: 32-bit floating point number
-    FLOAT_32: 'DataType' = cast('DataType', (
+    FLOAT_3 = (
         14,
         4,
         Decimal("-3.4028234e38"),
@@ -225,10 +225,10 @@ class DataType(Enum):
         False,
         float,
         np.float32,
-        "32-bit floating point number"))
+        "32-bit floating point number")
     #: 64-bit floating point number
     #: (use *not* recommended: hardware/library support inadequate)
-    FLOAT_64: 'DataType' = cast('DataType', (
+    FLOAT_64 = (
         15,
         8,
         Decimal("-1.7976931348623157e+308"),
@@ -238,9 +238,9 @@ class DataType(Enum):
         False,
         float,
         np.float64,
-        "64-bit floating point number"))
+        "64-bit floating point number")
     #: 0.8 unsigned fixed point number
-    U08: 'DataType' = cast('DataType', (
+    U08 = (
         16,
         1,
         Decimal("0"),
@@ -250,9 +250,9 @@ class DataType(Enum):
         True,
         None,
         np.uint16,
-        "0.8 unsigned fixed point number"))
+        "0.8 unsigned fixed point number")
     #: 0.16 unsigned fixed point number
-    U016: 'DataType' = cast('DataType', (
+    U016 = (
         17,
         2,
         Decimal("0"),
@@ -262,9 +262,9 @@ class DataType(Enum):
         True,
         None,
         np.uint16,
-        "0.16 unsigned fixed point number"))
+        "0.16 unsigned fixed point number")
     #: 0.32 unsigned fixed point number
-    U032: 'DataType' = cast('DataType', (
+    U032 = (
         18,
         4,
         Decimal("0"),
@@ -274,10 +274,10 @@ class DataType(Enum):
         True,
         None,
         uint32,
-        "0.32 unsigned fixed point number"))
+        "0.32 unsigned fixed point number")
     #: 0.64 unsigned fixed point number
     #: (use *not* recommended: representability)
-    U064: 'DataType' = cast('DataType', (
+    U064 = (
         19,
         8,
         Decimal("0"),
@@ -287,9 +287,9 @@ class DataType(Enum):
         True,
         None,
         np.uint64,
-        "0.64 unsigned fixed point number"))  # rounding problem for max
+        "0.64 unsigned fixed point number")  # rounding problem for max
     #: 0.7 signed fixed point number
-    S07: 'DataType' = cast('DataType', (
+    S07 = (
         20,
         1,
         Decimal("-1"),
@@ -299,9 +299,9 @@ class DataType(Enum):
         True,
         None,
         np.int8,
-        "0.7 signed fixed point number"))
+        "0.7 signed fixed point number")
     #: 0.15 signed fixed point number
-    S015: 'DataType' = cast('DataType', (
+    S015 = (
         21,
         2,
         Decimal("-1"),
@@ -311,9 +311,9 @@ class DataType(Enum):
         True,
         None,
         np.int16,
-        "0.15 signed fixed point number"))
+        "0.15 signed fixed point number")
     #: 0.32 signed fixed point number
-    S031: 'DataType' = cast('DataType', (
+    S031 = (
         22,
         4,
         Decimal("-1"),
@@ -323,10 +323,10 @@ class DataType(Enum):
         True,
         None,
         np.int32,
-        "0.32 signed fixed point number"))
+        "0.32 signed fixed point number")
     #: 0.63 signed fixed point number
     #: (use *not* recommended: representability)
-    S063: 'DataType' = cast('DataType', (
+    S063 = (
         23,
         8,
         Decimal("-1"),
@@ -336,19 +336,22 @@ class DataType(Enum):
         True,
         None,
         np.int64,
-        "0.63 signed fixed point number"))  # rounding problem for max
+        "0.63 signed fixed point number")  # rounding problem for max
 
-    def __new__(cls, *args) -> 'DataType':
+    def __new__(cls, value: int, size: int, min_val: Decimal, max_val: Decimal,
+                scale: Decimal, struct_encoding: str, apply_scale: bool,
+                force_cast: Optional[Callable[[Any], int]],
+                numpy_typename: type, _doc: str) -> 'DataType':
         # pylint: disable=protected-access, too-many-arguments
         obj = object.__new__(cls)
-        obj._value_ = args[0]
-        obj.__doc__ = args[-1]
+        obj._value_ = value
+        obj.__doc__ = _doc
         return obj
 
-    def __init__(self, __, size: int, min_val: Decimal, max_val: Decimal,
+    def __init__(self, __: int, size: int, min_val: Decimal, max_val: Decimal,
                  scale: Decimal, struct_encoding: str, apply_scale: bool,
                  force_cast: Optional[Callable[[Any], int]],
-                 numpy_typename: type, _doc: str = ""):
+                 numpy_typename: type, _doc: str) -> None:
         # pylint: disable=protected-access, too-many-arguments
         self._size = size
         self._min = min_val
@@ -391,7 +394,7 @@ class DataType(Enum):
         """
         return self._max
 
-    def check_value(self, value: Union[int, float]):
+    def check_value(self, value: Union[int, float]) -> None:
         """
         Check the value against the allowed min and max
 

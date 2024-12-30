@@ -38,7 +38,7 @@ _lock_condition = threading.Condition()
 T = TypeVar("T")
 
 
-def _mkdir(directory: str):
+def _mkdir(directory: str) -> None:
     """
     Make a directory if it doesn't exist.
 
@@ -141,7 +141,7 @@ def parse_old_spalloc(
 def retarget_tag(
         connection: Union[SpallocEIEIOListener, SpallocEIEIOConnection,
                           SCAMPConnection], x: int, y: int, tag: int,
-        ip_address: Optional[str] = None, strip: bool = True):
+        ip_address: Optional[str] = None, strip: bool = True) -> None:
     """
     Make a tag deliver to the given connection.
 
