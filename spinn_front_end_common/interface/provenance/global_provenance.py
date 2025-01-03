@@ -106,7 +106,7 @@ class GlobalProvenance(SQLiteDB):
 
         :return:
         """
-        self.execute(
+        self.cursor().execute(
             """
             INSERT INTO run_reset_mapping(
                 n_run, n_reset)
