@@ -227,6 +227,7 @@ def _extract_cores_active_time(
             chip_activity[x, y] = (activity_times.sum(), n_cores)
     return chip_activity
 
+
 def _assume_core_always_active(
         active_cores: Dict[Tuple[int, int], int],
         execute_on_machine_ms: float) -> ChipActiveTime:
@@ -244,6 +245,7 @@ def _assume_core_always_active(
         chip_activity[x, y] = (
             (execute_on_machine_ms * n_cores) / _MS_PER_SECOND, n_cores)
     return chip_activity
+
 
 def _make_extra_monitor_core_use(
         time_ms: int, machine: Machine, extra_monitors_per_board: int,
