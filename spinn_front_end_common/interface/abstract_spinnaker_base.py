@@ -530,7 +530,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _run(self, run_time: Optional[float], sync_time: float) -> None:
         self._data_writer.start_run()
-
+        with GlobalProvenance() as db:
+            db.insert_run_reset_mapping()
         try:
             self.__run(run_time, sync_time)
             self._data_writer.finish_run()
