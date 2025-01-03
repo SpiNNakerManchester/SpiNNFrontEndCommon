@@ -13,13 +13,20 @@
 # limitations under the License.
 
 from collections import defaultdict
+import logging
 from typing import Final, Optional, cast, Dict, Tuple
+
 import numpy
+
 from spinn_utilities.config_holder import get_config_bool, get_config_int
+from spinn_utilities.log import FormatAdapter
+
 from spinn_machine import Machine
 from spinn_machine.version.abstract_version import (
     AbstractVersion, ChipActiveTime, RouterPackets)
+
 from spinnman.model.enums.executable_type import ExecutableType
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     GlobalProvenance, ProvenanceReader, TimerCategory, TimerWork)
@@ -30,6 +37,8 @@ from spinn_front_end_common.utility_models\
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 #: milliseconds per second
 _MS_PER_SECOND: Final = 1000.0
@@ -123,8 +132,12 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
                                + FecDataView.get_all_monitor_cores() - 1)
     extra_monitors_per_board = (version.n_scamp_cores +
                                 FecDataView.get_ethernet_monitor_cores() - 1)
-    run_chip_active_time = _extract_cores_active_time(
-        checkpoint, active_cores, power_cores, version)
+    if get_config_bool("Reports", "write_energy_report"):
+        run_chip_active_time = _extract_cores_active_time(
+            checkpoint, active_cores, power_cores, version)
+    else:
+        run_chip_active_time = _assume_core_always_active(
+            active_cores, execute_on_machine_ms)
     load_chip_active_time = _make_extra_monitor_core_use(
         data_loading_ms, machine, extra_monitors_per_board,
         extra_monitors_per_chip)
@@ -212,6 +225,25 @@ def _extract_cores_active_time(
             if checkpoint is not None:
                 activity_times = activity_times[record_times < checkpoint]
             chip_activity[x, y] = (activity_times.sum(), n_cores)
+    return chip_activity
+
+
+def _assume_core_always_active(
+        active_cores: Dict[Tuple[int, int], int],
+        execute_on_machine_ms: float) -> ChipActiveTime:
+    """
+    As there are no power monitors assume cores always active
+
+    """
+    logger.warning(
+        "Energy monitoring cores not enabled, assuming all cores were"
+        " active for whole run time.  To get a better energy estimate,"
+        " set write_energy_report=True in the [Reports] section of the"
+        " configuration file")
+    chip_activity: ChipActiveTime = {}
+    for (x, y), n_cores in active_cores.items():
+        chip_activity[x, y] = (
+            (execute_on_machine_ms * n_cores) / _MS_PER_SECOND, n_cores)
     return chip_activity
 
 
