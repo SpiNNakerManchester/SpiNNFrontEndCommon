@@ -16,7 +16,7 @@ from enum import Enum
 import numpy
 
 # conversion from words to bytes
-BYTES_PER_WORD = 4
+BYTES_PER_WORD: int = 4
 # pylint: disable=invalid-name
 BYTES_PER_4_WORDS = 16
 BYTES_PER_SHORT = 2
