@@ -596,7 +596,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.get_app_id())
             self._data_writer.reset_sync_signal()
 
-    def __run(self, run_time: Optional[float], sync_time: float):
+    def __run(self, run_time: Optional[float], sync_time: float) -> None:
         """
         The main internal run function.
 
