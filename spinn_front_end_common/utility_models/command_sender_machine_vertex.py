@@ -135,13 +135,17 @@ class CommandSenderMachineVertex(
         command_keys: Set[int] = set()
         self._vertex_to_key_map[vertex_to_send_to] = set()
 
-        # update holders
-        self._commands_at_start_resume.extend(start_resume_commands)
-        self._commands_at_pause_stop.extend(pause_stop_commands)
-        self._timed_commands.extend(timed_commands)
+        # We need to hold these properly, as they might be generators!
+        sr_commands = list(start_resume_commands)
+        ps_commands = list(pause_stop_commands)
+        t_commands = list(timed_commands)
 
-        for commands in (
-                start_resume_commands, pause_stop_commands, timed_commands):
+        # update holders
+        self._commands_at_start_resume.extend(sr_commands)
+        self._commands_at_pause_stop.extend(ps_commands)
+        self._timed_commands.extend(t_commands)
+
+        for commands in (sr_commands, ps_commands, t_commands):
             for command in commands:
                 # track keys
                 command_keys.add(command.key)
