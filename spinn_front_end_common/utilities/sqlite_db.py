@@ -26,7 +26,7 @@ from typing_extensions import Self
 
 from pacman.exceptions import PacmanValueError
 
-from spinn_front_end_common.utilities.utility_calls import file_not_found
+from spinn_front_end_common.utilities.utility_calls import check_file_exists
 from spinn_front_end_common.utilities.exceptions import DatabaseException
 
 logger = logging.getLogger(__name__)
@@ -120,8 +120,7 @@ class SQLiteDB(object):
             self.__db = sqlite3.connect(":memory:")  # Magic name!
             # in-memory DB is never read-only
         elif read_only:
-            if not os.path.exists(database_file):
-                raise file_not_found(f"no such DB: {database_file}")
+            check_file_exists(database_file)
             db_uri = pathlib.Path(os.path.abspath(database_file)).as_uri()
             # https://stackoverflow.com/a/21794758/301832
             self.__db = sqlite3.connect(

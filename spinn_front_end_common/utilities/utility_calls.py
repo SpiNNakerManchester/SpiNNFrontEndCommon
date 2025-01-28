@@ -19,7 +19,7 @@ Utility calls for interpreting bits of the DSG
 import io
 import os
 import threading
-from typing import (Never, Optional, Union, TextIO, Tuple, TypeVar)
+from typing import (Optional, Union, TextIO, Tuple, TypeVar)
 from urllib.parse import urlparse
 from spinn_utilities.config_holder import get_config_bool
 from spinn_machine import Chip
@@ -214,26 +214,36 @@ def pick_core_for_system_placement(
     return cores[system_placements.n_placements_on_chip(chip)]
 
 
-def file_not_found(message: str) -> Never:
+def check_file_exists(path: str) -> None:
     """
-    Try to better explain what when wrong for a file not found.
+    Check to see a file that should exist does
 
-    :param message: Message without more explanation
+    Raises an exception if it does not
+
+    :param path: path to file that should exist
+    :raises FileNotFoundError: If the path does not exists
     """
+    if os.path.exists(path):
+       return
+
     if FecDataView.is_shutdown():
         mode = get_config_str("Mode", "mode").lower()
         if mode == "production":
             raise FileNotFoundError(
                 f"In Mode production many files are deleted on end. "
-                f"This likely caused {message}")
+                f"That may explain missing {path}")
         else:
             raise FileNotFoundError(
                 f"end has been been called. "
-                f"This likely caused {message}")
+                f"That may explain missing {path}")
+    elif FecDataView.is_reset_last():
+        raise FileNotFoundError(
+            f"reset has been been called. "
+            f"That may explain missing {path}")
     elif FecDataView.is_ran_ever():
         # no clear reason
-        raise FileNotFoundError(message)
+        raise FileNotFoundError(path)
     else:
         raise FileNotFoundError(
             f"Simulation has never run. "
-            f"This likely caused {message}")
+            f"That may explain missing {path}")
