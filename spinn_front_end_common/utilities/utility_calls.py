@@ -20,14 +20,21 @@ import io
 import os
 import threading
 from typing import (Optional, Union, TextIO, Tuple, TypeVar)
+
 from urllib.parse import urlparse
+
 from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import get_config_str
+
 from spinn_machine import Chip
+
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.utilities.utility_functions import (
     reprogram_tag, reprogram_tag_to_listener)
 from spinnman.spalloc import SpallocEIEIOListener, SpallocEIEIOConnection
+
 from pacman.model.placements import Placements
+
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from spinn_front_end_common.data import FecDataView
@@ -211,3 +218,38 @@ def pick_core_for_system_placement(
     """
     cores = chip.placable_processors_ids
     return cores[system_placements.n_placements_on_chip(chip)]
+
+
+def check_file_exists(path: str) -> None:
+    """
+    Check to see a file that should exist does
+
+    Raises an exception if it does not
+
+    :param path: path to file that should exist
+    :raises FileNotFoundError: If the path does not exists
+    """
+    if os.path.exists(path):
+        return
+
+    if FecDataView.is_shutdown():
+        mode = get_config_str("Mode", "mode").lower()
+        if mode == "production":
+            raise FileNotFoundError(
+                f"In Mode production many files are deleted on end. "
+                f"That may explain missing {path}")
+        else:
+            raise FileNotFoundError(
+                f"end has been been called. "
+                f"That may explain missing {path}")
+    elif FecDataView.is_reset_last():
+        raise FileNotFoundError(
+            f"reset has been been called. "
+            f"That may explain missing {path}")
+    elif FecDataView.is_ran_ever():
+        # no clear reason
+        raise FileNotFoundError(path)
+    else:
+        raise FileNotFoundError(
+            f"Simulation has never run. "
+            f"That may explain missing {path}")
