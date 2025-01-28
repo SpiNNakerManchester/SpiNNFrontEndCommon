@@ -224,7 +224,7 @@ def check_file_exists(path: str) -> None:
     :raises FileNotFoundError: If the path does not exists
     """
     if os.path.exists(path):
-       return
+        return
 
     if FecDataView.is_shutdown():
         mode = get_config_str("Mode", "mode").lower()
