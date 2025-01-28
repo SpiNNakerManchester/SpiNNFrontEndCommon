@@ -19,7 +19,7 @@ Utility calls for interpreting bits of the DSG
 import io
 import os
 import threading
-from typing import (Optional, Union, TextIO, Tuple, TypeVar)
+from typing import (Never, Optional, Union, TextIO, Tuple, TypeVar)
 from urllib.parse import urlparse
 from spinn_utilities.config_holder import get_config_bool
 from spinn_machine import Chip
@@ -31,6 +31,7 @@ from pacman.model.placements import Placements
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from spinn_front_end_common.data import FecDataView
+from spinn_utilities.config_holder import get_config_str
 
 # used to stop file conflicts
 _lock_condition = threading.Condition()
@@ -211,3 +212,28 @@ def pick_core_for_system_placement(
     """
     cores = chip.placable_processors_ids
     return cores[system_placements.n_placements_on_chip(chip)]
+
+
+def file_not_found(message: str) -> Never:
+    """
+    Try to better explain what when wrong for a file not found.
+
+    :param message: Message without more explanation
+    """
+    if FecDataView.is_shutdown():
+        mode = get_config_str("Mode", "mode").lower()
+        if mode == "production":
+            raise FileNotFoundError(
+                f"In Mode production many files are deleted on end. "
+                f"This likely caused {message}")
+        else:
+            raise FileNotFoundError(
+                f"end has been been called. "
+                f"This likely caused {message}")
+    elif FecDataView.is_ran_ever():
+        # no clear reason
+        raise FileNotFoundError(message)
+    else:
+        raise FileNotFoundError(
+            f"Simulation has never run. "
+            f"This likely caused {message}")
