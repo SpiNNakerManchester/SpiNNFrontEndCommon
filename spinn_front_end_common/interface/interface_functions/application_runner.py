@@ -19,7 +19,8 @@ from threading import Condition
 from typing import Optional
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
-from spinnman.model.enums import ExecutableType
+from spinnman.model.enums import ExecutableType, CPUState
+from spinnman.exceptions import SpinnmanException
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException)
@@ -123,9 +124,19 @@ class _ApplicationRunner(object):
                 ExecutableType.USES_SIMULATION_INTERFACE)
             n_cores = len(core_subsets)
 
-            SendPauseProcess(
-                FecDataView.get_scamp_connection_selector()).send_pause(
-                    core_subsets, n_cores)
+            try:
+                SendPauseProcess(
+                    FecDataView.get_scamp_connection_selector()).send_pause(
+                        core_subsets, n_cores)
+            except SpinnmanException as e:
+                # Check if cores have failed now
+                rte_cores = self.__txrx.get_core_state_count(
+                    self.__app_id, CPUState.RUN_TIME_EXCEPTION)
+
+                # If there are no cores in the RTE state, then re-raise the
+                # original exception, otherwise the wait_for_end will handle it
+                if rte_cores == 0:
+                    raise e
             self._wait_for_end()
 
             process = GetCurrentTimeProcess(
