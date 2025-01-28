@@ -215,7 +215,7 @@ class DataType(Enum):
         np.int64,
         "32.31 signed fixed point number")  # rounding problem for max
     #: 32-bit floating point number
-    FLOAT_3 = (
+    FLOAT_32 = (
         14,
         4,
         Decimal("-3.4028234e38"),
