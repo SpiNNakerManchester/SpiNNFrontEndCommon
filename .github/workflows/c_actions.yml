@@ -24,7 +24,7 @@ jobs:
 
     steps:
     - name: Prepare
-      uses: SpiNNakerManchester/SupportScripts/actions/prepare@action-dash
+      uses: SpiNNakerManchester/SupportScripts/actions/prepare@main
       with:
         checkout-dependencies: spinnaker_tools spinn_common
         install-dependencies: SpiNNUtils
