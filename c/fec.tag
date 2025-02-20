@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile doxygen_version="1.9.8">
+<tagfile doxygen_version="1.12.0">
   <compound kind="file">
     <name>buffered_eieio_defs.h</name>
     <path>front_end_common_lib/include/</path>
@@ -109,27 +109,6 @@
       <anchorfile>common-typedefs_8h.html</anchorfile>
       <anchor>a93ae0dd742360abbf161f1d34f5e2831</anchor>
       <arglist>(x)</arglist>
-    </member>
-    <member kind="typedef">
-      <type>uint32_t</type>
-      <name>size_t</name>
-      <anchorfile>common-typedefs_8h.html</anchorfile>
-      <anchor>a29d85914ddff32967d85ada69854206d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="typedef">
-      <type>uint32_t</type>
-      <name>index_t</name>
-      <anchorfile>common-typedefs_8h.html</anchorfile>
-      <anchor>aab1410d3f3644ff465752cab5b56e420</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="typedef">
-      <type>uint32_t</type>
-      <name>counter_t</name>
-      <anchorfile>common-typedefs_8h.html</anchorfile>
-      <anchor>ade7235b5b2948fe2379c6a11a578e3e1</anchor>
-      <arglist></arglist>
     </member>
     <member kind="typedef">
       <type>uint32_t</type>

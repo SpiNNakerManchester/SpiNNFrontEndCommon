@@ -4,7 +4,7 @@ var searchData=
   ['bank_1',['bank',['../spinn__extra_8h.html#a2623bba0ef9b279cb6d4b12713a8cf4d',1,'sdram_direct_command_t']]],
   ['banks_2',['banks',['../spinn__extra_8h.html#ab369986ad6a0eb8e3cbf911b1237a425',1,'sdram_status_t']]],
   ['base_5fkey_3',['base_key',['../data__speed__up__packet__gatherer_8c.html#ab440a0a3c2ad7dc2716db4893654dedd',1,'chip_key_data_t']]],
-  ['basic_5fdata_5fkey_4',['basic_data_key',['../data__speed__up__packet__gatherer_8c.html#a10802e5daa72c952d7f868e980c4506b',1,'basic_data_key:&#160;data_speed_up_packet_gatherer.c'],['../data__speed__up__packet__gatherer_8c.html#adac72058c8f91eab9d37b739ffe9cfe5',1,'data_out_config_t::basic_data_key']]],
+  ['basic_5fdata_5fkey_4',['basic_data_key',['../data__speed__up__packet__gatherer_8c.html#adac72058c8f91eab9d37b739ffe9cfe5',1,'data_out_config_t::basic_data_key'],['../data__speed__up__packet__gatherer_8c.html#a10802e5daa72c952d7f868e980c4506b',1,'basic_data_key:&#160;data_speed_up_packet_gatherer.c']]],
   ['bdiv_5',['bdiv',['../spinn__extra_8h.html#a2362884d761f91da9ed72f408dc29a3d',1,'sc_clock_mux_t']]],
   ['begin_5femergency_5fwait_5ftime_6',['begin_emergency_wait_time',['../spinn__extra_8h.html#af93ca478c6f2ef48eac1376108971631',1,'router_control_t']]],
   ['biff_5fid_5fset_7',['biff_id_set',['https://spinnakermanchester.github.io/spinnaker_tools/scamp-nn_8c.html#ab082317572856bf1d509d559034942af',1,'nn_desc_t']]],

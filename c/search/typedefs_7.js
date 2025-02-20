@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['timer_5ft_0',['timer_t',['../common-typedefs_8h.html#a3b72c02431c8c631ab35793169a96ca0',1,'common-typedefs.h']]]
+  ['vic_5finterrupt_5fhandler_5ft_0',['vic_interrupt_handler_t',['../spinn__extra_8h.html#af492b0b6744f0f208d85f924885f5e64',1,'spinn_extra.h']]]
 ];

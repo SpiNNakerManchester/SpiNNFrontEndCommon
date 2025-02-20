@@ -18,7 +18,7 @@ var searchData=
   ['width_15',['width',['../spinn__extra_8h.html#a35bb194cc117ecd1b93505eb4a4c4707',1,'dma_description_t::width'],['../spinn__extra_8h.html#a9c182990ee4b8139bdebee255528e887',1,'sdram_status_t::width']]],
   ['with_5fpayload_5fbuffer_16',['with_payload_buffer',['../live__packet__gather_8c.html#abadd6fad1a586f95ded2bde05611c848',1,'live_packet_gather.c']]],
   ['without_5fpayload_5fbuffer_17',['without_payload_buffer',['../live__packet__gather_8c.html#a5672e37e363e98e6053064ec9532cb7d',1,'live_packet_gather.c']]],
-  ['word_18',['word',['../spinn__extra_8h.html#ae6f49933af04518d7c9099a416e0f5f3',1,'sdram_dll_user_config1_t::word'],['../spinn__extra_8h.html#abd44bd7b57cf4adf241fa26709d1ff24',1,'router_packet_header_t::word']]],
+  ['word_18',['word',['../spinn__extra_8h.html#abd44bd7b57cf4adf241fa26709d1ff24',1,'router_packet_header_t::word'],['../spinn__extra_8h.html#ae6f49933af04518d7c9099a416e0f5f3',1,'sdram_dll_user_config1_t::word']]],
   ['word_5fcount_19',['word_count',['https://spinnakermanchester.github.io/spinnaker_tools/scamp-nn_8c.html#a165a654f9ee80e4914812059eb3fb0b6',1,'nn_desc_t']]],
   ['word_5flen_20',['word_len',['https://spinnakermanchester.github.io/spinnaker_tools/scamp-nn_8c.html#a9ad07d17db5e08f888b85b1ea5d2abdd',1,'nn_desc_t']]],
   ['word_5fto_5fbyte_5fmultiplier_21',['WORD_TO_BYTE_MULTIPLIER',['../constants_8h.html#aa7c305fcc94cd72f61ca2798848f031f',1,'constants.h']]],
