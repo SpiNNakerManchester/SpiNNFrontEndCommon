@@ -36,7 +36,7 @@ from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 logger = FormatAdapter(logging.getLogger(__name__))
 _Writer: TypeAlias = Callable[[int, int, int, bytes], Any]
 
-MONITOR_CUTOFF = 12800  # 50 packets of 256 bytes
+MONITOR_CUTOFF = 256  # 50 packets of 256 bytes
 
 
 def load_using_advanced_monitors() -> bool:
