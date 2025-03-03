@@ -135,11 +135,11 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_router(1, 3, "des1", 48)
             db.insert_router(5, 5, "des1", 48, False)
         with ProvenanceReader() as db:
-            data = set(db.get_router_by_chip("des1"))
+            data1 = set(db.get_router_by_chip("des1"))
             chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48), (5, 5, 48)}
-            self.assertSetEqual(data, chip_set)
-            data = db.get_router_by_chip("junk")
-            self.assertEqual(0, len(data))
+            self.assertSetEqual(data1, chip_set)
+            data2 = db.get_router_by_chip("junk")
+            self.assertEqual(0, len(data2))
 
     def test_monitor(self) -> None:
         with ProvenanceWriter() as db:
@@ -148,11 +148,11 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_monitor(1, 3, "des2", 67)
             db.insert_monitor(1, 3, "des1", 48)
         with ProvenanceReader() as db:
-            data = set(db.get_monitor_by_chip("des1"))
+            data1 = set(db.get_monitor_by_chip("des1"))
             chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48)}
-            self.assertSetEqual(data, chip_set)
-            data = db.get_monitor_by_chip("junk")
-            self.assertEqual(0, len(data))
+            self.assertSetEqual(data1, chip_set)
+            data2 = db.get_monitor_by_chip("junk")
+            self.assertEqual(0, len(data2))
 
     def test_cores(self) -> None:
         with ProvenanceWriter() as db:
@@ -162,7 +162,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_core(1, 3, 1, "des1", 48)
 
     def test_messages(self) -> None:
-        set_config("Reports", "provenance_report_cutoff", 3)
+        set_config("Reports", "provenance_report_cutoff", "3")
         with LogCapture() as lc:
             with ProvenanceWriter() as db:
                 db.insert_report("een")

@@ -52,7 +52,7 @@ class Test(unittest.TestCase):
         profile_data.add_data(data)
 
         # Should be 2 tags as 2 specified
-        self.assertEqual(len(profile_data.tags), 2)
+        self.assertEqual(len(list(profile_data.tags)), 2)
 
         # Should be 0.2ms between "Test" tag start and end, as only one
         self.assertEqual(profile_data.get_mean_ms("Test"), 0.2)
