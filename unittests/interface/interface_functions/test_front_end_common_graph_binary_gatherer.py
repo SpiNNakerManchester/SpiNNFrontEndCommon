@@ -58,7 +58,7 @@ class _TestSimpleAppVertex(AbstractOneAppOneMachineVertex):
             self, SimpleMachineVertex(None), label=None)
 
 
-class _TestExecutableFinder(object):
+class _TestExecutableFinder(ExecutableFinder):
 
     @overrides(ExecutableFinder.get_executable_path)
     def get_executable_path(self, executable_name: str) -> str:

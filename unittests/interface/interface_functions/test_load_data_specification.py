@@ -14,16 +14,22 @@
 
 from sqlite3 import IntegrityError
 import struct
-from typing import BinaryIO, Optional, Tuple, Union
+from typing import BinaryIO, List, Optional, Tuple, Union
 import unittest
+
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
+
 from spinn_machine.version.version_strings import VersionStrings
+
 from spinnman.transceiver.version5transceiver import Version5Transceiver
 from spinnman.model.enums import ExecutableType
+
 from pacman.model.graphs.machine import SimpleMachineVertex
-from pacman.model.placements import Placements
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from pacman.model.placements import Placement, Placements
+
+from spinn_front_end_common.abstract_models import (
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.ds import (
     DataSpecificationGenerator)
@@ -42,11 +48,12 @@ class _MockTransceiver(Version5Transceiver):
     # pylint: disable=unused-argument
 
     def __init__(self) -> None:
-        self._regions_written = list()
-        self._next_address = 0
+        self._regions_written: List[Tuple[
+            int, Union[bytearray, bytes]]] = list()
+        self._next_address: int = 0
 
     @property
-    def regions_written(self) -> None:
+    def regions_written(self) -> List[Tuple[int, Union[bytearray, bytes]]]:
         """ A list of tuples of (base_address, data) which has been written
         """
         return self._regions_written
@@ -66,6 +73,7 @@ class _MockTransceiver(Version5Transceiver):
             get_sum: bool = False) -> Tuple[int, int]:
         if isinstance(data, int):
             data = struct.pack("<I", data)
+        assert isinstance(data, (bytearray, bytes))
         self._regions_written.append((base_address, data))
         # bogus return for mypy
         return (-1, -1)
@@ -75,7 +83,8 @@ class _MockTransceiver(Version5Transceiver):
         pass
 
 
-class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
+class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary,
+                            AbstractGeneratesDataSpecification):
 
     def __init__(self, binary_file_name, binary_start_type):
         super().__init__(0)
@@ -89,6 +98,10 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self) -> ExecutableType:
         return self._binary_start_type
+
+    def generate_data_specification(self, spec: DataSpecificationGenerator,
+                                    placement: Placement) -> None:
+        pass
 
 
 class TestLoadDataSpecification(unittest.TestCase):

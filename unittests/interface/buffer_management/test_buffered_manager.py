@@ -109,9 +109,9 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abc")
 
-        data, missing = bm.get_recording(p1, 0)
+        data_mv, missing = bm.get_recording(p1, 0)
         self.assertFalse(missing, "data shouldn't be 'missing'")
-        self.assertEqual(bytes(data), b"abc")
+        self.assertEqual(bytes(data_mv), b"abc")
 
         with BufferDatabase() as brd:
             brd.start_new_extraction()
@@ -126,9 +126,9 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertTrue(missing, "data should be 'missing'")
             self.assertEqual(bytes(data), b"abcdefg")
 
-        data, missing = bm.get_recording(p1, 0)
+        data_mv, missing = bm.get_recording(p1, 0)
         self.assertTrue(missing, "data should be 'missing'")
-        self.assertEqual(bytes(data), b"abcdefg")
+        self.assertEqual(bytes(data_mv), b"abcdefg")
 
         with BufferDatabase() as brd:
             data, missing = brd.get_recording_by_extraction_id(1, 2, 3, 0, 2)
@@ -163,9 +163,9 @@ class TestBufferedDatabase(unittest.TestCase):
         with BufferDatabase() as brd:
             brd.start_new_extraction()
             brd.store_download(1, 2, 3, 0, False, b"abc")
-            data, missing = brd.get_download_by_extraction_id(1, 2, 3, 0, -1)
+            data_mv, missing = brd.get_download_by_extraction_id(1, 2, 3, 0, -1)
             self.assertFalse(missing, "data should be 'missing'")
-            self.assertEqual(bytes(data), b"abc")
+            self.assertEqual(bytes(data_mv), b"abc")
 
         data, missing = bm.get_download(p1, 0)
         self.assertFalse(missing, "data shouldn't be 'missing'")

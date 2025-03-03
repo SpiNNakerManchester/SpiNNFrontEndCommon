@@ -14,14 +14,20 @@
 
 from sqlite3 import IntegrityError
 import unittest
+
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
+
 from spinn_machine import Chip, Router
 from spinn_machine.version.version_strings import VersionStrings
 from spinn_machine.virtual_machine import virtual_machine_by_min_size
 from spinnman.model.enums import ExecutableType
+
 from pacman.model.graphs.machine import SimpleMachineVertex
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from pacman.model.placements import Placement
+
+from spinn_front_end_common.abstract_models import (
+    AbstractHasAssociatedBinary,  AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data.fec_data_writer import (
     FecDataView, FecDataWriter)
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -33,7 +39,8 @@ from spinn_front_end_common.utilities.exceptions import (
     DataSpecException, DsDatabaseException)
 
 
-class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
+class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary,
+                            AbstractGeneratesDataSpecification):
 
     def __init__(self, binary_file_name, binary_start_type):
         super().__init__(0)
@@ -48,6 +55,10 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
     def get_binary_start_type(self) -> ExecutableType:
         return self._binary_start_type
 
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec: DataSpecificationGenerator,
+                                    placement: Placement) -> None:
+        pass
 
 class TestDataSpecification(unittest.TestCase):
 
@@ -64,7 +75,8 @@ class TestDataSpecification(unittest.TestCase):
 
     def test_none_ds_vertex(self) -> None:
         set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
-        vertex = SimpleMachineVertex(0)
+        vertex = _TestVertexWithBinary(
+            "off_board__system", ExecutableType.SYSTEM)
         with DsSqlliteDatabase() as db:
             with self.assertRaises(AttributeError):
                 DataSpecificationGenerator(0, 1, 2, vertex, db)
@@ -309,6 +321,7 @@ class TestDataSpecification(unittest.TestCase):
             region, pointer, content = pcs[1]
             self.assertEqual(10, region)
             self.assertIsNone(pointer)
+            assert content is not None
             self.assertEqual(3 * 4, len(content))
             self.assertEqual(
                 bytearray(b'\x0c\x00\x00\x00"\x00\x00\x008\x00\x00\x00'),

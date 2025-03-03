@@ -12,22 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
 import unittest
+
 from spinn_utilities.overrides import overrides
+
 from spinn_machine.tags import IPTag, ReverseIPTag
+
+from spinnman.transceiver.mockable_transceiver import MockableTransceiver
+
 from pacman.model.tags import Tags
 from pacman.model.graphs.machine import SimpleMachineVertex
+
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import tags_loader
-from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 
 
 class _MockTransceiver(MockableTransceiver):
 
     def __init__(self) -> None:
-        self._ip_tags = list()
-        self._reverse_ip_tags = list()
+        self._ip_tags: List[IPTag] = list()
+        self._reverse_ip_tags: List[ReverseIPTag] = list()
 
     @overrides(MockableTransceiver.set_ip_tag)
     def set_ip_tag(self, ip_tag: IPTag, use_sender: bool = False):

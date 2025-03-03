@@ -14,12 +14,17 @@
 
 import unittest
 import numpy
-from typing import BinaryIO, Optional, Sequence, Tuple, Union
+from typing import BinaryIO, Optional, List, Sequence, Tuple, Union
+
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
+
 from spinn_machine.version.version_strings import VersionStrings
+
 from spinnman.model.enums import ExecutableType
+
 from pacman.model.placements import Placements, Placement
+
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
     AbstractRewritesDataSpecification)
@@ -115,7 +120,7 @@ class _MockTransceiver(MockableTransceiver):
     # pylint: disable=unused-argument
 
     def __init__(self) -> None:
-        self._regions_rewritten = list()
+        self._regions_rewritten: List = list()
 
     @overrides(MockableTransceiver.write_memory)
     def write_memory(
@@ -151,8 +156,10 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         writer.set_transceiver(transceiver)
         with DsSqlliteDatabase() as ds:
             for placement in placements:
+                vertex = placement.vertex
+                assert isinstance(vertex, AbstractHasAssociatedBinary)
                 ds.set_core(
-                    placement.x, placement.y, placement.p, placement.vertex)
+                    placement.x, placement.y, placement.p, vertex)
                 base = placement.p * 1000
                 regions = reload_region_data[placement.p]
                 for (reg_num, size, _) in regions:
@@ -182,9 +189,9 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             regions = reload_region_data[placement.p]
             address = placement.p * 1000
             for (_, size, data) in regions:
-                data = bytearray(numpy.array(data, dtype="uint32").tobytes())
+                data_ba = bytearray(numpy.array(data, dtype="uint32").tobytes())
                 # Check that the base address and data written is correct
-                self.assertEqual(regions_rewritten[pos], (address, data))
+                self.assertEqual(regions_rewritten[pos], (address, data_ba))
                 pos += 1
                 address += size
 
@@ -205,8 +212,10 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         writer.set_transceiver(transceiver)
         with DsSqlliteDatabase() as ds:
             for placement in placements:
+                vertex = placement.vertex
+                assert isinstance(vertex, AbstractHasAssociatedBinary)
                 ds.set_core(
-                    placement.x, placement.y, placement.p, placement.vertex)
+                    placement.x, placement.y, placement.p, vertex)
                 base = placement.p * 1000
                 regions = reload_region_data[placement.p]
                 for (reg_num, size, _) in regions:
