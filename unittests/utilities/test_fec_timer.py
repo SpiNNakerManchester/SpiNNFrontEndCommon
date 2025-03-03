@@ -25,15 +25,15 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 class MockSimulator(object):
 
     @property
-    def _report_default_directory(self) -> None:
+    def _report_default_directory(self) -> str:
         return tempfile.mkdtemp()
 
     @property
-    def n_calls_to_run(self) -> None:
+    def n_calls_to_run(self) -> int:
         return 1
 
     @property
-    def n_loops(self) -> None:
+    def n_loops(self) -> int:
         return 1
 
 
@@ -42,7 +42,7 @@ class TestFecTimer(unittest.TestCase):
     def setUp(self) -> None:
         unittest_setup()
         set_config("Reports", "write_algorithm_timings", "True")
-        FecTimer.setup(MockSimulator())
+        FecTimer.setup(MockSimulator())  # type: ignore[arg-type]
 
     def test_simple(self) -> None:
         FecTimer.start_category(TimerCategory.RUN_OTHER)
@@ -100,6 +100,8 @@ class TestFecTimer(unittest.TestCase):
         self.assertEqual(id1, id2)
         FecTimer.end_category(TimerCategory.MAPPING)
         id3 = FecTimer._category_id
+        assert id1 is not None
+        assert id3 is not None
         self.assertEqual(id1 + 1, id3)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
 
