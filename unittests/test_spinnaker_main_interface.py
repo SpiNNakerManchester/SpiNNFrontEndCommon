@@ -30,7 +30,7 @@ class Close_Once(MachineAllocationController):
         super().__init__("close-once")
         self.closed = False
 
-    def _wait(self) -> None:
+    def _wait(self) -> bool:
         return False
 
     def close(self) -> None:
@@ -54,7 +54,9 @@ class TestSpinnakerMainInterface(unittest.TestCase):
 
     def test_stop_init(self) -> None:
         class_file = sys.modules[self.__module__].__file__
+        assert class_file is not None
         path = os.path.dirname(os.path.abspath(class_file))
+        assert path is not None
         os.chdir(path)
         interface = AbstractSpinnakerBase()
         mock_contoller = Close_Once()
@@ -68,7 +70,9 @@ class TestSpinnakerMainInterface(unittest.TestCase):
 
     def test_min_init(self) -> None:
         class_file = sys.modules[self.__module__].__file__
+        assert class_file is not None
         path = os.path.dirname(os.path.abspath(class_file))
+        assert path is not None
         os.chdir(path)
         AbstractSpinnakerBase()
 

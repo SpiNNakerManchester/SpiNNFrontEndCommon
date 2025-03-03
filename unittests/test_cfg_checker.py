@@ -31,4 +31,4 @@ class TestCfgChecker(unittest.TestCase):
         local = os.path.join(parent, "fec_local_tests")
         fec_it = os.path.join(parent, "fec_integration_tests")
         run_config_checks(directories=[fec_dir, local, fec_it, unittests],
-                          special_nones=("info", "debug"))
+                          special_nones=["info", "debug"])

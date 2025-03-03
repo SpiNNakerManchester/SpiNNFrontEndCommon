@@ -25,7 +25,8 @@ class TestingDataType(unittest.TestCase):
         self.assertEqual(DataType.UINT8.min, 0)
         self.assertEqual(DataType.UINT8.max, 255)
 
-        self.assertEqual(DataType(0), DataType.UINT8)
+        self.assertEqual(
+            DataType(0), DataType.UINT8)  # type: ignore[call-arg]
 
         self.assertEqual(DataType.UINT16.value, 1)
         self.assertEqual(DataType.UINT16.size, 2)
