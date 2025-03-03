@@ -83,7 +83,7 @@ executable_targets.add_subsets(alphaaplx, core_subsets)
 
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
         os.environ["C_LOGS_DICT"] = tempfile.mktemp()
         # There needs to be a dict but it can be empty
@@ -96,10 +96,10 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         FecDataView.register_binary_search_path(path)
         writer.set_executable_targets(executable_targets)
 
-    def testExectuableFinder(self):
+    def testExectuableFinder(self) -> None:
         self.assertIn(fooaplx, FecDataView.get_executable_path(fooaplx))
 
-    def testCallSimple(self):
+    def testCallSimple(self) -> None:
         folder = FecDataView.get_app_provenance_dir_path()
         error_entries, warn_entries = chip_io_buf_extractor()
         set_config("Reports", "extract_iobuf_from_cores", "None")
@@ -131,7 +131,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(result_warning003, warn_entries)
         self.assertEqual(5, len(warn_entries))
 
-    def testCallChips(self):
+    def testCallChips(self) -> None:
         folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:0,0,3")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
@@ -163,7 +163,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(result_warning003, warn_entries)
         self.assertEqual(2, len(warn_entries))
 
-    def testCallBinary(self):
+    def testCallBinary(self) -> None:
         folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "None")
         set_config("Reports", "extract_iobuf_from_binary_types",
@@ -192,7 +192,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(result_warning003, warn_entries)
         self.assertEqual(3, len(warn_entries))
 
-    def testCallBoth(self):
+    def testCallBoth(self) -> None:
         folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:1,1,1")
         set_config("Reports", "extract_iobuf_from_binary_types",

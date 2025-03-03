@@ -29,10 +29,10 @@ def _get_clock(timestep, ms_into_timestep):
 
 class Test(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_use(self):
+    def test_use(self) -> None:
 
         # Set up the object to test
         profile_data = ProfileData({3: "Test", 4: "Test2"})

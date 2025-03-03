@@ -20,10 +20,10 @@ from spinn_front_end_common.utilities.helpful_functions import (
 
 class TestingUtilities(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_get_region_base_address_offset(self):
+    def test_get_region_base_address_offset(self) -> None:
         val = get_region_base_address_offset(48, 7)
         self.assertEqual(val, 140)
 

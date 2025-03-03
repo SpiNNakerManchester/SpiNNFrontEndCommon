@@ -26,14 +26,14 @@ from spinn_front_end_common.abstract_models.impl import (
 class Close_Once(MachineAllocationController):
     __slots__ = ("closed", )
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("close-once")
         self.closed = False
 
-    def _wait(self):
+    def _wait(self) -> None:
         return False
 
-    def close(self):
+    def close(self) -> None:
         if self.closed:
             raise NotImplementedError("Close called twice")
         self.closed = True
@@ -52,7 +52,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
     def setUpClass(cls):
         unittest_setup()
 
-    def test_stop_init(self):
+    def test_stop_init(self) -> None:
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
@@ -66,7 +66,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         with self.assertRaises(SimulatorShutdownException):
             interface.stop()
 
-    def test_min_init(self):
+    def test_min_init(self) -> None:
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)

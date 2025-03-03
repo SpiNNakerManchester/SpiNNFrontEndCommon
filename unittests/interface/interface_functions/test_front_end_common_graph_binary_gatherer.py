@@ -53,7 +53,7 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
 
 class _TestSimpleAppVertex(AbstractOneAppOneMachineVertex):
 
-    def __init__(self):
+    def __init__(self) -> None:
         AbstractOneAppOneMachineVertex.__init__(
             self, SimpleMachineVertex(None), label=None)
 
@@ -67,10 +67,10 @@ class _TestExecutableFinder(object):
 
 class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_call(self):
+    def test_call(self) -> None:
         """ Test calling the binary gatherer normally
         """
 
@@ -105,7 +105,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
         writer._set_executable_finder(ExecutableFinder())
 
-    def test_mixed_binaries(self):
+    def test_mixed_binaries(self) -> None:
         """ Test calling the binary gatherer with mixed executable types
         """
 

@@ -25,7 +25,7 @@ from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 
 class _MockTransceiver(MockableTransceiver):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._ip_tags = list()
         self._reverse_ip_tags = list()
 
@@ -40,10 +40,10 @@ class _MockTransceiver(MockableTransceiver):
 
 class TestFrontEndCommonTagsLoader(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_call(self):
+    def test_call(self) -> None:
         """ Test calling the tags loader
         """
         writer = FecDataWriter.mock()

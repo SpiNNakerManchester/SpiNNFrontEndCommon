@@ -59,7 +59,7 @@ class _TestMachineVertex(
     """ A simple machine vertex for testing
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(None)
         self._requires_regions_to_be_reloaded = True
 
@@ -114,7 +114,7 @@ class _MockTransceiver(MockableTransceiver):
     """
     # pylint: disable=unused-argument
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._regions_rewritten = list()
 
     @overrides(MockableTransceiver.write_memory)
@@ -129,12 +129,12 @@ class _MockTransceiver(MockableTransceiver):
 
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
         set_config("Machine", "versions", VersionStrings.ANY.text)
         set_config("Reports", "write_text_specs", "True")
 
-    def test_with_good_sizes(self):
+    def test_with_good_sizes(self) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
         writer = FecDataWriter.mock()
@@ -188,7 +188,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                 pos += 1
                 address += size
 
-    def test_with_size_changed(self):
+    def test_with_size_changed(self) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
         writer = FecDataWriter.mock()

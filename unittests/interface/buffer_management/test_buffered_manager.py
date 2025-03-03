@@ -58,10 +58,10 @@ class MockAbstractReceiveRegionsToHost(
 
 class TestBufferedDatabase(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_recording(self):
+    def test_recording(self) -> None:
         set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         f = BufferDatabase.default_database_file()
@@ -142,7 +142,7 @@ class TestBufferedDatabase(unittest.TestCase):
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
 
-    def test_download(self):
+    def test_download(self) -> None:
         set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
 
@@ -193,7 +193,7 @@ class TestBufferedDatabase(unittest.TestCase):
         self.assertTrue(missing, "data should be 'missing'")
         self.assertEqual(bytes(data), b"gh")
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
 
@@ -218,7 +218,7 @@ class TestBufferedDatabase(unittest.TestCase):
         self.assertTrue(missing, "data should be 'missing'")
         self.assertEqual(bytes(data), b"")
 
-    def test_not_recording_type(self):
+    def test_not_recording_type(self) -> None:
         writer = FecDataWriter.mock()
         info = Placements([])
         writer.set_placements(info)
@@ -228,7 +228,7 @@ class TestBufferedDatabase(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             bm.get_recording(p, 1)
 
-    def test_not_data_recorded(self):
+    def test_not_data_recorded(self) -> None:
         writer = FecDataWriter.mock()
         v = MockAbstractReceiveBuffersToHost(None, label="V2")
         p = Placement(v, 1, 2, 5)
@@ -241,7 +241,7 @@ class TestBufferedDatabase(unittest.TestCase):
         except BufferedRegionNotPresent as ex:
             self.assertIn("should have record region", str(ex))
 
-    def test_not_recording_region(self):
+    def test_not_recording_region(self) -> None:
         writer = FecDataWriter.mock()
         v = MockAbstractReceiveBuffersToHost(None, label="V2")
         p = Placement(v, 1, 2, 5)

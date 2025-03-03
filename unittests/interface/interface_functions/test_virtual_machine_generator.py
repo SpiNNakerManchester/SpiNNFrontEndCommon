@@ -23,17 +23,17 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 class TestVirtualMachineGenerator(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_only_width(self):
+    def test_only_width(self) -> None:
         set_config("Machine", "version", 5)
         set_config("Machine", "virtual_board", "True")
         set_config("Machine", "width", "8")
         with self.assertRaises(ConfigurationException):
             virtual_machine_generator()
 
-    def test_by_boards(self):
+    def test_by_boards(self) -> None:
         set_config("Machine", "version", 5)
         set_config("Machine", "virtual_board", "True")
         # Called by sim.setup
@@ -41,7 +41,7 @@ class TestVirtualMachineGenerator(unittest.TestCase):
         machine = virtual_machine_generator()
         self.assertEqual(3, len(machine.ethernet_connected_chips))
 
-    def test_by_set_chips(self):
+    def test_by_set_chips(self) -> None:
         set_config("Machine", "version", 5)
         set_config("Machine", "virtual_board", "True")
         # Called by sim.setup
@@ -49,7 +49,7 @@ class TestVirtualMachineGenerator(unittest.TestCase):
         machine = virtual_machine_generator()
         self.assertEqual(3, len(machine.ethernet_connected_chips))
 
-    def test_by_chips(self):
+    def test_by_chips(self) -> None:
         set_config("Machine", "version", 5)
         set_config("Machine", "virtual_board", "True")
         # Called after partitioning

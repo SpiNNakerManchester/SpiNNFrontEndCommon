@@ -28,11 +28,11 @@ from spinn_front_end_common.utilities.report_functions import (
 
 class TestJson(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
         set_config("Mapping", "validate_json", "True")
 
-    def test_placements(self):
+    def test_placements(self) -> None:
         """
         tests the placements iterator functionality.
         """
@@ -49,7 +49,7 @@ class TestJson(unittest.TestCase):
         # write and validate
         write_json_placements()
 
-    def test_machine(self):
+    def test_machine(self) -> None:
         set_config("Machine", "versions", VersionStrings.ANY.text)
         # write and validate
         write_json_machine()

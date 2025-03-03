@@ -30,11 +30,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class TestProvenanceDatabase(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
         set_config("Reports", "write_provenance", "true")
 
-    def test_create(self):
+    def test_create(self) -> None:
         ProvenanceWriter()
         ProvenanceWriter()
 
@@ -45,7 +45,7 @@ class TestProvenanceDatabase(unittest.TestCase):
                 ("/".join(item.names[:-1]), item.names[-1], item.value))
         return results
 
-    def test_version(self):
+    def test_version(self) -> None:
         with GlobalProvenance() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
             db.insert_version("numpy_version", "1.17.4")
@@ -55,7 +55,7 @@ class TestProvenanceDatabase(unittest.TestCase):
                 (2, 'numpy_version', '1.17.4')]
             self.assertListEqual(data, versions)
 
-    def test_power(self):
+    def test_power(self) -> None:
         with ProvenanceWriter() as db:
             db.insert_power("num_cores", 34)
             db.insert_power("total time (seconds)", 6.81)
@@ -65,7 +65,7 @@ class TestProvenanceDatabase(unittest.TestCase):
                      (2, 1, 'total time (seconds)', 6.81)]
             self.assertListEqual(data, power)
 
-    def test_timings(self):
+    def test_timings(self) -> None:
         with GlobalProvenance() as db:
             db.insert_run_reset_mapping()
             mapping_id = db.insert_category(TimerCategory.MAPPING, False)
@@ -98,7 +98,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             data = db.get_timer_sum_by_algorithm("junk")
             self.assertEqual(0, data)
 
-    def test_category_timings(self):
+    def test_category_timings(self) -> None:
         with GlobalProvenance() as db:
             id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_category_timing(id, timedelta(milliseconds=12))
@@ -115,7 +115,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             data = db.get_category_timer_sum(TimerCategory.MAPPING)
         self.assertEqual(12 + 123, data)
 
-    def test_gatherer(self):
+    def test_gatherer(self) -> None:
         with ProvenanceWriter() as db:
             db.insert_gatherer(
                 1, 3, 1715886360, 80, 1, "Extraction_time", 00.234)
@@ -127,7 +127,7 @@ class TestProvenanceDatabase(unittest.TestCase):
                     (2, 1, 3, 1715886360, 80, 1, 'Lost Packets', 12.0)]
         self.assertListEqual(expected, data)
 
-    def test_router(self):
+    def test_router(self) -> None:
         with ProvenanceWriter() as db:
             db.insert_router(1, 3, "des1", 34, True)
             db.insert_router(1, 2, "des1", 45, True)
@@ -141,7 +141,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             data = db.get_router_by_chip("junk")
             self.assertEqual(0, len(data))
 
-    def test_monitor(self):
+    def test_monitor(self) -> None:
         with ProvenanceWriter() as db:
             db.insert_monitor(1, 3, "des1", 34)
             db.insert_monitor(1, 2, "des1", 45)
@@ -154,14 +154,14 @@ class TestProvenanceDatabase(unittest.TestCase):
             data = db.get_monitor_by_chip("junk")
             self.assertEqual(0, len(data))
 
-    def test_cores(self):
+    def test_cores(self) -> None:
         with ProvenanceWriter() as db:
             db.insert_core(1, 3, 2, "des1", 34)
             db.insert_core(1, 2, 3, "des1", 45)
             db.insert_core(1, 3, 2, "des2", 67)
             db.insert_core(1, 3, 1, "des1", 48)
 
-    def test_messages(self):
+    def test_messages(self) -> None:
         set_config("Reports", "provenance_report_cutoff", 3)
         with LogCapture() as lc:
             with ProvenanceWriter() as db:
@@ -175,7 +175,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             data = db.messages()
         self.assertEqual(4, len(data))
 
-    def test_connector(self):
+    def test_connector(self) -> None:
         with ProvenanceWriter() as db:
             db.insert_connector("the pre", "A post", "OneToOne", "foo", 12)
         with ProvenanceReader() as db:
@@ -183,12 +183,12 @@ class TestProvenanceDatabase(unittest.TestCase):
         expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 12)]
         self.assertListEqual(expected, data)
 
-    def test_board(self):
+    def test_board(self) -> None:
         data = {(0, 0): '10.11.194.17', (4, 8): '10.11.194.81'}
         with ProvenanceWriter() as db:
             db.insert_board_provenance(data)
 
-    def test_log(self):
+    def test_log(self) -> None:
         db1 = LogStoreDB()
         db2 = LogStoreDB()
         db1.store_log(30, "this is a warning")
@@ -202,7 +202,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             db1.retreive_log_messages(20))
         db2.get_location()
 
-    def test_database_locked(self):
+    def test_database_locked(self) -> None:
         ls = LogStoreDB()
         logger.set_log_store(ls)
         logger.warning("this works")
@@ -219,7 +219,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             self.assertNotIn("now locked", reported)
         logger.set_log_store(None)
 
-    def test_double_with(self):
+    def test_double_with(self) -> None:
         # Confirm that using the database twice goes boom
         with GlobalProvenance() as db1:
             with GlobalProvenance() as db2:
