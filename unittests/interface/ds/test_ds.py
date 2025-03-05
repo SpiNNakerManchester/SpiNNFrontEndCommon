@@ -77,11 +77,11 @@ class TestDataSpecification(unittest.TestCase):
 
     def test_none_ds_vertex(self) -> None:
         set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
-        vertex = _TestVertexWithBinary(
-            "off_board__system", ExecutableType.SYSTEM)
+        vertex = SimpleMachineVertex(None)
         with DsSqlliteDatabase() as db:
             with self.assertRaises(AttributeError):
-                DataSpecificationGenerator(0, 1, 2, vertex, db)
+                DataSpecificationGenerator(
+                    0, 1, 2, vertex, db)  # type: ignore[arg-type]
 
     def test_bad_x_y_ds_vertex(self) -> None:
         set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
