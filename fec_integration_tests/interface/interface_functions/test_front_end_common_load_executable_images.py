@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import BinaryIO, Iterable, Optional, Tuple, Union
+from typing import BinaryIO, Dict, Iterable, Optional, Tuple, Union
 import unittest
 from collections import defaultdict
 from spinn_utilities.overrides import overrides
@@ -30,16 +30,17 @@ SIM = ExecutableType.USES_SIMULATION_INTERFACE
 
 class _MockTransceiver(MockableTransceiver):
 
-    def __init__(self, test_case):
+    def __init__(self, test_case: unittest.TestCase):
         self._test_case = test_case
-        self._n_cores_in_app = defaultdict(lambda: 0)
-        self._executable_on_core = dict()
+        self._n_cores_in_app: Dict[int, int] = defaultdict(lambda: 0)
+        self._executable_on_core: Dict[Tuple[int, int, int],
+                                       Union[BinaryIO, bytes, str]] = dict()
 
     @overrides(MockableTransceiver.execute_flood)
     def execute_flood(
             self, core_subsets: CoreSubsets,
             executable: Union[BinaryIO, bytes, str], app_id: int, *,
-            n_bytes: Optional[int] = None, wait: bool = False):
+            n_bytes: Optional[int] = None, wait: bool = False) -> None:
         for core_subset in core_subsets.core_subsets:
             x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:

@@ -16,6 +16,8 @@ from threading import Thread
 from collections import deque
 import struct
 import traceback
+from typing import Optional
+
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.enums import SCPResult
@@ -24,7 +26,7 @@ from spinnman.connections.udp_packet_connections import UDPConnection
 
 class _SCPOKMessage(SDPMessage):
 
-    def __init__(self, x, y, sequence):
+    def __init__(self, x: int, y: int, sequence: int):
         scp_header = SCPRequestHeader(
             command=SCPResult.RC_OK, sequence=sequence)
         sdp_header = SDPHeader(
@@ -39,24 +41,15 @@ class MockMachine(Thread):
     A Machine that can be used for testing protocol.
     """
 
-    def __init__(self, responses=None):
-        """
-        :param responses:
-            An optional list of responses to send in the order to be sent.
-            If not specified, OK responses will be sent for every request.
-            Note that responses can include "None" which means that no
-            response will be sent to that request
-        """
+    def __init__(self) -> None:
         super().__init__()
 
         # Set up a connection to be the machine
         self._receiver = UDPConnection()
         self._running = False
-        self._messages = deque()
-        self._error = None
-        self._responses = deque()
-        if responses is not None:
-            self._responses.extend(responses)
+        self._messages: deque = deque()
+        self._error: Optional[Exception] = None
+        self._responses: deque = deque()
 
     @property
     def is_next_message(self) -> bool:
@@ -67,11 +60,11 @@ class MockMachine(Thread):
         return self._messages.popleft()
 
     @property
-    def error(self) -> None:
+    def error(self) -> Optional[Exception]:
         return self._error
 
     @property
-    def local_port(self) -> None:
+    def local_port(self) -> int:
         return self._receiver.local_port
 
     def _do_receive(self) -> None:
@@ -79,7 +72,6 @@ class MockMachine(Thread):
         self._messages.append(data)
         sdp_header = SDPHeader.from_bytestring(data, 2)
         _result, sequence = struct.unpack_from("<2H", data, 10)
-        response = None
         if self._responses:
             response = self._responses.popleft()
             response._data = (

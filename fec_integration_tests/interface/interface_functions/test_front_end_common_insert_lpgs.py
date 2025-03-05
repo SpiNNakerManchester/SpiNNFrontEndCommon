@@ -30,8 +30,11 @@ from spinn_front_end_common.utility_models import LivePacketGather
 
 
 class TestVertex(ApplicationVertex):
-    def __init__(self, n_atoms):
-        self.n_atoms = n_atoms
+    def __init__(self, n_atoms: int):
+        self._n_atoms = n_atoms
+
+    def number_of_atoms(self) -> int:
+        return self._n_atoms
 
 
 class TestInsertLPGs(unittest.TestCase):
