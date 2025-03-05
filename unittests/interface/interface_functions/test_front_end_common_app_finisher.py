@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets
 from spinnman.messages.scp.enums import Signal
@@ -30,7 +30,9 @@ from spinnman.connections.udp_packet_connections import SDPConnection
 
 class _MockTransceiver(Version5Transceiver):
 
-    def __init__(self, core_states, time_between_states):
+    def __init__(
+            self, core_states: List[Dict[Tuple[int, int, int], CPUState]],
+            time_between_states: float):
         self._core_states = core_states
         self._time_between_states = time_between_states
         self._current_state = 0
@@ -73,11 +75,11 @@ class _MockTransceiver(Version5Transceiver):
 
     @overrides(Version5Transceiver.send_sdp_message)
     def send_sdp_message(self, message: SDPMessage,
-                         connection: Optional[SDPConnection] = None):
+                         connection: Optional[SDPConnection] = None) -> None:
         self.sdp_send_count += 1
 
     @overrides(Version5Transceiver.send_signal)
-    def send_signal(self, app_id: int, signal: Signal):
+    def send_signal(self, app_id: int, signal: Signal) -> None:
         pass
 
     @overrides(Version5Transceiver.close)
@@ -85,7 +87,7 @@ class _MockTransceiver(Version5Transceiver):
         pass
 
 
-def test_app_finisher():
+def test_app_finisher() -> None:
     unittest_setup()
     core_subsets = CoreSubsets()
     core_subsets.add_processor(0, 0, 1)

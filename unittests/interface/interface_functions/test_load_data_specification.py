@@ -86,8 +86,9 @@ class _MockTransceiver(Version5Transceiver):
 class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary,
                             AbstractGeneratesDataSpecification):
 
-    def __init__(self, binary_file_name, binary_start_type):
-        super().__init__(0)
+    def __init__(
+            self, binary_file_name: str, binary_start_type: ExecutableType):
+        super().__init__(None)
         self._binary_file_name = binary_file_name
         self._binary_start_type = binary_start_type
 

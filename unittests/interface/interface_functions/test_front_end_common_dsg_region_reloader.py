@@ -101,19 +101,6 @@ class _TestMachineVertex(
         raise NotImplementedError()
 
 
-class _MockCPUInfo(object):
-    """ Pretend CPU Info object
-    """
-
-    def __init__(self, user_0):
-        self._user_0 = user_0
-
-    @property
-    @overrides(CPUInfo.user)
-    def user(self) -> Sequence[int]:
-        return [self._user_0]
-
-
 class _MockTransceiver(MockableTransceiver):
     """ Pretend transceiver
     """

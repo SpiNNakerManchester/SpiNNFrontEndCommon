@@ -23,7 +23,7 @@ _CLOCK_PER_MS = 200000
 _CLOCK_MAX = (2**32) - 1
 
 
-def _get_clock(timestep, ms_into_timestep):
+def _get_clock(timestep: int, ms_into_timestep: float) -> float:
     return _CLOCK_MAX - int((timestep + ms_into_timestep) * _CLOCK_PER_MS)
 
 

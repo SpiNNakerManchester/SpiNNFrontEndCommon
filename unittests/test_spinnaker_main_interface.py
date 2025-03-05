@@ -14,8 +14,13 @@
 
 import os
 import sys
+from typing import Tuple
+
 import unittest
+
 from spinn_utilities.exceptions import SimulatorShutdownException
+from spinn_utilities.overrides import overrides
+
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
@@ -30,26 +35,31 @@ class Close_Once(MachineAllocationController):
         super().__init__("close-once")
         self.closed = False
 
+    @overrides(MachineAllocationController._wait)
     def _wait(self) -> bool:
         return False
 
+    @overrides(MachineAllocationController.close)
     def close(self) -> None:
         if self.closed:
             raise NotImplementedError("Close called twice")
         self.closed = True
         super().close()
 
-    def extend_allocation(self, new_total_run_time):
+    @overrides(MachineAllocationController.extend_allocation)
+    def extend_allocation(self, new_total_run_time: float) -> None:
         pass
 
-    def where_is_machine(self, chip_x, chip_y):
+    @overrides(MachineAllocationController.where_is_machine)
+    def where_is_machine(
+            self, chip_x: int, chip_y: int) -> Tuple[int, int, int]:
         return (0, 0, 0)
 
 
 class TestSpinnakerMainInterface(unittest.TestCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         unittest_setup()
 
     def test_stop_init(self) -> None:

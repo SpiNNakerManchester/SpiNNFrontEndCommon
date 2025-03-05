@@ -36,11 +36,11 @@ class _MockTransceiver(MockableTransceiver):
         self._reverse_ip_tags: List[ReverseIPTag] = list()
 
     @overrides(MockableTransceiver.set_ip_tag)
-    def set_ip_tag(self, ip_tag: IPTag, use_sender: bool = False):
+    def set_ip_tag(self, ip_tag: IPTag, use_sender: bool = False) -> None:
         self._ip_tags.append(ip_tag)
 
     @overrides(MockableTransceiver.set_reverse_ip_tag)
-    def set_reverse_ip_tag(self, reverse_ip_tag: ReverseIPTag):
+    def set_reverse_ip_tag(self, reverse_ip_tag: ReverseIPTag) -> None:
         self._reverse_ip_tags.append(reverse_ip_tag)
 
 

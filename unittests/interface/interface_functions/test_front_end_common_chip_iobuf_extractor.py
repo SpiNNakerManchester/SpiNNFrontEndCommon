@@ -14,7 +14,7 @@
 
 import os
 import tempfile
-from typing import Iterable, Optional
+from typing import Iterable, List, Optional, Tuple
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.make_tools.log_sqllite_database import LogSqlLiteDatabase
@@ -31,7 +31,7 @@ from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 
 
 class _PretendTransceiver(MockableTransceiver):
-    def __init__(self, iobuffers):
+    def __init__(self, iobuffers: List[IOBuffer]):
         self._iobuffers = iobuffers
 
     @overrides(MockableTransceiver.get_iobuf)
@@ -43,7 +43,7 @@ class _PretendTransceiver(MockableTransceiver):
                 yield iobuf
 
 
-def mock_text(x, y, p):
+def mock_text(x: int, y: int, p: int) -> Tuple[str, str, str]:
     filename = "myfile.c"
     error = "Test Error"
     warning = "Test Warning"
@@ -65,7 +65,7 @@ text003, result_error003, result_warning003 = mock_text(0, 0, 3)
 path = os.path.dirname(os.path.abspath(__file__))
 
 
-def mock_aplx(name):
+def mock_aplx(name: str) -> str:
     return os.path.join(path, "mock{}.aplx".format(name))
 
 

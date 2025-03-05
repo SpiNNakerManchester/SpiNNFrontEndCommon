@@ -29,7 +29,8 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 class _TestAppVertexWithBinary(AbstractOneAppOneMachineVertex):
 
-    def __init__(self, binary_file_name, binary_start_type):
+    def __init__(
+            self, binary_file_name: str, binary_start_type: ExecutableType):
         AbstractOneAppOneMachineVertex.__init__(
             self, _TestVertexWithBinary(binary_file_name, binary_start_type),
             label=None)
@@ -37,7 +38,8 @@ class _TestAppVertexWithBinary(AbstractOneAppOneMachineVertex):
 
 class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
 
-    def __init__(self, binary_file_name, binary_start_type):
+    def __init__(
+            self, binary_file_name: str, binary_start_type: ExecutableType):
         super().__init__(None)
         self._binary_file_name = binary_file_name
         self._binary_start_type = binary_start_type

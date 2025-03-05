@@ -38,13 +38,6 @@ class TestProvenanceDatabase(unittest.TestCase):
         ProvenanceWriter()
         ProvenanceWriter()
 
-    def as_set(self, items):
-        results = set()
-        for item in items:
-            results.add(
-                ("/".join(item.names[:-1]), item.names[-1], item.value))
-        return results
-
     def test_version(self) -> None:
         with GlobalProvenance() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
