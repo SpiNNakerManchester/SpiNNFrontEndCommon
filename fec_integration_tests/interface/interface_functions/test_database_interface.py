@@ -11,11 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Iterable, Sequence
+
 from spinn_utilities.config_holder import set_config
+from spinn_utilities.overrides import overrides
+
 from spinn_machine.version.version_strings import VersionStrings
 from spinn_machine.tags.iptag import IPTag
+
 from pacman.model.graphs.application import ApplicationVertex, ApplicationEdge
-from pacman.model.graphs.machine import SimpleMachineVertex
+from pacman.model.graphs.machine import MachineVertex, SimpleMachineVertex
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_info import (
@@ -24,10 +29,13 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.tags.tags import Tags
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.graphs.common.slice import Slice
+from pacman.utilities.utility_objs import ChipCounter
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     database_interface)
+
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -36,25 +44,36 @@ from spinn_front_end_common.utilities.database import DatabaseReader
 
 
 class MockSplitter(AbstractSplitterCommon):
-    def create_machine_vertices(self, chip_counter):
+
+    @overrides(AbstractSplitterCommon.create_machine_vertices)
+    def create_machine_vertices(self, chip_counter: ChipCounter) -> None:
         pass
 
-    def get_out_going_slices(self):
-        pass
+    @overrides(AbstractSplitterCommon.get_out_going_slices)
+    def get_out_going_slices(self) -> Sequence[Slice]:
+        raise NotImplementedError()
 
-    def get_in_coming_slices(self):
-        pass
+    @overrides(AbstractSplitterCommon.get_in_coming_slices)
+    def get_in_coming_slices(self) -> Sequence[Slice]:
+        raise NotImplementedError()
 
-    def get_out_going_vertices(self, partition_id):
+    @overrides(AbstractSplitterCommon.get_out_going_vertices)
+    def get_out_going_vertices(
+            self, partition_id: str) -> Sequence[MachineVertex]:
         return self.governed_app_vertex.machine_vertices
 
-    def get_in_coming_vertices(self, partition_id):
-        pass
+    @overrides(AbstractSplitterCommon.get_in_coming_vertices)
+    def get_in_coming_vertices(
+            self, partition_id: str) -> Sequence[MachineVertex]:
+        raise NotImplementedError()
 
-    def machine_vertices_for_recording(self, variable_to_record):
-        pass
+    @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
+    def machine_vertices_for_recording(
+            self, variable_to_record: str) -> Iterable[MachineVertex]:
+        raise NotImplementedError()
 
-    def reset_called(self):
+    @overrides(AbstractSplitterCommon.reset_called)
+    def reset_called(self) -> None:
         pass
 
 
@@ -65,7 +84,7 @@ class MockAppVertex(ApplicationVertex):
         self.__n_atoms = n_atoms
 
     @property
-    def n_atoms(self):
+    def n_atoms(self) -> int:
         return self.__n_atoms
 
 

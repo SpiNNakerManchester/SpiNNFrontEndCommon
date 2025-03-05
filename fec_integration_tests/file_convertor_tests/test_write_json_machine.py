@@ -17,11 +17,16 @@ import json
 import os
 import sys
 import unittest
+
 from spinn_utilities.config_holder import set_config
-from spalloc_client.job import JobDestroyedError
 from spinn_utilities.ping import Ping
+from spinn_utilities.typing.json import JsonArray
+
+from spalloc_client.job import JobDestroyedError
+
 from spinnman.exceptions import SpinnmanIOException
 from spinnman.transceiver import create_transceiver_from_hostname
+
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
@@ -37,40 +42,49 @@ class TestWriteJson(unittest.TestCase):
     spin2Port = 22245
     mainPort = 22244
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
         class_file = sys.modules[self.__module__].__file__
-        path = os.path.dirname(os.path.abspath(class_file))
+        assert class_file is not None
+        class_dir = os.path.abspath(class_file)
+        path = os.path.dirname(class_dir)
         os.chdir(path)
         set_config("Machine", "down_chips", "None")
         set_config("Machine", "down_cores", "None")
         set_config("Machine", "down_links", "None")
         set_config("Mapping", "validate_json", "True")
 
-    def _chips_differ(self, chip1, chip2):
+    def _chips_differ(self, chip1: JsonArray, chip2: JsonArray) -> bool:
         if (chip1 == chip2):
             return False
         if len(chip1) != len(chip2):
             return True
         for i in range(len(chip1)):
-            if chip1[i] == chip2[i]:
+            chip1i = chip1[i]
+            chip2i = chip2[i]
+            if chip1i == chip2i:
                 continue
-            if len(chip1[i]) != len(chip2[i]):
+            assert isinstance(chip1i, dict)
+            assert isinstance(chip2i, dict)
+            if len(chip1i) != len(chip2i):
                 return True
-            for key in chip1[i]:
-                if (chip1[i][key] != chip2[i][key]):
+            for key in chip1i:
+                if (chip1i[key] != chip2i[key]):
                     if key != "cores":
                         return True
                     # Toterance of
-                    c1 = int(chip1[i][key])
-                    c2 = int(chip2[i][key])
+                    c1 = chip1i[key]
+                    c2 = chip2i[key]
+                    assert isinstance(c1, int)
+                    assert isinstance(c2, int)
                     if c1 < c2 - 1:
                         return True
                     if c1 > c2 + 1:
                         return True
             return False
+        return True
 
-    def json_compare(self, file1, file2):
+    def json_compare(self, file1: str, file2: str) -> None:
         if filecmp.cmp(file1, file2):
             return
         with open(file1, encoding="utf-8") as json_file:
@@ -99,7 +113,7 @@ class TestWriteJson(unittest.TestCase):
                         "Values differ for {} found {} {}".format(
                             key, json1[key], json2[key]))
 
-    def _remove_old_json(self, folder):
+    def _remove_old_json(self, folder: str) -> None:
         if not os.path.exists(folder):
             os.makedirs(folder)
         else:
@@ -107,7 +121,7 @@ class TestWriteJson(unittest.TestCase):
             if os.path.exists(json_file):
                 os.remove(json_file)
 
-    def testSpin4(self):
+    def testSpin4(self) -> None:
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
         try:
@@ -125,10 +139,10 @@ class TestWriteJson(unittest.TestCase):
         self.json_compare(filename, "spinn4.json")
 
         # Create a machine with Exception
-        chip = machine.get_chip_at(1, 1)
+        chip = machine[1, 1]
         chip._sdram = chip._sdram - 100
         chip._router._n_available_multicast_entries -= 10
-        chip = machine.get_chip_at(1, 2)
+        chip = machine[1, 2]
         chip._sdram = chip._sdram - 101
 
         folder = "spinn4_fiddle"
@@ -138,13 +152,13 @@ class TestWriteJson(unittest.TestCase):
         self.json_compare(filename, "spinn4_fiddle.json")
         trans.close()
 
-    def testSpin2(self):
+    def testSpin2(self) -> None:
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
         set_config(
             "Machine", "spalloc_user", "Integration testing OK to kill")
         set_config("Machine", "spalloc_server", self.spalloc)
-        set_config("Machine", "spalloc_port", self.spin2Port)
+        set_config("Machine", "spalloc_port", str(self.spin2Port))
 
         writer = FecDataWriter.mock()
         writer.set_n_chips_in_graph(20)

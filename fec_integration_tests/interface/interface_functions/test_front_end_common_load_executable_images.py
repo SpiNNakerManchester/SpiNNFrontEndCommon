@@ -57,10 +57,10 @@ class _MockTransceiver(MockableTransceiver):
 
 class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_front_end_common_load_executable_images(self):
+    def test_front_end_common_load_executable_images(self) -> None:
         writer = FecDataWriter.mock()
         writer.set_transceiver(_MockTransceiver(self))
         targets = ExecutableTargets()

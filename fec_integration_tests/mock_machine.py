@@ -59,22 +59,22 @@ class MockMachine(Thread):
             self._responses.extend(responses)
 
     @property
-    def is_next_message(self):
+    def is_next_message(self) -> bool:
         return len(self._messages) > 0
 
     @property
-    def next_message(self):
+    def next_message(self) -> bytes:
         return self._messages.popleft()
 
     @property
-    def error(self):
+    def error(self) -> None:
         return self._error
 
     @property
-    def local_port(self):
+    def local_port(self) -> None:
         return self._receiver.local_port
 
-    def _do_receive(self):
+    def _do_receive(self) -> None:
         data, address = self._receiver.receive_with_address()
         self._messages.append(data)
         sdp_header = SDPHeader.from_bytestring(data, 2)
@@ -93,7 +93,7 @@ class MockMachine(Thread):
             self._receiver.send_to(
                 struct.pack("<2x") + response.bytestring, address)
 
-    def run(self):
+    def run(self) -> None:
         self._running = True
         while self._running:
             try:
@@ -104,6 +104,6 @@ class MockMachine(Thread):
                     traceback.print_exc()
                     self._error = e
 
-    def stop(self):
+    def stop(self) -> None:
         self._running = False
         self._receiver.close()
