@@ -26,11 +26,11 @@ from spinn_front_end_common.interface.interface_functions.hbp_allocator \
 
 class TestHBPAllocator(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
     @httpretty.activate
-    def test_hbp_job_controller(self):
+    def test_hbp_job_controller(self) -> None:
 
         logging.basicConfig(level=logging.INFO)
         httpretty.register_uri(

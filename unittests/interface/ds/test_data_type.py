@@ -19,13 +19,14 @@ from spinn_front_end_common.interface.ds import DataType
 
 class TestingDataType(unittest.TestCase):
 
-    def test_data_type_enum(self):
+    def test_data_type_enum(self) -> None:
         self.assertEqual(DataType.UINT8.value, 0)
         self.assertEqual(DataType.UINT8.size, 1)
         self.assertEqual(DataType.UINT8.min, 0)
         self.assertEqual(DataType.UINT8.max, 255)
 
-        self.assertEqual(DataType(0), DataType.UINT8)
+        self.assertEqual(
+            DataType(0), DataType.UINT8)  # type: ignore[call-arg]
 
         self.assertEqual(DataType.UINT16.value, 1)
         self.assertEqual(DataType.UINT16.size, 2)

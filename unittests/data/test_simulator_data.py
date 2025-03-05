@@ -14,7 +14,9 @@
 
 import os
 import sys
+from typing import Dict, Tuple
 import unittest
+
 from spinn_utilities.config_holder import set_config
 # hack do not copy
 from spinn_utilities.data.data_status import DataStatus
@@ -22,8 +24,14 @@ from spinn_utilities.data.data_status import DataStatus
 from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
+from spinn_utilities.typing.coords import XY
+
+from spinn_machine import Chip, CoreSubsets, RoutingEntry
 from spinn_machine.version.version_strings import VersionStrings
+
 from spinnman.messages.scp.enums.signal import Signal
+from spinnman.model.enums import ExecutableType
+
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.model import ExecutableTargets
 from pacman.model.placements import Placements
@@ -45,10 +53,10 @@ from spinn_front_end_common.utility_models import (
 
 class TestSimulatorData(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_setup(self):
+    def test_setup(self) -> None:
         # What happens before setup depends on the previous test
         # Use manual_check to verify this without dependency
         writer = FecDataWriter.setup()
@@ -57,12 +65,12 @@ class TestSimulatorData(unittest.TestCase):
         writer.set_up_timings(1000, 1)
         FecDataView.get_simulation_time_step_us()
 
-    def test_mock(self):
+    def test_mock(self) -> None:
         # check there is a value not what it is
         self.assertIsNotNone(FecDataView.get_app_id())
         self.assertIsNotNone(FecDataView.get_simulation_time_step_us())
 
-    def test_app_id(self):
+    def test_app_id(self) -> None:
         writer = FecDataWriter.setup()
         app_id1 = writer.get_app_id()
         self.assertEqual(app_id1, writer.get_app_id())
@@ -72,7 +80,7 @@ class TestSimulatorData(unittest.TestCase):
         writer.hard_reset()
         self.assertEqual(app_id1, writer.get_app_id())
 
-    def test_buffer_manager(self):
+    def test_buffer_manager(self) -> None:
         writer = FecDataWriter.setup()
         writer.set_up_timings(1, 1)
         with self.assertRaises(DataNotYetAvialable):
@@ -90,9 +98,9 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_buffer_manager()
         self.assertFalse(FecDataView.has_buffer_manager())
         with self.assertRaises(TypeError):
-            writer.set_buffer_manager("bacon")
+            writer.set_buffer_manager("bacon")  # type: ignore[arg-type]
 
-    def test_run_times(self):
+    def test_run_times(self) -> None:
         writer = FecDataWriter.setup()
         self.assertEqual(0, FecDataView.get_first_machine_time_step())
         self.assertEqual(0, FecDataView.get_current_run_timesteps())
@@ -111,13 +119,14 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(0, FecDataView.get_first_machine_time_step())
         self.assertEqual(0,  FecDataView.get_current_run_timesteps())
         with self.assertRaises(TypeError):
-            writer.increment_current_run_timesteps(45.0)
+            writer.increment_current_run_timesteps(
+                45.0)  # type: ignore[arg-type]
         with self.assertRaises(ConfigurationException):
             writer.increment_current_run_timesteps(-1)
         writer.increment_current_run_timesteps(95)
         writer.increment_current_run_timesteps(None)
 
-    def test_run_forever(self):
+    def test_run_forever(self) -> None:
         writer = FecDataWriter.setup()
         writer.increment_current_run_timesteps(None)
         self.assertEqual(0, FecDataView.get_first_machine_time_step())
@@ -132,7 +141,7 @@ class TestSimulatorData(unittest.TestCase):
         writer.set_current_run_timesteps(100)
         writer.increment_current_run_timesteps(100)
 
-    def test_current_run_times_ms(self):
+    def test_current_run_times_ms(self) -> None:
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_current_run_time_ms()
@@ -141,7 +150,7 @@ class TestSimulatorData(unittest.TestCase):
         writer.increment_current_run_timesteps(88)
         self.assertEqual(44, FecDataView.get_current_run_time_ms())
 
-    def test_max_run_time_steps(self):
+    def test_max_run_time_steps(self) -> None:
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_max_run_time_steps()
@@ -152,13 +161,13 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(FecDataView.has_max_run_time_steps)
 
         with self.assertRaises(TypeError):
-            writer.set_max_run_time_steps(45.0)
+            writer.set_max_run_time_steps(45.0)  # type: ignore[arg-type]
         with self.assertRaises(ConfigurationException):
             writer.set_max_run_time_steps(-1)
         with self.assertRaises(ConfigurationException):
             writer.set_max_run_time_steps(0)
 
-    def test_simulation_timestep(self):
+    def test_simulation_timestep(self) -> None:
         view = FecDataView()
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
@@ -190,7 +199,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(2, FecDataView.get_hardware_time_step_ms())
         self.assertTrue(FecDataView.has_time_step())
 
-        set_config("Machine", "simulation_time_step", 300)
+        set_config("Machine", "simulation_time_step", "300")
         writer.set_up_timings(None, 1)
         self.assertEqual(300, FecDataView.get_simulation_time_step_us())
 
@@ -198,7 +207,7 @@ class TestSimulatorData(unittest.TestCase):
             writer.set_up_timings(-12, 1)
 
         with self.assertRaises(TypeError):
-            writer.set_up_timings("bacon", 1)
+            writer.set_up_timings("bacon", 1)  # type: ignore[arg-type]
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_simulation_time_step_us()
         with self.assertRaises(DataNotYetAvialable):
@@ -217,7 +226,7 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_hardware_time_step_us()
         self.assertFalse(view.has_time_step())
 
-    def test_directories_normal(self):
+    def test_directories_normal(self) -> None:
         writer = FecDataWriter.setup()
         report_dir = writer.get_report_dir_path()
         self.assertTrue(os.path.exists(report_dir))
@@ -248,7 +257,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn(run_dir, dir2)
         self.assertIn(dir, dir2)
 
-    def test_directories_reset(self):
+    def test_directories_reset(self) -> None:
         writer = FecDataWriter.setup()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
@@ -279,7 +288,7 @@ class TestSimulatorData(unittest.TestCase):
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_3", run_dir)
 
-    def test_directories_mocked(self):
+    def test_directories_mocked(self) -> None:
         FecDataWriter.mock()
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_timestamp_dir_path()))
@@ -291,10 +300,10 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(
             FecDataView.get_system_provenance_dir_path()))
 
-    def test_directories_not_setup(self):
+    def test_directories_not_setup(self) -> None:
         writer = FecDataWriter.mock()
         # Hacks as normally not done
-        writer._FecDataWriter__fec_data._clear()
+        writer._FecDataWriter__fec_data._clear()  # type: ignore[attr-defined]
         # VERY UGLY HACK DO NOT COPY!!!!!!!!!!!!
         _UtilsDataModel()._data_status = DataStatus.NOT_SETUP
         with self.assertRaises(NotSetupException):
@@ -312,7 +321,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(NotSetupException):
             FecDataView.get_system_provenance_dir_path()
 
-    def test_run_number(self):
+    def test_run_number(self) -> None:
         writer = FecDataWriter.setup()
         self.assertEqual(1, FecDataView.get_run_number())
         self.assertIn("run_1", FecDataView.get_run_dir_path())
@@ -350,7 +359,7 @@ class TestSimulatorData(unittest.TestCase):
         # run_dir_path only changed on hard reset
         self.assertIn("run_3", FecDataView.get_run_dir_path())
 
-    def test_system_multicast_routing_data(self):
+    def test_system_multicast_routing_data(self) -> None:
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_data_in_multicast_key_to_chip_map()
@@ -358,9 +367,9 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_data_in_multicast_routing_tables()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_system_multicast_router_timeout_keys()
-        data_in_multicast_key_to_chip_map = dict()
+        data_in_multicast_key_to_chip_map:  Dict[XY, int] = dict()
         data_in_multicast_routing_tables = MulticastRoutingTables()
-        system_multicast_router_timeout_keys = dict()
+        system_multicast_router_timeout_keys: Dict[XY, int] = dict()
         data = (data_in_multicast_routing_tables,
                 data_in_multicast_key_to_chip_map,
                 system_multicast_router_timeout_keys)
@@ -383,7 +392,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_system_multicast_router_timeout_keys()
 
-    def test_ipaddress(self):
+    def test_ipaddress(self) -> None:
         writer = FecDataWriter.setup()
         self.assertFalse(FecDataView.has_ipaddress())
         with self.assertRaises(DataNotYetAvialable):
@@ -398,34 +407,34 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_ipaddress()
         with self.assertRaises(TypeError):
-            writer.set_ipaddress(127)
+            writer.set_ipaddress(127)  # type: ignore[arg-type]
 
-    def test_fixed_routes(self):
+    def test_fixed_routes(self) -> None:
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_fixed_routes()
         self.assertFalse(FecDataView.has_fixed_routes())
-        data = dict()
+        data: Dict[Tuple[int, int], RoutingEntry] = dict()
         writer.set_fixed_routes(data)
         self.assertEqual(data, FecDataView.get_fixed_routes())
         self.assertTrue(FecDataView.has_fixed_routes())
         with self.assertRaises(TypeError):
-            writer.set_fixed_routes(writer)
+            writer.set_fixed_routes(writer)  # type: ignore[arg-type]
 
-    def test_java_caller(self):
+    def test_java_caller(self) -> None:
         FecDataWriter.setup()
         self.assertFalse(FecDataView.has_java_caller())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_java_caller()
 
-    def test_next_none_labelled_edge_number(self):
+    def test_next_none_labelled_edge_number(self) -> None:
         a = FecDataView.get_next_none_labelled_edge_number()
         b = FecDataView.get_next_none_labelled_edge_number()
         c = FecDataView.get_next_none_labelled_edge_number()
         self.assertEqual(a + 1, b)
         self.assertEqual(b + 1, c)
 
-    def test_next_sync_signal(self):
+    def test_next_sync_signal(self) -> None:
         writer = FecDataWriter.setup()
         self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
         self.assertEqual(Signal.SYNC1, FecDataView.get_next_sync_signal())
@@ -441,15 +450,15 @@ class TestSimulatorData(unittest.TestCase):
         writer.reset_sync_signal()
         self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
 
-    def test_executable_types(self):
+    def test_executable_types(self) -> None:
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_executable_types()
-        data = dict()
+        data: Dict[ExecutableType, CoreSubsets] = dict()
         writer.set_executable_types(data)
         self.assertEqual(data, FecDataView.get_executable_types())
 
-    def test_live_packet_recorder_params(self):
+    def test_live_packet_recorder_params(self) -> None:
         writer = FecDataWriter.setup()
         self.assertFalse(FecDataView.has_live_packet_recorder_params())
         with self.assertRaises(DataNotYetAvialable):
@@ -477,7 +486,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn(lpg1, params)
         self.assertIn(lpg2, params)
 
-    def test_database_file_path(self):
+    def test_database_file_path(self) -> None:
         writer = FecDataWriter.setup()
         self.assertIsNone(FecDataView.get_database_file_path())
         writer.set_database_file_path(os.getcwd())
@@ -490,9 +499,9 @@ class TestSimulatorData(unittest.TestCase):
         writer.set_database_file_path(None)
         self.assertIsNone(FecDataView.get_database_file_path())
         with self.assertRaises(TypeError):
-            writer.set_database_file_path(1)
+            writer.set_database_file_path(1)  # type: ignore[arg-type]
 
-    def test_executable_targets(self):
+    def test_executable_targets(self) -> None:
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_executable_targets()
@@ -500,9 +509,9 @@ class TestSimulatorData(unittest.TestCase):
         writer.set_executable_targets(targets)
         self.assertEqual(targets, FecDataView.get_executable_targets())
         with self.assertRaises(TypeError):
-            writer.set_executable_targets([])
+            writer.set_executable_targets([])  # type: ignore[arg-type]
 
-    def test_gatherer_map(self):
+    def test_gatherer_map(self) -> None:
         writer = FecDataWriter.mock()
         set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
         with self.assertRaises(DataNotYetAvialable):
@@ -513,9 +522,9 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_n_gathers()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_gathers()
-        vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, None)
-        vertex2 = DataSpeedUpPacketGatherMachineVertex(1, 1, None)
-        map = dict()
+        vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, "1.1.1.1")
+        vertex2 = DataSpeedUpPacketGatherMachineVertex(1, 1, "1.1.1.1")
+        map: Dict[Chip, DataSpeedUpPacketGatherMachineVertex] = dict()
         # Setting empty ok
         writer.set_gatherer_map(map)
         map[FecDataView.get_chip_at(0, 0)] = vertex1
@@ -533,25 +542,25 @@ class TestSimulatorData(unittest.TestCase):
             [vertex1, vertex2], FecDataView.iterate_gathers())
         self.assertEqual(2, FecDataView.get_n_gathers())
         with self.assertRaises(TypeError):
-            writer.set_gatherer_map([])
+            writer.set_gatherer_map([])  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map = dict()
-            map[(1, 2, 3)] = vertex
-            writer.set_gatherer_map(map)
+            map1 = dict()
+            map1[(1, 2, 3)] = vertex
+            writer.set_gatherer_map(map1)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map = dict()
-            map[(1)] = vertex
-            writer.set_gatherer_map(map)
+            map2 = dict()
+            map2[(1)] = vertex
+            writer.set_gatherer_map(map2)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map = dict()
-            map[(0, 0)] = "Bacon"
-            writer.set_gatherer_map(map)
+            map3 = dict()
+            map3[(0, 0)] = "Bacon"
+            writer.set_gatherer_map(map3)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map = dict()
-            map[(0, "bacon")] = vertex
-            writer.set_gatherer_map(map)
+            map4 = dict()
+            map4[(0, "bacon")] = vertex
+            writer.set_gatherer_map(map4)  # type: ignore[arg-type]
 
-    def test_monitor_map(self):
+    def test_monitor_map(self) -> None:
         writer = FecDataWriter.mock()
         set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
         self.assertFalse(FecDataView.has_monitors())
@@ -565,7 +574,7 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.iterate_monitors()
         vertex1 = ExtraMonitorSupportMachineVertex()
         vertex2 = ExtraMonitorSupportMachineVertex()
-        map = dict()
+        map: Dict[Chip, ExtraMonitorSupportMachineVertex] = dict()
         # Setting empty ok
         writer.set_monitor_map(map)
         map[FecDataView.get_chip_at(0, 0)] = vertex1
@@ -586,25 +595,25 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(KeyError):
             FecDataView.get_monitor_by_xy(0, 1)
         with self.assertRaises(TypeError):
-            writer.set_monitor_map([])
+            writer.set_monitor_map([])  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map = dict()
-            map[(1, 2, 3)] = vertex
-            writer.set_monitor_map(map)
+            map1 = dict()
+            map1[(1, 2, 3)] = vertex
+            writer.set_monitor_map(map1)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map = dict()
-            map[(1)] = vertex
-            writer.set_monitor_map(map)
+            map2 = dict()
+            map2[(1)] = vertex
+            writer.set_monitor_map(map2)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map = dict()
-            map[(0, 0)] = "Bacon"
-            writer.set_monitor_map(map)
+            map3 = dict()
+            map3[(0, 0)] = "Bacon"
+            writer.set_monitor_map(map3)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map = dict()
-            map[(0, "bacon")] = vertex
-            writer.set_monitor_map(map)
+            map4 = dict()
+            map4[(0, "bacon")] = vertex
+            writer.set_monitor_map(map4)  # type: ignore[arg-type]
 
-    def test_database_socket_addresses(self):
+    def test_database_socket_addresses(self) -> None:
         FecDataWriter.mock()
         self.assertCountEqual(
             [], FecDataView.iterate_database_socket_addresses())
@@ -623,17 +632,19 @@ class TestSimulatorData(unittest.TestCase):
             [sa1, sa2, sa3, sa4],
             FecDataView.iterate_database_socket_addresses())
         with self.assertRaises(TypeError):
-            FecDataView.add_database_socket_address("bacon")
+            FecDataView.add_database_socket_address(
+                "bacon")  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            FecDataView.add_database_socket_addresses(12)
+            FecDataView.add_database_socket_addresses(
+                12)  # type: ignore[arg-type]
 
-    def test_notification_protocol(self):
+    def test_notification_protocol(self) -> None:
 
         class NotificationProtocol2(NotificationProtocol):
 
             is_closed = False
 
-            def close(self):
+            def close(self) -> None:
                 # record that the method was closed
                 self.is_closed = True
                 # Now raise an exception
@@ -650,9 +661,9 @@ class TestSimulatorData(unittest.TestCase):
         writer.set_notification_protocol(NotificationProtocol())
         self.assertTrue(protocol2.is_closed)
         with self.assertRaises(TypeError):
-            writer.set_notification_protocol([])
+            writer.set_notification_protocol([])  # type: ignore[arg-type]
 
-    def test_run_step(self):
+    def test_run_step(self) -> None:
         self.assertIsNone(FecDataView.get_run_step())
         FecDataView.is_last_step()
         writer = FecDataWriter.setup()
@@ -676,7 +687,7 @@ class TestSimulatorData(unittest.TestCase):
         # this time there is no n_time_Step so assuming run forever
         self.assertFalse(FecDataView.is_last_step())
 
-    def test_ds_references(self):
+    def test_ds_references(self) -> None:
         refs1 = FecDataView.get_next_ds_references(7)
         self.assertEqual(7, len(refs1))
         self.assertEqual(7, len(set(refs1)))

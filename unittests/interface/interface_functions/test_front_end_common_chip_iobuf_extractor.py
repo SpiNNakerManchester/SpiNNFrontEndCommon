@@ -14,7 +14,7 @@
 
 import os
 import tempfile
-from typing import Iterable, Optional
+from typing import Iterable, List, Optional, Tuple
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.make_tools.log_sqllite_database import LogSqlLiteDatabase
@@ -31,7 +31,7 @@ from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 
 
 class _PretendTransceiver(MockableTransceiver):
-    def __init__(self, iobuffers):
+    def __init__(self, iobuffers: List[IOBuffer]):
         self._iobuffers = iobuffers
 
     @overrides(MockableTransceiver.get_iobuf)
@@ -43,7 +43,7 @@ class _PretendTransceiver(MockableTransceiver):
                 yield iobuf
 
 
-def mock_text(x, y, p):
+def mock_text(x: int, y: int, p: int) -> Tuple[str, str, str]:
     filename = "myfile.c"
     error = "Test Error"
     warning = "Test Warning"
@@ -65,7 +65,7 @@ text003, result_error003, result_warning003 = mock_text(0, 0, 3)
 path = os.path.dirname(os.path.abspath(__file__))
 
 
-def mock_aplx(name):
+def mock_aplx(name: str) -> str:
     return os.path.join(path, "mock{}.aplx".format(name))
 
 
@@ -83,7 +83,7 @@ executable_targets.add_subsets(alphaaplx, core_subsets)
 
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
         os.environ["C_LOGS_DICT"] = tempfile.mktemp()
         # There needs to be a dict but it can be empty
@@ -96,10 +96,10 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         FecDataView.register_binary_search_path(path)
         writer.set_executable_targets(executable_targets)
 
-    def testExectuableFinder(self):
+    def testExectuableFinder(self) -> None:
         self.assertIn(fooaplx, FecDataView.get_executable_path(fooaplx))
 
-    def testCallSimple(self):
+    def testCallSimple(self) -> None:
         folder = FecDataView.get_app_provenance_dir_path()
         error_entries, warn_entries = chip_io_buf_extractor()
         set_config("Reports", "extract_iobuf_from_cores", "None")
@@ -131,7 +131,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(result_warning003, warn_entries)
         self.assertEqual(5, len(warn_entries))
 
-    def testCallChips(self):
+    def testCallChips(self) -> None:
         folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:0,0,3")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
@@ -163,7 +163,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(result_warning003, warn_entries)
         self.assertEqual(2, len(warn_entries))
 
-    def testCallBinary(self):
+    def testCallBinary(self) -> None:
         folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "None")
         set_config("Reports", "extract_iobuf_from_binary_types",
@@ -192,7 +192,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(result_warning003, warn_entries)
         self.assertEqual(3, len(warn_entries))
 
-    def testCallBoth(self):
+    def testCallBoth(self) -> None:
         folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:1,1,1")
         set_config("Reports", "extract_iobuf_from_binary_types",

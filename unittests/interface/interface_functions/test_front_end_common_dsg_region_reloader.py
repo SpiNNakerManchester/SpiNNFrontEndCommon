@@ -14,12 +14,17 @@
 
 import unittest
 import numpy
-from typing import BinaryIO, Optional, Sequence, Tuple, Union
+from typing import BinaryIO, Optional, List, Tuple, Union
+
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
+
 from spinn_machine.version.version_strings import VersionStrings
+
 from spinnman.model.enums import ExecutableType
+
 from pacman.model.placements import Placements, Placement
+
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
     AbstractRewritesDataSpecification)
@@ -29,7 +34,6 @@ from spinn_front_end_common.interface.interface_functions import (
     reload_dsg_regions)
 from pacman.model.graphs.machine import (SimpleMachineVertex)
 from spinnman.transceiver.mockable_transceiver import MockableTransceiver
-from spinnman.model import CPUInfo
 from spinn_front_end_common.interface.ds import (
     DataSpecificationGenerator, DataSpecificationReloader, DsSqlliteDatabase)
 from spinn_front_end_common.utilities.exceptions import DataSpecException
@@ -59,7 +63,7 @@ class _TestMachineVertex(
     """ A simple machine vertex for testing
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(None)
         self._requires_regions_to_be_reloaded = True
 
@@ -96,26 +100,13 @@ class _TestMachineVertex(
         raise NotImplementedError()
 
 
-class _MockCPUInfo(object):
-    """ Pretend CPU Info object
-    """
-
-    def __init__(self, user_0):
-        self._user_0 = user_0
-
-    @property
-    @overrides(CPUInfo.user)
-    def user(self) -> Sequence[int]:
-        return [self._user_0]
-
-
 class _MockTransceiver(MockableTransceiver):
     """ Pretend transceiver
     """
     # pylint: disable=unused-argument
 
-    def __init__(self):
-        self._regions_rewritten = list()
+    def __init__(self) -> None:
+        self._regions_rewritten: List = list()
 
     @overrides(MockableTransceiver.write_memory)
     def write_memory(
@@ -129,12 +120,12 @@ class _MockTransceiver(MockableTransceiver):
 
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
         set_config("Machine", "versions", VersionStrings.ANY.text)
         set_config("Reports", "write_text_specs", "True")
 
-    def test_with_good_sizes(self):
+    def test_with_good_sizes(self) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
         writer = FecDataWriter.mock()
@@ -151,8 +142,10 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         writer.set_transceiver(transceiver)
         with DsSqlliteDatabase() as ds:
             for placement in placements:
+                vertex = placement.vertex
+                assert isinstance(vertex, AbstractHasAssociatedBinary)
                 ds.set_core(
-                    placement.x, placement.y, placement.p, placement.vertex)
+                    placement.x, placement.y, placement.p, vertex)
                 base = placement.p * 1000
                 regions = reload_region_data[placement.p]
                 for (reg_num, size, _) in regions:
@@ -182,13 +175,14 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             regions = reload_region_data[placement.p]
             address = placement.p * 1000
             for (_, size, data) in regions:
-                data = bytearray(numpy.array(data, dtype="uint32").tobytes())
+                data_ba = bytearray(
+                    numpy.array(data, dtype="uint32").tobytes())
                 # Check that the base address and data written is correct
-                self.assertEqual(regions_rewritten[pos], (address, data))
+                self.assertEqual(regions_rewritten[pos], (address, data_ba))
                 pos += 1
                 address += size
 
-    def test_with_size_changed(self):
+    def test_with_size_changed(self) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
         writer = FecDataWriter.mock()
@@ -205,8 +199,10 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         writer.set_transceiver(transceiver)
         with DsSqlliteDatabase() as ds:
             for placement in placements:
+                vertex = placement.vertex
+                assert isinstance(vertex, AbstractHasAssociatedBinary)
                 ds.set_core(
-                    placement.x, placement.y, placement.p, placement.vertex)
+                    placement.x, placement.y, placement.p, vertex)
                 base = placement.p * 1000
                 regions = reload_region_data[placement.p]
                 for (reg_num, size, _) in regions:

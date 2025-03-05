@@ -23,34 +23,35 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 class TestVirtualMachineGenerator(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
+
         unittest_setup()
 
-    def test_only_width(self):
-        set_config("Machine", "version", 5)
+    def test_only_width(self) -> None:
+        set_config("Machine", "version", "5")
         set_config("Machine", "virtual_board", "True")
         set_config("Machine", "width", "8")
         with self.assertRaises(ConfigurationException):
             virtual_machine_generator()
 
-    def test_by_boards(self):
-        set_config("Machine", "version", 5)
+    def test_by_boards(self) -> None:
+        set_config("Machine", "version", "5")
         set_config("Machine", "virtual_board", "True")
         # Called by sim.setup
         FecDataWriter.mock().set_n_required(3, None)
         machine = virtual_machine_generator()
         self.assertEqual(3, len(machine.ethernet_connected_chips))
 
-    def test_by_set_chips(self):
-        set_config("Machine", "version", 5)
+    def test_by_set_chips(self) -> None:
+        set_config("Machine", "version", "5")
         set_config("Machine", "virtual_board", "True")
         # Called by sim.setup
         FecDataWriter.mock().set_n_chips_in_graph(100)
         machine = virtual_machine_generator()
         self.assertEqual(3, len(machine.ethernet_connected_chips))
 
-    def test_by_chips(self):
-        set_config("Machine", "version", 5)
+    def test_by_chips(self) -> None:
+        set_config("Machine", "version", "5")
         set_config("Machine", "virtual_board", "True")
         # Called after partitioning
         FecDataWriter.mock().set_n_chips_in_graph(1)
