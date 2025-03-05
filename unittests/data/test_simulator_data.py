@@ -409,7 +409,6 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_ipaddress(127)  # type: ignore[arg-type]
 
-
     def test_fixed_routes(self) -> None:
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
@@ -602,7 +601,7 @@ class TestSimulatorData(unittest.TestCase):
             map1[(1, 2, 3)] = vertex
             writer.set_monitor_map(map1)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map2= dict()
+            map2 = dict()
             map2[(1)] = vertex
             writer.set_monitor_map(map2)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
@@ -613,7 +612,6 @@ class TestSimulatorData(unittest.TestCase):
             map4 = dict()
             map4[(0, "bacon")] = vertex
             writer.set_monitor_map(map4)  # type: ignore[arg-type]
-
 
     def test_database_socket_addresses(self) -> None:
         FecDataWriter.mock()

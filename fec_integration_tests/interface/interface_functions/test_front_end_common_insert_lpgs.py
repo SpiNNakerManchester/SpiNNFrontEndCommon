@@ -50,13 +50,14 @@ class TestInsertLPGs(unittest.TestCase):
         writer.set_machine(virtual_machine_by_boards(3))
 
         default_params_holder = LivePacketGatherParameters(
-            use_prefix = False, key_prefix = None, prefix_type = None,
-            message_type= EIEIOType.KEY_32_BIT, right_shift = 0,
-            payload_as_time_stamps = True, use_payload_prefix = True,
-            payload_prefix = None, payload_right_shift = 0,
-            number_of_packets_sent_per_time_step = 0,
-            hostname = 'localhost', port = 1000, strip_sdp = False,
-            tag = None, label = "Test")
+            port=1000, hostname='localhost', tag=None, strip_sdp=False,
+            use_prefix=False, key_prefix=None, prefix_type=None,
+            message_type=EIEIOType.KEY_32_BIT, right_shift=0,
+            payload_as_time_stamps=True, use_payload_prefix=True,
+            payload_prefix=None, payload_right_shift=0,
+            number_of_packets_sent_per_time_step=0,
+
+            label="Test")
         lpg_vertex = LivePacketGather(default_params_holder)
 
         writer.add_vertex(lpg_vertex)

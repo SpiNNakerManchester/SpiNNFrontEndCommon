@@ -163,7 +163,8 @@ class TestBufferedDatabase(unittest.TestCase):
         with BufferDatabase() as brd:
             brd.start_new_extraction()
             brd.store_download(1, 2, 3, 0, False, b"abc")
-            data_mv, missing = brd.get_download_by_extraction_id(1, 2, 3, 0, -1)
+            data_mv, missing = brd.get_download_by_extraction_id(
+                1, 2, 3, 0, -1)
             self.assertFalse(missing, "data should be 'missing'")
             self.assertEqual(bytes(data_mv), b"abc")
 

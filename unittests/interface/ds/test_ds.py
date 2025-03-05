@@ -61,6 +61,7 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary,
                                     placement: Placement) -> None:
         pass
 
+
 class TestDataSpecification(unittest.TestCase):
 
     def setUp(self) -> None:

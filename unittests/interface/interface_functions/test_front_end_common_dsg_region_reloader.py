@@ -14,7 +14,7 @@
 
 import unittest
 import numpy
-from typing import BinaryIO, Optional, List, Sequence, Tuple, Union
+from typing import BinaryIO, Optional, List, Tuple, Union
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
@@ -34,7 +34,6 @@ from spinn_front_end_common.interface.interface_functions import (
     reload_dsg_regions)
 from pacman.model.graphs.machine import (SimpleMachineVertex)
 from spinnman.transceiver.mockable_transceiver import MockableTransceiver
-from spinnman.model import CPUInfo
 from spinn_front_end_common.interface.ds import (
     DataSpecificationGenerator, DataSpecificationReloader, DsSqlliteDatabase)
 from spinn_front_end_common.utilities.exceptions import DataSpecException
@@ -176,7 +175,8 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             regions = reload_region_data[placement.p]
             address = placement.p * 1000
             for (_, size, data) in regions:
-                data_ba = bytearray(numpy.array(data, dtype="uint32").tobytes())
+                data_ba = bytearray(
+                    numpy.array(data, dtype="uint32").tobytes())
                 # Check that the base address and data written is correct
                 self.assertEqual(regions_rewritten[pos], (address, data_ba))
                 pos += 1
