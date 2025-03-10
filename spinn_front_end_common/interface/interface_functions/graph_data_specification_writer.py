@@ -82,7 +82,7 @@ class _GraphDataSpecificationWriter(object):
                             f"ds{FecDataView.get_reset_str()}.sqlite3")
         with DsSqlliteDatabase(path) as ds_db:
             ds_db.write_session_credentials_to_db()
-            ds_db. set_app_id()
+            ds_db.set_info()
 
             placements: Iterable[Placement]
             if placement_order is None:
