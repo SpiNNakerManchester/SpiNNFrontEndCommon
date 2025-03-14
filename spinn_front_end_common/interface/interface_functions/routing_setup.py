@@ -19,7 +19,6 @@ from spinnman.model import DiagnosticFilter
 from spinnman.model.enums import (
     DiagnosticFilterDefaultRoutingStatus, DiagnosticFilterPacketType,
     DiagnosticFilterSource)
-from spinnman.transceiver import Transceiver
 
 from spinn_front_end_common.data import FecDataView
 
@@ -32,50 +31,36 @@ def routing_setup() -> None:
         This does not load any routes into them.
     """
     transceiver = FecDataView.get_transceiver()
-    routing_tables = FecDataView.get_uncompressed().routing_tables
-    progress = ProgressBar(len(routing_tables), "Preparing Routing Tables")
 
-    # Clear the routing table for each table that needs to be set up
-    # and set up the diagnostics
-    for table in progress.over(routing_tables):
-        transceiver.clear_multicast_routes(table.x, table.y)
-        transceiver.clear_router_diagnostic_counters(table.x, table.y)
-        _set_router_diagnostic_filters(table.x, table.y, transceiver)
+    # Sets user 2 to count non-local default routed packets
+    filter_2 = DiagnosticFilter(
+        enable_interrupt_on_counter_event=False,
+        match_emergency_routing_status_to_incoming_packet=False,
+        destinations=[],
+        sources=[DiagnosticFilterSource.NON_LOCAL],
+        payload_statuses=[],
+        default_routing_statuses=[
+            DiagnosticFilterDefaultRoutingStatus.DEFAULT_ROUTED],
+        emergency_routing_statuses=[],
+        packet_types=[DiagnosticFilterPacketType.MULTICAST])
 
-
-def _set_router_diagnostic_filters(
-        x: int, y: int, transceiver: Transceiver) -> None:
-    """
-    :param int x:
-    :param int y:
-    :param ~.Transceiver transceiver:
-    """
     # Set the router diagnostic for user 3 to catch local default routed
     # packets. This can only occur when the source router has no router
     # entry, and therefore should be detected as a bad dropped packet.
-    transceiver.set_router_diagnostic_filter(
-        x, y, ROUTER_REGISTER_REGISTERS.USER_3.value,
-        DiagnosticFilter(
-            enable_interrupt_on_counter_event=False,
-            match_emergency_routing_status_to_incoming_packet=False,
-            destinations=[],
-            sources=[DiagnosticFilterSource.LOCAL],
-            payload_statuses=[],
-            default_routing_statuses=[
-                DiagnosticFilterDefaultRoutingStatus.DEFAULT_ROUTED],
-            emergency_routing_statuses=[],
-            packet_types=[DiagnosticFilterPacketType.MULTICAST]))
+    filter_3 = DiagnosticFilter(
+        enable_interrupt_on_counter_event=False,
+        match_emergency_routing_status_to_incoming_packet=False,
+        destinations=[],
+        sources=[DiagnosticFilterSource.LOCAL],
+        payload_statuses=[],
+        default_routing_statuses=[
+            DiagnosticFilterDefaultRoutingStatus.DEFAULT_ROUTED],
+        emergency_routing_statuses=[],
+        packet_types=[DiagnosticFilterPacketType.MULTICAST])
 
-    # Sets user 2 to count non-local default routed packets
-    transceiver.set_router_diagnostic_filter(
-        x, y, ROUTER_REGISTER_REGISTERS.USER_2.value,
-        DiagnosticFilter(
-            enable_interrupt_on_counter_event=False,
-            match_emergency_routing_status_to_incoming_packet=False,
-            destinations=[],
-            sources=[DiagnosticFilterSource.NON_LOCAL],
-            payload_statuses=[],
-            default_routing_statuses=[
-                DiagnosticFilterDefaultRoutingStatus.DEFAULT_ROUTED],
-            emergency_routing_statuses=[],
-            packet_types=[DiagnosticFilterPacketType.MULTICAST]))
+    progress = ProgressBar(1, "Preparing Routing Tables")
+    transceiver.prepare_routing_tables({
+        ROUTER_REGISTER_REGISTERS.USER_2.value: filter_2,
+        ROUTER_REGISTER_REGISTERS.USER_3.value: filter_3})
+    progress.update()
+    progress.end()
