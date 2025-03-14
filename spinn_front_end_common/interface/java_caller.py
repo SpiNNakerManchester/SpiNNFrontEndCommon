@@ -18,6 +18,8 @@ import json
 import logging
 import os
 import subprocess
+import selectors
+import sys
 from typing import Dict, Iterable, List, Optional, cast
 
 from spinn_utilities.config_holder import (
@@ -30,8 +32,6 @@ from pacman.model.graphs import AbstractVirtual
 from pacman.model.placements import Placement
 
 from spinn_front_end_common.data import FecDataView
-import selectors
-import sys
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import write_json_machine
 from spinn_front_end_common.utilities.exceptions import (
