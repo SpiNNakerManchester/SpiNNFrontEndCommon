@@ -14,13 +14,14 @@
 
 from collections import defaultdict
 import datetime
+from io import BufferedReader
 import json
 import logging
 import os
 import subprocess
 import selectors
 import sys
-from typing import Dict, Iterable, List, Optional, cast, IO
+from typing import Dict, Iterable, List, Optional, cast
 
 from spinn_utilities.config_holder import (
     get_config_str, get_config_str_or_none)
@@ -382,7 +383,7 @@ class JavaCaller(object):
             all_output = ""
             while process.poll() is None:
                 for key, _ in sel.select():
-                    data = cast(IO[bytes], key.fileobj).read1().decode()
+                    data = cast(BufferedReader, key.fileobj).read1().decode()
                     if not data:
                         break
                     if key.fileobj is process.stdout:
