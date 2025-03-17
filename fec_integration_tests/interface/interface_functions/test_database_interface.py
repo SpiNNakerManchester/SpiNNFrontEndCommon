@@ -11,11 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Iterable, List,  Sequence
+
+from spinn_front_end_common.utility_models.live_packet_gather import \
+    _LPGSplitter
 from spinn_utilities.config_holder import set_config
+from spinn_utilities.overrides import overrides
+
 from spinn_machine.version.version_strings import VersionStrings
 from spinn_machine.tags.iptag import IPTag
+
 from pacman.model.graphs.application import ApplicationVertex, ApplicationEdge
-from pacman.model.graphs.machine import SimpleMachineVertex
+from pacman.model.graphs.machine import MachineVertex, SimpleMachineVertex
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_info import (
@@ -24,10 +31,13 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.tags.tags import Tags
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.graphs.common.slice import Slice
+from pacman.utilities.utility_objs import ChipCounter
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     database_interface)
+
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -36,40 +46,52 @@ from spinn_front_end_common.utilities.database import DatabaseReader
 
 
 class MockSplitter(AbstractSplitterCommon):
-    def create_machine_vertices(self, chip_counter):
+
+    @overrides(AbstractSplitterCommon.create_machine_vertices)
+    def create_machine_vertices(self, chip_counter: ChipCounter) -> None:
         pass
 
-    def get_out_going_slices(self):
-        pass
+    @overrides(AbstractSplitterCommon.get_out_going_slices)
+    def get_out_going_slices(self) -> Sequence[Slice]:
+        raise NotImplementedError()
 
-    def get_in_coming_slices(self):
-        pass
+    @overrides(AbstractSplitterCommon.get_in_coming_slices)
+    def get_in_coming_slices(self) -> Sequence[Slice]:
+        raise NotImplementedError()
 
-    def get_out_going_vertices(self, partition_id):
+    @overrides(AbstractSplitterCommon.get_out_going_vertices)
+    def get_out_going_vertices(
+            self, partition_id: str) -> Sequence[MachineVertex]:
         return self.governed_app_vertex.machine_vertices
 
-    def get_in_coming_vertices(self, partition_id):
-        pass
+    @overrides(AbstractSplitterCommon.get_in_coming_vertices)
+    def get_in_coming_vertices(
+            self, partition_id: str) -> Sequence[MachineVertex]:
+        raise NotImplementedError()
 
-    def machine_vertices_for_recording(self, variable_to_record):
-        pass
+    @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
+    def machine_vertices_for_recording(
+            self, variable_to_record: str) -> Iterable[MachineVertex]:
+        raise NotImplementedError()
 
-    def reset_called(self):
+    @overrides(AbstractSplitterCommon.reset_called)
+    def reset_called(self) -> None:
         pass
 
 
 class MockAppVertex(ApplicationVertex):
-    def __init__(self, n_atoms, label):
+    def __init__(self, n_atoms: int, label: str):
         super(MockAppVertex, self).__init__(
             label=label, splitter=MockSplitter())
         self.__n_atoms = n_atoms
 
     @property
-    def n_atoms(self):
+    def n_atoms(self) -> int:
         return self.__n_atoms
 
 
-def _make_m_vertices(app_vertex, n_m_vertices, atoms_per_core):
+def _make_m_vertices(app_vertex: ApplicationVertex, n_m_vertices: int,
+                     atoms_per_core: int) -> None:
     for i in range(n_m_vertices):
         m_vertex = SimpleMachineVertex(
             ConstantSDRAM(0), label=f"{app_vertex.label}_{i}",
@@ -80,8 +102,9 @@ def _make_m_vertices(app_vertex, n_m_vertices, atoms_per_core):
 
 
 def _add_rinfo(
-        app_vertex, partition_id, routing_info, base_key, app_mask, mac_mask,
-        m_vertex_shift):
+        app_vertex: ApplicationVertex, partition_id: str,
+        routing_info: RoutingInfo, base_key: int, app_mask: int, mac_mask: int,
+        m_vertex_shift: int) -> None:
     routing_info.add_routing_info(AppVertexRoutingInfo(
         BaseKeyAndMask(base_key, app_mask), partition_id, app_vertex,
         mac_mask, 1, 1))
@@ -92,7 +115,8 @@ def _add_rinfo(
             partition_id, m_vertex, i))
 
 
-def _place_vertices(app_vertexes, placements):
+def _place_vertices(app_vertexes: List[ApplicationVertex],
+                    placements: Placements) -> Placements:
     machine = FecDataView.get_machine()
     chips = machine.chips
     chip = next(chips)
@@ -114,7 +138,7 @@ def _place_vertices(app_vertexes, placements):
     return placements
 
 
-def test_database_interface():
+def test_database_interface() -> None:
     unittest_setup()
     set_config("Machine", "versions", VersionStrings.ANY.text)
     set_config("Database", "create_database", "True")
@@ -137,7 +161,9 @@ def test_database_interface():
     writer.add_vertex(lpg_vertex)
     writer.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
 
-    lpg_vertex.splitter.create_sys_vertices(placements)
+    splitter = lpg_vertex.splitter
+    assert isinstance(splitter, _LPGSplitter)
+    splitter.create_sys_vertices(placements)
 
     _place_vertices([app_vertex_1, app_vertex_2], placements)
 
@@ -160,21 +186,26 @@ def test_database_interface():
     writer.set_tags(tags)
 
     db_path = database_interface(1000)
+    assert db_path is not None
     print(db_path)
 
+    label1 = app_vertex_1.label
+    assert label1 is not None
+    lpg_label = lpg_vertex.label
+    assert lpg_label is not None
     with DatabaseReader(db_path) as reader:
         assert (reader.get_ip_address(0, 0) ==
                 writer.get_chip_at(0, 0).ip_address)
         assert all(db_p ==
                    placements.get_placement_of_vertex(m_vertex).location
                    for db_p, m_vertex in zip(
-                       reader.get_placements(app_vertex_1.label),
+                       reader.get_placements(label1),
                        app_vertex_1.machine_vertices))
         assert reader.get_configuration_parameter_value("runtime") == 1000
         assert (
             reader.get_live_output_details(
-                app_vertex_1.label, lpg_vertex.label) ==
+                label1, lpg_label) ==
             (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address,
              tag.tag, tag.destination_x, tag.destination_y))
-        assert reader.get_atom_id_to_key_mapping(app_vertex_1.label)
-        assert reader.get_key_to_atom_id_mapping(app_vertex_1.label)
+        assert reader.get_atom_id_to_key_mapping(label1)
+        assert reader.get_key_to_atom_id_mapping(label1)

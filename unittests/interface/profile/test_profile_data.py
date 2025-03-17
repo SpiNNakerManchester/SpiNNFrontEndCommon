@@ -23,16 +23,16 @@ _CLOCK_PER_MS = 200000
 _CLOCK_MAX = (2**32) - 1
 
 
-def _get_clock(timestep, ms_into_timestep):
+def _get_clock(timestep: int, ms_into_timestep: float) -> float:
     return _CLOCK_MAX - int((timestep + ms_into_timestep) * _CLOCK_PER_MS)
 
 
 class Test(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_use(self):
+    def test_use(self) -> None:
 
         # Set up the object to test
         profile_data = ProfileData({3: "Test", 4: "Test2"})
@@ -52,7 +52,7 @@ class Test(unittest.TestCase):
         profile_data.add_data(data)
 
         # Should be 2 tags as 2 specified
-        self.assertEqual(len(profile_data.tags), 2)
+        self.assertEqual(len(list(profile_data.tags)), 2)
 
         # Should be 0.2ms between "Test" tag start and end, as only one
         self.assertEqual(profile_data.get_mean_ms("Test"), 0.2)

@@ -30,41 +30,36 @@ from spinn_front_end_common.utility_models import LivePacketGather
 
 
 class TestVertex(ApplicationVertex):
-    def __init__(self, n_atoms):
-        self.n_atoms = n_atoms
+    def __init__(self, n_atoms: int):
+        self._n_atoms = n_atoms
+
+    def number_of_atoms(self) -> int:
+        return self._n_atoms
 
 
 class TestInsertLPGs(unittest.TestCase):
     """ tests the LPG insert functions
 
     """
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
         set_config("Machine", "versions", VersionStrings.BIG.text)
 
-    def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
+    def test_that_3_lpgs_are_generated_on_3_board_app_graph(self) -> None:
         writer = FecDataWriter.mock()
         writer.set_machine(virtual_machine_by_boards(3))
 
-        default_params = {
-            'use_prefix': False,
-            'key_prefix': None,
-            'prefix_type': None,
-            'message_type': EIEIOType.KEY_32_BIT,
-            'right_shift': 0,
-            'payload_as_time_stamps': True,
-            'use_payload_prefix': True,
-            'payload_prefix': None,
-            'payload_right_shift': 0,
-            'number_of_packets_sent_per_time_step': 0,
-            'hostname': 'localhost',
-            'port': 1000,
-            'strip_sdp': None,
-            'tag': None,
-            'label': "Test"}
+        default_params_holder = LivePacketGatherParameters(
+            port=1000, hostname='localhost', tag=None, strip_sdp=False,
+            use_prefix=False, key_prefix=None, prefix_type=None,
+            message_type=EIEIOType.KEY_32_BIT, right_shift=0,
+            payload_as_time_stamps=True, use_payload_prefix=True,
+            payload_prefix=None, payload_right_shift=0,
+            number_of_packets_sent_per_time_step=0,
 
-        default_params_holder = LivePacketGatherParameters(**default_params)
+            label="Test")
         lpg_vertex = LivePacketGather(default_params_holder)
+
         writer.add_vertex(lpg_vertex)
 
         system_placements = Placements()

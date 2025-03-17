@@ -25,10 +25,10 @@ from spinn_front_end_common.utilities.notification_protocol import (
 
 class TestStopPauseNotificationProtocol(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_send_stop_pause_notification(self):
+    def test_send_stop_pause_notification(self) -> None:
         """ Test the sending of the stop/pause message of the notification\
             protocol
         """
@@ -38,7 +38,7 @@ class TestStopPauseNotificationProtocol(unittest.TestCase):
         protocol = NotificationProtocol()
         protocol.send_stop_pause_notification()
         message = listener.receive_eieio_message(timeout=10)
-        self.assertIsInstance(message, EIEIOCommandMessage)
+        assert isinstance(message, EIEIOCommandMessage)
         self.assertEqual(
             message.eieio_header.command,
             EIEIO_COMMAND_IDS.STOP_PAUSE_NOTIFICATION.value)

@@ -25,36 +25,36 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 class MockSimulator(object):
 
     @property
-    def _report_default_directory(self):
+    def _report_default_directory(self) -> str:
         return tempfile.mkdtemp()
 
     @property
-    def n_calls_to_run(self):
+    def n_calls_to_run(self) -> int:
         return 1
 
     @property
-    def n_loops(self):
+    def n_loops(self) -> int:
         return 1
 
 
 class TestFecTimer(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
         set_config("Reports", "write_algorithm_timings", "True")
-        FecTimer.setup(MockSimulator())
+        FecTimer.setup(MockSimulator())  # type: ignore[arg-type]
 
-    def test_simple(self):
+    def test_simple(self) -> None:
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with FecTimer("test", TimerWork.OTHER):
             pass
 
-    def test_skip(self):
+    def test_skip(self) -> None:
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with FecTimer("test", TimerWork.OTHER) as ft:
             ft.skip("why not")
 
-    def test_error(self):
+    def test_error(self) -> None:
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with LogCapture() as lc:
             try:
@@ -68,7 +68,7 @@ class TestFecTimer(unittest.TestCase):
                     found = True
             assert found
 
-    def test_nested(self):
+    def test_nested(self) -> None:
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         FecTimer.start_category(TimerCategory.MAPPING)
@@ -86,7 +86,7 @@ class TestFecTimer(unittest.TestCase):
             self.assertGreater(on, 0)
             self.assertGreater(off, 0)
 
-    def test_repeat_middle(self):
+    def test_repeat_middle(self) -> None:
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         FecTimer.start_category(TimerCategory.MAPPING)
@@ -100,10 +100,12 @@ class TestFecTimer(unittest.TestCase):
         self.assertEqual(id1, id2)
         FecTimer.end_category(TimerCategory.MAPPING)
         id3 = FecTimer._category_id
+        assert id1 is not None
+        assert id3 is not None
         self.assertEqual(id1 + 1, id3)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
 
-    def test_repeat_stopped(self):
+    def test_repeat_stopped(self) -> None:
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
         FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
@@ -117,7 +119,7 @@ class TestFecTimer(unittest.TestCase):
                 TimerCategory.SHUTTING_DOWN)
             self.assertGreater(total, 0)
 
-    def test_repeat_mess(self):
+    def test_repeat_mess(self) -> None:
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         FecTimer.start_category(TimerCategory.MAPPING)
@@ -126,7 +128,7 @@ class TestFecTimer(unittest.TestCase):
         with self.assertRaises(ValueError):
             FecTimer.end_category(TimerCategory.RUN_OTHER)
 
-    def test_mess(self):
+    def test_mess(self) -> None:
         with self.assertRaises(ValueError):
             FecTimer.end_category(TimerCategory.WAITING)
 
@@ -135,7 +137,7 @@ class TestFecTimer(unittest.TestCase):
         with self.assertRaises(ValueError):
             FecTimer.end_category(TimerCategory.RUN_OTHER)
 
-    def test_stop_category_timing_clean(self):
+    def test_stop_category_timing_clean(self) -> None:
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with GlobalProvenance() as db:
@@ -150,7 +152,7 @@ class TestFecTimer(unittest.TestCase):
             other = db.get_category_timer_sum(TimerCategory.RUN_OTHER)
             self.assertGreater(other, 0)
 
-    def test_stop_category_timing_messy(self):
+    def test_stop_category_timing_messy(self) -> None:
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with GlobalProvenance() as db:
@@ -168,7 +170,7 @@ class TestFecTimer(unittest.TestCase):
             other = db.get_category_timer_sum(TimerCategory.RUN_OTHER)
             self.assertGreater(other, 0)
 
-    def test_stop_last_category_blocked(self):
+    def test_stop_last_category_blocked(self) -> None:
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         FecTimer.start_category(TimerCategory.MAPPING)

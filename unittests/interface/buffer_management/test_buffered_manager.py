@@ -58,10 +58,10 @@ class MockAbstractReceiveRegionsToHost(
 
 class TestBufferedDatabase(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_recording(self):
+    def test_recording(self) -> None:
         set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
         f = BufferDatabase.default_database_file()
@@ -109,9 +109,9 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abc")
 
-        data, missing = bm.get_recording(p1, 0)
+        data_mv, missing = bm.get_recording(p1, 0)
         self.assertFalse(missing, "data shouldn't be 'missing'")
-        self.assertEqual(bytes(data), b"abc")
+        self.assertEqual(bytes(data_mv), b"abc")
 
         with BufferDatabase() as brd:
             brd.start_new_extraction()
@@ -126,9 +126,9 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertTrue(missing, "data should be 'missing'")
             self.assertEqual(bytes(data), b"abcdefg")
 
-        data, missing = bm.get_recording(p1, 0)
+        data_mv, missing = bm.get_recording(p1, 0)
         self.assertTrue(missing, "data should be 'missing'")
-        self.assertEqual(bytes(data), b"abcdefg")
+        self.assertEqual(bytes(data_mv), b"abcdefg")
 
         with BufferDatabase() as brd:
             data, missing = brd.get_recording_by_extraction_id(1, 2, 3, 0, 2)
@@ -142,7 +142,7 @@ class TestBufferedDatabase(unittest.TestCase):
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
 
-    def test_download(self):
+    def test_download(self) -> None:
         set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
 
@@ -163,9 +163,10 @@ class TestBufferedDatabase(unittest.TestCase):
         with BufferDatabase() as brd:
             brd.start_new_extraction()
             brd.store_download(1, 2, 3, 0, False, b"abc")
-            data, missing = brd.get_download_by_extraction_id(1, 2, 3, 0, -1)
+            data_mv, missing = brd.get_download_by_extraction_id(
+                1, 2, 3, 0, -1)
             self.assertFalse(missing, "data should be 'missing'")
-            self.assertEqual(bytes(data), b"abc")
+            self.assertEqual(bytes(data_mv), b"abc")
 
         data, missing = bm.get_download(p1, 0)
         self.assertFalse(missing, "data shouldn't be 'missing'")
@@ -193,7 +194,7 @@ class TestBufferedDatabase(unittest.TestCase):
         self.assertTrue(missing, "data should be 'missing'")
         self.assertEqual(bytes(data), b"gh")
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         set_config("Machine", "versions", VersionStrings.ANY.text)
         writer = FecDataWriter.mock()
 
@@ -218,7 +219,7 @@ class TestBufferedDatabase(unittest.TestCase):
         self.assertTrue(missing, "data should be 'missing'")
         self.assertEqual(bytes(data), b"")
 
-    def test_not_recording_type(self):
+    def test_not_recording_type(self) -> None:
         writer = FecDataWriter.mock()
         info = Placements([])
         writer.set_placements(info)
@@ -228,7 +229,7 @@ class TestBufferedDatabase(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             bm.get_recording(p, 1)
 
-    def test_not_data_recorded(self):
+    def test_not_data_recorded(self) -> None:
         writer = FecDataWriter.mock()
         v = MockAbstractReceiveBuffersToHost(None, label="V2")
         p = Placement(v, 1, 2, 5)
@@ -241,7 +242,7 @@ class TestBufferedDatabase(unittest.TestCase):
         except BufferedRegionNotPresent as ex:
             self.assertIn("should have record region", str(ex))
 
-    def test_not_recording_region(self):
+    def test_not_recording_region(self) -> None:
         writer = FecDataWriter.mock()
         v = MockAbstractReceiveBuffersToHost(None, label="V2")
         p = Placement(v, 1, 2, 5)

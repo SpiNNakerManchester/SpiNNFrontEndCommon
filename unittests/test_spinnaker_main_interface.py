@@ -14,8 +14,13 @@
 
 import os
 import sys
+from typing import Tuple
+
 import unittest
+
 from spinn_utilities.exceptions import SimulatorShutdownException
+from spinn_utilities.overrides import overrides
+
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
@@ -26,35 +31,42 @@ from spinn_front_end_common.abstract_models.impl import (
 class Close_Once(MachineAllocationController):
     __slots__ = ("closed", )
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("close-once")
         self.closed = False
 
-    def _wait(self):
+    @overrides(MachineAllocationController._wait)
+    def _wait(self) -> bool:
         return False
 
-    def close(self):
+    @overrides(MachineAllocationController.close)
+    def close(self) -> None:
         if self.closed:
             raise NotImplementedError("Close called twice")
         self.closed = True
         super().close()
 
-    def extend_allocation(self, new_total_run_time):
+    @overrides(MachineAllocationController.extend_allocation)
+    def extend_allocation(self, new_total_run_time: float) -> None:
         pass
 
-    def where_is_machine(self, chip_x, chip_y):
+    @overrides(MachineAllocationController.where_is_machine)
+    def where_is_machine(
+            self, chip_x: int, chip_y: int) -> Tuple[int, int, int]:
         return (0, 0, 0)
 
 
 class TestSpinnakerMainInterface(unittest.TestCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         unittest_setup()
 
-    def test_stop_init(self):
+    def test_stop_init(self) -> None:
         class_file = sys.modules[self.__module__].__file__
+        assert class_file is not None
         path = os.path.dirname(os.path.abspath(class_file))
+        assert path is not None
         os.chdir(path)
         interface = AbstractSpinnakerBase()
         mock_contoller = Close_Once()
@@ -66,9 +78,11 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         with self.assertRaises(SimulatorShutdownException):
             interface.stop()
 
-    def test_min_init(self):
+    def test_min_init(self) -> None:
         class_file = sys.modules[self.__module__].__file__
+        assert class_file is not None
         path = os.path.dirname(os.path.abspath(class_file))
+        assert path is not None
         os.chdir(path)
         AbstractSpinnakerBase()
 

@@ -25,10 +25,10 @@ class Test(unittest.TestCase):
     """ Tests for the SCAMP version comparison
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_compare_versions(self):
+    def test_compare_versions(self) -> None:
         spinn_utilities_parts = spinn_utilities.__version__.split('.')
         spinn_machine_parts = spinn_machine.__version__.split('.')
         pacman_parts = pacman.__version__.split('.')
