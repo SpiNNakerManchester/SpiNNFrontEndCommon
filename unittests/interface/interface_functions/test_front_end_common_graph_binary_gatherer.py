@@ -29,7 +29,8 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 class _TestAppVertexWithBinary(AbstractOneAppOneMachineVertex):
 
-    def __init__(self, binary_file_name, binary_start_type):
+    def __init__(
+            self, binary_file_name: str, binary_start_type: ExecutableType):
         AbstractOneAppOneMachineVertex.__init__(
             self, _TestVertexWithBinary(binary_file_name, binary_start_type),
             label=None)
@@ -37,7 +38,8 @@ class _TestAppVertexWithBinary(AbstractOneAppOneMachineVertex):
 
 class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
 
-    def __init__(self, binary_file_name, binary_start_type):
+    def __init__(
+            self, binary_file_name: str, binary_start_type: ExecutableType):
         super().__init__(None)
         self._binary_file_name = binary_file_name
         self._binary_start_type = binary_start_type
@@ -53,12 +55,12 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
 
 class _TestSimpleAppVertex(AbstractOneAppOneMachineVertex):
 
-    def __init__(self):
+    def __init__(self) -> None:
         AbstractOneAppOneMachineVertex.__init__(
             self, SimpleMachineVertex(None), label=None)
 
 
-class _TestExecutableFinder(object):
+class _TestExecutableFinder(ExecutableFinder):
 
     @overrides(ExecutableFinder.get_executable_path)
     def get_executable_path(self, executable_name: str) -> str:
@@ -67,10 +69,10 @@ class _TestExecutableFinder(object):
 
 class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_call(self):
+    def test_call(self) -> None:
         """ Test calling the binary gatherer normally
         """
 
@@ -105,7 +107,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
         writer._set_executable_finder(ExecutableFinder())
 
-    def test_mixed_binaries(self):
+    def test_mixed_binaries(self) -> None:
         """ Test calling the binary gatherer with mixed executable types
         """
 

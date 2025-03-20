@@ -26,10 +26,10 @@ from fec_integration_tests.mock_machine import MockMachine
 
 class TestIOBufClearProcess(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_clear_iobuf_process(self):
+    def test_clear_iobuf_process(self) -> None:
         receiver = MockMachine()
         receiver.start()
 
@@ -45,7 +45,7 @@ class TestIOBufClearProcess(unittest.TestCase):
 
         # Check the message received
         self.assertTrue(receiver.is_next_message)
-        data = receiver.next_message
+        data: bytes = receiver.next_message
         sdp_header = SDPHeader.from_bytestring(data, 2)
         self.assertEqual(sdp_header.destination_chip_x, 0)
         self.assertEqual(sdp_header.destination_chip_y, 0)

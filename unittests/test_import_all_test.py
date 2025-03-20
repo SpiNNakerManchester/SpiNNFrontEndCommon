@@ -20,10 +20,10 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 
 class TestImportAllModule(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self) -> None:
         unittest_setup()
 
-    def test_import_all(self):
+    def test_import_all(self) -> None:
         if os.environ.get('CONTINUOUS_INTEGRATION', 'false').lower() == 'true':
             package_loader.load_module(
                 "spinn_front_end_common", remove_pyc_files=False)
