@@ -46,7 +46,6 @@ from .create_notification_protocol import create_notification_protocol
 from .placements_provenance_gatherer import placements_provenance_gatherer
 from .profile_data_gatherer import profile_data_gatherer
 from .router_provenance_gatherer import router_provenance_gatherer
-from .routing_setup import routing_setup
 from .routing_table_loader import routing_table_loader
 from .spalloc_allocator import spalloc_allocator
 from .tags_loader import tags_loader
@@ -77,7 +76,6 @@ __all__ = (
     "machine_generator", "placements_provenance_gatherer",
     "profile_data_gatherer",
     "read_routing_tables_from_machine", "router_provenance_gatherer",
-    "routing_setup",
     "routing_table_loader", "sdram_outgoing_partition_allocator",
     "spalloc_allocator",
     "system_multicast_routing_generator", "tags_loader",

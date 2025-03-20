@@ -41,6 +41,7 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import CoreSubsets
@@ -105,9 +106,8 @@ from spinn_front_end_common.interface.interface_functions import (
     locate_executable_start_type, machine_generator,
     placements_provenance_gatherer, profile_data_gatherer,
     read_routing_tables_from_machine, router_provenance_gatherer,
-    routing_setup, routing_table_loader,
-    sdram_outgoing_partition_allocator, spalloc_allocator,
-    system_multicast_routing_generator,
+    routing_table_loader, sdram_outgoing_partition_allocator,
+    spalloc_allocator, system_multicast_routing_generator,
     tags_loader, virtual_machine_generator, add_command_senders)
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
@@ -1457,17 +1457,19 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_sdram_outgoing_partition_allocator()
         self._execute_graph_data_specification_writer()
 
-    def _execute_routing_setup(self) -> None:
+    def _execute_reset_routing(self) -> None:
         """
-        Runs, times and logs the RoutingSetup if required.
+        Runs, times and logs the resetting of routing if required.
         """
         if self._multicast_routes_loaded:
             return
-        with FecTimer("Routing setup", TimerWork.LOADING) as timer:
+        with FecTimer("Reset routing", TimerWork.LOADING) as timer:
             if timer.skip_if_virtual_board():
                 return
-            # Only needs the x and y of chips with routing tables
-            routing_setup()
+            progress = ProgressBar(1, "Resetting Routing")
+            FecDataView().get_transceiver().reset_routing()
+            progress.update()
+            progress.end()
 
     def _execute_graph_binary_gatherer(self) -> None:
         """
@@ -1864,7 +1866,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         FecTimer.start_category(TimerCategory.LOADING)
 
         if self._data_writer.get_requires_mapping():
-            self._execute_routing_setup()
+            self._execute_reset_routing()
             self._execute_graph_binary_gatherer()
         # loading_algorithms
         compressor, pre_compress = self._compressor_name()
