@@ -14,10 +14,13 @@
 
 from collections import defaultdict
 import datetime
+from io import BufferedReader
 import json
 import logging
 import os
 import subprocess
+import selectors
+import sys
 from typing import Dict, Iterable, List, Optional, cast
 
 from spinn_utilities.config_holder import (
@@ -369,22 +372,42 @@ class JavaCaller(object):
             params = [self._java_call] + self._java_properties \
                      + ['-jar', self._jar_file]
         params.extend(args)
-        try:
-            subprocess.check_output(params, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            logger.error("Java Call resulted in an error")
-            updated = datetime.datetime.fromtimestamp(
-                os.path.getmtime(self._jar_file))
-            updated_str = (
-                f"{updated.year:04}-{updated.month:02}-{updated.day:02}"
-                f"-{updated.hour:02}-{updated.minute:02}")
-            logger.error(f"Jar {self._jar_file} was updated {updated_str}")
-            logger.error(f"Call was {params}")
-            logger.error(f"Output was {exc.output}")
-            log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
-            logger.error(f"Logging to: {log_file}")
-            raise
+        logger.info("Calling Java with: {}", " ".join(params))
+
+        with subprocess.Popen(params, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE) as process:
+            sel = selectors.DefaultSelector()
+            sel.register(cast(int, process.stdout), selectors.EVENT_READ)
+            sel.register(cast(int, process.stderr), selectors.EVENT_READ)
+
+            all_output = ""
+            while process.poll() is None:
+                for key, _ in sel.select():
+                    data = cast(BufferedReader, key.fileobj).read1().decode()
+                    if not data:
+                        break
+                    if key.fileobj is process.stdout:
+                        all_output += data
+                        print(data, end="")
+                    else:
+                        all_output += data
+                        print(data, end="", file=sys.stderr)
+            if process.returncode != 0:
+                logger.error("Java Call resulted in an error")
+                updated = datetime.datetime.fromtimestamp(
+                    os.path.getmtime(self._jar_file))
+                updated_str = (
+                    f"{updated.year:04}-{updated.month:02}-{updated.day:02}"
+                    f"-{updated.hour:02}-{updated.minute:02}")
+                logger.error(f"Jar {self._jar_file} was updated {updated_str}")
+                logger.error(f"Call was {params}")
+                logger.error("Output was:")
+                logger.error(all_output)
+                log_file = os.path.join(
+                    FecDataView.get_run_dir_path(), "jspin.log")
+                logger.error(f"Logging to: {log_file}")
+                raise subprocess.CalledProcessError(
+                    process.returncode, params, output=all_output)
 
     def extract_all_data(self) -> None:
         """

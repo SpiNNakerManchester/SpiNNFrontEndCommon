@@ -704,15 +704,16 @@ class DsSqlliteDatabase(SQLiteDB):
                     VALUES(?, ?, ?)
                     """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
-    def set_app_id(self) -> None:
+    def set_info(self) -> None:
         """
-        Sets the app id
+        Sets the general information
         """
         # check for previous content
+        machine = FecDataView().get_machine()
         self.cursor().execute(
             """
-            INSERT INTO app_id(app_id)
-            VALUES(?)
-            """, (FecDataView.get_app_id(), ))
+            INSERT INTO info(app_id, width, height)
+            VALUES(?, ?, ?)
+            """, (FecDataView.get_app_id(), machine.width, machine.height))
         if self.rowcount == 0:
-            raise DsDatabaseException("Unable to set app id")
+            raise DsDatabaseException("Unable to set info")
