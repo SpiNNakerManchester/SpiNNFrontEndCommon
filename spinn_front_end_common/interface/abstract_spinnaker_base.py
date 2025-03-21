@@ -2030,8 +2030,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             transceiver = FecDataView().get_transceiver()
-            for chip in FecDataView.get_machine().chips:
-                transceiver.clear_router_diagnostic_counters(chip.x, chip.y)
+            transceiver.clear_router_diagnostic_counters()
 
     def _execute_clear_io_buf(self) -> None:
         """
@@ -2384,9 +2383,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # if clearing routing table entries, clear
         if get_config_bool("Machine", "clear_routing_tables"):
-            for router_table in self._data_writer.get_uncompressed():
-                transceiver.clear_multicast_routes(
-                    router_table.x, router_table.y)
+            transceiver.clear_multicast_routes()
 
     def __close_allocation_controller(self) -> None:
         if FecDataView.has_allocation_controller():

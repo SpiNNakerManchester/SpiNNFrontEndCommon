@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Dict, Optional, cast
+from typing import Dict, Optional, cast, Tuple, List
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
 from spinnman.transceiver import Transceiver
@@ -46,6 +46,11 @@ def sdram_outgoing_partition_allocator() -> None:
     # Keep track of SDRAM tags used
     next_tag: Dict[XY, int] = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
 
+    # Keep the allocations to do them all at once
+    allocations: List[Tuple[int, int, int, int, int]] = []
+    # Match the above list with the partitions to set to align the results
+    partitions_to_set = []
+
     for vertex in progress_bar.over(FecDataView.iterate_vertices()):
         for sdram_partition in vertex.splitter.get_internal_sdram_partitions():
             # get placement, ones where the src is multiple,
@@ -73,13 +78,17 @@ def sdram_outgoing_partition_allocator() -> None:
             if transceiver is not None:
                 tag = next_tag[placement.x, placement.y]
                 next_tag[placement.x, placement.y] = tag + 1
-                sdram_base_address = transceiver.malloc_sdram(
+                allocations.append((
                     placement.x, placement.y, total_sdram,
-                    FecDataView.get_app_id(), tag)
+                    FecDataView.get_app_id(), tag))
+                partitions_to_set.append(sdram_partition)
             else:
                 assert virtual_usage is not None
                 sdram_base_address = virtual_usage[placement.x, placement.y]
                 virtual_usage[placement.x, placement.y] += total_sdram
+                sdram_partition.sdram_base_address = sdram_base_address
 
-            # update
-            sdram_partition.sdram_base_address = sdram_base_address
+        if transceiver is not None:
+            addresses = transceiver.malloc_sdram_multi(allocations)
+            for partition, address in zip(partitions_to_set, addresses):
+                partition.sdram_base_address = address
