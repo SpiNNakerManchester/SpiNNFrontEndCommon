@@ -18,7 +18,8 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
 from spinnman.transceiver import Transceiver
 from pacman.model.graphs import AbstractSingleSourcePartition
-from pacman.model.graphs.machine import SourceSegmentedSDRAMMachinePartition
+from pacman.model.graphs.machine import (
+    SourceSegmentedSDRAMMachinePartition, AbstractSDRAMPartition)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
@@ -49,7 +50,7 @@ def sdram_outgoing_partition_allocator() -> None:
     # Keep the allocations to do them all at once
     allocations: List[Tuple[int, int, int, int, int]] = []
     # Match the above list with the partitions to set to align the results
-    partitions_to_set = []
+    partitions_to_set: List[AbstractSDRAMPartition] = []
 
     for vertex in progress_bar.over(FecDataView.iterate_vertices()):
         for sdram_partition in vertex.splitter.get_internal_sdram_partitions():
