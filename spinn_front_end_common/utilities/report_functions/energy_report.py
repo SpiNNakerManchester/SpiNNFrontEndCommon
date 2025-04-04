@@ -35,7 +35,7 @@ class EnergyReport(object):
     def file_name(cls, n_run: int) -> str:
         """ Name of the Energy report file for this run """
         path = get_config_str("Reports", "path_energy_report")
-        assert "{n_run}" in path,\
+        assert "{n_run}" in path, \
             "cfg value: path_energy_report needs to include {n_run}"
         return path.replace("{n_run}", str(n_run))
 

@@ -188,6 +188,7 @@ def _do_router_summary_report(
 def get_path_router_reports() -> str:
     return get_config_str("Reports", "path_router_reports")
 
+
 def router_report_from_paths() -> None:
     """
     Generates a text file of routing paths.
