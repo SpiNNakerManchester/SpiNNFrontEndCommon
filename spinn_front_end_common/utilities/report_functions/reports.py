@@ -17,6 +17,7 @@ import os
 import time
 from typing import Iterable, Optional, TextIO, Tuple
 
+from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -49,7 +50,6 @@ _PLACEMENT_VTX_GRAPH_FILENAME = "placement_by_vertex_using_graph.rpt"
 _PLACEMENT_VTX_SIMPLE_FILENAME = "placement_by_vertex_without_graph.rpt"
 _PLACEMENT_CORE_GRAPH_FILENAME = "placement_by_core_using_graph.rpt"
 _PLACEMENT_CORE_SIMPLE_FILENAME = "placement_by_core_without_graph.rpt"
-_ROUTING_FILENAME = "edge_routing_info.rpt"
 _ROUTING_SUMMARY_FILENAME = "routing_summary.rpt"
 _ROUTING_TABLE_DIR = "routing_tables_generated"
 _SDRAM_FILENAME = "chip_sdram_usage_by_core.rpt"
@@ -185,11 +185,15 @@ def _do_router_summary_report(
         return None
 
 
+def get_path_router_reports() -> str:
+    return get_config_str("Reports", "path_router_reports")
+
 def router_report_from_paths() -> None:
     """
     Generates a text file of routing paths.
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
+    file_name = os.path.join(FecDataView.get_run_dir_path(),
+                             get_path_router_reports())
     time_date_string = time.strftime("%c")
     partitions = get_app_partitions()
     try:
