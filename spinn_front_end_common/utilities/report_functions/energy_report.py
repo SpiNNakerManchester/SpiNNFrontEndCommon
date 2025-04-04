@@ -15,6 +15,7 @@
 import logging
 import os
 from typing import TextIO
+from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
@@ -33,7 +34,10 @@ class EnergyReport(object):
     @classmethod
     def file_name(cls, n_run: int) -> str:
         """ Name of the Energy report file for this run """
-        return f"energy_report_{n_run}.rpt"
+        path = get_config_str("Reports", "path_energy_report")
+        assert "{n_run}" in path,\
+            "cfg value: path_energy_report needs to include {n_run}"
+        return path.replace("{n_run}", str(n_run))
 
     def write_energy_report(self, power_used: PowerUsed) -> None:
         """
