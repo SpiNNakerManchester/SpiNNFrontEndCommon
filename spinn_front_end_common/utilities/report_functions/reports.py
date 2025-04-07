@@ -45,7 +45,8 @@ _LINK_LABELS = {0: 'E', 1: 'NE', 2: 'N', 3: 'W', 4: 'SW', 5: 'S'}
 _C_ROUTING_TABLE_DIR = "compressed_routing_tables_generated"
 _COMPARED_FILENAME = "comparison_of_compressed_uncompressed_routing_tables.rpt"
 _COMPRESSED_ROUTING_SUMMARY_FILENAME = "compressed_routing_summary.rpt"
-_PARTITIONING_FILENAME = "partitioned_by_vertex.rpt"
+WRITE_PARTITIONER_REPORTS = "write_partitioner_reports"
+PATH_PARTITIONER_REPORTS = "path_partitioner_reports"
 _PLACEMENT_VTX_GRAPH_FILENAME = "placement_by_vertex_using_graph.rpt"
 _PLACEMENT_VTX_SIMPLE_FILENAME = "placement_by_vertex_without_graph.rpt"
 _PLACEMENT_CORE_GRAPH_FILENAME = "placement_by_core_using_graph.rpt"
@@ -244,8 +245,7 @@ def partitioner_report() -> None:
     """
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PARTITIONING_FILENAME)
+    file_name = get_report_path(PATH_PARTITIONER_REPORTS)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
