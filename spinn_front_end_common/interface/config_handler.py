@@ -32,7 +32,7 @@ from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions.energy_report import (
-    PATH_ENERGY_REPORT, WRITE_ENERGY_REPORT)
+    WRITE_ENERGY_REPORT)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
