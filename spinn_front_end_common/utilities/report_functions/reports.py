@@ -56,6 +56,8 @@ WRITE_ROUTER_REPORTS = "write_router_reports"
 PATH_ROUTER_REPORTS = "path_router_reports"
 _ROUTING_SUMMARY_FILENAME = "routing_summary.rpt"
 _ROUTING_TABLE_DIR = "routing_tables_generated"
+WRITE_SDRAM_USAGE = "write_sdram_usage_report_per_chip"
+PATH_SDRAM_USAGE = "path_sdram_usage_report_per_chip"
 _SDRAM_FILENAME = "chip_sdram_usage_by_core.rpt"
 _TAGS_FILENAME = "tags.rpt"
 _VIRTKEY_FILENAME = "virtual_key_space_information_report.rpt"
@@ -427,7 +429,7 @@ def sdram_usage_report_per_chip() -> None:
     """
     Reports the SDRAM used per chip.
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
+    file_name = get_report_path(PATH_SDRAM_USAGE)
     n_placements = FecDataView.get_n_placements()
     time_date_string = time.strftime("%c")
     progress = ProgressBar(
