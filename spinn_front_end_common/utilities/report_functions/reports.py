@@ -45,7 +45,9 @@ _LINK_LABELS = {0: 'E', 1: 'NE', 2: 'N', 3: 'W', 4: 'SW', 5: 'S'}
 WRITE_COMPRESSED = "write_compressed"
 PATH_COMPRESSED = "path_compressed"
 
-_COMPARED_FILENAME = "comparison_of_compressed_uncompressed_routing_tables.rpt"
+WRITE_COMPRESSION_COMPARISON = "write_compression_comparison"
+PATH_COMPRESSION_COMPARISON = "path_compression_comparison"
+
 _COMPRESSED_ROUTING_SUMMARY_FILENAME = "compressed_routing_summary.rpt"
 
 WRITE_PARTITIONER_REPORTS = "write_partitioner_reports"
@@ -666,8 +668,7 @@ def generate_comparison_router_report(
         ~pacman.model.routing_tables.MulticastRoutingTables
     """
     routing_tables = FecDataView.get_uncompressed().routing_tables
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _COMPARED_FILENAME)
+    file_name = get_report_path(PATH_COMPRESSION_COMPARISON)
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(

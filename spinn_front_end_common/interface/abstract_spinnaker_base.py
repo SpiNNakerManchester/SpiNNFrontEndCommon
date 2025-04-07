@@ -132,7 +132,7 @@ from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
-    WRITE_COMPRESSED,
+    WRITE_COMPRESSED, WRITE_COMPRESSION_COMPARISON,
     WRITE_PARTITIONER_REPORTS, WRITE_PLACEMENT_REPORTS, WRITE_SDRAM_USAGE,
     WRITE_UNCOMPRESSED,
     generate_comparison_router_report, partitioner_report,
@@ -1832,7 +1832,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Compressor report", TimerWork.REPORT) as timer:
             if timer.skip_all_cfgs_false(
                     [("Reports", WRITE_COMPRESSED),
-                     ("Reports", "write_compression_comparison"),
+                     ("Reports", WRITE_COMPRESSION_COMPARISON),
                      ("Reports", "write_compression_summary"),
                      ("Mapping", "run_compression_checker")],
                     "No reports need compressed routing tables"):
@@ -1845,7 +1845,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             if get_config_bool("Reports", WRITE_COMPRESSED):
                 router_report_from_compressed_router_tables(compressed)
-            if get_config_bool("Reports", "write_compression_comparison"):
+            if get_config_bool("Reports", WRITE_COMPRESSION_COMPARISON):
                 generate_comparison_router_report(compressed)
             if get_config_bool("Reports", "write_compression_summary"):
                 router_compressed_summary_report(compressed)
