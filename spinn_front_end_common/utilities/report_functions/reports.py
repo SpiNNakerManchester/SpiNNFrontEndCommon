@@ -47,8 +47,9 @@ _COMPARED_FILENAME = "comparison_of_compressed_uncompressed_routing_tables.rpt"
 _COMPRESSED_ROUTING_SUMMARY_FILENAME = "compressed_routing_summary.rpt"
 WRITE_PARTITIONER_REPORTS = "write_partitioner_reports"
 PATH_PARTITIONER_REPORTS = "path_partitioner_reports"
-_PLACEMENT_VTX_GRAPH_FILENAME = "placement_by_vertex_using_graph.rpt"
-_PLACEMENT_VTX_SIMPLE_FILENAME = "placement_by_vertex_without_graph.rpt"
+WRITE_PLACEMENT_REPORTS = "write_application_graph_placer_report"
+PATH_PLACEMENT_REPORTS_VERTEX = "path_application_graph_placer_report_vertex"
+PATH_PLACEMENT_REPORTS_CORE = "path_application_graph_placer_report_core"
 _PLACEMENT_CORE_GRAPH_FILENAME = "placement_by_core_using_graph.rpt"
 _PLACEMENT_CORE_SIMPLE_FILENAME = "placement_by_core_without_graph.rpt"
 WRITE_ROUTER_REPORTS = "write_router_reports"
@@ -294,8 +295,7 @@ def placement_report_with_application_graph_by_vertex() -> None:
     """
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PLACEMENT_VTX_GRAPH_FILENAME)
+    file_name = get_report_path(PATH_PLACEMENT_REPORTS_VERTEX)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
@@ -359,8 +359,8 @@ def placement_report_with_application_graph_by_core() -> None:
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PLACEMENT_CORE_GRAPH_FILENAME)
+    file_name = get_report_path(PATH_PLACEMENT_REPORTS_CORE)
+
     time_date_string = time.strftime("%c")
     try:
         machine = FecDataView.get_machine()

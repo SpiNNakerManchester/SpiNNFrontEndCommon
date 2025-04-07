@@ -132,7 +132,7 @@ from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
-    WRITE_PARTITIONER_REPORTS,
+    WRITE_PARTITIONER_REPORTS, WRITE_PLACEMENT_REPORTS,
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
     router_compressed_summary_report, routing_info_report,
@@ -1086,7 +1086,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Placements with application graph report",
                       TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
-                    "Reports", "write_application_graph_placer_report"):
+                    "Reports", WRITE_PLACEMENT_REPORTS):
                 return
             placer_reports_with_application_graph()
 
