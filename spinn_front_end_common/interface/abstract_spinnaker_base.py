@@ -133,6 +133,7 @@ from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
     WRITE_PARTITIONER_REPORTS, WRITE_PLACEMENT_REPORTS, WRITE_SDRAM_USAGE,
+    WRITE_UNCOMPRESSED,
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
     router_compressed_summary_report, routing_info_report,
@@ -1690,7 +1691,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Uncompressed routing table report",
                       TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
-                    "Reports", "write_uncompressed"):
+                    "Reports", WRITE_UNCOMPRESSED):
                 return
             router_report_from_router_tables()
 

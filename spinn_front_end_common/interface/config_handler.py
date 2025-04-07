@@ -31,6 +31,8 @@ from spinn_front_end_common.interface.interface_functions.\
 from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.report_functions.reports import (
+    WRITE_UNCOMPRESSED)
 from spinn_front_end_common.utilities.report_functions.energy_report import (
     WRITE_ENERGY_REPORT)
 
@@ -135,7 +137,7 @@ class ConfigHandler(object):
         self._error_on_previous("machine_graph_to_machine_algorithms")
         self._error_on_previous("machine_graph_to_virtual_machine_algorithms")
         self._replaced_cfg("Reports",
-                           "write_routing_table_reports", "write_uncompressed")
+                           "write_routing_table_reports", WRITE_UNCOMPRESSED)
         self._replaced_cfg("Reports",
                            "write_routing_tables_from_machine_reports",
                            "write_compressed, write_compression_comparison,"

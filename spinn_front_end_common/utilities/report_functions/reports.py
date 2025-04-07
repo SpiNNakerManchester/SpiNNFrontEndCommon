@@ -45,19 +45,28 @@ _LINK_LABELS = {0: 'E', 1: 'NE', 2: 'N', 3: 'W', 4: 'SW', 5: 'S'}
 _C_ROUTING_TABLE_DIR = "compressed_routing_tables_generated"
 _COMPARED_FILENAME = "comparison_of_compressed_uncompressed_routing_tables.rpt"
 _COMPRESSED_ROUTING_SUMMARY_FILENAME = "compressed_routing_summary.rpt"
+
 WRITE_PARTITIONER_REPORTS = "write_partitioner_reports"
 PATH_PARTITIONER_REPORTS = "path_partitioner_reports"
+
 WRITE_PLACEMENT_REPORTS = "write_application_graph_placer_report"
 PATH_PLACEMENT_REPORTS_VERTEX = "path_application_graph_placer_report_vertex"
 PATH_PLACEMENT_REPORTS_CORE = "path_application_graph_placer_report_core"
+
 _PLACEMENT_CORE_GRAPH_FILENAME = "placement_by_core_using_graph.rpt"
 _PLACEMENT_CORE_SIMPLE_FILENAME = "placement_by_core_without_graph.rpt"
+
 WRITE_ROUTER_REPORTS = "write_router_reports"
 PATH_ROUTER_REPORTS = "path_router_reports"
+
 _ROUTING_SUMMARY_FILENAME = "routing_summary.rpt"
-_ROUTING_TABLE_DIR = "routing_tables_generated"
+
+WRITE_UNCOMPRESSED = "write_uncompressed"
+PATH_UNCOMPRESSED = "path_uncompressed"
+
 WRITE_SDRAM_USAGE = "write_sdram_usage_report_per_chip"
 PATH_SDRAM_USAGE = "path_sdram_usage_report_per_chip"
+
 _SDRAM_FILENAME = "chip_sdram_usage_by_core.rpt"
 _TAGS_FILENAME = "tags.rpt"
 
@@ -566,8 +575,7 @@ def router_report_from_router_tables() -> None:
     """
     Report the uncompressed routing tables.
     """
-    top_level_folder = os.path.join(
-        FecDataView.get_run_dir_path(), _ROUTING_TABLE_DIR)
+    top_level_folder = get_report_path(PATH_UNCOMPRESSED)
     routing_tables = FecDataView.get_uncompressed().routing_tables
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
