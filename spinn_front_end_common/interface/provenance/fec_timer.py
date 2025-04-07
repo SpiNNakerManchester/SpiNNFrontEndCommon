@@ -346,7 +346,8 @@ class FecTimer(object):
         time_now = cls.__stop_category()
         try:
             with GlobalProvenance() as db:
-                cls._category_id = db.insert_category(category, cls._machine_on)
+                cls._category_id = db.insert_category(
+                    category, cls._machine_on)
         except DatabaseError as ex:
             logger.error(f"Timer data error {ex}")
         cls._category = category
