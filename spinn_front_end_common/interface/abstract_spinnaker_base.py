@@ -1224,7 +1224,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Writes, times and logs the router info report if requested.
         """
         with FecTimer("Router info report", TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false("Reports", "write_router_info_report"):
+            if timer.skip_if_cfg_false("Reports", PATH_ROUTER_INFO_REPORT):
                 return
             routing_info_report([])
 

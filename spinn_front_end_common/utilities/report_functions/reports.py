@@ -60,7 +60,9 @@ WRITE_SDRAM_USAGE = "write_sdram_usage_report_per_chip"
 PATH_SDRAM_USAGE = "path_sdram_usage_report_per_chip"
 _SDRAM_FILENAME = "chip_sdram_usage_by_core.rpt"
 _TAGS_FILENAME = "tags.rpt"
-_VIRTKEY_FILENAME = "virtual_key_space_information_report.rpt"
+
+WRITE_ROUTER_INFO_REPORT = "write_router_info_report"
+PATH_ROUTER_INFO_REPORT = "path_router_info_report"
 
 _LOWER_16_BITS = 0xFFFF
 
@@ -517,7 +519,7 @@ def routing_info_report(extra_allocations: Iterable[
     :type extra_allocations:
         iterable(tuple(~pacman.model.graphs.application.ApplicationVertex,str))
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
+    file_name = get_report_path(PATH_ROUTER_INFO_REPORT)
     routing_infos = FecDataView.get_routing_infos()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
