@@ -103,7 +103,6 @@ class _FecDataModel(object):
         "_max_run_time_steps",
         "_monitor_map",
         "_reset_number",
-        "_run_number",
         "_run_step",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
@@ -143,7 +142,6 @@ class _FecDataModel(object):
         self._java_caller: Optional[JavaCaller] = None
         self._none_labelled_edge_count = 0
         self._reset_number = 0
-        self._run_number: Optional[int] = None
         self._simulation_time_step_ms: Optional[float] = None
         self._simulation_time_step_per_ms: Optional[float] = None
         self._simulation_time_step_per_s: Optional[float] = None
@@ -538,23 +536,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return str(cls.__fec_data._reset_number)
         else:
             return ""
-
-    #  run number
-
-    @classmethod
-    def get_run_number(cls) -> int:
-        """
-        Get the number of this or the next run.
-
-        Run numbers start at 1
-
-        :rtype: int
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the run_number is currently unavailable
-        """
-        if cls.__fec_data._run_number is None:
-            raise cls._exception("run_number")
-        return cls.__fec_data._run_number
 
     @classmethod
     def get_run_step(cls) -> Optional[int]:
