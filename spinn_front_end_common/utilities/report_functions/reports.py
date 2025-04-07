@@ -42,7 +42,9 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 _LINK_LABELS = {0: 'E', 1: 'NE', 2: 'N', 3: 'W', 4: 'SW', 5: 'S'}
 
-_C_ROUTING_TABLE_DIR = "compressed_routing_tables_generated"
+WRITE_COMPRESSED = "write_compressed"
+PATH_COMPRESSED = "path_compressed"
+
 _COMPARED_FILENAME = "comparison_of_compressed_uncompressed_routing_tables.rpt"
 _COMPRESSED_ROUTING_SUMMARY_FILENAME = "compressed_routing_summary.rpt"
 
@@ -593,8 +595,7 @@ def router_report_from_compressed_router_tables(
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the compressed routing tables
     """
-    top_level_folder = os.path.join(
-        FecDataView.get_run_dir_path(), _C_ROUTING_TABLE_DIR)
+    top_level_folder = get_report_path(PATH_COMPRESSED)
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
