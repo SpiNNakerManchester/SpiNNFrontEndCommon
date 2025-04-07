@@ -19,8 +19,10 @@ import time
 from datetime import timedelta
 from typing import List, Optional, Tuple, Type, Union, TYPE_CHECKING
 from types import TracebackType
+from sqlite3 import DatabaseError
 
 from typing_extensions import Literal, Self
+
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
@@ -98,10 +100,13 @@ class FecTimer(object):
     def _insert_timing(
             self, time_taken: timedelta, skip_reason: Optional[str]) -> None:
         if self._category_id is not None:
-            with GlobalProvenance() as db:
-                db.insert_timing(
-                    self._category_id, self._algorithm, self._work,
-                    time_taken, skip_reason)
+            try:
+                with GlobalProvenance() as db:
+                    db.insert_timing(
+                        self._category_id, self._algorithm, self._work,
+                        time_taken, skip_reason)
+            except DatabaseError as ex:
+                logger.error(f"Timer data error {ex}")
 
     def skip(self, reason: str) -> None:
         """
@@ -322,10 +327,13 @@ class FecTimer(object):
         """
         time_now = time.perf_counter_ns()
         if cls._category_id:
-            with GlobalProvenance() as db:
-                diff = cls.__convert_to_timedelta(
-                    time_now - cls._category_time)
-                db.insert_category_timing(cls._category_id, diff)
+            try:
+                with GlobalProvenance() as db:
+                    diff = cls.__convert_to_timedelta(
+                        time_now - cls._category_time)
+                    db.insert_category_timing(cls._category_id, diff)
+            except DatabaseError as ex:
+                logger.error(f"Timer data error {ex}")
         return time_now
 
     @classmethod
@@ -336,8 +344,12 @@ class FecTimer(object):
         :param TimerCategory category: Category to switch to
         """
         time_now = cls.__stop_category()
-        with GlobalProvenance() as db:
-            cls._category_id = db.insert_category(category, cls._machine_on)
+        try:
+            with GlobalProvenance() as db:
+                cls._category_id = db.insert_category(
+                    category, cls._machine_on)
+        except DatabaseError as ex:
+            logger.error(f"Timer data error {ex}")
         cls._category = category
         cls._category_time = time_now
 
