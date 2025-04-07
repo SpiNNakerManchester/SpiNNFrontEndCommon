@@ -34,6 +34,8 @@ from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
         RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
+from spinn_front_end_common.utilities.report_functions.energy_report import (
+    WRITE_ENERGY_REPORT)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
@@ -132,7 +134,7 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
                                + FecDataView.get_all_monitor_cores() - 1)
     extra_monitors_per_board = (version.n_scamp_cores +
                                 FecDataView.get_ethernet_monitor_cores() - 1)
-    if get_config_bool("Reports", "write_energy_report"):
+    if get_config_bool("Reports", WRITE_ENERGY_REPORT):
         run_chip_active_time = _extract_cores_active_time(
             checkpoint, active_cores, power_cores, version)
     else:
@@ -238,7 +240,7 @@ def _assume_core_always_active(
     logger.warning(
         "Energy monitoring cores not enabled, assuming all cores were"
         " active for whole run time.  To get a better energy estimate,"
-        " set write_energy_report=True in the [Reports] section of the"
+        f" set {WRITE_ENERGY_REPORT}=True in the [Reports] section of the"
         " configuration file")
     chip_activity: ChipActiveTime = {}
     for (x, y), n_cores in active_cores.items():

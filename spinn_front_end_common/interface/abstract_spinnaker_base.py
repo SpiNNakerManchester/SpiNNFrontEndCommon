@@ -119,13 +119,15 @@ from spinn_front_end_common.interface.splitter_selectors import (
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
-    bitfield_compressor_report, board_chip_report, EnergyReport,
+    bitfield_compressor_report, board_chip_report,
     fixed_route_from_machine_report,
     generate_routing_compression_checker_report, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
     tags_from_machine_report,
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
+from spinn_front_end_common.utilities.report_functions.energy_report import (
+   EnergyReport, WRITE_ENERGY_REPORT)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
@@ -962,7 +964,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false("Reports", "write_energy_report"):
+            if timer.skip_if_cfg_false("Reports", WRITE_ENERGY_REPORT):
                 return
             insert_chip_power_monitors_to_graphs(system_placements)
 
@@ -2002,7 +2004,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the energy report if requested.
         """
         with FecTimer("Energy report", TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false("Reports", "write_energy_report"):
+            if timer.skip_if_cfg_false("Reports", WRITE_ENERGY_REPORT):
                 return
             if timer.skip_if_virtual_board():
                 return

@@ -31,6 +31,8 @@ from spinn_front_end_common.interface.interface_functions.\
 from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.report_functions.energy_report import (
+    PATH_ENERGY_REPORT)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -169,7 +171,7 @@ class ConfigHandler(object):
         """
         Reserves the sizes for the system vertices
         """
-        if get_config_bool("Reports", "write_energy_report"):
+        if get_config_bool("Reports", WRITE_ENERGY_REPORT):
             self._data_writer.add_sample_monitor_vertex(
                 sample_chip_power_monitor(), True)
         if (get_config_bool("Machine", "enable_advanced_monitor_support")
@@ -246,6 +248,6 @@ class ConfigHandler(object):
             traceback.print_stack(file=f)
 
     def _ensure_provenance_for_energy_report(self) -> None:
-        if get_config_bool("Reports", "write_energy_report"):
+        if get_config_bool("Reports", WRITE_ENERGY_REPORT):
             set_config("Reports", "read_router_provenance_data", "True")
             set_config("Reports", "read_placements_provenance_data", "True")

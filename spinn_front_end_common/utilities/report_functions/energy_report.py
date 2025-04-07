@@ -13,14 +13,14 @@
 # limitations under the License.
 
 import logging
-import os
 from typing import TextIO
-from spinn_utilities.config_holder import get_config_str
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 
 logger = FormatAdapter(logging.getLogger(__name__))
+PATH_ENERGY_REPORT = "path_energy_report"
+WRITE_ENERGY_REPORT = "write_energy_report"
 
 
 class EnergyReport(object):
@@ -31,14 +31,6 @@ class EnergyReport(object):
 
     __slots__ = ()
 
-    @classmethod
-    def file_name(cls, n_run: int) -> str:
-        """ Name of the Energy report file for this run """
-        path = get_config_str("Reports", "path_energy_report")
-        assert "{n_run}" in path, \
-            "cfg value: path_energy_report needs to include {n_run}"
-        return path.replace("{n_run}", str(n_run))
-
     def write_energy_report(self, power_used: PowerUsed) -> None:
         """
         Writes the report.
@@ -46,11 +38,8 @@ class EnergyReport(object):
         :param ~spinn_machine.Machine machine: the machine
         :param PowerUsed power_used:
         """
-        report_dir = FecDataView.get_run_dir_path()
-
         # summary report path
-        summary_report = os.path.join(
-            report_dir, self.file_name(FecDataView.get_run_number()))
+        summary_report = get_report_path(PATH_ENERGY_REPORT)
 
         # create summary report
         with open(summary_report, "w", encoding="utf-8") as f:
