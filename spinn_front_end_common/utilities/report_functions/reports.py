@@ -48,7 +48,8 @@ PATH_COMPRESSED = "path_compressed"
 WRITE_COMPRESSION_COMPARISON = "write_compression_comparison"
 PATH_COMPRESSION_COMPARISON = "path_compression_comparison"
 
-_COMPRESSED_ROUTING_SUMMARY_FILENAME = "compressed_routing_summary.rpt"
+WRITE_SUMMARY_REPORT = "write_compression_summary"
+PATH_SUMMARY_REPORT = "path_compression_summary"
 
 WRITE_PARTITIONER_REPORTS = "write_partitioner_reports"
 PATH_PARTITIONER_REPORTS = "path_partitioner_reports"
@@ -134,8 +135,7 @@ def router_compressed_summary_report(
         The in-operation COMPRESSED routing tables.
     :rtype: RouterSummary
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _COMPRESSED_ROUTING_SUMMARY_FILENAME)
+    file_name = get_report_path(PATH_SUMMARY_REPORT)
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(file_name, progress, routing_tables)

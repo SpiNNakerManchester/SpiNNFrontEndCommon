@@ -32,7 +32,7 @@ from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions.reports import (
-    WRITE_UNCOMPRESSED)
+    WRITE_COMPRESSION_COMPARISON, WRITE_SUMMARY_REPORT, WRITE_UNCOMPRESSED)
 from spinn_front_end_common.utilities.report_functions.energy_report import (
     WRITE_ENERGY_REPORT)
 
@@ -140,8 +140,8 @@ class ConfigHandler(object):
                            "write_routing_table_reports", WRITE_UNCOMPRESSED)
         self._replaced_cfg("Reports",
                            "write_routing_tables_from_machine_reports",
-                           "write_compressed, write_compression_comparison,"
-                           " and write_compression_summary")
+                           f"write_compressed, {WRITE_COMPRESSION_COMPARISON},"
+                           f" and {WRITE_SUMMARY_REPORT}")
         self._replaced_cfg("Reports",
                            "write_routing_compression_checker_report",
                            "run_compression_checker")

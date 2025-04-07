@@ -134,6 +134,7 @@ from spinn_front_end_common.utility_models import (
 from spinn_front_end_common.utilities.report_functions.reports import (
     WRITE_COMPRESSED, WRITE_COMPRESSION_COMPARISON,
     WRITE_PARTITIONER_REPORTS, WRITE_PLACEMENT_REPORTS, WRITE_SDRAM_USAGE,
+    WRITE_SUMMARY_REPORT,
     WRITE_UNCOMPRESSED,
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
@@ -1833,7 +1834,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_all_cfgs_false(
                     [("Reports", WRITE_COMPRESSED),
                      ("Reports", WRITE_COMPRESSION_COMPARISON),
-                     ("Reports", "write_compression_summary"),
+                     ("Reports", WRITE_SUMMARY_REPORT),
                      ("Mapping", "run_compression_checker")],
                     "No reports need compressed routing tables"):
                 return
@@ -1847,7 +1848,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 router_report_from_compressed_router_tables(compressed)
             if get_config_bool("Reports", WRITE_COMPRESSION_COMPARISON):
                 generate_comparison_router_report(compressed)
-            if get_config_bool("Reports", "write_compression_summary"):
+            if get_config_bool("Reports", WRITE_SUMMARY_REPORT):
                 router_compressed_summary_report(compressed)
             if get_config_bool("Mapping", "run_compression_checker"):
                 routing_tables = self._data_writer.get_uncompressed()
