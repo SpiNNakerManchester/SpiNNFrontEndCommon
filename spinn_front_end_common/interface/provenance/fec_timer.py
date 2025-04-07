@@ -19,9 +19,9 @@ import time
 from datetime import timedelta
 from typing import List, Optional, Tuple, Type, Union, TYPE_CHECKING
 from types import TracebackType
-from typing_extensions import Literal, Self
-
 from sqlite3 import DatabaseError
+
+from typing_extensions import Literal, Self
 
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
