@@ -121,13 +121,16 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report,
     fixed_route_from_machine_report,
-    generate_routing_compression_checker_report, memory_map_on_host_report,
+    generate_routing_compression_checker_report,
     memory_map_on_host_chip_report, network_specification,
     tags_from_machine_report,
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.report_functions.energy_report import (
    EnergyReport, WRITE_ENERGY_REPORT)
+from spinn_front_end_common.utilities.report_functions.\
+    memory_map_on_host_report import (
+        memory_map_on_host_report, WRITE_MEMORY_MAP_REPORT)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
@@ -1806,7 +1809,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
-                    "Reports", "write_memory_map_report"):
+                    "Reports", WRITE_MEMORY_MAP_REPORT):
                 return
             memory_map_on_host_report()
 
@@ -1818,7 +1821,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
-                    "Reports", "write_memory_map_report"):
+                    "Reports", WRITE_MEMORY_MAP_REPORT):
                 return
             memory_map_on_host_chip_report()
 
