@@ -13,20 +13,20 @@
 # limitations under the License.
 
 import logging
-import os
-from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
-logger = FormatAdapter(logging.getLogger(__name__))
 
-_FOLDER_NAME = "memory_map_from_processor_to_address_space"
+from spinn_utilities.config_holder import get_report_path
+from spinn_utilities.log import FormatAdapter
+
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def memory_map_on_host_report() -> None:
     """
     Report on memory usage.
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _FOLDER_NAME)
+    file_name = get_report_path("path_memory_map_report")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             f.write("On host data specification executor\n")

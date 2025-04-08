@@ -17,6 +17,7 @@ import os
 import time
 from typing import Iterable, Optional, TextIO, Tuple
 
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -41,21 +42,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 _LINK_LABELS = {0: 'E', 1: 'NE', 2: 'N', 3: 'W', 4: 'SW', 5: 'S'}
 
-_C_ROUTING_TABLE_DIR = "compressed_routing_tables_generated"
-_COMPARED_FILENAME = "comparison_of_compressed_uncompressed_routing_tables.rpt"
-_COMPRESSED_ROUTING_SUMMARY_FILENAME = "compressed_routing_summary.rpt"
-_PARTITIONING_FILENAME = "partitioned_by_vertex.rpt"
-_PLACEMENT_VTX_GRAPH_FILENAME = "placement_by_vertex_using_graph.rpt"
-_PLACEMENT_VTX_SIMPLE_FILENAME = "placement_by_vertex_without_graph.rpt"
-_PLACEMENT_CORE_GRAPH_FILENAME = "placement_by_core_using_graph.rpt"
-_PLACEMENT_CORE_SIMPLE_FILENAME = "placement_by_core_without_graph.rpt"
-_ROUTING_FILENAME = "edge_routing_info.rpt"
-_ROUTING_SUMMARY_FILENAME = "routing_summary.rpt"
-_ROUTING_TABLE_DIR = "routing_tables_generated"
-_SDRAM_FILENAME = "chip_sdram_usage_by_core.rpt"
-_TAGS_FILENAME = "tags.rpt"
-_VIRTKEY_FILENAME = "virtual_key_space_information_report.rpt"
-
 _LOWER_16_BITS = 0xFFFF
 
 
@@ -65,7 +51,7 @@ def tag_allocator_report() -> None:
     simulation.
     """
     tag_infos = FecDataView.get_tags()
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _TAGS_FILENAME)
+    file_name = get_report_path("path_tag_allocation_reports")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(
@@ -96,8 +82,7 @@ def router_summary_report() -> Optional[RouterSummary]:
 
     :rtype: RouterSummary
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _ROUTING_SUMMARY_FILENAME)
+    file_name = get_report_path("path_compression_summary")
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     routing_tables = FecDataView.get_uncompressed()
@@ -113,8 +98,7 @@ def router_compressed_summary_report(
         The in-operation COMPRESSED routing tables.
     :rtype: RouterSummary
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _COMPRESSED_ROUTING_SUMMARY_FILENAME)
+    file_name = get_report_path("path_compression_summary")
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(file_name, progress, routing_tables)
@@ -189,7 +173,7 @@ def router_report_from_paths() -> None:
     """
     Generates a text file of routing paths.
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
+    file_name = get_report_path("path_router_reports")
     time_date_string = time.strftime("%c")
     partitions = get_app_partitions()
     try:
@@ -242,8 +226,7 @@ def partitioner_report() -> None:
     """
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PARTITIONING_FILENAME)
+    file_name = get_report_path("path_partitioner_reports")
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
@@ -292,8 +275,7 @@ def placement_report_with_application_graph_by_vertex() -> None:
     """
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PLACEMENT_VTX_GRAPH_FILENAME)
+    file_name = get_report_path("path_application_graph_placer_report_vertex")
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
@@ -357,8 +339,7 @@ def placement_report_with_application_graph_by_core() -> None:
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PLACEMENT_CORE_GRAPH_FILENAME)
+    file_name = get_report_path("path_application_graph_placer_report_core")
     time_date_string = time.strftime("%c")
     try:
         machine = FecDataView.get_machine()
@@ -425,7 +406,7 @@ def sdram_usage_report_per_chip() -> None:
     """
     Reports the SDRAM used per chip.
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
+    file_name = get_report_path("path_sdram_usage_report_per_chip")
     n_placements = FecDataView.get_n_placements()
     time_date_string = time.strftime("%c")
     progress = ProgressBar(
@@ -513,7 +494,7 @@ def routing_info_report(extra_allocations: Iterable[
     :type extra_allocations:
         iterable(tuple(~pacman.model.graphs.application.ApplicationVertex,str))
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
+    file_name = get_report_path("path_router_info_report")
     routing_infos = FecDataView.get_routing_infos()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
@@ -560,8 +541,7 @@ def router_report_from_router_tables() -> None:
     """
     Report the uncompressed routing tables.
     """
-    top_level_folder = os.path.join(
-        FecDataView.get_run_dir_path(), _ROUTING_TABLE_DIR)
+    top_level_folder = get_report_path("path_uncompressed")
     routing_tables = FecDataView.get_uncompressed().routing_tables
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
@@ -579,8 +559,7 @@ def router_report_from_compressed_router_tables(
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the compressed routing tables
     """
-    top_level_folder = os.path.join(
-        FecDataView.get_run_dir_path(), _C_ROUTING_TABLE_DIR)
+    top_level_folder = get_report_path("path_compressed")
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
@@ -651,8 +630,7 @@ def generate_comparison_router_report(
         ~pacman.model.routing_tables.MulticastRoutingTables
     """
     routing_tables = FecDataView.get_uncompressed().routing_tables
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _COMPARED_FILENAME)
+    file_name = get_report_path("path_compression_comparison")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(
