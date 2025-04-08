@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import logging
-import os
 from typing import TextIO
+
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.data import FecDataView
+
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -42,11 +43,8 @@ class EnergyReport(object):
         :param ~spinn_machine.Machine machine: the machine
         :param PowerUsed power_used:
         """
-        report_dir = FecDataView.get_run_dir_path()
-
         # summary report path
-        summary_report = os.path.join(
-            report_dir, self.file_name(FecDataView.get_run_number()))
+        summary_report = get_report_path("path_energy_report")
 
         # create summary report
         with open(summary_report, "w", encoding="utf-8") as f:
