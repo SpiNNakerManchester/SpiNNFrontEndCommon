@@ -31,11 +31,6 @@ class EnergyReport(object):
 
     __slots__ = ()
 
-    @classmethod
-    def file_name(cls, n_run: int) -> str:
-        """ Name of the Energy report file for this run """
-        return f"energy_report_{n_run}.rpt"
-
     def write_energy_report(self, power_used: PowerUsed) -> None:
         """
         Writes the report.
