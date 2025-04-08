@@ -58,13 +58,8 @@ WRITE_PLACEMENT_REPORTS = "write_application_graph_placer_report"
 PATH_PLACEMENT_REPORTS_VERTEX = "path_application_graph_placer_report_vertex"
 PATH_PLACEMENT_REPORTS_CORE = "path_application_graph_placer_report_core"
 
-_PLACEMENT_CORE_GRAPH_FILENAME = "placement_by_core_using_graph.rpt"
-_PLACEMENT_CORE_SIMPLE_FILENAME = "placement_by_core_without_graph.rpt"
-
 WRITE_ROUTER_REPORTS = "write_router_reports"
 PATH_ROUTER_REPORTS = "path_router_reports"
-
-_ROUTING_SUMMARY_FILENAME = "routing_summary.rpt"
 
 WRITE_UNCOMPRESSED = "write_uncompressed"
 PATH_UNCOMPRESSED = "path_uncompressed"
@@ -118,8 +113,7 @@ def router_summary_report() -> Optional[RouterSummary]:
 
     :rtype: RouterSummary
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _ROUTING_SUMMARY_FILENAME)
+    file_name = get_report_path(PATH_SUMMARY_REPORT)
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     routing_tables = FecDataView.get_uncompressed()

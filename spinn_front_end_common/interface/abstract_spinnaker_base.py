@@ -133,7 +133,8 @@ from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
     WRITE_COMPRESSED, WRITE_COMPRESSION_COMPARISON,
-    WRITE_PARTITIONER_REPORTS, WRITE_PLACEMENT_REPORTS, WRITE_SDRAM_USAGE,
+    WRITE_PARTITIONER_REPORTS, WRITE_PLACEMENT_REPORTS,
+    WRITE_ROUTER_INFO_REPORT, WRITE_SDRAM_USAGE,
     WRITE_SUMMARY_REPORT,
     WRITE_UNCOMPRESSED,
     generate_comparison_router_report, partitioner_report,
@@ -1227,7 +1228,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Writes, times and logs the router info report if requested.
         """
         with FecTimer("Router info report", TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false("Reports", PATH_ROUTER_INFO_REPORT):
+            if timer.skip_if_cfg_false("Reports", WRITE_ROUTER_INFO_REPORT):
                 return
             routing_info_report([])
 
