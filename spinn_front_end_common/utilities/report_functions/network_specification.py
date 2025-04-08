@@ -13,22 +13,21 @@
 # limitations under the License.
 
 import logging
-import os.path
 from typing import TextIO
+
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.data import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-_FILENAME = "network_specification.rpt"
-
 
 def network_specification() -> None:
     """
     Generate report on the user's network specification.
     """
-    filename = os.path.join(FecDataView.get_run_dir_path(), _FILENAME)
+    filename = get_report_path("path_network_specification_report")
     try:
         with open(filename, "w", encoding="utf-8") as f:
             f.write("*** Vertices:\n")
