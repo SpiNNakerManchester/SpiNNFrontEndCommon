@@ -135,7 +135,7 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     WRITE_COMPRESSED, WRITE_COMPRESSION_COMPARISON,
     WRITE_PARTITIONER_REPORTS, WRITE_PLACEMENT_REPORTS,
     WRITE_ROUTER_INFO_REPORT, WRITE_SDRAM_USAGE,
-    WRITE_SUMMARY_REPORT,
+    WRITE_SUMMARY_REPORT, WRITE_TAG_ALLOCATION,
     WRITE_UNCOMPRESSED,
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
@@ -1155,7 +1155,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer("Tag allocator report", TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
-                    "Reports", "write_tag_allocation_reports"):
+                    "Reports", WRITE_TAG_ALLOCATION):
                 return
             tag_allocator_report()
 
@@ -1779,7 +1779,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
-                    "Reports", "write_tag_allocation_reports"):
+                    "Reports", WRITE_TAG_ALLOCATION):
                 return
             tags_from_machine_report()
 

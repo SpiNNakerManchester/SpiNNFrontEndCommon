@@ -67,8 +67,8 @@ PATH_UNCOMPRESSED = "path_uncompressed"
 WRITE_SDRAM_USAGE = "write_sdram_usage_report_per_chip"
 PATH_SDRAM_USAGE = "path_sdram_usage_report_per_chip"
 
-_SDRAM_FILENAME = "chip_sdram_usage_by_core.rpt"
-_TAGS_FILENAME = "tags.rpt"
+WRITE_TAG_ALLOCATION = "write_tag_allocation_reports"
+PATH_TAG_ALLOCATION = "path_tag_allocation_reports"
 
 WRITE_ROUTER_INFO_REPORT = "write_router_info_report"
 PATH_ROUTER_INFO_REPORT = "path_router_info_report"
@@ -82,7 +82,7 @@ def tag_allocator_report() -> None:
     simulation.
     """
     tag_infos = FecDataView.get_tags()
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _TAGS_FILENAME)
+    file_name = get_report_path(PATH_TAG_ALLOCATION)
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(
