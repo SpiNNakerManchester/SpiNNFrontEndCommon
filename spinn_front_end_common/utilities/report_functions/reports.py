@@ -82,7 +82,7 @@ def router_summary_report() -> Optional[RouterSummary]:
 
     :rtype: RouterSummary
     """
-    file_name = get_report_path("path_compression_summary")
+    file_name = get_report_path("path_router_summary_report")
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     routing_tables = FecDataView.get_uncompressed()
