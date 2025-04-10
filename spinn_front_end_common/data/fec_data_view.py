@@ -766,27 +766,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # run_dir_path in UtilsDataView
 
     @classmethod
-    def get_json_dir_path(cls) -> str:
-        """
-        Returns the path to the directory that holds all JSON files.
-
-        This will be the path used by the last run call or to be used by
-        the next run if it has not yet been called.
-
-        .. note::
-            In unit-test mode this returns a temporary directory
-            shared by all path methods.
-
-        :rtype: str
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if cls._is_mocked():
-            return cls._temporary_dir_path()
-
-        return cls._child_folder(cls.get_run_dir_path(), "json_files")
-
-    @classmethod
     def get_provenance_dir_path(cls) -> str:
         """
         Returns the path to the directory that holds all provenance files.
@@ -849,31 +828,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return cls._temporary_dir_path()
         return cls._child_folder(
             cls.get_provenance_dir_path(), "system_provenance_data")
-
-    @classmethod
-    def _child_folder(cls, parent: str, child_name: str,
-                      must_create: bool = False) -> str:
-        """
-        :param str parent:
-        :param str child_name:
-        :param bool must_create:
-            If `True`, the directory named by `child_name` (but not necessarily
-            its parents) must be created by this call, and an exception will be
-            thrown if this fails.
-        :return: The fully qualified name of the child folder.
-        :rtype: str
-        :raises OSError:
-            If the directory existed ahead of time and creation
-            was required by the user
-        """
-        child = os.path.join(parent, child_name)
-        if must_create:
-            # Throws OSError or FileExistsError (a subclass of OSError) if the
-            # directory exists.
-            os.makedirs(child)
-        elif not os.path.exists(child):
-            os.makedirs(child, exist_ok=True)
-        return child
 
     @classmethod
     def get_next_none_labelled_edge_number(cls) -> int:
