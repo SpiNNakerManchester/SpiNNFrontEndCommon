@@ -61,6 +61,7 @@ def cfg_paths_skipped() -> Set[str]:
         skipped.add("pathenergyreport")
     if get_config_bool("Machine", "virtual_board"):
         skipped.add("pathdataspeedupreportsrouters")
+        skipped.add("pathdriftreport")
         skipped.add("pathenergyreport")
         skipped.add("pathmemorymapreport")
     if not get_config_bool("Machine","enable_advanced_monitor_support"):
