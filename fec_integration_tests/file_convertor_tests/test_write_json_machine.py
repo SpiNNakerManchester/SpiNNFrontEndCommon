@@ -18,7 +18,7 @@ import os
 import sys
 import unittest
 
-from spinn_utilities.config_holder import set_config
+from spinn_utilities.config_holder import get_report_path, set_config
 from spinn_utilities.ping import Ping
 from spinn_utilities.typing.json import JsonArray
 
@@ -30,7 +30,7 @@ from spinnman.transceiver import create_transceiver_from_hostname
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
-    import (write_json_machine, MACHINE_FILENAME)
+    import (write_json_machine, MACHINE_SCHEMA)
 from spinn_front_end_common.interface.interface_functions import (
     spalloc_allocator)
 
@@ -133,7 +133,6 @@ class TestWriteJson(unittest.TestCase):
         FecDataWriter.mock().set_machine(machine)
 
         folder = "spinn4"
-        self._remove_old_json(folder)
         filename = write_json_machine(folder, True)
 
         self.json_compare(filename, "spinn4.json")
@@ -146,7 +145,9 @@ class TestWriteJson(unittest.TestCase):
         chip._sdram = chip._sdram - 101
 
         folder = "spinn4_fiddle"
-        self._remove_old_json(folder)
+        json_file = get_report_path("path_json_machine")
+        if os.path.exists(json_file):
+            os.remove(json_file)
         filename = write_json_machine(folder, True)
 
         self.json_compare(filename, "spinn4_fiddle.json")
@@ -174,7 +175,6 @@ class TestWriteJson(unittest.TestCase):
         m_allocation_controller.close()
 
         folder = "spinn2"
-        self._remove_old_json(folder)
         filename = write_json_machine(folder, False)
 
         self.json_compare(filename, "spinn2.json")
