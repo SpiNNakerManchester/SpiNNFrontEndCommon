@@ -13,11 +13,15 @@
 # limitations under the License.
 
 import os
+from typing import Set
+
 from spinn_utilities.config_holder import (
-    add_default_cfg, clear_cfg_files)
+    add_default_cfg, clear_cfg_files, get_config_bool)
 from spinnman.config_setup import add_spinnman_cfg
 from pacman.config_setup import add_pacman_cfg
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
+from spinn_front_end_common.interface.interface_functions \
+    import load_using_advanced_monitors
 
 BASE_CONFIG_FILE = "spinnaker.cfg"
 
@@ -46,3 +50,28 @@ def add_spinnaker_cfg() -> None:
     add_pacman_cfg()  # This add its dependencies too
     add_spinnman_cfg()  # double adds of dependencies ignored
     add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))
+
+
+def cfg_paths_skipped() -> Set[str]:
+    """
+    Set of cfg path that would not be found based on other cfg settings
+    """
+    skipped = set()
+    if not get_config_bool("Reports", "write_energy_report"):
+        skipped.add("pathenergyreport")
+    if get_config_bool("Machine", "virtual_board"):
+        skipped.add("pathdataspeedupreportsrouters")
+        skipped.add("pathenergyreport")
+        skipped.add("pathmemorymapreport")
+    if not get_config_bool("Machine","enable_advanced_monitor_support"):
+        skipped.add("pathdataspeedupreportsrouters")
+        skipped.add("pathdataspeedupreportsspeeds")
+    if get_config_bool("Java", "use_java"):
+        skipped.add("pathdataspeedupreportsrouters")
+        skipped.add("pathdataspeedupreportsspeeds")
+    if not load_using_advanced_monitors():
+        skipped.add("pathdataspeedupreportsspeeds")
+    return skipped
+        #skipped.append("")
+
+
