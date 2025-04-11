@@ -24,7 +24,7 @@ import sys
 from typing import Dict, Iterable, List, Optional, cast
 
 from spinn_utilities.config_holder import (
-    get_config_str, get_config_str_or_none)
+    get_config_str, get_config_str_or_none, get_report_path)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_machine import Chip
@@ -205,8 +205,7 @@ class JavaCaller(object):
         :param ~pacman.model.placements.Placements used_placements:
             Placements that are recording. May not be all placements
         """
-        path = os.path.join(
-            FecDataView.get_json_dir_path(), "java_placements.json")
+        path = get_report_path("path_java_placements_json")
         self._recording = False
         if self._gatherer_iptags is None:
             self.__placement_json = self._write_placements(
