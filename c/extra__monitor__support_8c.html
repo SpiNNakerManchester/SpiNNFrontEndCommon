@@ -316,6 +316,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>sark_int_han</b> (voi
 <tr class="memitem:aad5a261b512d062d60b1391120e6eef7" id="r_aad5a261b512d062d60b1391120e6eef7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aad5a261b512d062d60b1391120e6eef7">reinjection_ready_to_send_callback</a> (void)</td></tr>
 <tr class="memdesc:aad5a261b512d062d60b1391120e6eef7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the router can accept a packet and the reinjection queue is non-empty.  <br /></td></tr>
 <tr class="separator:aad5a261b512d062d60b1391120e6eef7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a719bfe4680cc9cb672324982f37e82c8" id="r_a719bfe4680cc9cb672324982f37e82c8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a719bfe4680cc9cb672324982f37e82c8">extract_dropped_packet_details</a> (<a class="el" href="spinn__extra_8h.html#structrouter__dump__outputs__t">router_dump_outputs_t</a> rtr_dump_outputs)</td></tr>
+<tr class="separator:a719bfe4680cc9cb672324982f37e82c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afeb3823757cc5a747c3423e24a779312" id="r_afeb3823757cc5a747c3423e24a779312"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afeb3823757cc5a747c3423e24a779312">reinjection_dropped_packet_callback</a> (void)</td></tr>
 <tr class="memdesc:afeb3823757cc5a747c3423e24a779312"><td class="mdescLeft">&#160;</td><td class="mdescRight">the callback plugin for handling dropped packets  <br /></td></tr>
 <tr class="separator:afeb3823757cc5a747c3423e24a779312"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -2054,6 +2056,33 @@ The number of times we've modified the router. </td></tr>
 
 </div>
 </div>
+<a id="a719bfe4680cc9cb672324982f37e82c8" name="a719bfe4680cc9cb672324982f37e82c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a719bfe4680cc9cb672324982f37e82c8">&#9670;&#160;</a></span>extract_dropped_packet_details()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void extract_dropped_packet_details </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="spinn__extra_8h.html#structrouter__dump__outputs__t">router_dump_outputs_t</a></td>          <td class="paramname"><span class="paramname"><em>rtr_dump_outputs</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00747">747</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+
+</div>
+</div>
 <a id="afeb3823757cc5a747c3423e24a779312" name="afeb3823757cc5a747c3423e24a779312"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afeb3823757cc5a747c3423e24a779312">&#9670;&#160;</a></span>reinjection_dropped_packet_callback()</h2>
 
@@ -2079,7 +2108,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>the callback plugin for handling dropped packets </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00748">748</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00769">769</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2114,7 +2143,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00823">823</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00829">829</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2149,7 +2178,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00864">864</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00870">870</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2184,7 +2213,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00871">871</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00877">877</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2221,7 +2250,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00883">883</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00889">889</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2258,7 +2287,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00907">907</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00913">913</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2294,7 +2323,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00928">928</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00934">934</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2330,7 +2359,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00949">949</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00955">955</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2366,7 +2395,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00985">985</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00991">991</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2402,7 +2431,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01003">1003</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01009">1009</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2431,7 +2460,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>Clear the queue of messages to reinject. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01021">1021</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01027">1027</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2467,7 +2496,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01037">1037</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01043">1043</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2503,7 +2532,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the length of extra data put into the message for return </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01049">1049</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01055">1055</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2532,7 +2561,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>SARK level timer interrupt setup. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01098">1098</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01104">1104</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2561,7 +2590,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>Store this chip's p2p address for future use. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01112">1112</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01118">1118</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2590,7 +2619,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>sets up SARK and router to have a interrupt when a packet is dropped </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01118">1118</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01124">1124</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2619,7 +2648,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>Clears all (non-SARK/SCAMP) entries from the router. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01147">1147</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01153">1153</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2648,7 +2677,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>Resets the state due to reaching the end of a data stream. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01165">1165</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01171">1171</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2683,7 +2712,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01178">1178</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01184">1184</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2718,7 +2747,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01190">1190</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01196">1196</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2756,7 +2785,7 @@ The number of times we've modified the router. </td></tr>
 <li><a class="el" href="#a787d1adf1616b9a7ed4d2bbc09912f38" title="Resets the state due to reaching the end of a data stream.">data_in_process_boundary()</a> </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01211">1211</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01217">1217</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2796,7 +2825,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01242">1242</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01248">1248</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2825,7 +2854,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>reads in routers entries and places in application sdram location </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01285">1285</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01291">1291</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2860,7 +2889,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01311">1311</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01317">1317</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2890,7 +2919,7 @@ The number of times we've modified the router. </td></tr>
 <p>Sets up application routes on router. </p>
 <p>Required by data in speed up functionality. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01331">1331</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01337">1337</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2926,7 +2955,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>complete code if successful </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01349">1349</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01355">1355</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2967,7 +2996,7 @@ The number of times we've modified the router. </td></tr>
 </dl>
 <p>Whether the comms controller can accept another packet</p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01393">1393</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01399">1399</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3019,7 +3048,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01426">1426</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01432">1432</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3072,7 +3101,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01454">1454</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01460">1460</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3118,7 +3147,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01473">1473</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01479">1479</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3147,7 +3176,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>Sends the end flag to the packet gatherer. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01493">1493</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01499">1499</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3178,7 +3207,7 @@ The number of times we've modified the router. </td></tr>
 <p>Uses a pair of buffers in DTCM so data can be read in from SDRAM while the previous is being transferred over the network.</p>
 <p>Callback associated with <a class="el" href="#ad3f9f1daf2546fa2852c67698784045faf02163dfe7681d77de744cfaad973703">DMA_TAG_READ_FOR_TRANSMISSION</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01503">1503</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01509">1509</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3224,7 +3253,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01559">1559</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01565">1565</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3271,7 +3300,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01583">1583</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01589">1589</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3300,7 +3329,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>sets off a DMA for retransmission stuff </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01635">1635</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01641">1641</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3330,7 +3359,7 @@ The number of times we've modified the router. </td></tr>
 <p>reads in missing sequence numbers and sets off the reading of SDRAM for the equivalent data </p>
 <p>Callback associated with <a class="el" href="#ad3f9f1daf2546fa2852c67698784045fa942e461c76acb1c5a7401c130ccdd0e8" title="DMA complete tag for retransmission of data sequence numbers.">DMA_TAG_READ_FOR_RETRANSMISSION</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01650">1650</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01656">1656</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3360,7 +3389,7 @@ The number of times we've modified the router. </td></tr>
 <p>DMA complete callback for have read missing sequence number data. </p>
 <p>Callback associated with <a class="el" href="#ad3f9f1daf2546fa2852c67698784045fae3a1a5680add9bd61574b24599ac9185" title="DMA complete tag for the reading from SDRAM of data to be retransmitted.">DMA_TAG_RETRANSMISSION_READING</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01697">1697</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01703">1703</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3389,7 +3418,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>DMA complete callback for have read missing sequence number data. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01720">1720</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01726">1726</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3424,7 +3453,7 @@ The number of times we've modified the router. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01729">1729</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01735">1735</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3459,7 +3488,7 @@ The number of times we've modified the router. </td></tr>
 <li><a class="el" href="#a1bd166af952da491170b5ea6772482b9" title="DMA complete callback for have read missing sequence number data.">data_out_dma_complete_writing_missing_seq_to_sdram()</a> (tag unused?) </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01866">1866</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01872">1872</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3488,7 +3517,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>the handler for DMA errors </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01897">1897</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01903">1903</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3517,7 +3546,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>the handler for DMA timeouts (hopefully unlikely...) </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01908">1908</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01914">1914</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3546,7 +3575,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>Sets up data and callbacks required by the reinjection system. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01985">1985</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01991">1991</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3575,7 +3604,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>Sets up data and callbacks required by the data speed up system. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l02010">2010</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l02016">2016</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3604,7 +3633,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>Sets up data and callback required by the data in speed up system. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l02062">2062</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l02068">2068</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3633,7 +3662,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>Set up where we collect provenance. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l02087">2087</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l02093">2093</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3654,7 +3683,7 @@ The number of times we've modified the router. </td></tr>
 
 <p>main entry point </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l02098">2098</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l02104">2104</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
