@@ -13,11 +13,18 @@
 # limitations under the License.
 
 import os
+from typing import Set
+
 from spinn_utilities.config_holder import (
-    add_default_cfg, clear_cfg_files)
-from spinnman.config_setup import add_spinnman_cfg
+    add_default_cfg, clear_cfg_files, get_config_bool)
+from spinn_utilities.configs.camel_case_config_parser import optionxform
+
+from spinnman.config_setup import add_spinnman_cfg, man_cfg_paths_skipped
+
 from pacman.config_setup import add_pacman_cfg
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
+from spinn_front_end_common.interface.interface_functions \
+    import load_using_advanced_monitors
 
 BASE_CONFIG_FILE = "spinnaker.cfg"
 
@@ -46,3 +53,30 @@ def add_spinnaker_cfg() -> None:
     add_pacman_cfg()  # This add its dependencies too
     add_spinnman_cfg()  # double adds of dependencies ignored
     add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))
+
+
+def fec_cfg_paths_skipped() -> Set[str]:
+    """
+    Set of cfg path that would not be found based on other cfg settings
+    """
+    skipped = man_cfg_paths_skipped()
+    if not get_config_bool("Reports", "write_energy_report"):
+        skipped.add(optionxform("path_energy_report"))
+    if get_config_bool("Machine", "virtual_board"):
+        skipped.add(optionxform("path_data_speed_up_reports_routers"))
+        skipped.add(optionxform("path_drift_report"))
+        skipped.add(optionxform("path_energy_report"))
+        skipped.add(optionxform("path_memory_map_report"))
+    if not get_config_bool("Machine","enable_advanced_monitor_support"):
+        skipped.add(optionxform("path_data_speed_up_reports_routers"))
+        skipped.add(optionxform("path_data_speed_up_reports_speeds"))
+    if get_config_bool("Java", "use_java"):
+        skipped.add(optionxform("path_data_speed_up_reports_routers"))
+        skipped.add(optionxform("path_data_speed_up_reports_speeds"))
+    else:
+        skipped.add(optionxform("path_java_placements_json"))
+    if not load_using_advanced_monitors():
+        skipped.add(optionxform("path_data_speed_up_reports_speeds"))
+    return skipped
+
+

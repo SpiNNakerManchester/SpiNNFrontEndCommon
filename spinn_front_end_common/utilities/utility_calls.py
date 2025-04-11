@@ -23,8 +23,8 @@ from typing import (Optional, Union, TextIO, Tuple, TypeVar)
 
 from urllib.parse import urlparse
 
-from spinn_utilities.config_holder import get_config_bool
-from spinn_utilities.config_holder import get_config_str
+from spinn_utilities.config_holder import (
+    get_config_bool, get_config_str, get_report_path)
 
 from spinn_machine import Chip
 
@@ -80,7 +80,6 @@ def get_region_base_address_offset(
 
 _DAT_TMPL = "dataSpec_{}_{}_{}.dat"
 _RPT_TMPL = "dataSpec_{}_{}_{}.txt"
-_RPT_DIR = "data_spec_text_files"
 
 
 def get_report_writer(
@@ -102,11 +101,9 @@ def get_report_writer(
     if not get_config_bool("Reports", "write_text_specs"):
         return None
     # initialise the report writer to send down to DSG
-    dir_name = _RPT_DIR
+    new_report_directory = get_report_path("path_text_specs", is_dir=True)
     if use_run_number:
-        dir_name += str(FecDataView.get_run_number())
-    new_report_directory = os.path.join(
-        FecDataView.get_run_dir_path(), dir_name)
+        new_report_directory += str(FecDataView.get_run_number())
     _mkdir(new_report_directory)
     name = os.path.join(new_report_directory, _RPT_TMPL.format(
         processor_chip_x, processor_chip_y, processor_id))
