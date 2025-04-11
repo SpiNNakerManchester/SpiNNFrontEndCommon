@@ -19,7 +19,7 @@ from spinn_utilities.config_holder import (
     add_default_cfg, clear_cfg_files, get_config_bool)
 from spinn_utilities.configs.camel_case_config_parser import optionxform
 
-from spinnman.config_setup import add_spinnman_cfg
+from spinnman.config_setup import add_spinnman_cfg, man_cfg_paths_skipped
 
 from pacman.config_setup import add_pacman_cfg
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
@@ -59,7 +59,7 @@ def fec_cfg_paths_skipped() -> Set[str]:
     """
     Set of cfg path that would not be found based on other cfg settings
     """
-    skipped = set()
+    skipped = man_cfg_paths_skipped()
     if not get_config_bool("Reports", "write_energy_report"):
         skipped.add(optionxform("path_energy_report"))
     if get_config_bool("Machine", "virtual_board"):
