@@ -101,7 +101,7 @@ def get_report_writer(
     if not get_config_bool("Reports", "write_text_specs"):
         return None
     # initialise the report writer to send down to DSG
-    new_report_directory = get_report_path("path_text_specs")
+    new_report_directory = get_report_path("path_text_specs", is_dir=True)
     if use_run_number:
         new_report_directory += str(FecDataView.get_run_number())
     _mkdir(new_report_directory)

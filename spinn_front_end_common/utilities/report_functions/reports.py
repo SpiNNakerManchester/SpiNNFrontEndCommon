@@ -541,7 +541,7 @@ def router_report_from_router_tables() -> None:
     """
     Report the uncompressed routing tables.
     """
-    top_level_folder = get_report_path("path_uncompressed")
+    top_level_folder = get_report_path("path_uncompressed", is_dir=True)
     routing_tables = FecDataView.get_uncompressed().routing_tables
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
@@ -559,7 +559,7 @@ def router_report_from_compressed_router_tables(
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the compressed routing tables
     """
-    top_level_folder = get_report_path("path_compressed")
+    top_level_folder = get_report_path("path_compressed", is_dir=True)
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
