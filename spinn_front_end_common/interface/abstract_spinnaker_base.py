@@ -37,7 +37,7 @@ import requests
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
-    is_config_none, set_config)
+    get_report_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
