@@ -14,6 +14,7 @@
 
 import logging
 import os
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -37,9 +38,7 @@ def generate_routing_compression_checker_report(
     :type compressed_routing_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(),
-        "routing_compression_checker_report.rpt")
+    file_name = get_report_path("path_compression_checker")
 
     try:
         with open(file_name, "w", encoding="utf-8") as f:

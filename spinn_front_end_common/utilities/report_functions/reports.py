@@ -51,7 +51,7 @@ def tag_allocator_report() -> None:
     simulation.
     """
     tag_infos = FecDataView.get_tags()
-    file_name = get_report_path("path_tag_allocation_reports")
+    file_name = get_report_path("path_tag_allocation_reports_host")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(

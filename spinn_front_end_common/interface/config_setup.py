@@ -68,6 +68,9 @@ def fec_cfg_paths_skipped() -> Set[str]:
         skipped.add(optionxform("path_drift_report"))
         skipped.add(optionxform("path_energy_report"))
         skipped.add(optionxform("path_memory_map_report"))
+        skipped.add(optionxform("path_tag_allocation_reports_machine"))
+        # only works virtual if using a host compressor
+        skipped.add(optionxform("path_compression_checker"))
     if not get_config_bool("Machine","enable_advanced_monitor_support"):
         skipped.add(optionxform("path_data_speed_up_reports_routers"))
         skipped.add(optionxform("path_data_speed_up_reports_speeds"))
