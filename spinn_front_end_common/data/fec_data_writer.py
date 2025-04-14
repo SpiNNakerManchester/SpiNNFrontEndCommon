@@ -83,8 +83,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     @overrides(PacmanDataWriter._hard_reset)
     def _hard_reset(self) -> None:
-        if self.is_ran_last():
-            self.__fec_data._reset_number += 1
         PacmanDataWriter._hard_reset(self)
         SpiNNManDataWriter._local_hard_reset(self)
         self.__fec_data._hard_reset()
@@ -92,8 +90,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     @overrides(PacmanDataWriter._soft_reset)
     def _soft_reset(self) -> None:
-        if self.is_ran_last():
-            self.__fec_data._reset_number += 1
         PacmanDataWriter._soft_reset(self)
         SpiNNManDataWriter._local_soft_reset(self)
         self.__fec_data._soft_reset()
