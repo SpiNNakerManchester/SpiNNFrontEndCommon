@@ -18,6 +18,7 @@ import os
 from typing import (
     Dict, Iterable, Iterator, Optional, Set, Tuple, Union, List, TYPE_CHECKING)
 
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
@@ -783,7 +784,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls._is_mocked():
             return cls._temporary_dir_path()
-        return cls._child_folder(cls.get_run_dir_path(), "provenance_data")
+        return get_report_path("path_provenance")
 
     @classmethod
     def get_app_provenance_dir_path(cls) -> str:
@@ -805,8 +806,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls._is_mocked():
             return cls._temporary_dir_path()
 
-        return cls._child_folder(
-            cls.get_provenance_dir_path(), "app_provenance_data")
+        return get_report_path("path_iobuf_app", is_dir=True)
 
     @classmethod
     def get_system_provenance_dir_path(cls) -> str:
@@ -826,8 +826,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls._is_mocked():
             return cls._temporary_dir_path()
-        return cls._child_folder(
-            cls.get_provenance_dir_path(), "system_provenance_data")
+        return get_report_path("path_iobuf_system", is_dir=True)
 
     @classmethod
     def get_next_none_labelled_edge_number(cls) -> int:
