@@ -78,7 +78,7 @@ def fec_cfg_paths_skipped() -> Set[str]:
         skipped.add(optionxform("path_data_speed_up_reports_routers"))
         skipped.add(optionxform("path_data_speed_up_reports_speeds"))
     else:
-        skipped.add(optionxform("path_java_placements_json"))
+        skipped.add(optionxform("path_json_java_placements"))
     if not load_using_advanced_monitors():
         skipped.add(optionxform("path_data_speed_up_reports_speeds"))
     return skipped
