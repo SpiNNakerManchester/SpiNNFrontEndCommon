@@ -357,6 +357,9 @@ class JavaCaller(object):
 
         return path
 
+    def get_log_path(self) -> str:
+        return get_report_path(section="Java", option="path_java_log")
+
     def _run_java(self, *args: str) -> None:
         """
         Does the actual running of `JavaSpiNNaker`. Arguments are those that
@@ -402,8 +405,7 @@ class JavaCaller(object):
                 logger.error(f"Call was {params}")
                 logger.error("Output was:")
                 logger.error(all_output)
-                log_file = os.path.join(
-                    FecDataView.get_run_dir_path(), "jspin.log")
+                log_file = self.get_log_path()
                 logger.error(f"Logging to: {log_file}")
                 raise subprocess.CalledProcessError(
                     process.returncode, params, output=all_output)
@@ -423,12 +425,12 @@ class JavaCaller(object):
             self._run_java(
                 'download', self._placement_json, self._machine_json(),
                 BufferDatabase.default_database_file(),
-                FecDataView.get_run_dir_path())
+                self.get_log_path())
         else:
             self._run_java(
                 'gather', self._placement_json, self._machine_json(),
                 BufferDatabase.default_database_file(),
-                FecDataView.get_run_dir_path())
+                self.get_log_path())
 
     def load_system_data_specification(self) -> None:
         """
@@ -441,7 +443,7 @@ class JavaCaller(object):
         self._run_java(
             'dse_sys', self._machine_json(),
             FecDataView.get_ds_database_path(),
-            FecDataView.get_run_dir_path())
+            self.get_log_path())
 
     def load_app_data_specification(self, use_monitors: bool) -> None:
         """
@@ -460,9 +462,9 @@ class JavaCaller(object):
             self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
                 FecDataView.get_ds_database_path(),
-                FecDataView.get_run_dir_path())
+                self.get_log_path())
         else:
             self._run_java(
                 'dse_app', self._machine_json(),
                 FecDataView.get_ds_database_path(),
-                FecDataView.get_run_dir_path())
+                self.get_log_path())
