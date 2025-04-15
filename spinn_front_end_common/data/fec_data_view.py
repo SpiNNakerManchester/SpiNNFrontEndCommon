@@ -717,26 +717,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # run_dir_path in UtilsDataView
 
     @classmethod
-    def get_provenance_dir_path(cls) -> str:
-        """
-        Returns the path to the directory that holds all provenance files.
-
-        This will be the path used by the last run call or to be used by
-        the next run if it has not yet been called.
-
-        .. note::
-            In unit-test mode this returns a temporary directory
-            shared by all path methods.
-
-        :rtype: str
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if cls._is_mocked():
-            return cls._temporary_dir_path()
-        return get_report_path("path_provenance")
-
-    @classmethod
     def get_app_provenance_dir_path(cls) -> str:
         """
         Returns the path to the directory that holds all application provenance
