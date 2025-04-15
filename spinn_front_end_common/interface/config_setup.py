@@ -63,22 +63,30 @@ def fec_cfg_paths_skipped() -> Set[str]:
     skipped.update(packman_cfg_paths_skipped())
     if not get_config_bool("Reports", "write_energy_report"):
         skipped.add(optionxform("path_energy_report"))
+
     if get_config_bool("Machine", "virtual_board"):
         skipped.add(optionxform("path_data_speed_up_reports_routers"))
         skipped.add(optionxform("path_drift_report"))
         skipped.add(optionxform("path_energy_report"))
+        skipped.add(optionxform("path_fixed_routes_report"))
+        skipped.add(optionxform("path_iobuf_app"))
+        skipped.add(optionxform("path_iobuf_system"))
+        skipped.add(optionxform("path_java_log"))
+        skipped.add(optionxform("path_json_java_placements"))
         skipped.add(optionxform("path_memory_map_report"))
         skipped.add(optionxform("path_tag_allocation_reports_machine"))
-        # only works virtual if using a host compressor
-        skipped.add(optionxform("path_compression_checker"))
+
     if not get_config_bool("Machine","enable_advanced_monitor_support"):
         skipped.add(optionxform("path_data_speed_up_reports_routers"))
         skipped.add(optionxform("path_data_speed_up_reports_speeds"))
+
     if get_config_bool("Java", "use_java"):
         skipped.add(optionxform("path_data_speed_up_reports_routers"))
         skipped.add(optionxform("path_data_speed_up_reports_speeds"))
     else:
+        skipped.add(optionxform("path_java_log"))
         skipped.add(optionxform("path_json_java_placements"))
+
     if not load_using_advanced_monitors():
         skipped.add(optionxform("path_data_speed_up_reports_speeds"))
     return skipped
