@@ -239,7 +239,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(run_dir))
         self.assertIn(timestramp_dir, run_dir)
 
-
     def test_directories_reset(self) -> None:
         writer = FecDataWriter.setup()
         run_dir = FecDataView.get_run_dir_path()
