@@ -124,8 +124,7 @@ class TestWriteJson(unittest.TestCase):
         machine = trans.get_machine_details()
         FecDataWriter.mock().set_machine(machine)
 
-        folder = "spinn4"
-        filename = write_json_machine(folder, True)
+        filename = write_json_machine(True)
 
         self.json_compare(filename, "spinn4.json")
 
@@ -140,7 +139,7 @@ class TestWriteJson(unittest.TestCase):
         json_file = get_report_path("path_json_machine")
         if os.path.exists(json_file):
             os.remove(json_file)
-        filename = write_json_machine(folder, True)
+        filename = write_json_machine(True)
 
         self.json_compare(filename, "spinn4_fiddle.json")
         trans.close()
@@ -166,8 +165,7 @@ class TestWriteJson(unittest.TestCase):
 
         m_allocation_controller.close()
 
-        folder = "spinn2"
-        filename = write_json_machine(folder, False)
+        filename = write_json_machine(False)
 
         self.json_compare(filename, "spinn2.json")
         trans.close()

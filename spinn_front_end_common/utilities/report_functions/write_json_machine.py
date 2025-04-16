@@ -26,8 +26,7 @@ from pacman.utilities import file_format_schemas
 MACHINE_SCHEMA = "machine.json"
 
 
-def write_json_machine(
-        json_folder: Optional[str] = None, progress_bar: bool = True) -> str:
+def write_json_machine(progress_bar: bool = True) -> str:
     """
     Runs the code to write the machine in Java readable JSON.
 
