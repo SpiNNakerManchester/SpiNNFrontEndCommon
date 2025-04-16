@@ -553,41 +553,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
             f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
 
-    @classmethod
-    def write_errored_file(cls, message: Optional[str] = None) -> None:
-        """
-        Writes an ``errored`` file that signals code if the code has errored
-
-        Not written if there is a finished file exists and
-        there is no error message.
-
-        This file signals the report directory can be removed.
-
-        This method can be called while there is still code to be run BUT
-        if running other simulations at the same time there is a possibility
-        that the report directory is no longer available for writing to.
-
-        :param message: An error message to included
-        """
-        errored_file_name = os.path.join(
-            cls.get_timestamp_dir_path(), cls.ERRORED_FILENAME)
-
-        if message is None:
-            finished_file_name = os.path.join(
-                cls.get_timestamp_dir_path(), cls.FINISHED_FILENAME)
-            if os.path.exists(finished_file_name):
-                return
-
-            if os.path.exists(errored_file_name):
-                return
-
-            message = "Unexpected end"
-
-        with open(errored_file_name, "w", encoding="utf-8") as f:
-            f.writelines(message)
-            f.writelines("\n")
-            f.writelines(cls._get_timestamp())
-
     # system multicast routing data
 
     @classmethod
