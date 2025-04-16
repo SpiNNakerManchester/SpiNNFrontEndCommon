@@ -36,10 +36,6 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-APP_DIRNAME = 'application_generated_data_files'
-STACK_TRACE_FILENAME = ""
-WARNING_LOGS_FILENAME = "warning_logs.txt"
-
 # options names are all lower without _ inside config
 _DEBUG_ENABLE_OPTS = frozenset([
     "cleariobufduringrun", "extractiobuf"])

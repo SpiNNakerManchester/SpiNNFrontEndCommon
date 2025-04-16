@@ -90,7 +90,7 @@ from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.interface.config_handler import (
-    ConfigHandler, STACK_TRACE_FILENAME)
+    ConfigHandler)
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
     chip_io_buf_clearer, chip_io_buf_extractor,
@@ -276,7 +276,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Cleanup reports folder based on cfg", TimerWork.REPORT):
             self.__reset_remove_data()
 
-            timestamp_dir = self._data_writer.get_timestamp_dir_path()
             if not get_config_bool("Reports", "keep_data_database"):
                 path = get_report_path("path_data_database")
                 if os.path.exists(path):
