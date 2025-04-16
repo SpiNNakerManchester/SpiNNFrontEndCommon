@@ -13,16 +13,14 @@
 # limitations under the License.
 
 import json
-import os
 
-from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import get_config_bool, get_report_path
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
 from pacman.model.routing_tables.multicast_routing_tables import (
     to_json, MulticastRoutingTables)
-from spinn_front_end_common.data import FecDataView
 
-_ROUTING_TABLES_FILENAME = "routing_tables.json"
+_ROUTING_TABLES_SCHEMA = "routing_tables.json"
 
 
 def write_json_routing_tables(router_tables: MulticastRoutingTables) -> str:
@@ -32,8 +30,7 @@ def write_json_routing_tables(router_tables: MulticastRoutingTables) -> str:
     :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
         Routing Tables to convert. Could be uncompressed or compressed
     """
-    file_path = os.path.join(
-        FecDataView.get_json_dir_path(), _ROUTING_TABLES_FILENAME)
+    file_path = get_report_path("path_json_routing_tables")
     # Steps are create json object, validate json and write json to a file
     with ProgressBar(3, "Converting to JSON RouterTables") as progress:
         json_obj = to_json(router_tables)
@@ -41,7 +38,7 @@ def write_json_routing_tables(router_tables: MulticastRoutingTables) -> str:
 
         if get_config_bool("Mapping", "validate_json"):
             # validate the schema
-            file_format_schemas.validate(json_obj, _ROUTING_TABLES_FILENAME)
+            file_format_schemas.validate(json_obj, _ROUTING_TABLES_SCHEMA)
         progress.update()
 
         # dump to json file

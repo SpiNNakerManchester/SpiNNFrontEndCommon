@@ -17,14 +17,19 @@ import logging
 import os
 from typing import (
     cast, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union)
+
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
+
 from spinn_machine import Machine
+
 from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from pacman.utilities.utility_calls import get_keys
 from pacman.model.graphs.abstract_edge_partition import AbstractEdgePartition
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
@@ -36,7 +41,6 @@ if TYPE_CHECKING:
         _LPGSplitter)
 
 logger = FormatAdapter(logging.getLogger(__name__))
-DB_NAME = "input_output_database.sqlite3"
 INIT_SQL = "db.sql"
 
 
@@ -56,8 +60,7 @@ class DatabaseWriter(SQLiteDB):
         "__machine_to_id", "__vertex_to_id")
 
     def __init__(self) -> None:
-        self._database_path = os.path.join(FecDataView.get_run_dir_path(),
-                                           DB_NAME)
+        self._database_path = get_report_path("path_input_output_database")
         init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
 
         # delete any old database

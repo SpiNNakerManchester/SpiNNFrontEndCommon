@@ -22,7 +22,7 @@ from typing import (
     Any, BinaryIO, Final, Iterable, List, Optional, Set, Tuple, Union,
     TYPE_CHECKING)
 
-from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import get_config_bool, get_report_path
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
@@ -258,11 +258,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     # throttle on the transmission
     _TRANSMISSION_THROTTLE_TIME = 0.000001
 
-    #: report name for tracking used routers
-    OUT_REPORT_NAME = "routers_used_in_speed_up_process.rpt"
-    #: report name for tracking performance gains
-    IN_REPORT_NAME = "speeds_gained_in_speed_up_process.rpt"
-
     # the end flag is set when the high bit of the sequence number word is set
     _LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000
     # corresponding mask for the actual sequence numbers
@@ -469,8 +464,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             the location in machine where the data was written to Y axis
         :param int address_written_to: where in SDRAM it was written to
         """
-        dir_path = FecDataView.get_run_dir_path()
-        in_report_path = os.path.join(dir_path, self.IN_REPORT_NAME)
+        in_report_path = get_report_path("path_data_speed_up_reports_speeds")
         if not os.path.isfile(in_report_path):
             with open(in_report_path, "w", encoding="utf-8") as writer:
                 writer.write(
@@ -1152,8 +1146,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             The placement that we have been routing data out from
         """
         routers_used = self.__describe_fixed_route_from(placement)
-        dir_path = FecDataView.get_run_dir_path()
-        out_report_path = os.path.join(dir_path, self.OUT_REPORT_NAME)
+        out_report_path = get_report_path("path_data_speed_up_reports_routers")
         with open(out_report_path, "a", encoding="utf-8") as writer:
             writer.write(
                 f"[{placement.x}:{placement.y}:{placement.p}] "

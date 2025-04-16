@@ -19,6 +19,7 @@ import re
 from sqlite3 import Row
 from typing import Iterable, List, Optional, Tuple, Union
 
+from spinn_utilities.config_holder import get_timestamp_path
 from spinn_utilities.log import FormatAdapter
 
 from spinn_front_end_common.data import FecDataView
@@ -63,9 +64,7 @@ class GlobalProvenance(SQLiteDB):
             if the system is in a state where path can't be retrieved,
             for example before run is called
         """
-        return os.path.join(
-            FecDataView.get_timestamp_dir_path(),
-            "global_provenance.sqlite3")
+        return get_timestamp_path("path_global_provenance")
 
     def __init__(
             self, database_file: Optional[str] = None, memory: bool = False):
