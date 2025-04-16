@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations  # Type checking trickery
-import datetime
 import logging
 import os
 from typing import (
@@ -111,7 +110,6 @@ class _FecDataModel(object):
         "_simulation_time_step_us",
         "_spalloc_job",
         "_system_multicast_router_timeout_keys",
-        "_timestamp_dir_path",
         "_time_scale_factor")
 
     def __new__(cls) -> _FecDataModel:
@@ -147,7 +145,6 @@ class _FecDataModel(object):
         self._simulation_time_step_s: Optional[float] = None
         self._simulation_time_step_us: Optional[int] = None
         self._time_scale_factor: Optional[Union[int, float]] = None
-        self._timestamp_dir_path: Optional[str] = None
         self._hard_reset()
 
     def _hard_reset(self) -> None:
@@ -210,8 +207,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     repositories as all methods are available to subclasses
     """
 
-    FINISHED_FILENAME = "finished"
-    ERRORED_FILENAME = "errored"
     __fec_data = _FecDataModel()
 
     __slots__ = ()
@@ -519,39 +514,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return cls.__fec_data._run_step is None
         else:
             return cls.__fec_data._run_step == cls.__fec_data._n_run_steps
-
-    # Report directories
-    # There are NO has or get methods for directories
-    # This allows directories to be created on the fly
-
-    # n_boards/chips required
-
-    @classmethod
-    def get_timestamp_dir_path(cls) -> str:
-        """
-        Returns path to existing time-stamped directory in the reports
-        directory.
-
-        .. note::
-            In unit-test mode this returns a temporary directory
-            shared by all path methods.
-
-        :rtype: str
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if cls.__fec_data._timestamp_dir_path is not None:
-            return cls.__fec_data._timestamp_dir_path
-        if cls._is_mocked():
-            return cls._temporary_dir_path()
-        raise cls._exception("timestamp_dir_path")
-
-    @classmethod
-    def _get_timestamp(cls) -> str:
-        now = datetime.datetime.now()
-        return (
-            f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
-            f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
 
     # system multicast routing data
 
