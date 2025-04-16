@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os
 import sys
 from typing import Dict, Optional, Tuple, TextIO, Union
 from collections import defaultdict

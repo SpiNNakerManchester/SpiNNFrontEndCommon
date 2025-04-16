@@ -78,7 +78,7 @@ def fec_cfg_paths_skipped() -> Set[str]:
         skipped.add(optionxform("path_memory_map_report"))
         skipped.add(optionxform("path_tag_allocation_reports_machine"))
 
-    if not get_config_bool("Machine","enable_advanced_monitor_support"):
+    if not get_config_bool("Machine", "enable_advanced_monitor_support"):
         skipped.add(optionxform("path_data_speed_up_reports_routers"))
         skipped.add(optionxform("path_data_speed_up_reports_speeds"))
 
@@ -92,5 +92,3 @@ def fec_cfg_paths_skipped() -> Set[str]:
     if not load_using_advanced_monitors():
         skipped.add(optionxform("path_data_speed_up_reports_speeds"))
     return skipped
-
-

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
@@ -21,7 +20,6 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.routing_compression_checker import (
     codify_table, compare_route)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
-from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -38,7 +36,8 @@ def generate_routing_compression_checker_report(
     :type compressed_routing_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
     """
-    file_name = get_report_path(section="Mapping", option="path_compression_checker")
+    file_name = get_report_path(
+        section="Mapping", option="path_compression_checker")
 
     try:
         with open(file_name, "w", encoding="utf-8") as f:

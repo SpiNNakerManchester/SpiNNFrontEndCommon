@@ -14,14 +14,12 @@
 
 import logging
 import json
-import os
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
 from pacman.utilities.json_utils import placements_to_json
-from spinn_front_end_common.data import FecDataView
 
 _PLACEMENTS_SCHEMA = "placements.json"
 logger = FormatAdapter(logging.getLogger(__name__))

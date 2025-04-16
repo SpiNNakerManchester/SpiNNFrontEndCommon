@@ -20,7 +20,6 @@ from typing_extensions import TypeAlias
 
 from spinn_utilities.config_holder import get_report_path
 
-from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__),

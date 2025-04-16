@@ -30,7 +30,7 @@ from spinnman.transceiver import create_transceiver_from_hostname
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
-    import (write_json_machine, MACHINE_SCHEMA)
+    import (write_json_machine)
 from spinn_front_end_common.interface.interface_functions import (
     spalloc_allocator)
 
@@ -112,14 +112,6 @@ class TestWriteJson(unittest.TestCase):
                     raise AssertionError(
                         "Values differ for {} found {} {}".format(
                             key, json1[key], json2[key]))
-
-    def _remove_old_json(self, folder: str) -> None:
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        else:
-            json_file = os.path.join(folder, MACHINE_FILENAME)
-            if os.path.exists(json_file):
-                os.remove(json_file)
 
     def testSpin4(self) -> None:
         if not Ping.host_is_reachable(self.spin4Host):

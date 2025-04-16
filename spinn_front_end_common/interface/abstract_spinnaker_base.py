@@ -20,7 +20,6 @@ import math
 import os
 import re
 import signal
-import shutil
 import sys
 import threading
 import types
@@ -248,8 +247,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self.__reset_remove_data()
 
     def __reset_remove_data(self) -> None:
-        run_dir = self._data_writer.get_run_dir_path()
-
         if not get_config_bool("Reports", "keep_json_files"):
             for option in config_options("Reports"):
                 if option.startswith("pathjson"):
