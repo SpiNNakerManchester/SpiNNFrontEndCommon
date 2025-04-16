@@ -81,7 +81,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         PacmanDataWriter._hard_reset(self)
         SpiNNManDataWriter._local_hard_reset(self)
         self.__fec_data._hard_reset()
-        self.__create_run_dir_path()
 
     @overrides(PacmanDataWriter._soft_reset)
     def _soft_reset(self) -> None:
