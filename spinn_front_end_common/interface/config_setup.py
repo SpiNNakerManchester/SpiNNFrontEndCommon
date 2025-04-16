@@ -75,7 +75,8 @@ def fec_cfg_paths_skipped() -> Set[str]:
         skipped.add(optionxform("path_iobuf_system"))
         skipped.add(optionxform("path_java_log"))
         skipped.add(optionxform("path_json_java_placements"))
-        skipped.add(optionxform("path_memory_map_report"))
+        skipped.add(optionxform("path_memory_map_report_map"))
+        skipped.add(optionxform("path_memory_map_reports"))
         skipped.add(optionxform("path_tag_allocation_reports_machine"))
 
     if not get_config_bool("Machine", "enable_advanced_monitor_support"):

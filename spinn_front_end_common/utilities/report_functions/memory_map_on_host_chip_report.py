@@ -39,7 +39,7 @@ def memory_map_on_host_chip_report() -> None:
     Report on memory usage. Creates a report that states where in SDRAM
     each region is (read from machine).
     """
-    directory_name = get_report_path("path_memory_map_report")
+    directory_name = get_report_path("path_memory_map_reports", is_dir=True)
     if not os.path.exists(directory_name):
         os.makedirs(directory_name)
 

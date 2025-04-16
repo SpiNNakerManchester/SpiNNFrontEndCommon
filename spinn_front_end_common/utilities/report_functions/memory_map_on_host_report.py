@@ -26,7 +26,7 @@ def memory_map_on_host_report() -> None:
     """
     Report on memory usage.
     """
-    file_name = get_report_path("path_memory_map_report")
+    file_name = get_report_path("path_memory_map_report_map")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             f.write("On host data specification executor\n")
