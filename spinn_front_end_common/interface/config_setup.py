@@ -58,6 +58,8 @@ def add_spinnaker_cfg() -> None:
 def fec_cfg_paths_skipped() -> Set[str]:
     """
     Set of cfg path that would not be found based on other cfg settings
+
+    Assuming mode = Debug
     """
     skipped = man_cfg_paths_skipped()
     skipped.update(packman_cfg_paths_skipped())
