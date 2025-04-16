@@ -135,7 +135,6 @@ class TestWriteJson(unittest.TestCase):
         chip = machine[1, 2]
         chip._sdram = chip._sdram - 101
 
-        folder = "spinn4_fiddle"
         json_file = get_report_path("path_json_machine")
         if os.path.exists(json_file):
             os.remove(json_file)

@@ -14,7 +14,6 @@
 
 import json
 import os
-from typing import Optional
 
 from spinn_utilities.config_holder import (
     get_config_bool, get_report_path)
