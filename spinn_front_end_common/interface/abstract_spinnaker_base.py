@@ -37,7 +37,7 @@ from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
     config_options,
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
-    get_report_path, is_config_none, set_config)
+    get_report_path, get_timestamp_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
@@ -283,8 +283,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     os.remove(path)
 
             if not get_config_bool("Reports", "keep_stack_trace"):
-                os.remove(os.path.join(
-                    timestamp_dir, STACK_TRACE_FILENAME))
+                os.remove(get_timestamp_path("path_stack_trace"))
 
     def _setup_java_caller(self) -> None:
         if get_config_bool("Java", "use_java"):
