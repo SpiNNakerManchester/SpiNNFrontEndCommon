@@ -14,7 +14,7 @@
 
 import os
 import unittest
-from spinn_utilities.config_holder import run_config_checks
+from spinn_utilities.configs.config_checker import ConfigChecker
 import spinn_front_end_common
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
@@ -30,5 +30,4 @@ class TestCfgChecker(unittest.TestCase):
         fec_dir = spinn_front_end_common.__path__[0]
         local = os.path.join(parent, "fec_local_tests")
         fec_it = os.path.join(parent, "fec_integration_tests")
-        run_config_checks(directories=[fec_dir, local, fec_it, unittests],
-                          special_nones=["info", "debug"])
+        ConfigChecker([fec_dir, local, fec_it, unittests]).check()
