@@ -64,7 +64,7 @@ class GlobalProvenance(SQLiteDB):
             if the system is in a state where path can't be retrieved,
             for example before run is called
         """
-        return get_timestamp_path("path_global_provenance")
+        return get_timestamp_path("tpath_global_provenance")
 
     def __init__(
             self, database_file: Optional[str] = None, memory: bool = False):

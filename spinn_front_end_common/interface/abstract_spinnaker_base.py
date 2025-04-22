@@ -282,7 +282,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     os.remove(path)
 
             if not get_config_bool("Reports", "keep_stack_trace"):
-                os.remove(get_timestamp_path("path_stack_trace"))
+                os.remove(get_timestamp_path("tpath_stack_trace"))
 
     def _setup_java_caller(self) -> None:
         if get_config_bool("Java", "use_java"):
