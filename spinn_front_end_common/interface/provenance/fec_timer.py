@@ -22,7 +22,8 @@ from sqlite3 import DatabaseError
 
 from typing_extensions import Literal, Self
 
-from spinn_utilities.config_holder import (get_config_bool, get_report_path)
+from spinn_utilities.config_holder import (
+    get_config_bool, get_timestamp_path)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from .global_provenance import GlobalProvenance
@@ -72,7 +73,8 @@ class FecTimer(object):
         # pylint: disable=global-statement, protected-access
         cls._simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
-            cls._provenance_path = get_report_path("path_algorithm_timings")
+            cls._provenance_path = get_timestamp_path(
+                "tpath_algorithm_timings")
         else:
             cls._provenance_path = None
         cls._print_timings = get_config_bool(

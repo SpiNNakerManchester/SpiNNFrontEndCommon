@@ -233,7 +233,8 @@ class ConfigHandler(object):
                 get_config_bool("Reports", "remove_errored_folders"))
 
         # store timestamp in latest/time_stamp for provenance reasons
-        time_of_run_file_name = get_timestamp_path("path_stack_trace")
+        time_of_run_file_name = get_timestamp_path(
+            "tpath_stack_trace")
         with open(time_of_run_file_name, "w", encoding="utf-8") as f:
             f.write("Traceback of setup call:\n")
             traceback.print_stack(file=f)
