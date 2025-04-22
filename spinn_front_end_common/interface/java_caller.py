@@ -205,7 +205,8 @@ class JavaCaller(object):
         :param ~pacman.model.placements.Placements used_placements:
             Placements that are recording. May not be all placements
         """
-        path = get_report_path("path_json_java_placements")
+        path = get_report_path(
+            section="Java", option="path_json_java_placements")
         self._recording = False
         if self._gatherer_iptags is None:
             self.__placement_json = self._write_placements(
