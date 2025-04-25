@@ -81,6 +81,7 @@ def fec_cfg_paths_skipped() -> Set[str]:
 
     if not get_config_bool("Machine", "enable_advanced_monitor_support"):
         skipped.add(optionxform("path_data_speed_up_reports_routers"))
+        skipped.add(optionxform("path_fixed_routes_report"))
         skipped.add(optionxform("path_data_speed_up_reports_speeds"))
 
     if get_config_bool("Java", "use_java"):
