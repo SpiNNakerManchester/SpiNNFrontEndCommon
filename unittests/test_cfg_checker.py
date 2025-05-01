@@ -36,7 +36,7 @@ class TestCfgChecker(unittest.TestCase):
         fec_it = os.path.join(parent, "fec_integration_tests")
         ConfigChecker([fec_dir, local, fec_it, unittests]).check()
 
-    def test_cfg_documentor(self):
+    def test_cfg_documentor(self) -> None:
         class_file = sys.modules[self.__module__].__file__
         assert class_file is not None
         abs_class_file = os.path.abspath(class_file)
