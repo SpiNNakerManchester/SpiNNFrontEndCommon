@@ -44,6 +44,4 @@ class TestCfgChecker(unittest.TestCase):
         test_file = os.path.join(class_dir, 'test.md')
 
         documentor = ConfigDocumentor()
-        documentor.print_section("Logging")
-        documentor.print_configs()
         documentor.md_configs(test_file)
