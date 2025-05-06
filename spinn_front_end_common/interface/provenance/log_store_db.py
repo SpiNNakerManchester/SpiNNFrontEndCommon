@@ -15,6 +15,8 @@
 from datetime import datetime
 import sqlite3
 from typing import List, Optional
+
+from spinn_utilities.exceptions import ConfigException
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
 from .global_provenance import GlobalProvenance
@@ -40,6 +42,9 @@ class LogStoreDB(LogStore):
                 return
             # all others are bad
             raise
+        except ConfigException:
+            # This will be when trying to log before the configs are setup
+            return
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(
