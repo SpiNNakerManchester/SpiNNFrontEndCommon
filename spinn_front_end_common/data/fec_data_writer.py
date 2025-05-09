@@ -14,7 +14,6 @@
 
 
 import logging
-import math
 import os
 from typing import Dict, Optional, Tuple
 
@@ -180,7 +179,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def set_up_timings(
             self, simulation_time_step_us: Optional[int],
             time_scale_factor: Optional[float],
-            default_time_scale_factor: Optional[float] = None) -> None:
+            default_time_scale_factor: float = 1.0) -> None:
         """
         Set up timings for the simulation.
 
@@ -195,9 +194,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :param default_time_scale_factor:
             A back up time scale factor for the simulation.
             Only used if time_scale_factor parameter and configuration are
-            both `None`.
-            If `None`, the value is based on `simulation_time_step`
-        :type default_time_scale_factor: float or None
+            both `None`, by default this is 1.0.
+        :type default_time_scale_factor: float
         """
         try:
             self._set_simulation_time_step(simulation_time_step_us)
@@ -247,7 +245,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def _set_time_scale_factor(
             self, time_scale_factor: Optional[float],
-            default_time_scale_factor: Optional[float]) -> None:
+            default_time_scale_factor: float) -> None:
         """
         Set up time_scale_factor.
 
@@ -255,9 +253,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
         Then if configuration is not `None` that is used
 
-        Then if default is provided that is used
-
-        Lastly it is set based on the simulation_time_step
+        Otherwise the default is used
 
         :param time_scale_factor:
             An explicitly specified time scale factor for the simulation.
@@ -273,17 +269,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             if default_time_scale_factor is not None:
                 time_scale_factor = default_time_scale_factor
 
-        if time_scale_factor is None:
-            time_scale_factor = max(
-                1.0, math.ceil(self.get_simulation_time_step_per_ms()))
-            if time_scale_factor > 1.0:
-                logger.warning(
-                    "A timestep was entered that has forced SpiNNaker to "
-                    "automatically slow the simulation down from real time "
-                    f"by a factor of {time_scale_factor}.")
-
         if not isinstance(time_scale_factor, (int, float)):
-            raise TypeError("app_id should be an int (or float)")
+            raise TypeError("time_scale_factor should be an int (or float)")
 
         if time_scale_factor <= 0:
             raise ConfigurationException(
