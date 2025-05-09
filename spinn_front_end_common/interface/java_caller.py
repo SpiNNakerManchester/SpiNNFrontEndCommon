@@ -24,7 +24,7 @@ import sys
 from typing import Dict, Iterable, List, Optional, cast
 
 from spinn_utilities.config_holder import (
-    get_config_str, get_config_str_or_none)
+    get_config_str, get_config_str_or_none, get_report_path)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_machine import Chip
@@ -205,8 +205,8 @@ class JavaCaller(object):
         :param ~pacman.model.placements.Placements used_placements:
             Placements that are recording. May not be all placements
         """
-        path = os.path.join(
-            FecDataView.get_json_dir_path(), "java_placements.json")
+        path = get_report_path(
+            section="Java", option="path_json_java_placements")
         self._recording = False
         if self._gatherer_iptags is None:
             self.__placement_json = self._write_placements(
@@ -403,8 +403,7 @@ class JavaCaller(object):
                 logger.error(f"Call was {params}")
                 logger.error("Output was:")
                 logger.error(all_output)
-                log_file = os.path.join(
-                    FecDataView.get_run_dir_path(), "jspin.log")
+                log_file = get_report_path("path_java_log")
                 logger.error(f"Logging to: {log_file}")
                 raise subprocess.CalledProcessError(
                     process.returncode, params, output=all_output)
@@ -424,12 +423,12 @@ class JavaCaller(object):
             self._run_java(
                 'download', self._placement_json, self._machine_json(),
                 BufferDatabase.default_database_file(),
-                FecDataView.get_run_dir_path())
+                get_report_path("path_java_log"))
         else:
             self._run_java(
                 'gather', self._placement_json, self._machine_json(),
                 BufferDatabase.default_database_file(),
-                FecDataView.get_run_dir_path())
+                get_report_path("path_java_log"))
 
     def load_system_data_specification(self) -> None:
         """
@@ -442,7 +441,7 @@ class JavaCaller(object):
         self._run_java(
             'dse_sys', self._machine_json(),
             FecDataView.get_ds_database_path(),
-            FecDataView.get_run_dir_path())
+            get_report_path("path_java_log"))
 
     def load_app_data_specification(self, use_monitors: bool) -> None:
         """
@@ -461,9 +460,9 @@ class JavaCaller(object):
             self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
                 FecDataView.get_ds_database_path(),
-                FecDataView.get_run_dir_path())
+                get_report_path("path_java_log"))
         else:
             self._run_java(
                 'dse_app', self._machine_json(),
                 FecDataView.get_ds_database_path(),
-                FecDataView.get_run_dir_path())
+                get_report_path("path_java_log"))
