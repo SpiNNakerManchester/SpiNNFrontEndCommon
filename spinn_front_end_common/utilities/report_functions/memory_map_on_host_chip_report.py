@@ -16,10 +16,14 @@ import logging
 import os
 import struct
 from typing import TextIO
+
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+
 from spinnman.model.enums import UserRegister
 from spinnman.transceiver import Transceiver
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import (
@@ -35,8 +39,7 @@ def memory_map_on_host_chip_report() -> None:
     Report on memory usage. Creates a report that states where in SDRAM
     each region is (read from machine).
     """
-    directory_name = os.path.join(
-        FecDataView.get_run_dir_path(), "memory_map_reports")
+    directory_name = get_report_path("path_memory_map_reports", is_dir=True)
     if not os.path.exists(directory_name):
         os.makedirs(directory_name)
 

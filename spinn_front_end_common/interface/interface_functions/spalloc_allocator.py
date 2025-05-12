@@ -19,7 +19,8 @@ import math
 from typing import ContextManager, Dict, Tuple, Optional, Union, cast
 
 from spinn_utilities.config_holder import (
-    get_config_bool, get_config_str_or_none, get_config_str_list)
+    get_config_bool, get_config_str_or_none, get_config_str_list,
+    get_report_path)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
@@ -192,10 +193,12 @@ class SpallocJobController(MachineAllocationController):
     def proxying(self) -> bool:
         return self.__use_proxy
 
-    @overrides(MachineAllocationController.make_report)
-    def make_report(self, filename: str) -> None:
-        with open(filename, "w", encoding="utf-8") as report:
-            report.write(f"Job: {self._job}")
+    @overrides(MachineAllocationController.add_report)
+    def add_report(self) -> None:
+        # as controlled by write_board_chip_report just append there
+        filename = get_report_path("path_board_chip_report")
+        with open(filename, "a", encoding="utf-8") as report:
+            report.write(f"\n\nJob: {self._job}")
 
 
 class _OldSpallocJobController(MachineAllocationController):

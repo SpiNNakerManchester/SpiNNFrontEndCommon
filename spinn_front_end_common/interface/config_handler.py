@@ -18,11 +18,13 @@ import os
 import shutil
 import traceback
 from typing import List, Optional, Type
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.configs.camel_case_config_parser import FALSES
 from spinn_utilities.config_holder import (
     config_options, has_config_option, load_config, get_config_bool,
-    get_config_int, get_config_str, get_config_str_list, set_config)
+    get_config_int, get_config_str, get_config_str_list, get_timestamp_path,
+    set_config)
 from spinn_front_end_common.interface.interface_functions.\
     insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
 from spinn_front_end_common.interface.interface_functions.\
@@ -33,10 +35,6 @@ from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
-
-APP_DIRNAME = 'application_generated_data_files'
-STACK_TRACE_FILENAME = "stack_trace"
-WARNING_LOGS_FILENAME = "warning_logs.txt"
 
 # options names are all lower without _ inside config
 _DEBUG_ENABLE_OPTS = frozenset([
@@ -235,13 +233,9 @@ class ConfigHandler(object):
                 get_config_bool("Reports", "remove_errored_folders"))
 
         # store timestamp in latest/time_stamp for provenance reasons
-        timestamp_dir_path = self._data_writer.get_timestamp_dir_path()
-        time_of_run_file_name = os.path.join(
-            timestamp_dir_path, STACK_TRACE_FILENAME)
-        _, timestamp = os.path.split(timestamp_dir_path)
+        time_of_run_file_name = get_timestamp_path(
+            "tpath_stack_trace")
         with open(time_of_run_file_name, "w", encoding="utf-8") as f:
-            f.writelines(timestamp)
-            f.write("\n")
             f.write("Traceback of setup call:\n")
             traceback.print_stack(file=f)
 

@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from typing import List, TextIO, Tuple
-from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import Machine, Router
-from spinn_front_end_common.data import FecDataView
 
-#: The name of the report that :py:func:`board_chip_report` writes.
-AREA_CODE_REPORT_NAME = "board_chip_report.txt"
+from spinn_utilities.config_holder import get_report_path
+from spinn_utilities.progress_bar import ProgressBar
+
+from spinn_machine import Machine, Router
+
+from spinn_front_end_common.data import FecDataView
 
 
 def board_chip_report() -> None:
@@ -28,8 +28,7 @@ def board_chip_report() -> None:
     """
     machine = FecDataView.get_machine()
     # create file path
-    directory_name = os.path.join(
-        FecDataView.get_run_dir_path(), AREA_CODE_REPORT_NAME)
+    directory_name = get_report_path("path_board_chip_report")
     # create the progress bar for end users
     progress_bar = ProgressBar(
         len(machine.ethernet_connected_chips),

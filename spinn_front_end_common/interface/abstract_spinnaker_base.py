@@ -20,7 +20,6 @@ import math
 import os
 import re
 import signal
-import shutil
 import sys
 import threading
 import types
@@ -36,8 +35,9 @@ import requests
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
+    config_options,
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
-    is_config_none, set_config)
+    get_report_path, get_timestamp_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
@@ -90,7 +90,7 @@ from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.interface.config_handler import (
-    ConfigHandler, STACK_TRACE_FILENAME)
+    ConfigHandler)
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
     chip_io_buf_clearer, chip_io_buf_extractor,
@@ -247,53 +247,42 @@ class AbstractSpinnakerBase(ConfigHandler):
             self.__reset_remove_data()
 
     def __reset_remove_data(self) -> None:
-        run_dir = self._data_writer.get_run_dir_path()
-
         if not get_config_bool("Reports", "keep_json_files"):
-            json_dir = os.path.join(run_dir, "json_files")
-            if os.path.exists(json_dir):
-                shutil.rmtree(json_dir, ignore_errors=True)
+            for option in config_options("Reports"):
+                if option.startswith("pathjson"):
+                    path = get_report_path(option)
+                    if os.path.exists(path):
+                        os.remove(path)
+                        dir_name = os.path.dirname(path)
+                        if not os.listdir(dir_name):
+                            os.removedirs(dir_name)
 
         if not get_config_bool("Reports", "keep_dataspec_database"):
-            for f in os.listdir(run_dir):
-                if re.search("ds.+sqlite3", f):
-                    try:
-                        os.remove(os.path.join(run_dir, f))
-                    except OSError:
-                        pass
+            path = get_report_path("path_dataspec_database")
+            if os.path.exists(path):
+                os.remove(path)
 
         if not get_config_bool("Reports", "keep_input_output_database"):
-            try:
-                os.remove(os.path.join(
-                    run_dir, "input_output_database.sqlite3"))
-            except OSError:
-                pass
+            path = get_report_path("path_input_output_database")
+            if os.path.exists(path):
+                os.remove(path)
 
         if not get_config_bool("Reports", "keep_java_log"):
-            log_dir = os.path.join(run_dir, "jspin.log")
-            if os.path.exists(log_dir):
-                try:
-                    os.remove(log_dir)
-                except OSError:
-                    pass
+            path = get_report_path("path_java_log")
+            if os.path.exists(path):
+                os.remove(path)
 
     def _stop_remove_data(self) -> None:
         with FecTimer("Cleanup reports folder based on cfg", TimerWork.REPORT):
             self.__reset_remove_data()
 
-            timestamp_dir = self._data_writer.get_timestamp_dir_path()
             if not get_config_bool("Reports", "keep_data_database"):
-                for root, _, files in os.walk(timestamp_dir):
-                    for file in filter(
-                            lambda x: re.match("data.+sqlite3", x), files):
-                        try:
-                            os.remove(os.path.join(root, file))
-                        except OSError:
-                            pass
+                path = get_report_path("path_data_database")
+                if os.path.exists(path):
+                    os.remove(path)
 
             if not get_config_bool("Reports", "keep_stack_trace"):
-                os.remove(os.path.join(
-                    timestamp_dir, STACK_TRACE_FILENAME))
+                os.remove(get_timestamp_path("tpath_stack_trace"))
 
     def _setup_java_caller(self) -> None:
         if get_config_bool("Java", "use_java"):
@@ -920,10 +909,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             board_chip_report()
             if FecDataView.has_allocation_controller():
-                FecDataView.get_allocation_controller().make_report(
-                    os.path.join(
-                        FecDataView.get_run_dir_path(),
-                        "machine_allocation.rpt"))
+                FecDataView.get_allocation_controller().add_report()
 
     def _execute_splitter_reset(self) -> None:
         """

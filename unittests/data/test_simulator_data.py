@@ -239,24 +239,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(run_dir))
         self.assertIn(timestramp_dir, run_dir)
 
-        dir = FecDataView.get_json_dir_path()
-        self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir)
-
-        dir = FecDataView.get_provenance_dir_path()
-        self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir)
-
-        dir2 = FecDataView.get_app_provenance_dir_path()
-        self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir2)
-        self.assertIn(dir, dir2)
-
-        dir2 = FecDataView.get_system_provenance_dir_path()
-        self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir2)
-        self.assertIn(dir, dir2)
-
     def test_directories_reset(self) -> None:
         writer = FecDataWriter.setup()
         run_dir = FecDataView.get_run_dir_path()
@@ -293,8 +275,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_timestamp_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
-        self.assertTrue(os.path.exists(FecDataView.get_json_dir_path()))
-        self.assertTrue(os.path.exists(FecDataView.get_provenance_dir_path()))
         self.assertTrue(os.path.exists(
             FecDataView.get_app_provenance_dir_path()))
         self.assertTrue(os.path.exists(
@@ -312,10 +292,6 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_timestamp_dir_path()
         with self.assertRaises(NotSetupException):
             FecDataView.get_run_dir_path()
-        with self.assertRaises(NotSetupException):
-            FecDataView.get_json_dir_path()
-        with self.assertRaises(NotSetupException):
-            FecDataView.get_provenance_dir_path()
         with self.assertRaises(NotSetupException):
             FecDataView.get_app_provenance_dir_path()
         with self.assertRaises(NotSetupException):

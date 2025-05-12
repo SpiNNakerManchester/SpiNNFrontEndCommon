@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atexit
+
 import logging
 import os
-import time
 from typing import Dict, Optional, Tuple
+
 from spinn_utilities.config_holder import (
-    get_config_int, get_config_int_or_none, get_config_str)
+    get_config_int, get_config_int_or_none)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
@@ -48,8 +48,6 @@ from .fec_data_view import FecDataView, _FecDataModel
 logger = FormatAdapter(logging.getLogger(__name__))
 __temp_dir = None
 
-REPORTS_DIRNAME = "reports"
-
 
 class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     """
@@ -69,8 +67,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         PacmanDataWriter._mock(self)
         self._spinnman_mock()
         self.__fec_data._clear()
-        # run numbers start at 1 and when not running this is the next one
-        self.__fec_data._run_number = 1
         self.set_up_timings(1000, 1)
 
     @overrides(PacmanDataWriter._setup)
@@ -78,75 +74,18 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         PacmanDataWriter._setup(self)
         self._spinnman_setup()
         self.__fec_data._clear()
-        # run numbers start at 1 and when not running this is the next one
-        self.__fec_data._run_number = 1
-        self.__create_reports_directory()
-        self.__create_timestamp_directory()
-        self.__create_run_dir_path()
-
-    @overrides(PacmanDataWriter.finish_run)
-    def finish_run(self) -> None:
-        PacmanDataWriter.finish_run(self)
-        assert self.__fec_data._run_number is not None
-        self.__fec_data._run_number += 1
 
     @overrides(PacmanDataWriter._hard_reset)
     def _hard_reset(self) -> None:
-        if self.is_ran_last():
-            self.__fec_data._reset_number += 1
         PacmanDataWriter._hard_reset(self)
         SpiNNManDataWriter._local_hard_reset(self)
         self.__fec_data._hard_reset()
-        self.__create_run_dir_path()
 
     @overrides(PacmanDataWriter._soft_reset)
     def _soft_reset(self) -> None:
-        if self.is_ran_last():
-            self.__fec_data._reset_number += 1
         PacmanDataWriter._soft_reset(self)
         SpiNNManDataWriter._local_soft_reset(self)
         self.__fec_data._soft_reset()
-
-    def __create_run_dir_path(self) -> None:
-        self.set_run_dir_path(self._child_folder(
-            self.get_timestamp_dir_path(),
-            f"run_{self.__fec_data._run_number}"))
-
-    def __create_reports_directory(self) -> None:
-        default_report_file_path = get_config_str(
-            "Reports", "default_report_file_path")
-        # determine common report folder
-        if default_report_file_path == "DEFAULT":
-            directory = os.getcwd()
-        else:
-            directory = default_report_file_path
-        # global reports folder
-        self.set_report_dir_path(
-            self._child_folder(directory, REPORTS_DIRNAME))
-
-    def __create_timestamp_directory(self) -> None:
-        if self.__fec_data._timestamp_dir_path is not None:
-            self.write_errored_file()
-        while True:
-            try:
-                self.__fec_data._timestamp_dir_path = self._child_folder(
-                    self.get_report_dir_path(), self._get_timestamp(),
-                    must_create=True)
-                atexit.register(FecDataWriter.write_errored_file)
-                return
-            except OSError:
-                time.sleep(0.5)
-
-    def write_finished_file(self) -> None:
-        """
-        Write a finished file to flag that the code has finished cleanly
-
-        This file signals the report directory can be removed.
-        """
-        finished_file_name = os.path.join(
-            self.get_timestamp_dir_path(), self.FINISHED_FILENAME)
-        with open(finished_file_name, "w", encoding="utf-8") as f:
-            f.writelines(self._get_timestamp())
 
     def set_allocation_controller(self, allocation_controller: Optional[
             MachineAllocationController]) -> None:

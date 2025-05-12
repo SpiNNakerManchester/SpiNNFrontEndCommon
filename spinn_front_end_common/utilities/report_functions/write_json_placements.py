@@ -14,16 +14,14 @@
 
 import logging
 import json
-import os
 
-from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import get_config_bool, get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
 from pacman.utilities.json_utils import placements_to_json
-from spinn_front_end_common.data import FecDataView
 
-_PLACEMENTS_FILENAME = "placements.json"
+_PLACEMENTS_SCHEMA = "placements.json"
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -31,15 +29,14 @@ def write_json_placements() -> None:
     """
     Runs the code to write the placements in JSON.
     """
-    file_path = os.path.join(
-        FecDataView.get_json_dir_path(), _PLACEMENTS_FILENAME)
+    file_path = get_report_path("path_json_placements")
     # Steps are create json object, validate json and write json to a file
     with ProgressBar(3, "Converting to JSON Placements") as progress:
         json_obj = placements_to_json()
         progress.update()
 
         if get_config_bool("Mapping", "validate_json"):
-            file_format_schemas.validate(json_obj, _PLACEMENTS_FILENAME)
+            file_format_schemas.validate(json_obj, _PLACEMENTS_SCHEMA)
         progress.update()
 
         # dump to json file

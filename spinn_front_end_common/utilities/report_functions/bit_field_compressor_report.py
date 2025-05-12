@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import logging
-import os
 import sys
 from typing import Dict, Optional, Tuple, TextIO, Union
 from collections import defaultdict
+
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XY
 from spinnman.model.enums import ExecutableType
@@ -27,7 +28,6 @@ from spinn_front_end_common.interface.provenance import (
 from .bit_field_summary import BitFieldSummary
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_FILE_NAME = "bit_field_compressed_summary.rpt"
 # provenance data item names
 
 MERGED_NAME = "bit_fields_merged"
@@ -54,13 +54,13 @@ def bitfield_compressor_report() -> Optional[BitFieldSummary]:
     :return: a summary, or `None` if the report file can't be written
     :rtype: BitFieldSummary
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _FILE_NAME)
+    file_name = get_report_path("path_bit_field_compressor_report")
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             return _write_report(f)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
-                         " {} for writing.", _FILE_NAME)
+                         " {} for writing.", file_name)
         return None
 
 

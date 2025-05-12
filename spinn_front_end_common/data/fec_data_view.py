@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations  # Type checking trickery
-import datetime
 import logging
 import os
 from typing import (
     Dict, Iterable, Iterator, Optional, Set, Tuple, Union, List, TYPE_CHECKING)
 
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
@@ -102,8 +102,6 @@ class _FecDataModel(object):
         "_notification_protocol",
         "_max_run_time_steps",
         "_monitor_map",
-        "_reset_number",
-        "_run_number",
         "_run_step",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
@@ -112,7 +110,6 @@ class _FecDataModel(object):
         "_simulation_time_step_us",
         "_spalloc_job",
         "_system_multicast_router_timeout_keys",
-        "_timestamp_dir_path",
         "_time_scale_factor")
 
     def __new__(cls) -> _FecDataModel:
@@ -142,15 +139,12 @@ class _FecDataModel(object):
         self._live_output_devices: List[LiveOutputDevice] = list()
         self._java_caller: Optional[JavaCaller] = None
         self._none_labelled_edge_count = 0
-        self._reset_number = 0
-        self._run_number: Optional[int] = None
         self._simulation_time_step_ms: Optional[float] = None
         self._simulation_time_step_per_ms: Optional[float] = None
         self._simulation_time_step_per_s: Optional[float] = None
         self._simulation_time_step_s: Optional[float] = None
         self._simulation_time_step_us: Optional[int] = None
         self._time_scale_factor: Optional[Union[int, float]] = None
-        self._timestamp_dir_path: Optional[str] = None
         self._hard_reset()
 
     def _hard_reset(self) -> None:
@@ -213,8 +207,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     repositories as all methods are available to subclasses
     """
 
-    FINISHED_FILENAME = "finished"
-    ERRORED_FILENAME = "errored"
     __fec_data = _FecDataModel()
 
     __slots__ = ()
@@ -491,71 +483,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         return cls.__fec_data._time_scale_factor is not None
 
-    #  reset number
-
-    @classmethod
-    def get_reset_number(cls) -> int:
-        """
-        Get the number of times a reset has happened.
-
-        Only counts the first reset after each run.
-
-        So resets that are first soft then hard are ignored.
-        Double reset calls without a run and resets before run are ignored.
-
-        Reset numbers start at zero
-
-        :rtype: int
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the run_number is currently unavailable
-        """
-        if cls.__fec_data._reset_number is None:
-            raise cls._exception("run_number")
-        return cls.__fec_data._reset_number
-
-    @classmethod
-    def get_reset_str(cls) -> str:
-        """
-        Get the number of times a reset has happened as a string.
-
-        An empty string is returned if the system has never been reset
-        (i.e., the reset number is 0)
-
-        Only counts the first reset after each run.
-
-        So resets that are first soft then hard are ignored.
-        Double reset calls without a run and resets before run are ignored.
-
-        Reset numbers start at zero
-
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the run_number is currently unavailable
-        :rtype: str
-        """
-        if cls.__fec_data._reset_number is None:
-            raise cls._exception("run_number")
-        if cls.__fec_data._reset_number:
-            return str(cls.__fec_data._reset_number)
-        else:
-            return ""
-
-    #  run number
-
-    @classmethod
-    def get_run_number(cls) -> int:
-        """
-        Get the number of this or the next run.
-
-        Run numbers start at 1
-
-        :rtype: int
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the run_number is currently unavailable
-        """
-        if cls.__fec_data._run_number is None:
-            raise cls._exception("run_number")
-        return cls.__fec_data._run_number
-
     @classmethod
     def get_run_step(cls) -> Optional[int]:
         """
@@ -587,74 +514,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return cls.__fec_data._run_step is None
         else:
             return cls.__fec_data._run_step == cls.__fec_data._n_run_steps
-
-    # Report directories
-    # There are NO has or get methods for directories
-    # This allows directories to be created on the fly
-
-    # n_boards/chips required
-
-    @classmethod
-    def get_timestamp_dir_path(cls) -> str:
-        """
-        Returns path to existing time-stamped directory in the reports
-        directory.
-
-        .. note::
-            In unit-test mode this returns a temporary directory
-            shared by all path methods.
-
-        :rtype: str
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if cls.__fec_data._timestamp_dir_path is not None:
-            return cls.__fec_data._timestamp_dir_path
-        if cls._is_mocked():
-            return cls._temporary_dir_path()
-        raise cls._exception("timestamp_dir_path")
-
-    @classmethod
-    def _get_timestamp(cls) -> str:
-        now = datetime.datetime.now()
-        return (
-            f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
-            f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
-
-    @classmethod
-    def write_errored_file(cls, message: Optional[str] = None) -> None:
-        """
-        Writes an ``errored`` file that signals code if the code has errored
-
-        Not written if there is a finished file exists and
-        there is no error message.
-
-        This file signals the report directory can be removed.
-
-        This method can be called while there is still code to be run BUT
-        if running other simulations at the same time there is a possibility
-        that the report directory is no longer available for writing to.
-
-        :param message: An error message to included
-        """
-        errored_file_name = os.path.join(
-            cls.get_timestamp_dir_path(), cls.ERRORED_FILENAME)
-
-        if message is None:
-            finished_file_name = os.path.join(
-                cls.get_timestamp_dir_path(), cls.FINISHED_FILENAME)
-            if os.path.exists(finished_file_name):
-                return
-
-            if os.path.exists(errored_file_name):
-                return
-
-            message = "Unexpected end"
-
-        with open(errored_file_name, "w", encoding="utf-8") as f:
-            f.writelines(message)
-            f.writelines("\n")
-            f.writelines(cls._get_timestamp())
 
     # system multicast routing data
 
@@ -785,47 +644,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # run_dir_path in UtilsDataView
 
     @classmethod
-    def get_json_dir_path(cls) -> str:
-        """
-        Returns the path to the directory that holds all JSON files.
-
-        This will be the path used by the last run call or to be used by
-        the next run if it has not yet been called.
-
-        .. note::
-            In unit-test mode this returns a temporary directory
-            shared by all path methods.
-
-        :rtype: str
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if cls._is_mocked():
-            return cls._temporary_dir_path()
-
-        return cls._child_folder(cls.get_run_dir_path(), "json_files")
-
-    @classmethod
-    def get_provenance_dir_path(cls) -> str:
-        """
-        Returns the path to the directory that holds all provenance files.
-
-        This will be the path used by the last run call or to be used by
-        the next run if it has not yet been called.
-
-        .. note::
-            In unit-test mode this returns a temporary directory
-            shared by all path methods.
-
-        :rtype: str
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if cls._is_mocked():
-            return cls._temporary_dir_path()
-        return cls._child_folder(cls.get_run_dir_path(), "provenance_data")
-
-    @classmethod
     def get_app_provenance_dir_path(cls) -> str:
         """
         Returns the path to the directory that holds all application provenance
@@ -845,8 +663,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls._is_mocked():
             return cls._temporary_dir_path()
 
-        return cls._child_folder(
-            cls.get_provenance_dir_path(), "app_provenance_data")
+        return get_report_path("path_iobuf_app", is_dir=True)
 
     @classmethod
     def get_system_provenance_dir_path(cls) -> str:
@@ -866,33 +683,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls._is_mocked():
             return cls._temporary_dir_path()
-        return cls._child_folder(
-            cls.get_provenance_dir_path(), "system_provenance_data")
-
-    @classmethod
-    def _child_folder(cls, parent: str, child_name: str,
-                      must_create: bool = False) -> str:
-        """
-        :param str parent:
-        :param str child_name:
-        :param bool must_create:
-            If `True`, the directory named by `child_name` (but not necessarily
-            its parents) must be created by this call, and an exception will be
-            thrown if this fails.
-        :return: The fully qualified name of the child folder.
-        :rtype: str
-        :raises OSError:
-            If the directory existed ahead of time and creation
-            was required by the user
-        """
-        child = os.path.join(parent, child_name)
-        if must_create:
-            # Throws OSError or FileExistsError (a subclass of OSError) if the
-            # directory exists.
-            os.makedirs(child)
-        elif not os.path.exists(child):
-            os.makedirs(child, exist_ok=True)
-        return child
+        return get_report_path("path_iobuf_system", is_dir=True)
 
     @classmethod
     def get_next_none_labelled_edge_number(cls) -> int:

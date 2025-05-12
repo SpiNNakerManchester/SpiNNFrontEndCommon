@@ -12,21 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from typing import Iterable
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
-
-
-REPORT_NAME = "fixed_route_routers"
 
 
 def fixed_route_from_machine_report() -> None:
     """
     Writes the fixed routes from the machine.
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), REPORT_NAME)
+    file_name = get_report_path("path_fixed_routes_report")
     transceiver = FecDataView.get_transceiver()
     machine = FecDataView.get_machine()
 

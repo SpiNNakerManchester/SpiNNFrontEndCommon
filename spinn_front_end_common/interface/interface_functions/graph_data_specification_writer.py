@@ -14,9 +14,9 @@
 
 from collections import defaultdict
 import logging
-import os
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs import AbstractVertex
@@ -78,8 +78,7 @@ class _GraphDataSpecificationWriter(object):
         """
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        path = os.path.join(FecDataView.get_run_dir_path(),
-                            f"ds{FecDataView.get_reset_str()}.sqlite3")
+        path = get_report_path("path_dataspec_database")
         with DsSqlliteDatabase(path) as ds_db:
             ds_db.write_session_credentials_to_db()
             ds_db.set_info()

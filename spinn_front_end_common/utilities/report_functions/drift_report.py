@@ -14,7 +14,7 @@
 import os
 import logging
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import get_config_bool, get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 
@@ -37,8 +37,7 @@ def drift_report() -> None:
         n_chips = len(eth_chips)
 
     # create file path
-    directory_name = os.path.join(
-        FecDataView.get_run_dir_path(), CLOCK_DRIFT_REPORT)
+    directory_name = get_report_path("path_drift_report")
 
     # If the file is new, write a header
     if not os.path.exists(directory_name):

@@ -17,7 +17,9 @@ import sqlite3
 import time
 from typing import Optional, Union
 from typing_extensions import TypeAlias
-from spinn_front_end_common.data import FecDataView
+
+from spinn_utilities.config_holder import get_report_path
+
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__),
@@ -73,8 +75,7 @@ class BaseDatabase(SQLiteDB):
 
         :rtype: str
         """
-        return os.path.join(FecDataView.get_run_dir_path(),
-                            f"data{FecDataView.get_reset_str()}.sqlite3")
+        return get_report_path("path_data_database")
 
     def _get_core_id(
             self, x: int, y: int, p: int) -> int:

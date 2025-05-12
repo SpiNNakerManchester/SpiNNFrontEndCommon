@@ -14,21 +14,18 @@
 
 import json
 import os
-from typing import Optional
 
-from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import (
+    get_config_bool, get_report_path)
 from spinn_utilities.progress_bar import ProgressBar, DummyProgressBar
 from spinn_machine.json_machine import to_json
 from pacman.utilities import file_format_schemas
-from spinn_front_end_common.data import FecDataView
 
-#: The name of the generated JSON machine description file.
-#: Also the name of the schema that we validate against.
-MACHINE_FILENAME = "machine.json"
+#: The name of the schema that we validate against.
+MACHINE_SCHEMA = "machine.json"
 
 
-def write_json_machine(
-        json_folder: Optional[str] = None, progress_bar: bool = True) -> str:
+def write_json_machine(progress_bar: bool = True) -> str:
     """
     Runs the code to write the machine in Java readable JSON.
 
@@ -41,8 +38,7 @@ def write_json_machine(
     :return: the name of the generated file
     :rtype: str
     """
-    json_folder = json_folder or FecDataView.get_json_dir_path()
-    file_path = os.path.join(json_folder, MACHINE_FILENAME)
+    file_path = get_report_path("path_json_machine")
     if not os.path.exists(file_path):
         with _progress(progress_bar) as progress:
             # Step 1: generate
@@ -50,7 +46,7 @@ def write_json_machine(
             progress.update()
             # Step 2: validate against the schema
             if get_config_bool("Mapping", "validate_json"):
-                file_format_schemas.validate(json_obj, MACHINE_FILENAME)
+                file_format_schemas.validate(json_obj, MACHINE_SCHEMA)
             progress.update()
             # Step 3: dump to json file
             with open(file_path, "w", encoding="utf-8") as f:
