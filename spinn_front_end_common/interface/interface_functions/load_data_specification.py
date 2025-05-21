@@ -100,7 +100,6 @@ class _LoadDataSpecification(object):
             # reset router tables
             receiver.load_application_routing_tables()
 
-    # pylint: disable=unused-private-member
     def __java_app(self, use_monitors: bool) -> None:
         """
         :param bool use_monitors:
