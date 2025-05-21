@@ -21,7 +21,7 @@ from spinnman.model.enums import SDP_RUNNING_MESSAGE_CODES
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
-from fec_integration_tests.mock_machine import MockMachine
+from fec_integration_tests.mock_receiver import MockReceiver
 
 
 class TestIOBufClearProcess(unittest.TestCase):
@@ -30,7 +30,7 @@ class TestIOBufClearProcess(unittest.TestCase):
         unittest_setup()
 
     def test_clear_iobuf_process(self) -> None:
-        receiver = MockMachine()
+        receiver = MockReceiver()
         receiver.start()
 
         # Set up a connection to the "machine"
