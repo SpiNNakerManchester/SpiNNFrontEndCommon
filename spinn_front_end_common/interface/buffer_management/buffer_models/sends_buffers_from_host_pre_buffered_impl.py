@@ -30,7 +30,6 @@ class SendsBuffersFromHostPreBufferedImpl(
     Implementation of :py:class:`AbstractReceiveBuffersToHost`
     that uses an existing set of buffers for the details.
     """
-    # pylint: disable=unsubscriptable-object, no-member
 
     __slots__ = ()
 
