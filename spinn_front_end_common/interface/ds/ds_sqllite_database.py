@@ -687,14 +687,13 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Write Spalloc session credentials to the database, if in use.
         """
-        # pylint: disable=protected-access
         if not FecDataView.has_allocation_controller():
             return
         mac = FecDataView.get_allocation_controller()
         if mac.proxying:
             # This is now assumed to be a SpallocJobController;
             # can't check that because of import circularity.
-            job = cast('SpallocJobController', mac)._job
+            job = cast('SpallocJobController', mac).job
             if isinstance(job, SpallocJob):
                 config = job.get_session_credentials_for_db()
                 self.cursor().executemany(
