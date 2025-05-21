@@ -36,9 +36,10 @@ class _SCPOKMessage(SDPMessage):
         super().__init__(sdp_header, data=scp_header.bytestring)
 
 
-class MockMachine(Thread):
+class MockReceiver(Thread):
     """
-    A Machine that can be used for testing protocol.
+    A Machine that can be used for tes
+    ting protocol.
     """
 
     def __init__(self) -> None:
