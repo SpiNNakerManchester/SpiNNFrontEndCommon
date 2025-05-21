@@ -26,7 +26,6 @@ from pacman.model.placements import Placement
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException, DataSpecException)
 from spinn_front_end_common.interface.ds import (
