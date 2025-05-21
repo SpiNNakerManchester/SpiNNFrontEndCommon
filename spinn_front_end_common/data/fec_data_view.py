@@ -115,7 +115,6 @@ class _FecDataModel(object):
     def __new__(cls) -> _FecDataModel:
         if cls.__singleton:
             return cls.__singleton
-        # pylint: disable=protected-access
         obj = object.__new__(cls)
         cls.__singleton = obj
         obj._notification_protocol = None
