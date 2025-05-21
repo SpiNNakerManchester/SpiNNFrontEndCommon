@@ -176,11 +176,9 @@ class _GraphDataSpecificationWriter(object):
 
         # creating the error message which contains the memory usage of
         # what each core within the chip uses and its original estimate.
-        # pylint: disable=consider-using-f-string
+        ts = FecDataView.get_max_run_time_steps()
         memory_usage = "\n".join(
-            f"    {vert}: {region_size} (total={total_est_size},"
-            f" estimated={vert.sdram_required.get_total_sdram(
-                FecDataView.get_max_run_time_steps())}"
+            f"    {vert}: {vert.sdram_required.get_total_sdram(ts)}"
             for vert in self._vertices_by_chip[x, y])
 
         raise ConfigurationException(
