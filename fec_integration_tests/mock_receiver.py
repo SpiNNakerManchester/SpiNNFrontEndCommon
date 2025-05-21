@@ -15,8 +15,6 @@
 from threading import Thread
 from collections import deque
 import struct
-import traceback
-from typing import Optional
 
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp import SCPRequestHeader
