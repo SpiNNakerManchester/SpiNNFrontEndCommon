@@ -180,7 +180,7 @@ class _GraphDataSpecificationWriter(object):
         memory_usage = "\n".join(
             f"    {vert}: {region_size} (total={total_est_size},"
             f" estimated={vert.sdram_required.get_total_sdram(
-                FecDataView.get_max_run_time_steps())})"
+                FecDataView.get_max_run_time_steps())}"
             for vert in self._vertices_by_chip[x, y])
 
         raise ConfigurationException(
