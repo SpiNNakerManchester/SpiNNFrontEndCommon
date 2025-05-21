@@ -54,6 +54,9 @@ class _ChipProvenanceUpdater(object):
         self.__txrx = FecDataView.get_transceiver()
 
     def run(self) -> None:
+        """
+        Forces all cores to generate provenance data, and then exit.
+        """
         # check that the right number of processors are in sync
         processors_completed = self.__txrx.get_core_state_count(
             self.__app_id, CPUState.FINISHED)
