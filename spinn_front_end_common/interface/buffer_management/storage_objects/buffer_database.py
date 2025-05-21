@@ -379,8 +379,6 @@ class BufferDatabase(BaseDatabase):
         .. note::
                     Must be shorter than 1GB
         """
-        # pylint: disable=unused-argument
-        # TODO: Use missing
         datablob = Binary(data)
         region_id = self._get_recording_region_id(x, y, p, region)
         extraction_id = self.get_last_extraction_id()
