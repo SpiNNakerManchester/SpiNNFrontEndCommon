@@ -141,7 +141,6 @@ class _GraphDataSpecificationWriter(object):
 
         # Check the memory usage
         total_size = ds_db.get_total_regions_size(x, y, p)
-        region_size = APP_PTR_TABLE_BYTE_SIZE + total_size
         total_est_size = 0
 
         # Check per-region memory usage if possible
