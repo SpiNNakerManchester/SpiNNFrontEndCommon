@@ -249,7 +249,6 @@ class ProvidesProvenanceDataFromMachineImpl(
     def parse_extra_provenance_items(
             self, label: str, x: int, y: int, p: int,
             provenance_data: Sequence[int]) -> None:
-        # pylint: disable=unused-argument
         """
         Convert the remaining provenance words (those not in the standard set)
         into provenance items.
@@ -267,6 +266,7 @@ class ProvidesProvenanceDataFromMachineImpl(
             The list of words of raw provenance data.
         """
         if self._n_additional_data_items:
+            _ =  (label, x, y, p, provenance_data)
             raise NotImplementedError(
                 f"{self} provides {self._n_additional_data_items} but doesn't "
                 "parse them")
