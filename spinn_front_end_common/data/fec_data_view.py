@@ -791,7 +791,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             can also be a single string (strings are iterable)
         """
         if cls.__fec_data._live_packet_recorder_params is None:
-            # pylint: disable=attribute-defined-outside-init
             cls.__fec_data._live_packet_recorder_params = dict()
         lpg_vertex = cls.__fec_data._live_packet_recorder_params.get(
             live_packet_gatherer_params)
