@@ -102,7 +102,6 @@ class JavaCaller(object):
         self._chip_by_ethernet: Optional[Dict[Chip, List[Chip]]] = None
         if java_properties is not None:
             self._java_properties = java_properties.split()
-            # pylint: disable=not-an-iterable
             for _property in self._java_properties:
                 if _property[:2] != "-D":
                     raise ConfigurationException(
