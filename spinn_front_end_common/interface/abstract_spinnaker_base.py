@@ -186,8 +186,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param FecDataWriter data_writer_cls:
             The Global data writer class
         """
-        # pylint: disable=too-many-arguments
-        super().__init__(data_writer_cls)
 
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SETTING_UP)

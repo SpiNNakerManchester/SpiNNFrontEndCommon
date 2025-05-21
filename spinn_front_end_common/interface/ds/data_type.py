@@ -342,7 +342,7 @@ class DataType(Enum):
                 scale: Decimal, struct_encoding: str, apply_scale: bool,
                 force_cast: Optional[Callable[[Any], int]],
                 numpy_typename: type, _doc: str) -> 'DataType':
-        # pylint: disable=protected-access, too-many-arguments
+        # pylint: disable=protected-access
         obj = object.__new__(cls)
         obj._value_ = value
         obj.__doc__ = _doc
@@ -352,7 +352,7 @@ class DataType(Enum):
                  scale: Decimal, struct_encoding: str, apply_scale: bool,
                  force_cast: Optional[Callable[[Any], int]],
                  numpy_typename: type, _doc: str) -> None:
-        # pylint: disable=protected-access, too-many-arguments
+        # pylint: disable=protected-access
         self._size = size
         self._min = min_val
         self._max = max_val

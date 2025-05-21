@@ -1286,7 +1286,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             sequence numbers, the sequence number received and if its finished
         :rtype: tuple(set(int), bool)
         """
-        # pylint: disable=too-many-arguments
         length_of_data = len(data)
         first_packet_element, = _ONE_WORD.unpack_from(data, 0)
 
@@ -1355,7 +1354,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int seq_num: the sequence number to figure
         :raises Exception: If the position to write to is crazy
         """
-        # pylint: disable=too-many-arguments
         if self._view is None or self._output is None:
             raise SpinnFrontEndException("no current target buffer")
         if view_end_position > len(self._output):

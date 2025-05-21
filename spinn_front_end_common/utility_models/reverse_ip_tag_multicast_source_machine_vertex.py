@@ -167,7 +167,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             eieio_params: Optional[EIEIOParameters] = None,
             # Send buffer parameters
             send_buffer_times: _SendBufferTimes = None):
-        # pylint: disable=too-many-arguments
         if vertex_slice is None:
             if n_keys is None:
                 raise KeyError("Either provide a vertex_slice or n_keys")
