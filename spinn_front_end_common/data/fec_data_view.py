@@ -734,7 +734,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the executable_types is currently unavailable
         """
-        # pylint: disable=unsubscriptable-object
         return cls.get_executable_types().get(
             executable_type, _EMPTY_CORE_SUBSETS)
 
@@ -878,7 +877,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
-        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._monitor_map[cls.get_chip_at(x, y)]
 
     @classmethod
@@ -895,7 +893,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
-        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._monitor_map[chip]
 
     @classmethod
@@ -958,7 +955,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._gatherer_map is None:
             raise cls._exception("gatherer_map")
-        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._gatherer_map[chip]
 
     @classmethod
@@ -976,7 +972,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._gatherer_map is None:
             raise cls._exception("gatherer_map")
-        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._gatherer_map[cls.get_chip_at(x, y)]
 
     @classmethod
