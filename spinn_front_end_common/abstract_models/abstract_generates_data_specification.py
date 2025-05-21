@@ -50,4 +50,9 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
     @abstractmethod
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> AbstractSDRAM:
+        """
+        See MachineVertex.sdram_required
+
+        Defined here too so can be called on object known to be this type
+        """
         raise NotImplementedError
