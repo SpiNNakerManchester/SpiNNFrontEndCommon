@@ -158,7 +158,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     """
     Main interface into the tools logic flow.
     """
-    # pylint: disable=broad-except
 
     __slots__ = (
         # Condition object used for waiting for stop
