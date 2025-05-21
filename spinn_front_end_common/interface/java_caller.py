@@ -175,7 +175,7 @@ class JavaCaller(object):
         self._chip_by_ethernet = defaultdict(list)
         machine = FecDataView.get_machine()
         for chip in machine.chips:
-            ethernet = machine[  # pylint: disable=unsubscriptable-object
+            ethernet = machine[
                 chip.nearest_ethernet_x, chip.nearest_ethernet_y]
             self._chip_by_ethernet[ethernet].append(chip)
 
