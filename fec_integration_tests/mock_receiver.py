@@ -49,7 +49,6 @@ class MockReceiver(Thread):
         self._receiver = UDPConnection()
         self._running = False
         self._messages: deque = deque()
-        self._error: Optional[Exception] = None
         self._responses: deque = deque()
 
     @property
@@ -59,10 +58,6 @@ class MockReceiver(Thread):
     @property
     def next_message(self) -> bytes:
         return self._messages.popleft()
-
-    @property
-    def error(self) -> Optional[Exception]:
-        return self._error
 
     @property
     def local_port(self) -> int:
@@ -89,13 +84,8 @@ class MockReceiver(Thread):
     def run(self) -> None:
         self._running = True
         while self._running:
-            try:
-                if self._receiver.is_ready_to_receive(10):
-                    self._do_receive()
-            except Exception as e:  # pylint: disable=broad-except
-                if self._running:
-                    traceback.print_exc()
-                    self._error = e
+            if self._receiver.is_ready_to_receive(10):
+                self._do_receive()
 
     def stop(self) -> None:
         self._running = False
