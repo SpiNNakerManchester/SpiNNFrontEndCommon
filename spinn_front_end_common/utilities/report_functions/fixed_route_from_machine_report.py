@@ -34,13 +34,11 @@ def fixed_route_from_machine_report() -> None:
         for chip in progress.over(machine.chips):
             fixed_route = transceiver.read_fixed_route(
                 chip.x, chip.y, app_id)
-            # pylint: disable=consider-using-f-string
-            f.write("{: <3s}:{: <3s} contains route {: <10s} {}\n".format(
-                str(chip.x), str(chip.y),
-                _reduce_route_value(
-                    fixed_route.processor_ids, fixed_route.link_ids),
-                _expand_route_value(
-                    fixed_route.processor_ids, fixed_route.link_ids)))
+            rd = _reduce_route_value(fixed_route.processor_ids,
+                                     fixed_route.link_ids)
+            ep = _expand_route_value(fixed_route.processor_ids,
+                                     fixed_route.link_ids)
+            f.write(f"{chip.x:<3}:{chip.y:<3} contains route {rd:<10} {ep}\n")
 
 
 def _reduce_route_value(
