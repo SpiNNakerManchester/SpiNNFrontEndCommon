@@ -22,7 +22,7 @@ build:
       html:
         - cd c_common; doxygen ./Doxyfile
         - mkdir -p ${READTHEDOCS_OUTPUT}html/c_common/
-        - cp -a html/* ${READTHEDOCS_OUTPUT}html/c_common/
+        - cp -a c_common/html/* ${READTHEDOCS_OUTPUT}html/c_common/
 sphinx:
   configuration: doc/source/conf.py
   builder: dirhtml
