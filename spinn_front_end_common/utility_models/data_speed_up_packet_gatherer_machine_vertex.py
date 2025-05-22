@@ -360,7 +360,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec: DataSpecificationGenerator,
                                     placement: Placement) -> None:
-        # pylint: disable=unsubscriptable-object
         # update my placement for future knowledge
         self.__placement = placement
 
@@ -402,7 +401,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         # write the broad cast keys for timeouts
         router_timeout_key = (
             FecDataView.get_system_multicast_router_timeout_keys())
-        # pylint: disable=unsubscriptable-object
         spec.write_value(router_timeout_key[placement.xy])
 
         mc_data_chips_to_keys = (
@@ -1124,7 +1122,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         routers = [placement.xy]
         fixed_routes = FecDataView.get_fixed_routes()
-        # pylint: disable=unsubscriptable-object
         chip = placement.chip
         entry = fixed_routes[(placement.xy)]
         while not entry.processor_ids:
