@@ -21,6 +21,7 @@ build:
     build:
       html:
         - cd c_common; doxygen ./Doxyfile
+        - ls -l c_common/
         - mkdir -p ${READTHEDOCS_OUTPUT}html/c_common/
         - cp -a c_common/html/* ${READTHEDOCS_OUTPUT}html/c_common/
 sphinx:
