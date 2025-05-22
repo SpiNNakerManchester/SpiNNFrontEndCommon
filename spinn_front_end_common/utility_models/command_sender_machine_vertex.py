@@ -405,7 +405,7 @@ class CommandSenderMachineVertex(
     def parse_extra_provenance_items(
             self, label: str, x: int, y: int, p: int,
             provenance_data: Sequence[int]) -> None:
-        # pylint: disable=unused-argument
+        _ = label
         n_commands_sent, = provenance_data
         with ProvenanceWriter() as db:
             db.insert_core(x, y, p, "Sent_Commands", n_commands_sent)

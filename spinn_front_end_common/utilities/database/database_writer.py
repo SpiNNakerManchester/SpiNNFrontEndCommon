@@ -184,7 +184,6 @@ class DatabaseWriter(SQLiteDB):
         """
         Store the proxy configuration.
         """
-        # pylint: disable=protected-access
         job = FecDataView.get_spalloc_job()
         if job is not None:
             config = job.get_session_credentials_for_db()

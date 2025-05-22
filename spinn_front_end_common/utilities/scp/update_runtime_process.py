@@ -38,7 +38,6 @@ class _UpdateRuntimeRequest(AbstractSCPRequest[CheckOKResponse]):
         :param bool infinite_run:
         :param int n_sync_steps:
         """
-        # pylint: disable=too-many-arguments
         sdp_flags = SDPFlag.REPLY_EXPECTED
 
         super().__init__(
