@@ -266,7 +266,7 @@ class ProvidesProvenanceDataFromMachineImpl(
             The list of words of raw provenance data.
         """
         if self._n_additional_data_items:
-            _ =  (label, x, y, p, provenance_data)
+            _ = (label, x, y, p, provenance_data)
             raise NotImplementedError(
                 f"{self} provides {self._n_additional_data_items} but doesn't "
                 "parse them")
