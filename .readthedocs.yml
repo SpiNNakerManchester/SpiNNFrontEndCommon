@@ -17,6 +17,12 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.11"
+  jobs:
+    build:
+      html:
+        - cd c_common; doxygen ./Doxyfile
+        - mkdir -p ${READTHEDOCS_OUTPUT}html/c_common/
+        - cp -a html/* ${READTHEDOCS_OUTPUT}html/c_common/
 sphinx:
   configuration: doc/source/conf.py
   builder: dirhtml
