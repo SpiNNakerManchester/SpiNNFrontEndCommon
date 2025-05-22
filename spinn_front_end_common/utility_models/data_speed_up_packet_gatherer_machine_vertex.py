@@ -490,8 +490,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def send_data_into_spinnaker(
             self, x: int, y: int, base_address: int,
             data: Union[BinaryIO, bytes, str, int], *,
-            n_bytes: Optional[int] = None, offset: int = 0,
-            cpu: int = 0) -> None:  # pylint: disable=unused-argument
+            n_bytes: Optional[int] = None, offset: int = 0) -> None:
         """
         Sends a block of data into SpiNNaker to a given chip.
 
@@ -503,7 +502,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :type data: bytes or bytearray or memoryview or str
         :param int n_bytes: how many bytes to read, or `None` if not set
         :param int offset: where in the data to start from
-        :param int cpu: Ignored; can only target SDRAM so unimportant
         """
         # if file, read in and then process as normal
         if isinstance(data, str):
