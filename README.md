@@ -58,6 +58,6 @@ Documentation
 =============
 [SpiNNFrontEndCommon python documentation](https://spinnfrontendcommon.readthedocs.io)
 <br>
-[SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
+[SpiNNFrontEndCommon C documentation](https://spinnfrontendcommon.readthedocs.io/c_common/)
 
 [Combined python documentation](http://spinnakermanchester.readthedocs.io)
