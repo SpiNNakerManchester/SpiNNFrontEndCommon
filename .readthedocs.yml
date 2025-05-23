@@ -20,6 +20,11 @@ build:
   jobs:
     build:
       html:
+        - python -mvirtualenv $READTHEDOCS_VIRTUALENV_PATH
+        - python -m pip install --upgrade --no-cache-dir pip setuptools
+        - python -m pip install --upgrade --no-cache-dir sphinx
+        - python -m pip install --exists-action=w --no-cache-dir -r doc/doc_requirements.txt
+        - python -m pip install --upgrade --upgrade-strategy only-if-needed --no-cache-dir .
         - python -m sphinx -T -b dirhtml -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html
         - cd c_common; doxygen ./Doxyfile
         - mkdir -p ${READTHEDOCS_OUTPUT}html/c_common/
