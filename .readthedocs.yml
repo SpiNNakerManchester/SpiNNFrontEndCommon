@@ -18,17 +18,17 @@ build:
   tools:
     python: "3.11"
   jobs:
-    build:
-      html:
-        - python -mvirtualenv $READTHEDOCS_VIRTUALENV_PATH
-        - python -m pip install --upgrade --no-cache-dir pip setuptools
-        - python -m pip install --upgrade --no-cache-dir sphinx
-        - python -m pip install --exists-action=w --no-cache-dir -r doc/doc_requirements.txt
-        - python -m pip install --upgrade --upgrade-strategy only-if-needed --no-cache-dir .
-        - python -m sphinx -T -b dirhtml -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html
-        - cd c_common; doxygen ./Doxyfile
-        - mkdir -p ${READTHEDOCS_OUTPUT}html/c_common/
-        - cp -a c_common/doc/* ${READTHEDOCS_OUTPUT}html/c_common/
+    pre_build:
+      - cd c_common; doxygen ./Doxyfile
+      - mkdir -p ${READTHEDOCS_OUTPUT}html/c_common/
+      - cp -a c_common/doc/* ${READTHEDOCS_OUTPUT}html/c_common/
+    post_build:
+      - ls -l ${READTHEDOCS_OUTPUT}html
+      - ls -l ${READTHEDOCS_OUTPUT}html/c_common
+sphinx:
+  configuration: doc/source/conf.py
+  builder: dirhtml
+  fail_on_warning: false
 python:
   install:
     - requirements: doc/doc_requirements.txt
