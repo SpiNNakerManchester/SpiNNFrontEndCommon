@@ -18,14 +18,12 @@ build:
   tools:
     python: "3.11"
   jobs:
-    post_build:
-      - cd c_common; doxygen ./Doxyfile
-      - mkdir -p ${READTHEDOCS_OUTPUT}html/c_common/
-      - cp -a c_common/doc/* ${READTHEDOCS_OUTPUT}html/c_common/
-sphinx:
-  configuration: doc/source/conf.py
-  builder: dirhtml
-  fail_on_warning: false
+    build:
+      html:
+        - python -m sphinx -T -b dirhtml -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html
+        - cd c_common; doxygen ./Doxyfile
+        - mkdir -p ${READTHEDOCS_OUTPUT}html/c_common/
+        - cp -a c_common/doc/* ${READTHEDOCS_OUTPUT}html/c_common/
 python:
   install:
     - requirements: doc/doc_requirements.txt
