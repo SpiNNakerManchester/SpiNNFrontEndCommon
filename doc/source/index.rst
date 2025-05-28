@@ -1,6 +1,8 @@
 These pages document the python code for the SpiNNFrontEndCommon_ module
 which is part of the SpiNNaker_ Project.
 
+The c_common_ module contains the documentation of the C code for this module.
+
 This code depends on SpiNNUtils_, SpiNNMachine_, SpiNNMan_, PACMAN_,
 (Combined_documentation_).
 
@@ -11,6 +13,7 @@ This code depends on SpiNNUtils_, SpiNNMachine_, SpiNNMan_, PACMAN_,
 .. _SpiNNMan: https://spinnman.readthedocs.io
 .. _PACMAN: https://pacman.readthedocs.io
 .. _Combined_documentation: https://spinnakermanchester.readthedocs.io
+.. _c_common: c_common/
 
 SpiNNFrontEndCommon
 ===================
