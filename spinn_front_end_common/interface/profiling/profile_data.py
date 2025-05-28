@@ -106,7 +106,6 @@ class ProfileData(object):
         :param ~numpy.ndarray exit_times:
         :param int tag:
         """
-        # pylint: disable=too-many-arguments
         tag_label = self._tag_labels.get(tag, None)
         if tag_label is None:
             logger.warning("Unknown tag {} in profile data", tag)

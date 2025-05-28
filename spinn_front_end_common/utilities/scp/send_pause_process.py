@@ -31,7 +31,6 @@ class _SendPauseRequest(AbstractSCPRequest[CheckOKResponse]):
         :param int y:
         :param int p:
         """
-        # pylint: disable=too-many-arguments
         sdp_flags = SDPFlag.REPLY_EXPECTED
 
         super().__init__(

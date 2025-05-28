@@ -119,7 +119,7 @@ def run_system_application(
     if error is not None:
         if core_state_string is not None:
             print(core_state_string)
-        raise error  # pylint: disable=raising-bad-type
+        raise error
 
 
 def _report_iobuf_messages(

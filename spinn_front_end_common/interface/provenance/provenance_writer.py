@@ -243,19 +243,3 @@ class ProvenanceWriter(BaseDatabase):
             VALUES (?, ?, ?)
             """, ((x, y, ipaddress)
                   for ((x, y), ipaddress) in connections.items()))
-
-    def _test_log_locked(self, text: str) -> None:
-        """
-        THIS IS A TESTING METHOD.
-
-        This will lock the database and then try to do a log
-        """
-        # lock the database
-        self.cursor().execute(
-            """
-            INSERT INTO reports(message)
-            VALUES(?)
-            """, [text])
-        self.lastrowid  # pylint: disable=pointless-statement
-        # try logging and storing while locked.
-        logger.warning(text)

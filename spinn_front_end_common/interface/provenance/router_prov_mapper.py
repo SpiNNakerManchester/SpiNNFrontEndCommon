@@ -14,7 +14,6 @@
 
 import argparse
 import os
-# pylint: disable=no-name-in-module
 import sqlite3
 from types import ModuleType, TracebackType
 from typing import (

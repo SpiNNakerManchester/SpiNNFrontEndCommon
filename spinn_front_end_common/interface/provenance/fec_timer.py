@@ -70,7 +70,6 @@ class FecTimer(object):
 
         :param AbstractSpinnakerBase simulator: Not actually used
         """
-        # pylint: disable=global-statement, protected-access
         cls._simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
             cls._provenance_path = get_timestamp_path(
