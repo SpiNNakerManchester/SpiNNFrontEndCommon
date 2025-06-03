@@ -20,7 +20,7 @@ import logging
 import math
 import struct
 from typing import (
-    Collection, Dict, List, Optional, Sequence, Union, TYPE_CHECKING)
+    Collection, Dict, Final, List, Optional, Sequence, Union, TYPE_CHECKING)
 
 import numpy
 from numpy.typing import NDArray
@@ -72,7 +72,7 @@ from .eieio_parameters import EIEIOParameters
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
-    _SBT: TypeAlias = Union[NDArray, List[NDArray]]
+    _SBT: Final['TypeAlias'] = Union[NDArray, List[NDArray]]
     _SendBufferTimes: TypeAlias = Optional[_SBT]
 
 logger = FormatAdapter(logging.getLogger(__name__))
