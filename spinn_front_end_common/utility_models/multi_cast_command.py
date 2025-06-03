@@ -41,7 +41,6 @@ class MultiCastCommand(object):
             repeat is 0
         :raise ConfigurationException: If the repeat or delay are out of range
         """
-        # pylint: disable=too-many-arguments
         if repeat < 0 or repeat > 0xFFFF:
             raise ConfigurationException(
                 "repeat must be between 0 and 65535")

@@ -69,7 +69,6 @@ class _GetCurrentTimeRequest(AbstractSCPRequest[_GetCurrentTimeResponse]):
         :param int y:
         :param int p:
         """
-        # pylint: disable=too-many-arguments
         sdp_flags = SDPFlag.REPLY_EXPECTED
 
         super().__init__(

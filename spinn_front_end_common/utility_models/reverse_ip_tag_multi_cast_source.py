@@ -118,7 +118,6 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         :type splitter:
             ~pacman.model.partitioner_splitters.AbstractSplitterCommon or None
         """
-        # pylint: disable=too-many-arguments
         super().__init__(label, max_atoms_per_core, splitter=splitter)
 
         # basic items
