@@ -15,8 +15,6 @@
 from threading import Thread
 from collections import deque
 import struct
-import traceback
-from typing import Optional
 
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp import SCPRequestHeader
@@ -36,9 +34,10 @@ class _SCPOKMessage(SDPMessage):
         super().__init__(sdp_header, data=scp_header.bytestring)
 
 
-class MockMachine(Thread):
+class MockReceiver(Thread):
     """
-    A Machine that can be used for testing protocol.
+    A Machine that can be used for tes
+    ting protocol.
     """
 
     def __init__(self) -> None:
@@ -48,7 +47,6 @@ class MockMachine(Thread):
         self._receiver = UDPConnection()
         self._running = False
         self._messages: deque = deque()
-        self._error: Optional[Exception] = None
         self._responses: deque = deque()
 
     @property
@@ -58,10 +56,6 @@ class MockMachine(Thread):
     @property
     def next_message(self) -> bytes:
         return self._messages.popleft()
-
-    @property
-    def error(self) -> Optional[Exception]:
-        return self._error
 
     @property
     def local_port(self) -> int:
@@ -88,13 +82,8 @@ class MockMachine(Thread):
     def run(self) -> None:
         self._running = True
         while self._running:
-            try:
-                if self._receiver.is_ready_to_receive(10):
-                    self._do_receive()
-            except Exception as e:  # pylint: disable=broad-except
-                if self._running:
-                    traceback.print_exc()
-                    self._error = e
+            if self._receiver.is_ready_to_receive(10):
+                self._do_receive()
 
     def stop(self) -> None:
         self._running = False
