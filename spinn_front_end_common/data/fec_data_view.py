@@ -457,7 +457,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def has_time_scale_factor(cls) -> bool:
         """
-        Dettermines if the time_scale_factor is currently available
+        Determines if the time_scale_factor is currently available
         """
         return cls.__fec_data._time_scale_factor is not None
 
