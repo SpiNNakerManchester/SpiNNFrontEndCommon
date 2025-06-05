@@ -184,8 +184,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __init__(
             self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
         """
-        :param FecDataWriter data_writer_cls:
-            The Global data writer class
+        :param data_writer_cls: The Global data writer class
         """
         # pylint: disable=too-many-arguments
         super().__init__(data_writer_cls)
@@ -307,7 +306,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __bearer_token(self) -> Optional[str]:
         """
         :return: The OIDC bearer token
-        :rtype: str or None
         """
         # Try using Jupyter if we have the right variables
         jupyter_token = os.getenv("JUPYTERHUB_API_TOKEN")
@@ -328,7 +326,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __group_collab_or_job(self) -> Dict[str, str]:
         """
         :return: The group, collab, or NMPI Job ID to associate with jobs
-        :rtype: dict()
         """
         # Try to get a NMPI Job
         nmpi_job = os.getenv("NMPI_JOB_ID")
@@ -393,9 +390,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Handler of exceptions.
 
-        :param type exc_type: the type of exception received
-        :param Exception value: the value of the exception
-        :param traceback traceback_obj: the trace back stuff
+        :param exc_type: the type of exception received
+        :param value: the value of the exception
+        :param traceback_obj: the trace back stuff
         """
         logger.error("Shutdown on exception")
         self._shutdown()
@@ -422,7 +419,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Run a simulation until it completes.
 
-        :param int n_steps:
+        :param n_steps:
             If not `None`, this specifies that the simulation should be
             requested to run for the given number of steps.  The host will
             still wait until the simulation itself says it has completed.
@@ -436,8 +433,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Run a simulation for a fixed amount of time.
 
-        :param int run_time: the run duration in milliseconds.
-        :param float sync_time:
+        :param run_time: the run duration in milliseconds.
+        :param sync_time:
             If not 0, this specifies that the simulation should pause after
             this duration.  The continue_simulation() method must then be
             called for the simulation to continue.
@@ -453,7 +450,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Get a number of timesteps for a given time in milliseconds.
 
         :return: The number of timesteps
-        :rtype: int
         """
         time_step_ms = self._data_writer.get_simulation_time_step_ms()
         n_time_steps = int(math.ceil(time_in_ms / time_step_ms))
@@ -480,10 +476,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         If run_time is `None` (run forever) both values will be `None`
 
         :param run_time: time user requested to run for in milliseconds
-        :type run_time: float or None
         :return: n_machine_time_steps as a whole int and
             total_run_time in milliseconds
-        :rtype: tuple(int,float) or tuple(None,None)
         """
         if run_time is None:
             # TODO does this make sense?
@@ -538,7 +532,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __is_main_thread() -> bool:
         """
         :return: Whether this is the main thread.
-        :rtype: bool
         """
         return threading.get_ident() == threading.main_thread().ident
 
@@ -589,8 +582,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         The main internal run function.
 
-        :param int run_time: the run duration in milliseconds.
-        :param int sync_time:
+        :param run_time: the run duration in milliseconds.
+        :param sync_time:
             the time in milliseconds between synchronisations, or 0 to disable.
         """
         if not self._should_run():
@@ -725,9 +718,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Generates the list of "timer" runs. These are usually in terms of
         time steps, but need not be.
 
-        :param int n_steps: the total runtime in machine time steps
+        :param n_steps: the total runtime in machine time steps
         :return: list of time step lengths
-        :rtype: list(int)
         """
         if n_steps == 0:
             return [0]
@@ -756,7 +748,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the SpallocAllocator or HBPAllocator if required.
 
         :param total_run_time: The total run time to request
-        :type total_run_time: int or None
         :return: machine name, machine version, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller
@@ -787,9 +778,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             (machine name, machine version, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller)
-        :type allocator_data: None or
-            tuple(str, int, object, bool, bool, object, object,
-            MachineAllocationController)
         """
         if self._data_writer.has_machine():
             return
@@ -825,8 +813,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         The Python machine description object.
 
-        :param float total_run_time: The total run time to request
-        :rtype: ~spinn_machine.Machine
+        :param total_run_time: The total run time to request
         """
         if not self._data_writer.has_machine():
             if get_config_bool("Machine", "virtual_board"):

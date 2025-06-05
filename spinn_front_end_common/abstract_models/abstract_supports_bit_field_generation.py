@@ -32,9 +32,8 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
         """
         Returns the SDRAM address for the bit field table data.
 
-        :param ~pacman.model.placements.Placement placement:
+        :param placement:
         :return: the SDRAM address for the bitfield address
-        :rtype: int
         """
         raise NotImplementedError
 
@@ -43,8 +42,7 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
         """
         Returns the SDRAM address for the bit field builder data.
 
-        :param ~pacman.model.placements.Placement placement:
+        :param placement:
         :return: the SDRAM address for the bitfield builder data
-        :rtype: int
         """
         raise NotImplementedError
