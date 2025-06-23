@@ -77,15 +77,14 @@ class ProvenanceReader(BaseDatabase):
             methods that return specific data. For new IntergationTests
             please add a specific method rather than call this directly.
 
-        :param str query: The SQL query to be run. May include ``?`` wildcards
-        :param ~collections.abc.Iterable(str or int) params:
+        :param query: The SQL query to be run. May include ``?`` wildcards
+        :param params:
             The values to replace the ``?`` wildcards with.
             The number and types must match what the query expects
         :return: A list possibly empty of tuples/rows
             (one for each row in the database)
             where the number and type of the values corresponds to the where
             statement
-        :rtype: list(tuple or ~sqlite3.Row)
         """
         return list(self.cursor().execute(query, list(params)))
 

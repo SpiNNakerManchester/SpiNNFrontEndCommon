@@ -138,8 +138,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Inserts run time into the category
 
-        :param int category_id: id of the Category finished
-        :param ~datetime.timedelta delta: Time to be recorded
+        :param category_id: id of the Category finished
+        :param delta: Time to be recorded
        """
         time_taken = (
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
@@ -159,13 +159,12 @@ class GlobalProvenance(SQLiteDB):
         """
         Inserts algorithms run times into the timer_provenance table
 
-        :param int category: Category Id of the Algorithm
-        :param str algorithm: Algorithm name
-        :param TimerWork work: Type of work being done
-        :param ~datetime.timedelta delta: Time to be recorded
+        :param category: Category Id of the Algorithm
+        :param algorithm: Algorithm name
+        :param work: Type of work being done
+        :param delta: Time to be recorded
         :param skip_reason: The reason the algorithm was skipped or `None` if
             it was not skipped
-        :type skip_reason: str or None
         """
         time_taken = (
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
@@ -232,15 +231,14 @@ class GlobalProvenance(SQLiteDB):
             methods that return specific data. For new IntergationTests
             please add a specific method rather than call this directly.
 
-        :param str query: The SQL query to be run. May include ``?`` wildcards
-        :param ~collections.abc.Iterable(str or int) params:
+        :param query: The SQL query to be run. May include ``?`` wildcards
+        :param params:
             The values to replace the ``?`` wildcards with.
             The number and types must match what the query expects
         :return: A list possibly empty of tuples/rows
             (one for each row in the database)
             where the number and type of the values corresponds to the where
             statement
-        :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
         for row in self.cursor().execute(query, list(params)):

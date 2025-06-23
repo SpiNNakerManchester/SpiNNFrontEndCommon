@@ -99,13 +99,6 @@ class ProfileData(object):
     def _add_tag_data(self, entry_tags: numpy.ndarray,
                       entry_times: numpy.ndarray, exit_tags: numpy.ndarray,
                       exit_times: numpy.ndarray, tag: int) -> None:
-        """
-        :param ~numpy.ndarray entry_tags:
-        :param ~numpy.ndarray entry_times:
-        :param ~numpy.ndarray exit_tags:
-        :param ~numpy.ndarray exit_times:
-        :param int tag:
-        """
         # pylint: disable=too-many-arguments
         tag_label = self._tag_labels.get(tag, None)
         if tag_label is None:

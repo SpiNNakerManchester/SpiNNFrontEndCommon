@@ -445,12 +445,10 @@ class BufferManager(object):
 
         Data for all extractions is combined.
 
-        :param ~pacman.model.placements.Placement placement:
-            the placement to get the data from
-        :param int recording_region_id: desired recording data region
+        :param placement: The placement to get the data from
+        :param recording_region_id: desired recording data region
         :return: an array contained all the data received during the
             simulation, and a flag indicating if any data was missing
-        :rtype: tuple(bytearray, bool)
         :raises BufferedRegionNotPresent:
             If no data is available nor marked missing.
         :raises NotImplementedError:
@@ -472,12 +470,10 @@ class BufferManager(object):
 
         Only the last data extracted is returned.
 
-        :param ~pacman.model.placements.Placement placement:
-            the placement to get the data from
-        :param int recording_region_id: desired recording data region
+        :param placement: the placement to get the data from
+        :param recording_region_id: desired recording data region
         :return: an array contained all the data received during the
             simulation, and a flag indicating if any data was missing
-        :rtype: tuple(bytearray, bool)
         :raises BufferedRegionNotPresent:
             If no data is available nor marked missing.
         :raises NotImplementedError:
@@ -531,8 +527,7 @@ class BufferManager(object):
         """
         Retrieve the data for a vertex; must be locked first.
 
-        :param ~pacman.model.placements.Placement placement:
-            the placement to get the data from
+        :param placement: the placement to get the data from
         """
         if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
             vertex = cast(AbstractReceiveBuffersToHost, placement.vertex)

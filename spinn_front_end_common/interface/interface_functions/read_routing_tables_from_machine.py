@@ -43,12 +43,6 @@ def read_routing_tables_from_machine() -> MulticastRoutingTables:
 def _read_routing_table(
         transceiver: Transceiver, table: AbstractMulticastRoutingTable,
         app_id: int) -> CompressedMulticastRoutingTable:
-    """
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param ~.UnCompressedMulticastRoutingTable table:
-    :param int app_id:
-    :rtype: CompressedMulticastRoutingTable
-    """
     machine_routing_table = CompressedMulticastRoutingTable(table.x, table.y)
     for routing_entry in transceiver.get_multicast_routes(
             table.x, table.y, app_id):

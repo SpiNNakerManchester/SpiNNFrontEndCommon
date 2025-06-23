@@ -48,10 +48,6 @@ def placements_provenance_gatherer(
 
 
 def _add_placement_provenance(placement: Placement, errors: List[str]) -> None:
-    """
-    :param ~.Placement placement:
-    :param list(str) errors:
-    """
     # retrieve provenance data from any cores that provide data
     if isinstance(
             placement.vertex, AbstractProvidesProvenanceDataFromMachine):

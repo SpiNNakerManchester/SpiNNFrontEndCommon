@@ -48,9 +48,5 @@ def locate_executable_start_type() -> Dict[ExecutableType, CoreSubsets]:
 
 def __add_vertex_to_subset(
         placement: Placement, core_subsets: CoreSubsets) -> None:
-    """
-    :param ~.Placement placement:
-    :param ~.CoreSubsets core_subsets:
-    """
     core_subsets.add_processor(
         x=placement.x, y=placement.y, processor_id=placement.p)

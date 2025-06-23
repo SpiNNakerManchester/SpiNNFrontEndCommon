@@ -62,11 +62,6 @@ class SpallocJobController(MachineAllocationController):
 
     def __init__(
             self, client: SpallocClient, job: SpallocJob, use_proxy: bool):
-        """
-        :param ~spinnman.spalloc.SpallocClient client:
-        :param ~spinnman.spalloc.SpallocJob job:
-        :param bool use_proxy:
-        """
         if job is None:
             raise TypeError("must have a real job")
         self.__client = client
@@ -210,9 +205,6 @@ class _OldSpallocJobController(MachineAllocationController):
     )
 
     def __init__(self, job: Job, host: str):
-        """
-        :param ~spalloc.job.Job job:
-        """
         if job is None:
             raise TypeError("must have a real job")
         self._job = job

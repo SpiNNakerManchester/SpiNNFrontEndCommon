@@ -117,11 +117,10 @@ class _GraphDataSpecificationWriter(object):
             self, placement: Placement, vertex: AbstractVertex,
             ds_db: DsSqlliteDatabase) -> bool:
         """
-        :param ~.Placement placement: placement of machine graph to cores
-        :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
-        :param DsSqlliteDatabase ds_db:
+        :param placement: placement of machine graph to cores
+        :param vertex: the specific vertex to write DSG for.
+        :param ds_db:
         :return: True if the vertex was data spec-able, False otherwise
-        :rtype: bool
         :raises ConfigurationException: if things don't fit
         """
         # if the vertex can generate a DSG, call it

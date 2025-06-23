@@ -165,9 +165,8 @@ def _calculate_n_frames(machine: Machine) -> int:
     Figures out how many frames are being used in this setup.
     A key of cabinet,frame will be used to identify unique frame.
 
-    :param ~.Machine machine: the machine object
+    :param machine: the machine object
     :return: number of frames
-    :rtype: int
     """
     # if not spalloc, then could be any type of board, but unknown cooling
     if not FecDataView.has_allocation_controller():

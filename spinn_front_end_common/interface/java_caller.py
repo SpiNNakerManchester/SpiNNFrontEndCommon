@@ -222,10 +222,6 @@ class JavaCaller(object):
         return self.__placement_json
 
     def _json_placement(self, placement: Placement) -> JsonObject:
-        """
-        :param ~pacman.model.placements.Placement placement:
-        :rtype: dict
-        """
         vertex = placement.vertex
         json_placement: JsonObject = {
             "x": placement.x,

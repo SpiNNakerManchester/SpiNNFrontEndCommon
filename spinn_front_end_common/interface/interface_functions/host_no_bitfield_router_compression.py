@@ -88,10 +88,10 @@ class Compression(object):
             self, binary_path: str, progress_text: str,
             result_register: UserRegister):
         """
-        :param str binary_path: What binary to run
-        :param ~spinn_machine.Machine machine: The machine model
-        :param str progress_text: Text to use in progress bar
-        :param int result_register:
+        :param binary_path: What binary to run
+        :param machine: The machine model
+        :param progress_text: Text to use in progress bar
+        :param result_register:
             number of the user register to check for the result code
         """
         self._binary_path = binary_path
@@ -162,7 +162,7 @@ class Compression(object):
         Goes through the cores checking for cores that have failed to compress
         the routing tables to the level where they fit into the router.
 
-        :param ~spinnman.model.ExecutableTargets executable_targets:
+        :param executable_targets:
         """
         transceiver = FecDataView.get_transceiver()
         for core_subset in executable_targets.all_core_subsets:

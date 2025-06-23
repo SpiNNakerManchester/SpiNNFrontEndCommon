@@ -43,9 +43,8 @@ class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
         """
         Get the recording region base address.
 
-        :param ~pacman.model.placements.Placement placement:
+        :param placement:
             the placement object of the core to find the address of
         :return: the base address of the recording region
-        :rtype: int
         """
         raise NotImplementedError

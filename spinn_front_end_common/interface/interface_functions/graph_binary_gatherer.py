@@ -56,9 +56,6 @@ class _GraphBinaryGatherer(object):
         return self._exe_targets
 
     def __get_binary(self, placement: Placement) -> None:
-        """
-        :param ~pacman.model.placements.Placement placement:
-        """
         # if the vertex cannot be executed, ignore it
         vertex = placement.vertex
         if not isinstance(vertex, AbstractHasAssociatedBinary):
