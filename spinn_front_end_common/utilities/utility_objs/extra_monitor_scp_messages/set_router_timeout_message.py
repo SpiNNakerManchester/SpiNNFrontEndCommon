@@ -43,7 +43,6 @@ class SetRouterTimeoutMessage(AbstractSCPRequest[CheckOKResponse]):
         :param int wait:
             Which wait to set. Should be 1 or 2.
         """
-        # pylint: disable=too-many-arguments
         cmd = ReinjectorSCPCommands.SET_ROUTER_WAIT1_TIMEOUT if wait == 1 \
             else ReinjectorSCPCommands.SET_ROUTER_WAIT2_TIMEOUT
         super().__init__(

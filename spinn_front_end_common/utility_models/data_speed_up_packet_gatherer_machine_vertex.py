@@ -360,7 +360,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec: DataSpecificationGenerator,
                                     placement: Placement) -> None:
-        # pylint: disable=unsubscriptable-object
         # update my placement for future knowledge
         self.__placement = placement
 
@@ -402,7 +401,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         # write the broad cast keys for timeouts
         router_timeout_key = (
             FecDataView.get_system_multicast_router_timeout_keys())
-        # pylint: disable=unsubscriptable-object
         spec.write_value(router_timeout_key[placement.xy])
 
         mc_data_chips_to_keys = (
@@ -492,8 +490,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def send_data_into_spinnaker(
             self, x: int, y: int, base_address: int,
             data: Union[BinaryIO, bytes, str, int], *,
-            n_bytes: Optional[int] = None, offset: int = 0,
-            cpu: int = 0) -> None:  # pylint: disable=unused-argument
+            n_bytes: Optional[int] = None, offset: int = 0) -> None:
         """
         Sends a block of data into SpiNNaker to a given chip.
 
@@ -505,7 +502,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :type data: bytes or bytearray or memoryview or str
         :param int n_bytes: how many bytes to read, or `None` if not set
         :param int offset: where in the data to start from
-        :param int cpu: Ignored; can only target SDRAM so unimportant
         """
         # if file, read in and then process as normal
         if isinstance(data, str):
@@ -1124,7 +1120,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         routers = [placement.xy]
         fixed_routes = FecDataView.get_fixed_routes()
-        # pylint: disable=unsubscriptable-object
         chip = placement.chip
         entry = fixed_routes[(placement.xy)]
         while not entry.processor_ids:
@@ -1286,7 +1281,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             sequence numbers, the sequence number received and if its finished
         :rtype: tuple(set(int), bool)
         """
-        # pylint: disable=too-many-arguments
         length_of_data = len(data)
         first_packet_element, = _ONE_WORD.unpack_from(data, 0)
 
@@ -1355,7 +1349,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int seq_num: the sequence number to figure
         :raises Exception: If the position to write to is crazy
         """
-        # pylint: disable=too-many-arguments
         if self._view is None or self._output is None:
             raise SpinnFrontEndException("no current target buffer")
         if view_end_position > len(self._output):

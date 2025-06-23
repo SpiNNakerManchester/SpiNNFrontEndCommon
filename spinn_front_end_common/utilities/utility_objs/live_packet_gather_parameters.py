@@ -54,8 +54,6 @@ class LivePacketGatherParameters(object):
         :raises ConfigurationException:
             If the parameters passed are known to be an invalid combination.
         """
-        # pylint: disable=too-many-arguments
-
         # Sanity checks
         if (message_type in _HAS_PAYLOAD and use_payload_prefix and
                 payload_as_time_stamps):

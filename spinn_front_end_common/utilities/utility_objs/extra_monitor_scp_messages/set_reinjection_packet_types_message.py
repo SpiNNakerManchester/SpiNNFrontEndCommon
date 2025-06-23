@@ -42,7 +42,6 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest[CheckOKResponse]):
         :param bool nearest_neighbour: If nearest neighbour should be set
         :param bool fixed_route: If fixed route should be set
         """
-        # pylint: disable=too-many-arguments
         super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,

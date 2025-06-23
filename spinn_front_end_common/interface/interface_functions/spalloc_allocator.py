@@ -15,7 +15,6 @@
 from contextlib import ExitStack
 import logging
 import math
-# pylint: disable=no-name-in-module
 from typing import ContextManager, Dict, Tuple, Optional, Union, cast
 
 from spinn_utilities.config_holder import (
@@ -26,8 +25,8 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
 from spinn_utilities.config_holder import get_config_int, get_config_str
 
-from spalloc_client import Job  # type: ignore[import]
-from spalloc_client.states import JobState  # type: ignore[import]
+from spalloc_client import Job
+from spalloc_client.states import JobState
 
 from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, EIEIOConnection)

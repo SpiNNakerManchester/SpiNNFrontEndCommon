@@ -130,7 +130,6 @@ class _SystemMulticastRoutingGenerator(object):
 
     def _logging_retry(
             self, ethernet_chip: Chip) -> Dict[Chip, Tuple[Chip, int]]:
-        # pylint: disable=unsubscriptable-object
         tree: Dict[Chip, Tuple[Chip, int]] = dict()
         to_reach = set(self._machine.get_chips_by_ethernet(
             ethernet_chip.x, ethernet_chip.y))

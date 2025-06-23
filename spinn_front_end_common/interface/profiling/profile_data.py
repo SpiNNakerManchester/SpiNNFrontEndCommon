@@ -99,7 +99,6 @@ class ProfileData(object):
     def _add_tag_data(self, entry_tags: numpy.ndarray,
                       entry_times: numpy.ndarray, exit_tags: numpy.ndarray,
                       exit_times: numpy.ndarray, tag: int) -> None:
-        # pylint: disable=too-many-arguments
         tag_label = self._tag_labels.get(tag, None)
         if tag_label is None:
             logger.warning("Unknown tag {} in profile data", tag)

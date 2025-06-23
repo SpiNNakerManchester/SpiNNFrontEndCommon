@@ -158,7 +158,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     """
     Main interface into the tools logic flow.
     """
-    # pylint: disable=broad-except
 
     __slots__ = (
         # Condition object used for waiting for stop
@@ -186,7 +185,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         :param data_writer_cls: The Global data writer class
         """
-        # pylint: disable=too-many-arguments
         super().__init__(data_writer_cls)
 
         FecTimer.start_category(TimerCategory.WAITING)
