@@ -158,7 +158,7 @@ class ProfileData(object):
         :param str tag: The tag to get the mean time for
         :rtype: float
         """
-        return numpy.average(self._tags[tag][_DURATION])
+        return float(numpy.average(self._tags[tag][_DURATION]))
 
     def get_n_calls(self, tag: str) -> int:
         """
@@ -180,8 +180,8 @@ class ProfileData(object):
         n_points = math.ceil(self._max_time / time_step_ms)
         endpoint = n_points * time_step_ms
         bins = numpy.linspace(0, endpoint, n_points + 1)
-        return numpy.average(numpy.histogram(
-            self._tags[tag][_START_TIME], bins)[0])
+        return float(numpy.average(numpy.histogram(
+            self._tags[tag][_START_TIME], bins)[0]))
 
     def get_mean_ms_per_ts(self, tag: str) -> float:
         """
@@ -199,5 +199,5 @@ class ProfileData(object):
             self._tags[tag][_START_TIME], self._tags[tag][_DURATION],
             "mean", bins).statistic
         mean_per_ts[numpy.isnan(mean_per_ts)] = 0
-        return numpy.average(
-            mean_per_ts[numpy.logical_not(numpy.isnan(mean_per_ts))])
+        return float(numpy.average(
+            mean_per_ts[numpy.logical_not(numpy.isnan(mean_per_ts))]))

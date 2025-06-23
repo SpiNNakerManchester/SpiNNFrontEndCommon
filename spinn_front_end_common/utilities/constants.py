@@ -74,7 +74,7 @@ APP_PTR_TABLE_BYTE_SIZE = (
     APP_PTR_TABLE_HEADER_BYTE_SIZE +
     (MAX_MEM_REGIONS * APP_PTR_TABLE_REGION_BYTE_SIZE))
 
-TABLE_TYPE = numpy.dtype(
+TABLE_TYPE: numpy.dtype = numpy.dtype(
     [("pointer", "<u4"), ("checksum", "<u4"), ("n_words", "<u4")])
 
 #: The number of words in the AbstractDataSpecable basic setup information.

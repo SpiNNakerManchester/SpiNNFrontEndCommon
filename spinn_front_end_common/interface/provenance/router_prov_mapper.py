@@ -22,6 +22,7 @@ from typing import (
     cast)
 
 import numpy
+from numpy.typing import NDArray
 from typing_extensions import Literal
 
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -255,7 +256,7 @@ class Plotter(ContextManager[SQLiteDB]):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.axis("off")
-        labels = data.astype(int)
+        labels: NDArray[int] = data.astype(int)
         seaborn.heatmap(
             data, annot=labels, fmt="", square=True,
             cmap=self.cmap).invert_yaxis()
@@ -279,7 +280,7 @@ class Plotter(ContextManager[SQLiteDB]):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.axis("off")
-        labels = data.astype(int)
+        labels: NDArray[int] = data.astype(int)
         seaborn.heatmap(
             data, annot=labels, fmt="", square=True,
             cmap=self.cmap).invert_yaxis()
