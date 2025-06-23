@@ -26,7 +26,6 @@ from pacman.model.placements import Placement
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException, DataSpecException)
 from spinn_front_end_common.interface.ds import (
@@ -141,7 +140,6 @@ class _GraphDataSpecificationWriter(object):
 
         # Check the memory usage
         total_size = ds_db.get_total_regions_size(x, y, p)
-        region_size = APP_PTR_TABLE_BYTE_SIZE + total_size
         total_est_size = 0
 
         # Check per-region memory usage if possible
@@ -176,12 +174,9 @@ class _GraphDataSpecificationWriter(object):
 
         # creating the error message which contains the memory usage of
         # what each core within the chip uses and its original estimate.
-        # pylint: disable=consider-using-f-string
+        ts = FecDataView.get_max_run_time_steps()
         memory_usage = "\n".join(
-            "    {}: {} (total={}, estimated={})".format(
-                vert, region_size, total_est_size,
-                vert.sdram_required.get_total_sdram(
-                    FecDataView.get_max_run_time_steps()))
+            f"    {vert}: {vert.sdram_required.get_total_sdram(ts)}"
             for vert in self._vertices_by_chip[x, y])
 
         raise ConfigurationException(

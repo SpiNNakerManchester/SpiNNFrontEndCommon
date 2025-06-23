@@ -15,7 +15,6 @@ from __future__ import annotations
 from enum import Enum, IntEnum
 import logging
 import struct
-# pylint: disable=no-name-in-module
 from typing import Dict, Iterable, Optional, ContextManager, Type
 from types import TracebackType
 
@@ -318,7 +317,6 @@ class ExtraMonitorSupportMachineVertex(
         router_timeout_keys = \
             FecDataView.get_system_multicast_router_timeout_keys()
         # Write the base key for multicast communication
-        # pylint: disable=unsubscriptable-object
         spec.write_value(router_timeout_keys[
             chip.nearest_ethernet_x, chip.nearest_ethernet_y])
 
@@ -338,7 +336,6 @@ class ExtraMonitorSupportMachineVertex(
         # write address key and data key
         mc_data_chips_to_keys = \
             FecDataView.get_data_in_multicast_key_to_chip_map()
-        # pylint: disable=unsubscriptable-object
         base_key = mc_data_chips_to_keys[chip.x, chip.y]
         spec.write_value(base_key + _KeyOffsets.ADDRESS_KEY_OFFSET)
         spec.write_value(base_key + _KeyOffsets.DATA_KEY_OFFSET)
