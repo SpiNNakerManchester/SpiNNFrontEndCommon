@@ -115,7 +115,6 @@ class _FecDataModel(object):
     def __new__(cls) -> _FecDataModel:
         if cls.__singleton:
             return cls.__singleton
-        # pylint: disable=protected-access
         obj = object.__new__(cls)
         cls.__singleton = obj
         obj._notification_protocol = None
@@ -735,7 +734,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the executable_types is currently unavailable
         """
-        # pylint: disable=unsubscriptable-object
         return cls.get_executable_types().get(
             executable_type, _EMPTY_CORE_SUBSETS)
 
@@ -793,7 +791,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             can also be a single string (strings are iterable)
         """
         if cls.__fec_data._live_packet_recorder_params is None:
-            # pylint: disable=attribute-defined-outside-init
             cls.__fec_data._live_packet_recorder_params = dict()
         lpg_vertex = cls.__fec_data._live_packet_recorder_params.get(
             live_packet_gatherer_params)
@@ -879,7 +876,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
-        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._monitor_map[cls.get_chip_at(x, y)]
 
     @classmethod
@@ -896,7 +892,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
-        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._monitor_map[chip]
 
     @classmethod
@@ -959,7 +954,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._gatherer_map is None:
             raise cls._exception("gatherer_map")
-        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._gatherer_map[chip]
 
     @classmethod
@@ -977,7 +971,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._gatherer_map is None:
             raise cls._exception("gatherer_map")
-        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._gatherer_map[cls.get_chip_at(x, y)]
 
     @classmethod

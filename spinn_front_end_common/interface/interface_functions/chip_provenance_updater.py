@@ -35,8 +35,7 @@ def chip_provenance_updater(all_core_subsets: CoreSubsets) -> None:
     :param CoreSubsets all_core_subsets:
     """
     updater = _ChipProvenanceUpdater(all_core_subsets)
-    # pylint: disable=protected-access
-    updater._run()
+    updater.run()
 
 
 class _ChipProvenanceUpdater(object):
@@ -54,7 +53,10 @@ class _ChipProvenanceUpdater(object):
         self.__app_id = FecDataView.get_app_id()
         self.__txrx = FecDataView.get_transceiver()
 
-    def _run(self) -> None:
+    def run(self) -> None:
+        """
+        Forces all cores to generate provenance data, and then exit.
+        """
         # check that the right number of processors are in sync
         processors_completed = self.__txrx.get_core_state_count(
             self.__app_id, CPUState.FINISHED)
@@ -94,7 +96,6 @@ class _ChipProvenanceUpdater(object):
         :param int processors_completed:
         :param ~.ProgressBar progress:
         """
-        # pylint: disable=too-many-arguments
         left_to_do_cores = total_processors - processors_completed
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:
