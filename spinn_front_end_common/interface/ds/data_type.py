@@ -369,8 +369,6 @@ class DataType(Enum):
     def size(self) -> int:
         """
         The size in bytes of the type.
-
-        :rtype: int
         """
         return self._size
 
@@ -378,8 +376,6 @@ class DataType(Enum):
     def min(self) -> Decimal:
         """
         The minimum possible value for the type.
-
-        :rtype: ~decimal.Decimal
         """
         return self._min
 
@@ -387,8 +383,6 @@ class DataType(Enum):
     def max(self) -> Decimal:
         """
         The maximum possible value for the type.
-
-        :rtype: ~decimal.Decimal
         """
         return self._max
 
@@ -396,7 +390,6 @@ class DataType(Enum):
         """
         Check the value against the allowed min and max
 
-        :type value: float or int
         :raises ValueError: If the value is outside of min to max
         """
         if value < self.min:
@@ -412,17 +405,13 @@ class DataType(Enum):
     def scale(self) -> Decimal:
         """
         The scale of the input value to convert it in integer.
-
-        :rtype: ~decimal.Decimal
-        """
+`       """
         return self._scale
 
     @property
     def struct_encoding(self) -> str:
         """
         The encoding string used for struct. Scaling may also be required.
-
-        :rtype: str
         """
         return self._struct_encoding
 
@@ -438,8 +427,6 @@ class DataType(Enum):
         Returns the value as an integer, according to this type.
 
         :param value:
-        :type value: float or int
-        :rtype: int
         """
         if self._apply_scale:
             # Deal with the cases that return np.int64  or np.int32
@@ -464,7 +451,6 @@ class DataType(Enum):
             Only works with integer and fixed point data types.
 
         :param value:
-        :rtype: ~numpy.uint32
         """
         return np.round(self.encode_as_int(value)).astype(self.struct_encoding)
 
