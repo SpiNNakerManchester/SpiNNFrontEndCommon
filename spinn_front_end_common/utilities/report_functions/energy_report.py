@@ -35,7 +35,6 @@ class EnergyReport(object):
         """
         Writes the report.
 
-        :param machine: the machine
         :param power_used:
         """
         # summary report path

@@ -32,7 +32,7 @@ def chip_provenance_updater(all_core_subsets: CoreSubsets) -> None:
     """
     Forces all cores to generate provenance data, and then exit.
 
-    :param CoreSubsets all_core_subsets:
+    :param all_core_subsets:
     """
     updater = _ChipProvenanceUpdater(all_core_subsets)
     updater.run()

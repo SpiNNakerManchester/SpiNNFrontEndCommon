@@ -231,7 +231,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         The Placement set by generate_data_specifications
 
-        @:raises AssertionError: If the pklacement has not yet been set
+        :raises AssertionError: If the pklacement has not yet been set
         """
         assert self.__placement is not None, "vertex not placed!"
         return self.__placement
@@ -392,7 +392,6 @@ class ExtraMonitorSupportMachineVertex(
         """
         Resets the counters for reinjection.
 
-        :param transceiver: the spinnMan interface
         :param extra_monitor_cores_to_set:
             which monitors control the routers to reset the counters of
         """

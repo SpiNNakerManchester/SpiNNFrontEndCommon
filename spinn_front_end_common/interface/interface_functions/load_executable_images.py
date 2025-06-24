@@ -94,7 +94,7 @@ def filter_targets(
         filter_predicate: Callable[[ExecutableType], bool]
         ) -> ExecutableTargets:
     """
-    :param callable(ExecutableType,bool) filter_predicate:
+    :param filter_predicate:
     """
     cores = ExecutableTargets()
     targets = FecDataView.get_executable_targets()

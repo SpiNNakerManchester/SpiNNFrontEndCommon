@@ -192,8 +192,7 @@ class FecTimer(object):
         is set True.
 
         :param section: Section level to be applied to both options
-        :param option1: One of the options to check
-        :param option2: The other option to check
+        :param option: The option to check
         """
         if get_config_bool(section, option):
             return False
@@ -241,7 +240,6 @@ class FecTimer(object):
         Typically called if the algorithm should run if either cfg values
         is set True.
 
-        :param section: Section level to be applied to both options
         :param pairs: section, options pairs to check
         :param reason: Reason to record for the skip
         """

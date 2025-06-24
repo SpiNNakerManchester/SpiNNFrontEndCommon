@@ -76,7 +76,6 @@ class ChipPowerMonitorMachineVertex(
     def __init__(self, label: str):
         """
         :param label: vertex label
-        :param sampling_frequency: how often to sample, in microseconds
         """
         super().__init__(
             label=label, app_vertex=None, vertex_slice=None)

@@ -173,7 +173,6 @@ class _SystemMulticastRoutingGenerator(object):
         :param chip: The chip
         :param key: The key to use
         :param processor_id: placement.p of the monitor vertex if applicable
-        :param link_id: If of the link out if applicable
         """
         table = cast(
             Optional[UnCompressedMulticastRoutingTable],

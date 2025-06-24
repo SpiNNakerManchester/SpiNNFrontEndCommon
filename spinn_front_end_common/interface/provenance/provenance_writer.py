@@ -46,9 +46,6 @@ class ProvenanceWriter(BaseDatabase):
             database holding the data.
             If omitted, either the default file path or an unshared in-memory
             database will be used (suitable only for testing).
-        :param memory:
-            Flag to say unshared in-memory can be used.
-            Otherwise a `None` file will mean the default should be used
         """
         super().__init__(database_file)
 

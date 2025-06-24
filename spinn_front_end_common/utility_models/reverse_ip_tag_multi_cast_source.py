@@ -79,9 +79,6 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             The number of keys to be sent via this multicast source
         :param label: The label of this vertex
         :param max_atoms_per_core:
-        :param board_address: The IP address of the board on which to place
-            this vertex if receiving data, either buffered or live (by
-            default, any board is chosen)
         :param receive_port: The port on the board that will listen for
             incoming event packets (default is to disable this feature; set a
             value to enable it)

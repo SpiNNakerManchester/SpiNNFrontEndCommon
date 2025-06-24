@@ -1319,7 +1319,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param data: the data holder to write from
         :param data_start_position: where in data holder to start from
         :param data_end_position: where in data holder to end
-        :param seq_num: the sequence number to figure
         :raises Exception: If the position to write to is crazy
         """
         if self._view is None or self._output is None:

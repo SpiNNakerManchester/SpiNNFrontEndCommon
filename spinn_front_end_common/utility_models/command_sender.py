@@ -57,7 +57,7 @@ class CommandSender(
             running
         :param timed_commands:
             The commands to send at specific times
-        :param AbstractVertex vertex_to_send_to:
+        :param vertex_to_send_to:
             The vertex these commands are to be sent to
         """
         self._machine_vertex.add_commands(

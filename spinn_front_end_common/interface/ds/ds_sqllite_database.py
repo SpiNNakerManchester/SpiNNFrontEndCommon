@@ -51,11 +51,6 @@ class DsSqlliteDatabase(SQLiteDB):
     __slots__ = ["_init_file"]
 
     def __init__(self, database_file:  Optional[str] = None):
-        """
-        :param init_file:
-            Whether to initialise the DB from our DDL file. If not specified,
-            this is guessed from whether we can read the file.
-        """
         if database_file is None:
             database_file = FecDataView.get_ds_database_path()
 

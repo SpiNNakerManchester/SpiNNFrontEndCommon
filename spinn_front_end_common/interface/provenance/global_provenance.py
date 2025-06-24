@@ -293,7 +293,7 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param TimerCategory category:
+        :param category:
         :return: total off all run times with this category
         """
         query = """
@@ -315,7 +315,7 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param TimerCategory category:
+        :param category:
         :return: total off all run times with this category
         """
         if n_reset is None:

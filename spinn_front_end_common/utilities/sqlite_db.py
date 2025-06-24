@@ -108,8 +108,6 @@ class SQLiteDB(object):
             `OperationalError` when a table is locked. If another connection
             opens a transaction to modify a table, that table will be locked
             until the transaction is committed. Default five seconds.
-        :param synchronisation:
-            The synchronisation level. Doesn't normally need to be altered.
         """
         self.__db = None
         self.__cursor: Optional[sqlite3.Cursor] = None

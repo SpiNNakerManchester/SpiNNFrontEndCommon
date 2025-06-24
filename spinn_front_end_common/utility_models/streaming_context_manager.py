@@ -30,7 +30,7 @@ class StreamingContextManager(ContextManager[None]):
     def __init__(
             self, gatherers: Iterable[DataSpeedUpPacketGatherMachineVertex]):
         """
-        :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
+        :param gatherers:
         """
         self._gatherers = list(gatherers)
 

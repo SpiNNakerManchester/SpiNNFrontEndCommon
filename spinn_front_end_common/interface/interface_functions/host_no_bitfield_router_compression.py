@@ -89,7 +89,6 @@ class Compression(object):
             result_register: UserRegister):
         """
         :param binary_path: What binary to run
-        :param machine: The machine model
         :param progress_text: Text to use in progress bar
         :param result_register:
             number of the user register to check for the result code
@@ -142,8 +141,7 @@ class Compression(object):
     def _load_routing_table(
             self, table: AbstractMulticastRoutingTable) -> None:
         """
-        :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
-            the router table to load
+        :param table: the router table to load
         """
         transceiver = FecDataView.get_transceiver()
         data = self._build_data(table)

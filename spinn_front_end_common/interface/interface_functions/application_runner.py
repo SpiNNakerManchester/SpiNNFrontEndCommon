@@ -47,7 +47,7 @@ def application_runner(
     :param runtime:
     :param time_threshold:
     :param run_until_complete:
-    :param Condition state_condition:
+    :param state_condition:
     :return:
         The current latest time-step if runtime is None and
         run_until_complete is False, else None
@@ -77,7 +77,7 @@ class _ApplicationRunner(object):
         :param runtime:
         :param time_threshold:
         :param run_until_complete:
-        :param Condition state_condition:
+        :param state_condition:
         :return:
             The current latest time-step if runtime is None and
             run_until_complete is False, else None

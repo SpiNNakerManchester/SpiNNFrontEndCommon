@@ -32,9 +32,7 @@ def write_json_machine(progress_bar: bool = True) -> str:
     .. warning::
          The file in this folder will be overwritten!
 
-    :param json_folder: the folder to which the JSON are being written
     :param progress_bar: Flag if Progress Bar should be shown
-    :param validate: Flag to disable the validation.
     :return: the name of the generated file
     """
     file_path = get_report_path("path_json_machine")
