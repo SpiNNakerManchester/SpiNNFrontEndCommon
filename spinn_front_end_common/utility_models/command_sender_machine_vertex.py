@@ -99,8 +99,8 @@ class CommandSenderMachineVertex(
 
     def __init__(self, label: str, app_vertex: CommandSender):
         """
-        :param str label: The label of this vertex
-        :param CommandSender app_vertex:
+        :param label: The label of this vertex
+        :param app_vertex:
         """
         super().__init__(label, app_vertex)
 
@@ -120,16 +120,14 @@ class CommandSenderMachineVertex(
         """
         Add commands to be sent down a given edge.
 
-        :param iterable(MultiCastCommand) start_resume_commands:
+        :param start_resume_commands:
             The commands to send when the simulation starts or resumes from
             pause
-        :param iterable(MultiCastCommand) pause_stop_commands:
+        :param pause_stop_commands:
             the commands to send when the simulation stops or pauses after
             running
-        :param iterable(MultiCastCommand) timed_commands:
-            The commands to send at specific times
-        :param ~pacman.model.graphs.AbstractVertex vertex_to_send_to:
-            The vertex these commands are to be sent to
+        :param timed_commands:The commands to send at specific times
+        :param vertex_to_send_to: The vertex these commands are to be sent to
         """
         # container for keys for partition mapping (remove duplicates)
         command_keys: Set[int] = set()
@@ -248,10 +246,6 @@ class CommandSenderMachineVertex(
     def _write_basic_commands(
             self, commands: List[MultiCastCommand],
             spec: DataSpecificationGenerator) -> None:
-        """
-        :param list(MultiCastCommand) commands:
-        :param ~data_specification.DataSpecificationGenerator spec:
-        """
         # number of commands
         spec.write_value(len(commands))
 
@@ -262,10 +256,6 @@ class CommandSenderMachineVertex(
     def _write_timed_commands(
             self, timed_commands: List[MultiCastCommand],
             spec: DataSpecificationGenerator) -> None:
-        """
-        :param list(MultiCastCommand) timed_commands:
-        :param ~data_specification.DataSpecificationGenerator spec:
-        """
         spec.write_value(len(timed_commands))
 
         # write commands
@@ -277,10 +267,6 @@ class CommandSenderMachineVertex(
     def __write_command(
             cls, command: MultiCastCommand,
             spec: DataSpecificationGenerator) -> None:
-        """
-        :param MultiCastCommand command:
-        :param ~data_specification.DataSpecificationGenerator spec:
-        """
         spec.write_value(command.key)
         if command.is_payload:
             spec.write_value(cls._HAS_PAYLOAD)
@@ -301,10 +287,10 @@ class CommandSenderMachineVertex(
         2. Area for start commands
         3. Area for end commands
 
-        :param ~data_specification.DataSpecificationGenerator spec:
-        :param int time_command_size:
-        :param int start_command_size:
-        :param int end_command_size:
+        :param spec:
+        :param time_command_size:
+        :param start_command_size:
+        :param end_command_size:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -329,7 +315,7 @@ class CommandSenderMachineVertex(
 
     def get_timed_commands_bytes(self) -> int:
         """
-        :rtype: int
+        The number of bytes in the timed commands
         """
         n_bytes = self._N_COMMANDS_SIZE
         n_bytes += (
@@ -340,8 +326,7 @@ class CommandSenderMachineVertex(
     @classmethod
     def get_n_command_bytes(cls, commands: Sized) -> int:
         """
-        :param list(MultiCastCommand) commands:
-        :rtype: int
+        :param commands:
         """
         n_bytes = cls._N_COMMANDS_SIZE
         n_bytes += cls._COMMAND_WITH_PAYLOAD_SIZE * len(commands)
@@ -368,13 +353,11 @@ class CommandSenderMachineVertex(
             :py:class:`CommandSenderMachineVertex`.
 
         :param pre_vertex:
-        :type pre_vertex: CommandSender or CommandSenderMachineVertex
-        :param type vertex_type:
+        :param vertex_type:
             subclass of :py:class:`~pacman.model.graphs.AbstractVertex`
-        :param type edge_type:
+        :param edge_type:
             subclass of :py:class:`~pacman.model.graphs.AbstractEdge`
         :return: edges, partition IDs
-        :rtype: tuple(list(~pacman.model.graphs.AbstractEdge), list(str))
         """
         edges: List[E] = list()
         partition_ids: List[str] = list()
@@ -395,8 +378,6 @@ class CommandSenderMachineVertex(
         that this vertex knows how to target (and has keys allocated for).
 
         :return: edges, partition IDs
-        :rtype:
-            tuple(list(~pacman.model.graphs.machine.MachineEdge), list(str))
         """
         return self.get_edges_and_partitions(self, MachineVertex, MachineEdge)
 

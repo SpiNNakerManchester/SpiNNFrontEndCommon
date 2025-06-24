@@ -38,7 +38,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         """
         Clear the reinjection queue.
 
-        :param ~spinn_machine.CoreSubsets core_subsets:
+        :param core_subsets:
         """
         with self._collect_responses():
             for core_subset in core_subsets.core_subsets:
@@ -50,7 +50,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         """
         Reset the packet counters.
 
-        :param ~spinn_machine.CoreSubsets core_subsets:
+        :param core_subsets:
         """
         with self._collect_responses():
             for core_subset in core_subsets.core_subsets:
@@ -62,10 +62,6 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
     def __handle_response(
             result: Dict[Chip, ReInjectionStatus],
             response: GetReinjectionStatusMessageResponse) -> None:
-        """
-        :param dict result:
-        :param GetReinjectionStatusMessageResponse response:
-        """
         status = response.reinjection_functionality_status
         header = response.sdp_header
         chip = FecDataView.get_chip_at(
@@ -77,10 +73,9 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         """
         Get the reinjection status of a particular monitor.
 
-        :param int x:
-        :param int y:
-        :param int p:
-        :rtype: ReInjectionStatus
+        :param x:
+        :param y:
+        :param p:
         """
         chip = FecDataView.get_chip_at(x, y)
         status: Dict[Chip, ReInjectionStatus] = dict()
@@ -95,8 +90,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         """
         Get the reinjection status of a collection of monitors.
 
-        :param ~spinn_machine.CoreSubsets core_subsets:
-        :rtype: dict(~spinn_machine.Chip, ReInjectionStatus)
+        :param core_subsets:
         """
         status: Dict[Chip, ReInjectionStatus] = dict()
         with self._collect_responses(check_error=False):
@@ -118,12 +112,11 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         """
         Set what types of packets should be reinjected.
 
-        :param ~spinn_machine.CoreSubsets core_subsets:
-            sets of cores to send command to
-        :param bool point_to_point: If point-to-point should be set
-        :param bool multicast: If multicast should be set
-        :param bool nearest_neighbour: If nearest neighbour should be set
-        :param bool fixed_route: If fixed route should be set
+        :param core_subsets: sets of cores to send command to
+        :param point_to_point: If point-to-point should be set
+        :param multicast: If multicast should be set
+        :param nearest_neighbour: If nearest neighbour should be set
+        :param fixed_route: If fixed route should be set
         """
         with self._collect_responses():
             for core_subset in core_subsets.core_subsets:
@@ -138,9 +131,9 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         The wait1 timeout is the time from when a packet is received to
         when emergency routing becomes enabled.
 
-        :param int mantissa: Timeout mantissa (0 to 15)
-        :param int exponent: Timeout exponent (0 to 15)
-        :param ~spinn_machine.CoreSubsets core_subsets:
+        :param mantissa: Timeout mantissa (0 to 15)
+        :param exponent: Timeout exponent (0 to 15)
+        :param core_subsets:
             Where the extra monitors that manage the routers are located.
         """
         for core_subset in core_subsets.core_subsets:
@@ -154,9 +147,9 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         The wait2 timeout is the time from when a packet has emergency
         routing enabled for it to when it is dropped.
 
-        :param int mantissa: Timeout mantissa (0 to 15)
-        :param int exponent: Timeout exponent (0 to 15)
-        :param ~spinn_machine.CoreSubsets core_subsets:
+        :param mantissa: Timeout mantissa (0 to 15)
+        :param exponent: Timeout exponent (0 to 15)
+        :param core_subsets:
             Where the extra monitors that manage the routers are located.
         """
         for core_subset in core_subsets.core_subsets:
@@ -172,11 +165,11 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         This is not a parallelised operation in order to aid debugging when
         it fails.
 
-        :param ~spinn_machine.CoreSubset core:
-        :param int processor_id:
-        :param int mantissa:
-        :param int exponent:
-        :param int wait: Which wait to set
+        :param core:
+        :param processor_id:
+        :param mantissa:
+        :param exponent:
+        :param wait: Which wait to set
         """
         with self._collect_responses():
             self._send_request(SetRouterTimeoutMessage(

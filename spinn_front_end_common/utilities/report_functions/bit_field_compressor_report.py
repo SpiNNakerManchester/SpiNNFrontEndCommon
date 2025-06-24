@@ -52,7 +52,6 @@ def bitfield_compressor_report() -> Optional[BitFieldSummary]:
     bitfields into the routing table.
 
     :return: a summary, or `None` if the report file can't be written
-    :rtype: BitFieldSummary
     """
     file_name = get_report_path("path_bit_field_compressor_report")
     try:
@@ -70,15 +69,14 @@ def _merged_component(
     """
     Report how many bitfields were merged into the router.
 
-    :param dict([int, int], int: to_merge_per_chip: number of bitfields
+    :param to_merge_per_chip: number of bitfields
         that could be merged per chip
-    :param ~io.FileIO writer: file writer.
+    :param writer: file writer.
     :return: tuple containing 4 elements.
      1. min_bit_fields merged in a chip,
      2. the max bit_fields merged in a chip,
      3. the total bit_fields_merged into all the routers.
      4. average number of bit-fields merged on the routers.
-    :rtype: tuple(int or str, int or str, int or str, float or str)
     """
     top_bit_field = 0
     min_bit_field = sys.maxsize
@@ -121,9 +119,6 @@ def _merged_component(
 
 
 def _compute_to_merge_per_chip() -> Tuple[int, Dict[XY, int]]:
-    """
-    :rtype: tuple(int, int, int, float or int)
-    """
     total_to_merge = 0
     to_merge_per_chip: Dict[XY, int] = defaultdict(int)
 
@@ -147,9 +142,6 @@ def _compute_to_merge_per_chip() -> Tuple[int, Dict[XY, int]]:
 def _before_merge_component(
         total_to_merge: int,
         to_merge_per_chip: Dict[XY, int]) -> Tuple[int, int, float]:
-    """
-    :rtype: tuple(int, int, int, float or int)
-    """
     max_bit_fields_on_chip = 0
     min_bit_fields_on_chip = sys.maxsize
 
@@ -171,9 +163,8 @@ def _write_report(writer: TextIO) -> BitFieldSummary:
     """
     Writes the report.
 
-    :param ~io.FileIO writer: the file writer
+    :param writer: the file writer
     :return: a summary
-    :rtype: BitFieldSummary
     """
     total_to_merge, to_merge_per_chip = _compute_to_merge_per_chip()
     (max_to_merge_per_chip, low_to_merge_per_chip,

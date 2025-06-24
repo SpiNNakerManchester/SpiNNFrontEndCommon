@@ -38,30 +38,27 @@ def run_system_application(
     Executes the given _system_ application.
     Used for on-chip expander, compressors, etc.
 
-    :param ~spinnman.model.ExecutableTargets executable_cores:
-        the cores to run the executable on.
-    :param int app_id: the app-id for the executable
-    :param bool read_algorithm_iobuf: whether to report IOBUFs
-    :param callable check_for_success_function:
+    :param executable_cores: the cores to run the executable on.
+    :param app_id: the app-id for the executable
+    :param read_algorithm_iobuf: whether to report IOBUFs
+    :param check_for_success_function:
         function used to check success;
         expects `executable_cores`, `transceiver` as inputs
-    :param frozenset(~spinnman.model.enums.CPUState) cpu_end_states:
+    :param cpu_end_states:
         the states that a successful run is expected to terminate in
-    :param bool needs_sync_barrier: whether a sync barrier is needed
-    :param str filename_template: the IOBUF filename template.
-    :param list(str) binaries_to_track:
+    :param needs_sync_barrier: whether a sync barrier is needed
+    :param filename_template: the IOBUF filename template.
+    :param binaries_to_track:
         A list of binary names to check for exit state.
         Or `None` for all binaries
     :param progress_bar: Possible progress bar to update.
            end() will be called after state checked
-    :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
-    :param ~logging.Logger logger:
+    :param logger:
         If provided and IOBUF is extracted, will be used to log errors and
         warnings
     :param timeout:
         Number of seconds to wait before force stopping, or `None` to wait
         forever
-    :type timeout: float or None
     :raise SpinnmanException:
         If one should arise from the underlying SpiNNMan calls
     """
@@ -125,11 +122,6 @@ def run_system_application(
 def _report_iobuf_messages(
         cores: ExecutableTargets, logger: Optional[FormatAdapter],
         filename_template: str) -> None:
-    """
-    :param ~spinnman.model.ExecutableTargets cores:
-    :param ~logging.Logger logger:
-    :param str filename_template:
-    """
     # Import in this function to prevent circular import issue
     iobuf_reader = IOBufExtractor(
         cores,
@@ -153,9 +145,9 @@ def _load_application(
         This will get the binaries into c_main but will not signal the
         barrier.
 
-    :param ExecutableTargets executable_targets:
+    :param executable_targets:
         The binaries to be executed and the cores to execute them on
-    :param int app_id: The app_id to give this application
+    :param app_id: The app_id to give this application
     """
     # Execute each of the binaries and get them in to a "wait" state
     transceiver = FecDataView.get_transceiver()

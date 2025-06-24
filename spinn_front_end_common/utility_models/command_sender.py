@@ -35,7 +35,7 @@ class CommandSender(
 
     def __init__(self, label: str):
         """
-        :param str label: The label of this vertex
+        :param label: The label of this vertex
         """
         super().__init__(
             CommandSenderMachineVertex(label, self), label)
@@ -49,15 +49,15 @@ class CommandSender(
         """
         Add commands to be sent down a given edge.
 
-        :param iterable(MultiCastCommand) start_resume_commands:
+        :param start_resume_commands:
             The commands to send when the simulation starts or resumes from
             pause
-        :param iterable(MultiCastCommand) pause_stop_commands:
+        :param pause_stop_commands:
             The commands to send when the simulation stops or pauses after
             running
-        :param iterable(MultiCastCommand) timed_commands:
+        :param timed_commands:
             The commands to send at specific times
-        :param ~pacman.model.graphs.AbstractVertex vertex_to_send_to:
+        :param AbstractVertex vertex_to_send_to:
             The vertex these commands are to be sent to
         """
         self._machine_vertex.add_commands(
@@ -70,8 +70,6 @@ class CommandSender(
         that this vertex knows how to target (and has keys allocated for).
 
         :return: edges, partition IDs
-        :rtype: tuple(list(~pacman.model.graphs.application.ApplicationEdge),
-            list(str))
         """
         return self._machine_vertex.get_edges_and_partitions(
             self, ApplicationVertex, ApplicationEdge)

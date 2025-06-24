@@ -231,7 +231,9 @@ class ExtraMonitorSupportMachineVertex(
     @property
     def placement(self) -> Placement:
         """
-        :rtype: ~pacman.model.placements.Placement
+        The Placement set by generate_data_specifications
+
+        @:raises AssertionError: If the pklacement has not yet been set
         """
         assert self.__placement is not None, "vertex not placed!"
         return self.__placement
@@ -244,8 +246,6 @@ class ExtraMonitorSupportMachineVertex(
     def static_get_binary_start_type() -> ExecutableType:
         """
         The type of the binary implementing this vertex.
-
-        :rtype: ExecutableType
         """
         return ExecutableType.SYSTEM
 
@@ -257,8 +257,6 @@ class ExtraMonitorSupportMachineVertex(
     def static_get_binary_file_name() -> str:
         """
         The name of the binary implementing this vertex.
-
-        :rtype: str
         """
         return "extra_monitor_support.aplx"
 
@@ -280,9 +278,6 @@ class ExtraMonitorSupportMachineVertex(
 
     def _generate_data_speed_up_out_config(
             self, spec: DataSpecificationGenerator) -> None:
-        """
-        :param ~.DataSpecificationGenerator spec: spec file
-        """
         spec.reserve_memory_region(
             region=_DsgRegions.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
@@ -296,10 +291,6 @@ class ExtraMonitorSupportMachineVertex(
 
     def _generate_reinjection_config(
             self, spec: DataSpecificationGenerator, chip: Chip) -> None:
-        """
-        :param ~.DataSpecificationGenerator spec: spec file
-        :param ~.Chip chip:
-        """
         spec.reserve_memory_region(
             region=_DsgRegions.REINJECT_CONFIG,
             size=_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES,
@@ -322,10 +313,6 @@ class ExtraMonitorSupportMachineVertex(
 
     def _generate_data_speed_up_in_config(
             self, spec: DataSpecificationGenerator, chip: Chip) -> None:
-        """
-        :param ~.DataSpecificationGenerator spec: spec file
-        :param ~.Chip chip: the chip where this monitor will run
-        """
         spec.reserve_memory_region(
             region=_DsgRegions.DATA_IN_CONFIG,
             size=(_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
@@ -354,10 +341,6 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(self.__encode_route(entry))
 
     def __encode_route(self, entry: MulticastRoutingEntry) -> int:
-        """
-        :param ~spinn_machine.MulticastRoutingEntry entry:
-        :rtype: int
-        """
         assert self._app_id is not None
         route = self._app_id << _BIT_SHIFT_TO_MOVE_APP_ID
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
@@ -365,18 +348,11 @@ class ExtraMonitorSupportMachineVertex(
 
     def _generate_provenance_area(
             self, spec: DataSpecificationGenerator) -> None:
-        """
-        :param ~.DataSpecificationGenerator spec: spec file
-        """
         spec.reserve_memory_region(
             region=_DsgRegions.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
             label="provenance collection region")
 
     def __provenance_address(self, place: Placement) -> int:
-        """
-        :param ~pacman.model.placements.Placement place:
-        :rtype: int
-        """
         if self.__prov_region is not None:
             return self.__prov_region
 
@@ -418,12 +394,9 @@ class ExtraMonitorSupportMachineVertex(
         """
         Resets the counters for reinjection.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
+        :param transceiver: the spinnMan interface
         :param extra_monitor_cores_to_set:
             which monitors control the routers to reset the counters of
-        :type extra_monitor_cores_to_set:
-            iterable(ExtraMonitorSupportMachineVertex)
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set)
@@ -437,7 +410,6 @@ class ExtraMonitorSupportMachineVertex(
         Get the reinjection status from this extra monitor vertex.
 
         :return: the reinjection status for this vertex
-        :rtype: ReInjectionStatus
         """
         process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
@@ -449,8 +421,6 @@ class ExtraMonitorSupportMachineVertex(
             Chip, ReInjectionStatus]:
         """
         Get the reinjection status from a set of extra monitor cores.
-
-        :rtype: dict(~spinn_machine.Chip, ReInjectionStatus)
         """
         core_subsets = convert_vertices_to_core_subset(
             FecDataView.iterate_monitors())
@@ -466,16 +436,12 @@ class ExtraMonitorSupportMachineVertex(
         """
         :param point_to_point:
             If point to point should be set, or `None` if left as before
-        :type point_to_point: bool or None
         :param multicast:
             If multicast should be set, or `None` if left as before
-        :type multicast: bool or None
         :param nearest_neighbour:
             If nearest neighbour should be set, or `None` if left as before
-        :type nearest_neighbour: bool or None
         :param fixed_route:
             If fixed route should be set, or `None` if left as before.
-        :type fixed_route: bool or None
         """
         if multicast is not None:
             self._reinject_multicast = multicast
@@ -524,7 +490,6 @@ class ExtraMonitorSupportMachineVertex(
         Convert vertices into the subset of cores where they've been placed.
 
         :return: where the vertices have been placed
-        :rtype: ~.CoreSubsets
         """
         core_subsets = CoreSubsets()
         for vertex in FecDataView.iterate_monitors():

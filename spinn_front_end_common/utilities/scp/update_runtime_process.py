@@ -75,12 +75,12 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
                        infinite_run: bool, core_subsets: CoreSubsets,
                        n_cores: int, n_sync_steps: int) -> None:
         """
-        :param int current_time:
-        :param int run_time:
-        :param bool infinite_run:
-        :param ~spinn_machine.CoreSubsets core_subsets:
-        :param int n_cores: Number of cores being updated
-        :param int n_sync_steps:
+        :param current_time:
+        :param run_time:
+        :param infinite_run:
+        :param core_subsets:
+        :param n_cores: Number of cores being updated
+        :param n_sync_steps:
         """
         with ProgressBar(n_cores, "Updating run time") as progress, \
                 self._collect_responses():

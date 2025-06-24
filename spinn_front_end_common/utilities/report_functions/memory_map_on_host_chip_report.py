@@ -62,9 +62,6 @@ def memory_map_on_host_chip_report() -> None:
 
 def _describe_mem_map(
         f: TextIO, txrx: Transceiver, x: int, y: int, p: int) -> None:
-    """
-    :param ~spinnman.transceiver.Transceiver txrx:
-    """
     # Read the memory map data from the given core
     region_table_addr = _get_region_table_addr(txrx, x, y, p)
     memmap_data = txrx.read_memory(
@@ -79,7 +76,4 @@ def _describe_mem_map(
 
 
 def _get_region_table_addr(txrx: Transceiver, x: int, y: int, p: int) -> int:
-    """
-    :param ~spinnman.transceiver.Transceiver txrx:
-    """
     return txrx.read_user(x, y, p, UserRegister.USER_0) + REGION_HEADER_SIZE

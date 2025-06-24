@@ -35,8 +35,8 @@ class EnergyReport(object):
         """
         Writes the report.
 
-        :param ~spinn_machine.Machine machine: the machine
-        :param PowerUsed power_used:
+        :param machine: the machine
+        :param power_used:
         """
         # summary report path
         summary_report = get_report_path("path_energy_report")
@@ -50,8 +50,8 @@ class EnergyReport(object):
         """
         Write summary file.
 
-        :param ~io.TextIOBase f: file writer
-        :param PowerUsed power_used:
+        :param f: file writer
+        :param power_used:
         """
         f.write("Energy Report\n")
         f.write("=============\n")

@@ -57,8 +57,8 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     def clear_iobuf(self, core_subsets: CoreSubsets,
                     n_cores: Optional[int] = None) -> None:
         """
-        :param ~spinn_machine.CoreSubsets core_subsets:
-        :param int n_cores: Defaults to the number of cores in `core_subsets`.
+        :param core_subsets:
+        :param n_cores: Defaults to the number of cores in `core_subsets`.
         """
         if n_cores is None:
             n_cores = len(core_subsets)
