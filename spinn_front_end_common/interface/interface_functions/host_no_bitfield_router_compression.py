@@ -182,7 +182,6 @@ class Compression(object):
         :return:
             the executable targets that represent all cores/chips which have
             active routing tables
-        :rtype: ~spinnman.model.ExecutableTargets
         """
         # build core subsets
         core_subsets = CoreSubsets()
@@ -205,9 +204,7 @@ class Compression(object):
         compressor C code.
 
         :param table: the PACMAN router table instance
-        :type table: ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :return: The byte array of data
-        :rtype: bytearray
         """
         # write header data of the app ID to load the data, if to store
         # results in SDRAM and the router table entries

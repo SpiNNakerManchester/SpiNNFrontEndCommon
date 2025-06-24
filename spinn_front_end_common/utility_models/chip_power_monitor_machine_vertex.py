@@ -189,7 +189,6 @@ class ChipPowerMonitorMachineVertex(
         The type of binary that implements this vertex.
 
         :return: start-type
-        :rtype: ExecutableType
         """
         return ExecutableType.USES_SIMULATION_INTERFACE
 

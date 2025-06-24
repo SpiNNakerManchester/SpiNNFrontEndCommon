@@ -22,8 +22,6 @@ from spinn_front_end_common.data import FecDataView
 def read_routing_tables_from_machine() -> MulticastRoutingTables:
     """
     Reads compressed routing tables from a SpiNNaker machine.
-
-    :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
     routing_tables = FecDataView.get_uncompressed()
     progress = ProgressBar(

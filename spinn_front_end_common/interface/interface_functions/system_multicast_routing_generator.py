@@ -72,8 +72,6 @@ class _SystemMulticastRoutingGenerator(object):
         """
         :return: routing tables, destination-to-key map,
             board-location-to-timeout-key map
-        :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
-            dict(tuple(int,int),int), dict(tuple(int,int),int))
         """
         # create progress bar
         progress = ProgressBar(

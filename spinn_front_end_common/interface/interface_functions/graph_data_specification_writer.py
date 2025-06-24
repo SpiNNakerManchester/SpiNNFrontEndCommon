@@ -41,7 +41,6 @@ def graph_data_specification_writer(
     :param placement_order:
         the optional order in which placements should be examined
     :return: Path to DSG targets database
-    :rtype: str
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
@@ -68,10 +67,9 @@ class _GraphDataSpecificationWriter(object):
     def run(self,
             placement_order: Optional[Sequence[Placement]] = None) -> str:
         """
-        :param list(~pacman.model.placements.Placement) placement_order:
+        :param placement_order:
             the optional order in which placements should be examined
         :return: Path to DSG targets database
-        :rtype: str
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """

@@ -340,9 +340,8 @@ class GlobalProvenance(SQLiteDB):
         Get the runtime for one category of algorithms
         split machine on, machine off
 
-        :param TimerCategory category:
+        :param category:
         :return: total on and off time of instances with this category
-        :rtype: int
         """
         on = 0
         off = 0

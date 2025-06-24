@@ -192,8 +192,6 @@ class NotificationProtocol(object):
     def sent_visualisation_confirmation(self) -> bool:
         """
         Whether the external application has actually been notified yet.
-
-        :rtype: bool
         """
         return self.__sent_visualisation_confirmation
 

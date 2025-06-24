@@ -113,8 +113,6 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
 
         :return:
              A set of (LPG machine vertex, source machine vertex, partition_id)
-        :rtype: set(tuple(LivePacketGatherMachineVertex,
-            ~pacman.model.graphs.machine.MachineVertex, str))
         """
         return self.__targeted_lpgs
 

@@ -25,8 +25,6 @@ def sample_chip_power_monitor() -> ChipPowerMonitorMachineVertex:
     Creates an unplaced sample of the Vertex's used.
 
     This vertex should only be used for size estimates.
-
-    :rtype: ChipPowerMonitorMachineVertex
     """
     return ChipPowerMonitorMachineVertex(
         "Sample ChipPowerMonitorMachineVertex")

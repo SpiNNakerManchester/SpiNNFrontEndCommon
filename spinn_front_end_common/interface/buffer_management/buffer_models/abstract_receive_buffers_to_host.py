@@ -34,7 +34,6 @@ class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
         Get the recording region IDs that have been recorded using buffering.
 
         :return: The region numbers that have active recording
-        :rtype: iterable(int)
         """
         raise NotImplementedError
 

@@ -84,8 +84,6 @@ class ReInjectionStatus(object):
     def router_wait1_timeout(self) -> int:
         """
         The WAIT1 timeout value of the router, in cycles.
-
-        :rtype: int
         """
         return _decode_router_timeout_value(self._wait1_timeout)
 

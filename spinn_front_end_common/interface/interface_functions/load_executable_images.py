@@ -95,7 +95,6 @@ def filter_targets(
         ) -> ExecutableTargets:
     """
     :param callable(ExecutableType,bool) filter_predicate:
-    :rtype: ~spinnman.model.ExecutableTargets
     """
     cores = ExecutableTargets()
     targets = FecDataView.get_executable_targets()

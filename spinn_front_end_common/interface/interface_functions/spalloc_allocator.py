@@ -73,8 +73,6 @@ class SpallocJobController(MachineAllocationController):
     def job(self) -> SpallocJob:
         """
         The job value passed into the init.
-
-        :rtype: SpallocJob
         """
         return self._job
 

@@ -36,34 +36,34 @@ class RouterSummary(object):
     @property
     def total_entries(self) -> int:
         """
-        :rtype: int
+        The total entires as passed into the init
         """
         return self._total_entries
 
     @property
     def max_per_chip(self) -> int:
         """
-        :rtype: int
+        The maximum number of routes per Chip
         """
         return self._max_per_chip
 
     @property
     def max_defaultable(self) -> int:
         """
-        :rtype: int
+        The maximum number of defaultable routes per Chip
         """
         return self._max_defaultable
 
     @property
     def max_link(self) -> int:
         """
-        :rtype: int
+        The maximum number of links
         """
         return self._max_link
 
     @property
     def unqiue_routes(self) -> int:
         """
-        :rtype: int
+        The number of unique routes
         """
         return self._unqiue_routes

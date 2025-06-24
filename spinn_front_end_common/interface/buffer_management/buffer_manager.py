@@ -571,7 +571,5 @@ class BufferManager(object):
     def sender_vertices(self) -> Iterable[AbstractSendsBuffersFromHost]:
         """
         The vertices which are buffered.
-
-        :rtype: iterable(AbstractSendsBuffersFromHost)
         """
         return self._sender_vertices
