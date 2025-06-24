@@ -254,7 +254,7 @@ class Plotter(ContextManager[SQLiteDB]):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.axis("off")
-        labels = data.astype(numpy.unit32)
+        labels = data.astype(numpy.uint32)
         seaborn.heatmap(
             data, annot=labels, fmt="", square=True,
             cmap=self.cmap).invert_yaxis()
