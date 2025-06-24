@@ -252,7 +252,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         if is_array_list(send_buffer_times):
             counts = numpy.bincount(
-                numpy.concatenate(send_buffer_times).astype("int"))
+                numpy.concatenate(send_buffer_times).astype(numpy.uint32))
             if len(counts):
                 return int(numpy.max(counts))
             return 0
