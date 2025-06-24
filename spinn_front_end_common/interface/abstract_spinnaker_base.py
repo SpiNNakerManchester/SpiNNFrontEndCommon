@@ -1166,10 +1166,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         This method is the entry point for adding a new Info Allocator
 
-        :param list(tuple(ApplicationVertex,str)) extra_allocations:
-            Additional (vertex, partition identifier) pairs to allocate
-            keys to.  These might not appear in partitions in the graph
-            due to being added by the system.
         :raise ConfigurationException:
             if the configuration info_allocator value is unexpected
         """
@@ -1282,7 +1278,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, time and log the inter-board timer drift.
 
-        :param bool start: Is this the start or the end
+        :param start: Is this the start or the end
         """
         with FecTimer("Drift report", TimerWork.REPORT) as timer:
             if timer.skip_if_virtual_board():
@@ -1342,7 +1338,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Control synchronisation on board.
 
-        :param bool do_sync: Whether to enable synchronisation
+        :param do_sync: Whether to enable synchronisation
         """
         with FecTimer("Control Sync", TimerWork.CONTROL) as timer:
             if timer.skip_if_virtual_board():
@@ -1353,8 +1349,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     n_machine_time_steps: Optional[int]) -> None:
         """
         Runs, times and logs all the algorithms in the mapping stage.
-
-        :param float total_run_time:
         """
         FecTimer.start_category(TimerCategory.MAPPING)
         if self._data_writer.is_soft_reset():
@@ -2090,8 +2084,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _do_extract_from_machine(self) -> None:
         """
         Runs, times and logs the steps to extract data from the machine.
-
-        :param run_time: the run duration in milliseconds.
         """
         self._execute_router_provenance_gatherer("Run", TimerWork.EXTRACTING)
         self._execute_clear_router_diagnostic_counters()

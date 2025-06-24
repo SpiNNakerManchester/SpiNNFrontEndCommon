@@ -53,7 +53,6 @@ class ProvenanceReader(BaseDatabase):
         :py:meth:`get_last_run_database_path` to find the correct path.
 
         :param provenance_data_path: Path to the provenance database to wrap
-        :type provenance_data_path: None or str
         """
         super().__init__(provenance_data_path, read_only=True,
                          row_factory=None, text_factory=None)
@@ -96,7 +95,6 @@ class ProvenanceReader(BaseDatabase):
 
         :return: A list hopefully empty of tuples (x, y, p, count) of cores
             where their where late arriving spikes.
-        :rtype: list(tuple(int, int, int, int))
         """
         query = """
             SELECT x, y, p, the_value AS "value"
@@ -110,14 +108,11 @@ class ProvenanceReader(BaseDatabase):
         """
         Gets the provenance item(s) from the last run relating to a chip.
 
-        :param int x:
-            The X coordinate of the chip
-        :param int y:
-            The Y coordinate of the chip
+        :param x: The X coordinate of the chip
+        :param y: The Y coordinate of the chip
         :return:
             A possibly multi-line string with for each row which matches the
             like a line ``description_name: value``
-        :rtype: str
         """
         query = """
             SELECT
@@ -137,7 +132,6 @@ class ProvenanceReader(BaseDatabase):
         Gets the cores with provenance.
 
         :return: A list tuples (x, y, p)
-        :rtype: list(tuple(int, int, int))
         """
         query = """
             SELECT core_name, x, y, p
@@ -150,9 +144,8 @@ class ProvenanceReader(BaseDatabase):
         """
         Gets the router values for a specific item.
 
-        :param str description:
+        :param description:
         :return: list of tuples (x, y, value)
-        :rtype: list(tuple(int, int, float))
         """
         query = """
             SELECT x, y, the_value
@@ -169,9 +162,8 @@ class ProvenanceReader(BaseDatabase):
         """
         Gets the monitor values for a specific item.
 
-        :param str description:
+        :param description:
         :return: list of tuples x, y, value)
-        :rtype: list(tuple(int, int, float))
         """
         query = """
             SELECT x, y, the_value
@@ -189,7 +181,6 @@ class ProvenanceReader(BaseDatabase):
         List all the provenance messages.
 
         :return: all messages logged or not; order is whatever the DB chooses
-        :rtype: list(str)
         """
         query = """
              SELECT message

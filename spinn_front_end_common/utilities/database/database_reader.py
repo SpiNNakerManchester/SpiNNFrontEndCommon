@@ -24,7 +24,7 @@ class DatabaseReader(SQLiteDB):
 
     def __init__(self, database_path: str):
         """
-        :param str database_path: The path to the database
+        :param database_path: The path to the database
         """
         super().__init__(database_path, read_only=True, text_factory=str)
         self.__job: Optional[SpallocJob] = None
@@ -36,7 +36,6 @@ class DatabaseReader(SQLiteDB):
         connection to boards should be used.
 
         :return: Job handle, if one exists. ``None`` otherwise.
-        :rtype: ~spinnman.spalloc.SpallocJob
         """
         # This is maintaining an object we only make once
         if not self.__looked_for_job:
@@ -70,9 +69,8 @@ class DatabaseReader(SQLiteDB):
         """
         Get a mapping of event key to atom ID for a given vertex.
 
-        :param str label: The label of the vertex
+        :param label: The label of the vertex
         :return: dictionary of atom IDs indexed by event key
-        :rtype: dict(int, int)
         """
         return {
             row["event"]: row["atom"]
@@ -86,9 +84,8 @@ class DatabaseReader(SQLiteDB):
         """
         Get a mapping of atom ID to event key for a given vertex.
 
-        :param str label: The label of the vertex
+        :param label: The label of the vertex
         :return: dictionary of event keys indexed by atom ID
-        :rtype: dict(int, int)
         """
         return {
             row["atom"]: row["event"]
@@ -105,10 +102,9 @@ class DatabaseReader(SQLiteDB):
         Get the IP address, port and whether the SDP headers are to be
         stripped from the output from a vertex.
 
-        :param str label: The label of the vertex
+        :param label: The label of the vertex
         :return: tuple of (IP address, port, strip SDP, board address, tag,
             chip_x, chip_y)
-        :rtype: tuple(str, int, bool, str, int, int, int)
         """
         self.cursor().execute(
             """
@@ -127,9 +123,8 @@ class DatabaseReader(SQLiteDB):
         """
         Get the value of a configuration parameter.
 
-        :param str parameter_name: The name of the parameter
+        :param parameter_name: The name of the parameter
         :return: The value of the parameter
-        :rtype: float or None
         """
         self.cursor().execute(
             """
@@ -144,9 +139,8 @@ class DatabaseReader(SQLiteDB):
         """
         Get the placements of an application vertex with a given label.
 
-        :param str label: The label of the vertex
+        :param label: The label of the vertex
         :return: A list of x, y, p coordinates of the vertices
-        :rtype: list(tuple(int, int, int))
         """
         return [
             (int(row["x"]), int(row["y"]), int(row["p"]))
@@ -160,10 +154,9 @@ class DatabaseReader(SQLiteDB):
         """
         Get an IP address to contact a chip.
 
-        :param int x: The x-coordinate of the chip
-        :param int y: The y-coordinate of the chip
+        :param x: The x-coordinate of the chip
+        :param y: The y-coordinate of the chip
         :return: The IP address of the Ethernet to use to contact the chip
-        :rtype: str or None
         """
         self.cursor().execute(
             """

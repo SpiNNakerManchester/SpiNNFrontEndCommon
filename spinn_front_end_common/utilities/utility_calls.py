@@ -52,7 +52,7 @@ def _mkdir(directory: str) -> None:
     .. note::
         This code is not intended to be secure against malicious third parties
 
-    :param str directory: The directory to create
+    :param directory: The directory to create
     """
     # Guarded to stop us from hitting things twice internally; it's not
     # perfect since other processes could also happen along.
@@ -70,8 +70,8 @@ def get_region_base_address_offset(
     """
     Find the address of the of a given region for the DSG.
 
-    :param int app_data_base_address: base address for the core
-    :param int region: the region ID we're looking for
+    :param app_data_base_address: base address for the core
+    :param region: the region ID we're looking for
     """
     return (app_data_base_address +
             APP_PTR_TABLE_HEADER_BYTE_SIZE +

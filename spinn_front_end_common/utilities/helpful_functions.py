@@ -41,9 +41,8 @@ def locate_extra_monitor_mc_receiver(
     Get the data speed up gatherer that can be used to talk to a
     particular chip. This will be on the same board.
 
-    :param int placement_x: The X coordinate of the reference chip
-    :param int placement_y: The Y coordinate of the reference chip
-    :rtype: DataSpeedUpPacketGatherMachineVertex
+    :param placement_x: The X coordinate of the reference chip
+    :param placement_y: The Y coordinate of the reference chip
     """
     chip = FecDataView.get_chip_at(placement_x, placement_y)
     return FecDataView.get_gatherer_by_xy(
@@ -55,14 +54,13 @@ def read_data(x: int, y: int, address: int, length: int,
     """
     Reads and converts a single data item from memory.
 
-    :param int x: chip x
-    :param int y: chip y
-    :param int address: base address of the SDRAM chip to read
-    :param int length: length to read
-    :param str data_format:
+    :param x: chip x
+    :param y: chip y
+    :param address: base address of the SDRAM chip to read
+    :param length: length to read
+    :param data_format:
         the format to read memory (see :py:func:`struct.pack`)
     :return: whatever is produced by unpacking the data
-    :rtype: tuple
     """
     data = FecDataView.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
@@ -73,8 +71,8 @@ def get_region_base_address_offset(
     """
     Find the address of the of a given region for the DSG.
 
-    :param int app_data_base_address: base address for the core
-    :param int region: the region ID we're looking for
+    :param app_data_base_address: base address for the core
+    :param region: the region ID we're looking for
     """
     return (app_data_base_address +
             APP_PTR_TABLE_HEADER_BYTE_SIZE +

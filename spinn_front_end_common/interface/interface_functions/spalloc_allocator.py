@@ -95,11 +95,6 @@ class SpallocJobController(MachineAllocationController):
     @overrides(MachineAllocationController.where_is_machine)
     def where_is_machine(
             self, chip_x: int, chip_y: int) -> Tuple[int, int, int]:
-        """
-        :param int chip_x:
-        :param int chip_y:
-        :rtype: tuple(int,int,int)
-        """
         result = self._job.where_is_machine(x=chip_x, y=chip_y)
         if result is None:
             raise ValueError("coordinates lie outside machine")
@@ -223,13 +218,13 @@ class _OldSpallocJobController(MachineAllocationController):
     @property
     def power(self) -> bool:
         """
-        :rtype: bool
+        The Power of the job
         """
         return self._job.power
 
     def set_power(self, power: bool) -> None:
         """
-        :param bool power:
+        Sets power on the job
         """
         self._job.set_power(power)
         if power:
@@ -273,20 +268,13 @@ def spalloc_allocator(
     number of chips.
 
     :param bearer_token: The bearer token to use
-    :type bearer_token: str or None
     :param group: The group to associate with or None for no group
-    :type group: str or None
     :param collab: The collab to associate with or None for no collab
-    :type collab: str or None
     :param nmpi_job: The NMPI Job to associate with or None for no job
-    :type nmpi_job: str or None
     :param nmpi_user: The NMPI username to associate with or None for no user
-    :type nmpi_user: str or None
     :return:
         host, board version, BMP details, reset on startup flag,
         auto-detect BMP flag, board address map, allocation controller
-    :rtype: tuple(str, int, object, bool, bool, dict(tuple(int,int),str),
-        MachineAllocationController)
     """
     spalloc_server = get_config_str("Machine", "spalloc_server")
 
@@ -327,21 +315,14 @@ def _allocate_job_new(
     Request a machine from an new-style spalloc server that will fit the
     given number of boards.
 
-    :param str spalloc_server:
+    :param spalloc_server:
         The server from which the machine should be requested
-    :param int n_boards: The number of boards required
+    :param n_boards: The number of boards required
     :param bearer_token: The bearer token to use
-    :type bearer_token: str or None
     :param group: The group to associate with or None for no group
-    :type group: str or None
     :param collab: The collab to associate with or None for no collab
-    :type collab: str or None
     :param nmpi_job: The NMPI Job to associate with or None for no job
-    :type nmpi_job: int or None
     :param nmpi_user: The NMPI username to associate with or None for no user
-    :type nmpi_user: str or None
-
-    :rtype: tuple(str, dict(tuple(int,int),str), MachineAllocationController)
     """
     logger.info(f"Requesting job with {n_boards} boards")
     with ExitStack() as stack:
@@ -377,10 +358,9 @@ def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[
     Request a machine from an old-style spalloc server that will fit the
     requested number of boards.
 
-    :param str spalloc_server:
+    :param spalloc_server:
         The server from which the machine should be requested
-    :param int n_boards: The number of boards required
-    :rtype: tuple(str, dict(tuple(int,int),str), MachineAllocationController)
+    :param n_boards: The number of boards required
     """
     host, port, owner = parse_old_spalloc(
         spalloc_server, get_config_int("Machine", "spalloc_port"),
@@ -396,9 +376,6 @@ def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[
 def _launch_checked_job_old(
         n_boards: int, host: str, port: int, owner: str,
         machine: Optional[str]) -> Tuple[Job, str, Dict[XY, str]]:
-    """
-    :rtype: tuple(~.Job, str, dict(tuple(int,int),str))
-    """
     logger.info(f"Requesting job with {n_boards} boards")
     avoid_boards = get_config_str_list("Machine", "spalloc_avoid_boards")
     avoid_jobs = []

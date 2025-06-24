@@ -78,11 +78,11 @@ class SQLiteDB(object):
             text_factory: Optional[type] = memoryview,
             case_insensitive_like: bool = True, timeout: float = 5.0):
         """
-        :param str database_file:
+        :param database_file:
             The name of a file that contains (or will contain) an SQLite
             database holding the data. If omitted, an unshared in-memory
             database will be used (suitable only for testing).
-        :param bool read_only:
+        :param read_only:
             Whether the database is in read-only mode. When the database is in
             read-only mode, it *must* already exist.
         :param ddl_file:
@@ -91,27 +91,24 @@ class SQLiteDB(object):
             object completes construction. If ``None``, nothing will be
             evaluated. You probably don't want to specify a DDL file at the
             same time as setting ``read_only=True``.
-        :type ddl_file: str or None
         :param row_factory:
             Callable used to create the rows of result sets.
             Either ``tuple`` or ``sqlite3.Row`` (default);
             can be ``None`` to use the DB driver default.
-        :type row_factory: ~collections.abc.Callable or None
         :param text_factory:
             Callable used to create the Python values of non-numeric columns
             in result sets. Usually ``memoryview`` (default) but should be
             ``str`` when you're expecting string results;
             can be ``None`` to use the DB driver default.
-        :type text_factory: ~collections.abc.Callable or None
-        :param bool case_insensitive_like:
+        :param case_insensitive_like:
             Whether we want the ``LIKE`` matching operator to be case-sensitive
             or case-insensitive (default).
-        :param float timeout:
+        :param timeout:
             How many seconds the connection should wait before raising an
             `OperationalError` when a table is locked. If another connection
             opens a transaction to modify a table, that table will be locked
             until the transaction is committed. Default five seconds.
-        :param Synchronisation synchronisation:
+        :param synchronisation:
             The synchronisation level. Doesn't normally need to be altered.
         """
         self.__db = None
@@ -210,13 +207,12 @@ class SQLiteDB(object):
         Set a database ``PRAGMA``. See the `SQLite PRAGMA documentation
         <https://www.sqlite.org/pragma.html>`_ for details.
 
-        :param str pragma_name:
+        :param pragma_name:
             The name of the pragma to set.
             *Must be the name of a supported pragma!*
         :param value:
             The value to set the pragma to.
             If a string, must not contain a single quote.
-        :type value: bool or int or str
         """
         if not self.__db:
             raise AttributeError("database has been closed")
@@ -249,7 +245,6 @@ class SQLiteDB(object):
         """
         Gets the lastrowid from the last query run/ execute
 
-        :rtype: int
         :raises DatabaseException: If there is no cursor.
             Typically because database was used outside of a with
         """
@@ -264,7 +259,6 @@ class SQLiteDB(object):
         """
         Gets the rowcount from the last query run/ execute
 
-        :rtype: int
         :raises DatabaseException: If there is no cursor.
             Typically because database was used outside of a with
         """

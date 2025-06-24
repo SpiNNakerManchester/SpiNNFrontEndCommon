@@ -30,13 +30,13 @@ class _UpdateRuntimeRequest(AbstractSCPRequest[CheckOKResponse]):
     def __init__(self, x: int, y: int, p: int, current_time: int,
                  run_time: int, infinite_run: bool, n_sync_steps: int):
         """
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int current_time:
-        :param int run_time:
-        :param bool infinite_run:
-        :param int n_sync_steps:
+        :param x:
+        :param y:
+        :param p:
+        :param current_time:
+        :param run_time:
+        :param infinite_run:
+        :param n_sync_steps:
         """
         sdp_flags = SDPFlag.REPLY_EXPECTED
 

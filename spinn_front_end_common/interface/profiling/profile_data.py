@@ -52,7 +52,7 @@ class ProfileData(object):
 
     def __init__(self, tag_labels: Mapping[int, str]):
         """
-        :param list(str) tag_labels: A list of labels indexed by tag ID
+        :param tag_labels: A list of labels indexed by tag ID
         """
         self._tag_labels = tag_labels
         self._tags: Dict[str, Tuple[numpy.ndarray, numpy.ndarray]] = dict()
@@ -62,8 +62,7 @@ class ProfileData(object):
         """
         Add profiling data read from the profile section.
 
-        :param bytearray data:
-            Data read from the profile section on the machine
+        :param data: Data read from the profile section on the machine
         """
         samples = numpy.asarray(data, dtype="uint8").view(dtype="<u4")
 
@@ -137,8 +136,6 @@ class ProfileData(object):
     def tags(self) -> Iterable[str]:
         """
         The tags recorded as labels.
-
-        :rtype: list(str)
         """
         return self._tags.keys()
 
@@ -147,8 +144,7 @@ class ProfileData(object):
         Get the mean time in milliseconds spent on operations with the
         given tag.
 
-        :param str tag: The tag to get the mean time for
-        :rtype: float
+        :param tag: The tag to get the mean time for
         """
         return numpy.average(self._tags[tag][_DURATION])
 
@@ -156,8 +152,7 @@ class ProfileData(object):
         """
         Get the number of times the given tag was recorded.
 
-        :param str tag: The tag to get the number of calls of
-        :rtype: int
+        :param tag: The tag to get the number of calls of
         """
         return self._tags[tag][_DURATION].size
 
@@ -165,8 +160,7 @@ class ProfileData(object):
         """
         Get the mean number of times the given tag was recorded per timestep.
 
-        :param str tag: The tag to get the data for
-        :rtype: float
+        :param tag: The tag to get the data for
         """
         time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(self._max_time / time_step_ms)
@@ -180,8 +174,7 @@ class ProfileData(object):
         Get the mean time in milliseconds spent on operations with the
         given tag per timestep.
 
-        :param str tag: The tag to get the data for
-        :rtype: float
+        :param tag: The tag to get the data for
         """
         time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(self._max_time / time_step_ms)

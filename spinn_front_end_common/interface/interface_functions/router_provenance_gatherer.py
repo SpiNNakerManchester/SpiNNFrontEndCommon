@@ -32,7 +32,7 @@ def router_provenance_gatherer(provenance_prefix: str = "") -> None:
     """
     Gathers diagnostics from the routers.
 
-    :param str provenance_prefix: The prefix to add to the provenance names
+    :param provenance_prefix: The prefix to add to the provenance names
     """
     _RouterProvenanceGatherer().add_router_provenance_data(provenance_prefix)
 
@@ -47,7 +47,7 @@ class _RouterProvenanceGatherer(object):
         """
         Writes the provenance data of the router diagnostics
 
-        :param str provenance_prefix: The prefix to add to the provenance names
+        :param provenance_prefix: The prefix to add to the provenance names
         """
         count = len(FecDataView.get_uncompressed().routing_tables) \
             + FecDataView.get_machine().n_chips + 1
@@ -115,11 +115,6 @@ class _RouterProvenanceGatherer(object):
     def __get_status(
             reinjection_data: Optional[Dict[Chip, ReInjectionStatus]],
             chip: Chip) -> Optional[ReInjectionStatus]:
-        """
-        :param dict(Chip,ReInjectionStatus) reinjection_data:
-        :param Chip chip:
-        :rtype: ReInjectionStatus or None
-        """
         return reinjection_data.get(chip) if reinjection_data else None
 
     def __router_diagnostics(

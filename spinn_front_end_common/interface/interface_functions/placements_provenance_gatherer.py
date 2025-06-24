@@ -29,8 +29,8 @@ def placements_provenance_gatherer(
     """
     Gets provenance information from the specified placements.
 
-    :param int n_placements: Number of placements to gather
-    :param iterator(~pacman.model.placements.Placement) placements:
+    :param n_placements: Number of placements to gather
+    :param placements:
         The placements of the vertices to gather data form.
         May not be all placements so don't use View
     """

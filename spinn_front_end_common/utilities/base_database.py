@@ -55,7 +55,7 @@ class BaseDatabase(SQLiteDB):
                  row_factory: Optional[type] = sqlite3.Row,
                  text_factory: Optional[type] = memoryview):
         """
-        :param str database_file:
+        :param database_file:
             The name of a file that contains (or will contain) an SQLite
             database holding the data.
             If omitted the default location will be used.
@@ -72,8 +72,6 @@ class BaseDatabase(SQLiteDB):
     def default_database_file(cls) -> str:
         """
         The path to the stand place the data.sqlite3 file will be stored
-
-        :rtype: str
         """
         return get_report_path("path_data_database")
 
@@ -81,11 +79,6 @@ class BaseDatabase(SQLiteDB):
             self, x: int, y: int, p: int) -> int:
         """
         Get the ID for a core.
-
-        :param int x:
-        :param int y:
-        :param int p:
-        :rtype: int
         """
         for row in self.cursor().execute(
                 """

@@ -46,8 +46,6 @@ def system_multicast_routing_generator() -> Tuple[
 
     :return: routing tables, destination-to-key map,
         board-location-to-timeout-key map
-    :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
-        dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
     return _SystemMulticastRoutingGenerator().generate_system_routes()
 
@@ -174,11 +172,10 @@ class _SystemMulticastRoutingGenerator(object):
         """
         Adds a routing entry on this chip, creating the table if needed.
 
-        :param Chip chip: The chip
-        :param int key: The key to use
-        :param int processor_id:
-            placement.p of the monitor vertex if applicable
-        :param int link_id: If of the link out if applicable
+        :param chip: The chip
+        :param key: The key to use
+        :param processor_id: placement.p of the monitor vertex if applicable
+        :param link_id: If of the link out if applicable
         """
         table = cast(
             Optional[UnCompressedMulticastRoutingTable],

@@ -27,9 +27,9 @@ from spinnman.model.enums import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
 class _SendPauseRequest(AbstractSCPRequest[CheckOKResponse]):
     def __init__(self, x: int, y: int, p: int):
         """
-        :param int x:
-        :param int y:
-        :param int p:
+        :param x:
+        :param y:
+        :param p:
         """
         sdp_flags = SDPFlag.REPLY_EXPECTED
 

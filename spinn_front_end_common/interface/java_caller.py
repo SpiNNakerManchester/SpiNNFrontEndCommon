@@ -325,7 +325,7 @@ class JavaCaller(object):
     def _write_placements(
             self, used_placements: Iterable[Placement], path: str) -> str:
         """
-        :param placements:
+        :param used_placements:
             Placements that are being used. May not be all placements
         :param path:
         """

@@ -161,8 +161,7 @@ class CommandSenderMachineVertex(
         """
         Get the key and mask for the given partition.
 
-        :param str partition_id: The partition to get the key for
-        :rtype: ~pacman.model.routing_info.BaseKeyAndMask
+        :param partition_id: The partition to get the key for
         """
         return BaseKeyAndMask(
             self._partition_id_keys[partition_id], self._DEFAULT_COMMAND_MASK)

@@ -142,11 +142,11 @@ class ExtraMonitorSupportMachineVertex(
             reinject_nearest_neighbour: bool = False,
             reinject_fixed_route: bool = False):
         """
-        :param bool reinject_point_to_point:
+        :param reinject_point_to_point:
             if we reinject point-to-point packets
-        :param bool reinject_nearest_neighbour:
+        :param reinject_nearest_neighbour:
             if we reinject nearest-neighbour packets
-        :param bool reinject_fixed_route: if we reinject fixed route packets
+        :param reinject_fixed_route: if we reinject fixed route packets
         """
         super().__init__("SYSTEM:ExtraMonitor")
 
@@ -164,7 +164,7 @@ class ExtraMonitorSupportMachineVertex(
     @property
     def reinject_multicast(self) -> bool:
         """
-        :rtype: bool
+        The enable_reinjection value fron the configs
         """
         return self._reinject_multicast
 
@@ -172,8 +172,6 @@ class ExtraMonitorSupportMachineVertex(
     def transaction_id(self) -> int:
         """
         The current transaction id.
-
-        :rtype: int
         """
         return self._transaction_id
 
@@ -195,21 +193,21 @@ class ExtraMonitorSupportMachineVertex(
     @property
     def reinject_point_to_point(self) -> bool:
         """
-        :rtype: bool
+        if we reinject point to point packets
         """
         return self._reinject_point_to_point
 
     @property
     def reinject_nearest_neighbour(self) -> bool:
         """
-        :rtype: bool
+        if we reinject nearest neighbour packets
         """
         return self._reinject_nearest_neighbour
 
     @property
     def reinject_fixed_route(self) -> bool:
         """
-        :rtype: bool
+        if we reinject fixed route packets
         """
         return self._reinject_fixed_route
 

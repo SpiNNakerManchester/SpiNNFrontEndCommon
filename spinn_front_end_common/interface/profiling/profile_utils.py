@@ -32,9 +32,8 @@ def get_profile_region_size(n_samples: int) -> int:
     """
     Get the size of the region of the profile data.
 
-    :param int n_samples: number of different samples to record
+    :param n_samples: number of different samples to record
     :return: the size in bytes used by the profile region
-    :rtype: int
     """
     return _PROFILE_HEADER_SIZE_BYTES + (
         n_samples * _SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES)
@@ -76,7 +75,6 @@ def get_profiling_data(
     :param profile_region: DSG region to get profiling data out of SDRAM
     :param tag_labels: labels for the profiling data
     :param placement: placement
-    :rtype: ProfileData
     """
     txrx = FecDataView.get_transceiver()
     profile_data = ProfileData(tag_labels)

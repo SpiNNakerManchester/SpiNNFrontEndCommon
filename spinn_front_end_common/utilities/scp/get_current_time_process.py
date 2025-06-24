@@ -65,9 +65,9 @@ class _GetCurrentTimeResponse(AbstractSCPResponse):
 class _GetCurrentTimeRequest(AbstractSCPRequest[_GetCurrentTimeResponse]):
     def __init__(self, x: int, y: int, p: int):
         """
-        :param int x:
-        :param int y:
-        :param int p:
+        :param x:
+        :param y:
+        :param p:
         """
         sdp_flags = SDPFlag.REPLY_EXPECTED
 

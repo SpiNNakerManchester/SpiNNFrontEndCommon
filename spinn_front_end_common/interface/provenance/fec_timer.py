@@ -68,7 +68,7 @@ class FecTimer(object):
         """
         Checks and saves cfg values so they don't have to be read each time
 
-        :param AbstractSpinnakerBase simulator: Not actually used
+        :param simulator: Not actually used
         """
         cls._simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
@@ -110,7 +110,7 @@ class FecTimer(object):
         """
         Records that the algorithms is being skipped and ends the timer.
 
-        :param str reason: Why the algorithm is being skipped
+        :param reason: Why the algorithm is being skipped
         """
         message = f"{self._algorithm} skipped as {reason}"
         time_taken = self._stop_timer()
@@ -129,8 +129,6 @@ class FecTimer(object):
 
         Currently not used as a better check is skip_if_empty on the data
         needed for the algorithm.
-
-        :rtype: bool
         """
         if FecDataView.is_ran_ever():
             return False
@@ -149,8 +147,6 @@ class FecTimer(object):
         ends the timing and returns True (it skipped).
 
         Typically called for algorithms that require a real board to run.
-
-        :rtype: bool
         """
         if get_config_bool("Machine", "virtual_board"):
             self.skip("virtual_board")
@@ -170,8 +166,7 @@ class FecTimer(object):
         ends the timing and returns True (it skipped).
 
         :param value: Value to check if True
-        :param str name: Name to record for that value if skipping
-        :rtype: bool
+        :param name: Name to record for that value if skipping
         """
         if value:
             return False
@@ -196,10 +191,9 @@ class FecTimer(object):
         Typically called if the algorithm should run if the cfg value
         is set True.
 
-        :param str section: Section level to be applied to both options
-        :param str option1: One of the options to check
-        :param str option2: The other option to check
-        :rtype: bool
+        :param section: Section level to be applied to both options
+        :param option1: One of the options to check
+        :param option2: The other option to check
         """
         if get_config_bool(section, option):
             return False
@@ -221,10 +215,9 @@ class FecTimer(object):
         Typically called if the algorithm should run if either cfg values
         is set True.
 
-        :param str section: Section level to be applied to both options
-        :param str option1: One of the options to check
-        :param str option2: The other option to check
-        :rtype: bool
+        :param section: Section level to be applied to both options
+        :param option1: One of the options to check
+        :param option2: The other option to check
         """
         if get_config_bool(section, option1):
             return False
@@ -248,10 +241,9 @@ class FecTimer(object):
         Typically called if the algorithm should run if either cfg values
         is set True.
 
-        :param str section: Section level to be applied to both options
-        :param list((str, str) pairs: section, options pairs to check
-        :param str reason: Reason to record for the skip
-        :rtype: bool
+        :param section: Section level to be applied to both options
+        :param pairs: section, options pairs to check
+        :param reason: Reason to record for the skip
         """
         for section, option in pairs:
             if get_config_bool(section, option):
@@ -263,7 +255,7 @@ class FecTimer(object):
         """
          Ends an algorithm timing and records that it failed.
 
-        :param str reason: What caused the error
+        :param reason: What caused the error
         """
         time_taken = self._stop_timer()
         message = f"{self._algorithm} failed after {time_taken} as {reason}"
@@ -274,8 +266,6 @@ class FecTimer(object):
         """
         Describes how long has elapsed since the instance that the
         :py:meth:`start_timing` method was last called.
-
-        :rtype: datetime.timedelta
         """
         time_now = time.perf_counter_ns()
         assert self._start_time is not None
@@ -339,7 +329,7 @@ class FecTimer(object):
         """
         This method should only be called via the View!
 
-        :param TimerCategory category: Category to switch to
+        :param category: Category to switch to
         """
         time_now = cls.__stop_category()
         try:
@@ -357,10 +347,9 @@ class FecTimer(object):
         """
         This method should only be called via the View!
 
-        :param TimerCategory category: category to switch to
+        :param category: category to switch to
         :param machine_on: What to change machine on too.
             Or `None` to leave as is
-        :type machine_on: None or bool
         """
         if cls._category is not None:
             cls._previous.append(cls._category)
@@ -375,7 +364,7 @@ class FecTimer(object):
         This method should only be
         called via the View!
 
-        :param TimerCategory category: Stage to end
+        :param category: Stage to end
         """
         if cls._category != category:
             raise ValueError(
