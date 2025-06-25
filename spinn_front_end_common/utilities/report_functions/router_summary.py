@@ -36,7 +36,7 @@ class RouterSummary(object):
     @property
     def total_entries(self) -> int:
         """
-        The total entires as passed into the init
+        The total entries as passed into the init
         """
         return self._total_entries
 

@@ -164,7 +164,7 @@ class ExtraMonitorSupportMachineVertex(
     @property
     def reinject_multicast(self) -> bool:
         """
-        The enable_reinjection value fron the configs
+        The enable_reinjection value from the configs
         """
         return self._reinject_multicast
 
@@ -231,7 +231,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         The Placement set by generate_data_specifications
 
-        :raises AssertionError: If the pklacement has not yet been set
+        :raises AssertionError: If the placement has not yet been set
         """
         assert self.__placement is not None, "vertex not placed!"
         return self.__placement

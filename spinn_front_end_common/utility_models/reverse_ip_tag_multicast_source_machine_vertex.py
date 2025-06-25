@@ -687,7 +687,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property  # type: ignore[override]
     def send_buffers(self) -> Dict[int, BufferedSendingRegion]:
         """
-        Filled send bufferes or an empty dict if there are no send buffers
+        Filled send buffers or an empty dict if there are no send buffers
         """
         if self._send_buffers is None:
             return {}
