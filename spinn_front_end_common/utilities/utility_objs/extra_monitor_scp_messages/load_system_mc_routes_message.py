@@ -30,10 +30,9 @@ class LoadSystemMCRoutesMessage(AbstractSCPRequest[CheckOKResponse]):
 
     def __init__(self, x: int, y: int, p: int):
         """
-        :param int x: The x-coordinate of a chip, between 0 and 255
-        :param int y: The y-coordinate of a chip, between 0 and 255
-        :param int p:
-            The processor running the extra monitor vertex, between 0 and 17
+        :param x: The x-coordinate of a chip
+        :param y: The y-coordinate of a chip
+        :param p: The processor running the extra monitor vertex
         """
         super().__init__(
             SDPHeader(

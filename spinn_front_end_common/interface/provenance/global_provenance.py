@@ -74,8 +74,7 @@ class GlobalProvenance(SQLiteDB):
             database holding the data.
             If omitted, either the default file path or an unshared in-memory
             database will be used (suitable only for testing).
-        :type database_file: str or None
-        :param bool memory:
+        :param memory:
             Flag to say unshared in-memory can be used.
             Otherwise a `None` file will mean the default should be used
         """
@@ -89,8 +88,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Inserts data into the version_provenance table
 
-        :param str description: The package for which the version applies
-        :param str the_value: The version to be recorded
+        :param description: The package for which the version applies
+        :param the_value: The version to be recorded
         """
         self.cursor().execute(
             """
@@ -102,8 +101,6 @@ class GlobalProvenance(SQLiteDB):
     def insert_run_reset_mapping(self) -> None:
         """
         Inserts a mapping between rest number and run number
-
-        :return:
         """
         self.cursor().execute(
             """
@@ -118,8 +115,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Inserts category into the category_timer_provenance  returning id
 
-        :param TimerCategory category: Name of Category starting
-        :param bool machine_on: If the machine was done during all
+        :param category: Name of Category starting
+        :param machine_on: If the machine was done during all
             or some of the time
         """
         self.cursor().execute(
@@ -138,8 +135,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Inserts run time into the category
 
-        :param int category_id: id of the Category finished
-        :param ~datetime.timedelta delta: Time to be recorded
+        :param category_id: id of the Category finished
+        :param delta: Time to be recorded
        """
         time_taken = (
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
@@ -159,13 +156,12 @@ class GlobalProvenance(SQLiteDB):
         """
         Inserts algorithms run times into the timer_provenance table
 
-        :param int category: Category Id of the Algorithm
-        :param str algorithm: Algorithm name
-        :param TimerWork work: Type of work being done
-        :param ~datetime.timedelta delta: Time to be recorded
+        :param category: Category Id of the Algorithm
+        :param algorithm: Algorithm name
+        :param work: Type of work being done
+        :param delta: Time to be recorded
         :param skip_reason: The reason the algorithm was skipped or `None` if
             it was not skipped
-        :type skip_reason: str or None
         """
         time_taken = (
                 (delta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
@@ -182,9 +178,6 @@ class GlobalProvenance(SQLiteDB):
                   timestamp: Optional[datetime] = None) -> None:
         """
         Stores log messages into the database
-
-        :param int level:
-        :param str message:
         """
         if timestamp is None:
             timestamp = datetime.now()
@@ -232,15 +225,14 @@ class GlobalProvenance(SQLiteDB):
             methods that return specific data. For new IntergationTests
             please add a specific method rather than call this directly.
 
-        :param str query: The SQL query to be run. May include ``?`` wildcards
-        :param ~collections.abc.Iterable(str or int) params:
+        :param query: The SQL query to be run. May include ``?`` wildcards
+        :param params:
             The values to replace the ``?`` wildcards with.
             The number and types must match what the query expects
         :return: A list possibly empty of tuples/rows
             (one for each row in the database)
             where the number and type of the values corresponds to the where
             statement
-        :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
         for row in self.cursor().execute(query, list(params)):
@@ -251,13 +243,12 @@ class GlobalProvenance(SQLiteDB):
         """
         Gets the timer provenance item(s) from the last run
 
-        :param str algorithm:
+        :param algorithm:
             The value to LIKE search for in the algorithm column.
             Can be the full name, or have ``%``  and ``_`` wildcards.
         :return:
             A possibly multi line string with for each row which matches the
             like a line ``algorithm: value``
-        :rtype: str
         """
         query = """
             SELECT algorithm, time_taken
@@ -276,7 +267,6 @@ class GlobalProvenance(SQLiteDB):
         :return:
             A possibly multi line string with for each row which matches the
             like a line ``description_name: time``. The times are in seconds.
-        :rtype: str
         """
         # We know the database actually stores microseconds for durations
         query = """
@@ -296,7 +286,6 @@ class GlobalProvenance(SQLiteDB):
         :return:
             A possibly multi line string with for each row which matches the
             ``LIKE %BufferExtractor``
-        :rtype: str
         """
         return self.get_timer_provenance("%BufferExtractor")
 
@@ -304,9 +293,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param TimerCategory category:
+        :param category:
         :return: total off all run times with this category
-        :rtype: int
         """
         query = """
              SELECT sum(time_taken)
@@ -327,9 +315,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param TimerCategory category:
+        :param category:
         :return: total off all run times with this category
-        :rtype: int
         """
         if n_reset is None:
             n_reset = FecDataView.get_reset_number()
@@ -353,9 +340,8 @@ class GlobalProvenance(SQLiteDB):
         Get the runtime for one category of algorithms
         split machine on, machine off
 
-        :param TimerCategory category:
+        :param category:
         :return: total on and off time of instances with this category
-        :rtype: int
         """
         on = 0
         off = 0
@@ -379,9 +365,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param TimerCategory category:
+        :param category:
         :return: total of all run times with this category
-        :rtype: int
         """
         query = """
              SELECT sum(time_taken)
@@ -403,9 +388,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param TimerCategory category:
+        :param category:
         :return: total of all run times with this category
-        :rtype: int
         """
         if n_reset is None:
             n_reset = FecDataView.get_reset_number()
@@ -427,9 +411,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one work type of algorithms
 
-        :param TimerWork work:
+        :param work:
         :return: total off all run times with this category
-        :rtype: int
         """
         query = """
              SELECT sum(time_taken)
@@ -449,9 +432,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one algorithm
 
-        :param str algorithm:
+        :param algorithm:
         :return: total off all run times with this algorithm
-        :rtype: int
         """
         query = """
              SELECT sum(time_taken)
@@ -471,9 +453,6 @@ class GlobalProvenance(SQLiteDB):
             self, min_level: int = 0) -> List[str]:
         """
         Retrieves all log messages at or above the min_level
-
-        :param int min_level:
-        :rtype: list(tuple(int, str))
         """
         query = """
             SELECT message

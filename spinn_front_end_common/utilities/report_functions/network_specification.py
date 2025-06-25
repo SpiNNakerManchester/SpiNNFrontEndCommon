@@ -39,10 +39,6 @@ def network_specification() -> None:
 
 
 def _write_report(f: TextIO, vertex: ApplicationVertex) -> None:
-    """
-    :param ~io.FileIO f:
-    :param ~pacman.model.graphs.application.ApplicationVertex vertex:
-    """
     if isinstance(vertex, ApplicationVertex):
         f.write(
             f"Vertex {vertex.label}, size: {vertex.n_atoms}, "

@@ -27,7 +27,7 @@ def write_json_routing_tables(router_tables: MulticastRoutingTables) -> str:
     """
     Runs the code to write the machine in Java readable JSON.
 
-    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
+    :param router_tables:
         Routing Tables to convert. Could be uncompressed or compressed
     """
     file_path = get_report_path("path_json_routing_tables")

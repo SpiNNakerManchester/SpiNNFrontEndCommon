@@ -38,9 +38,6 @@ class SendsBuffersFromHostPreBufferedImpl(
     def send_buffers(self) -> Dict[int, BufferedSendingRegion]:
         """
         The buffer for each region that has keys to send.
-
-        :rtype: dict(int,
-            ~spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion)
         """
         raise NotImplementedError
 

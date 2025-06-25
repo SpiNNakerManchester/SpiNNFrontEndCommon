@@ -43,11 +43,6 @@ def profile_data_gatherer() -> None:
 
 
 def _write(p: Placement, profile_data: ProfileData, directory: str) -> None:
-    """
-    :param ~.Placement p:
-    :param ProfileData profile_data:
-    :param str directory:
-    """
     max_tag_len = max(len(tag) for tag in profile_data.tags)
     file_name = os.path.join(directory, f"{p.x}_{p.y}_{p.p}_profile.txt")
 

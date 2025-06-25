@@ -32,8 +32,6 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
     def is_in_injection_mode(self) -> bool:
         """
         Whether this vertex is actually in injection mode.
-
-        :rtype: bool
         """
         raise NotImplementedError
 
@@ -42,7 +40,5 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
     def injection_partition_id(self) -> str:
         """
         The partition that packets are being injected with.
-
-        :rtype: str
         """
         raise NotImplementedError

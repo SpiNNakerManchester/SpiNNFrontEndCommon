@@ -22,7 +22,6 @@ def chip_runtime_updater(n_sync_steps: int) -> None:
     Updates the runtime of an application running on a SpiNNaker machine.
 
     :param n_sync_steps:
-    :type n_sync_steps: int or None
     """
     core_subsets = FecDataView.get_cores_for_type(
         ExecutableType.USES_SIMULATION_INTERFACE)

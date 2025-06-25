@@ -131,17 +131,17 @@ class LiveEventConnection(DatabaseConnection):
                  local_host: Optional[str] = None,
                  local_port: Optional[int] = NOTIFY_PORT):
         """
-        :param str live_packet_gather_label:
+        :param live_packet_gather_label:
             The label of the vertex to which received events are being sent.
             If `None`, no receive labels may be specified.
-        :param iterable(str) receive_labels:
+        :param receive_labels:
             Labels of vertices from which live events will be received.
-        :param iterable(str) send_labels:
+        :param send_labels:
             Labels of vertices to which live events will be sent
-        :param str local_host:
+        :param local_host:
             Optional specification of the local hostname or IP address of the
             interface to listen on
-        :param int local_port:
+        :param local_port:
             Optional specification of the local port to listen on. Must match
             the port that the toolchain will send the notification on (19999
             by default)
@@ -200,7 +200,7 @@ class LiveEventConnection(DatabaseConnection):
         """
         Adds a send label.
 
-        :param str label:
+        :param label:
         """
         if self.__send_labels is None:
             self.__send_labels = list()
@@ -215,7 +215,7 @@ class LiveEventConnection(DatabaseConnection):
         """
         Adds a receive label is possible.
 
-        :param str label:
+        :param label:
         """
         if self.__live_packet_gather_label is None:
             raise ConfigurationException(
@@ -237,7 +237,7 @@ class LiveEventConnection(DatabaseConnection):
         """
         Add a callback to be called to initialise a vertex.
 
-        :param str label:
+        :param label:
             The label of the vertex to be notified about. Must be one of the
             vertices listed in the constructor
         :param init_callback: A function to be called to initialise the
@@ -245,7 +245,6 @@ class LiveEventConnection(DatabaseConnection):
             the number of neurons in the population, the run time of the
             simulation in milliseconds, and the simulation timestep in
             milliseconds
-        :type init_callback: callable(str, int, float, float) -> None
         """
         self.__init_callbacks[label].append(init_callback)
 
@@ -263,14 +262,13 @@ class LiveEventConnection(DatabaseConnection):
             an int atom ID or key, and an int payload which may be None.
             For those use add_receive_no_time_callback now
 
-        :param str label: The label of the vertex to be notified about.
+        :param label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
         :param live_event_callback: A function to be called when events are
             received. This should take as parameters the label of the vertex,
             the simulation timestep when the event occurred, and an
             array-like of atom IDs or keys.
-        :type live_event_callback: callable(str, int, list(int)) -> None
-        :param bool translate_key:
+        :param translate_key:
             True if the key is to be converted to an atom ID, False if the
             key should stay a key
         """
@@ -288,12 +286,11 @@ class LiveEventConnection(DatabaseConnection):
         """
         Add a callback for the reception of live events from a vertex.
 
-        :param str label: The label of the vertex to be notified about.
+        :param label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
         :param live_event_callback: A function to be called when events are
             received. This should take as parameters the label of the vertex,
             an int atom ID or key, and an int payload which may be None
-        :type live_event_callback: callable(str, int, int or None) -> None
         """
         if self.__receive_labels is None:
             raise ConfigurationException("no receive labels defined")
@@ -312,8 +309,7 @@ class LiveEventConnection(DatabaseConnection):
             message has been received. This function should take the label of
             the referenced vertex, and an instance of this class, which can
             be used to send events
-        :type start_callback: callable(str, LiveEventConnection) -> None
-        :param str label: the label of the function to be sent
+        :param label: the label of the function to be sent
         """
         logger.warning(
             "the method 'add_start_callback(label, start_callback)' is in "
@@ -327,12 +323,11 @@ class LiveEventConnection(DatabaseConnection):
         """
         Add a callback for the start and resume state of the simulation.
 
-        :param str label: the label of the function to be sent
+        :param label: the label of the function to be sent
         :param start_resume_callback: A function to be called when the start
             or resume message has been received. This function should take
             the label of the referenced vertex, and an instance of this
             class, which can be used to send events.
-        :type start_resume_callback: callable(str, LiveEventConnection) -> None
         """
         self.__start_resume_callbacks[label].append(start_resume_callback)
 
@@ -341,19 +336,15 @@ class LiveEventConnection(DatabaseConnection):
         """
         Add a callback for the pause and stop state of the simulation.
 
-        :param str label: the label of the function to be sent
+        :param label: the label of the function to be sent
         :param pause_stop_callback: A function to be called when the pause
             or stop message has been received. This function should take the
             label of the referenced  vertex, and an instance of this class,
             which can be used to send events.
-        :type pause_stop_callback: callable(str, LiveEventConnection) -> None
         """
         self.__pause_stop_callbacks[label].append(pause_stop_callback)
 
     def __read_database_callback(self, db_reader: DatabaseReader) -> None:
-        """
-        :param DatabaseReader db_reader:
-        """
         self.__handle_possible_rerun_state()
 
         vertex_sizes: Dict[str, int] = dict()
@@ -377,10 +368,6 @@ class LiveEventConnection(DatabaseConnection):
 
     def __init_sender(self, database: DatabaseReader,
                       vertex_sizes: Dict[str, int]) -> None:
-        """
-        :param DatabaseReader database:
-        :param dict(str,int) vertex_sizes:
-        """
         if self.__sender_connection is None:
             job = database.get_job()
             if job:
@@ -398,10 +385,6 @@ class LiveEventConnection(DatabaseConnection):
 
     def __init_receivers(self, database: DatabaseReader,
                          vertex_sizes: Dict[str, int]) -> None:
-        """
-        :param DatabaseReader database:
-        :param dict(str,int) vertex_sizes:
-        """
         # Set up a single connection for receive
         if self.__receiver_connection is None:
             job = database.get_job()
@@ -445,11 +428,6 @@ class LiveEventConnection(DatabaseConnection):
     def __get_live_input_details(
             self, db_reader: DatabaseReader, send_label: str) -> Tuple[
                 int, int, int, str]:
-        """
-        :param DatabaseReader db_reader:
-        :param str send_label:
-        :rtype: tuple(int,int,int,str or None)
-        """
         x, y, p = db_reader.get_placements(send_label)[0]
 
         ip_address = db_reader.get_ip_address(x, y)
@@ -660,10 +638,10 @@ class LiveEventConnection(DatabaseConnection):
         """
         Send an event from a single atom.
 
-        :param str label:
+        :param label:
             The label of the vertex from which the event will originate
-        :param int atom_id: The ID of the atom sending the event
-        :param bool send_full_keys:
+        :param atom_id: The ID of the atom sending the event
+        :param send_full_keys:
             Determines whether to send full 32-bit keys, getting the key for
             each atom from the database, or whether to send 16-bit atom IDs
             directly
@@ -675,10 +653,10 @@ class LiveEventConnection(DatabaseConnection):
         """
         Send a number of events.
 
-        :param str label:
+        :param label:
             The label of the vertex from which the events will originate
-        :param list(int) atom_ids: array-like of atom IDs sending events
-        :param bool send_full_keys:
+        :param atom_ids: array-like of atom IDs sending events
+        :param send_full_keys:
             Determines whether to send full 32-bit keys, getting the key for
             each atom from the database, or whether to send 16-bit atom IDs
             directly
@@ -714,10 +692,10 @@ class LiveEventConnection(DatabaseConnection):
         """
         Send an event with a payload from a single atom.
 
-        :param str label:
+        :param label:
             The label of the vertex from which the event will originate
-        :param int atom_id: The ID of the atom sending the event
-        :param int payload: The payload to send
+        :param atom_id: The ID of the atom sending the event
+        :param payload: The payload to send
         """
         self.send_events_with_payloads(label, [(atom_id, payload)])
 
@@ -727,9 +705,9 @@ class LiveEventConnection(DatabaseConnection):
         """
         Send a number of events with payloads.
 
-        :param str label:
+        :param label:
             The label of the vertex from which the events will originate
-        :param list(tuple(int,int)) atom_ids_and_payloads:
+        :param atom_ids_and_payloads:
             array-like of tuples of atom IDs sending events with their payloads
         """
         msg_type = EIEIOType.KEY_PAYLOAD_32_BIT
@@ -759,9 +737,8 @@ class LiveEventConnection(DatabaseConnection):
         Send an EIEIO message (using one-way the live input) to the
         vertex with the given label.
 
-        :param ~spinnman.messages.eieio.AbstractEIEIOMessage message:
-            The EIEIO message to send
-        :param str label: The label of the receiver machine vertex
+        :param message: The EIEIO message to send
+        :param label: The label of the receiver machine vertex
         """
         target = self.__send_address_details[label]
         if target is None:
@@ -774,12 +751,11 @@ class LiveEventConnection(DatabaseConnection):
         """
         Send an EIEIO message to a particular core.
 
-        :param ~spinnman.messages.eieio.AbstractEIEIOMessage message:
-            The EIEIO message to send
-        :param int x: Destination chip X coordinate
-        :param int y: Destination chip Y coordinate
-        :param int p: Destination core number
-        :param str ip_address:
+        :param message: The EIEIO message to send
+        :param x: Destination chip X coordinate
+        :param y: Destination chip Y coordinate
+        :param p: Destination core number
+        :param ip_address:
             What Ethernet-enabled chip to send via (or rather its IP address)
         """
         # Create an SDP message - no reply so source is unimportant

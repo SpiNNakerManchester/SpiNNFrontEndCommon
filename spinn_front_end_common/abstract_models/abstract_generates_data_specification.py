@@ -39,9 +39,9 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
         """
         Generate a data specification.
 
-        :param ~data_specification.DataSpecificationGenerator spec:
+        :param spec:
             The data specification to write to
-        :param ~pacman.model.placements.Placement placement:
+        :param placement:
             The placement the vertex is located at
         """
         raise NotImplementedError

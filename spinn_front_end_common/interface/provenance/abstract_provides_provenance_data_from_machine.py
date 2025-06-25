@@ -33,7 +33,6 @@ class AbstractProvidesProvenanceDataFromMachine(
         Get provenance data items for a placement and store them in the
         provenance DB.
 
-        :param ~pacman.model.placements.Placement placement:
-            the placement of the object
+        :param placement: the placement of the object
         """
         raise NotImplementedError

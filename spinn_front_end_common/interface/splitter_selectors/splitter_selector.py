@@ -42,8 +42,7 @@ def vertex_selector(app_vertex: ApplicationVertex) -> None:
     Will assume the SplitterFixedLegacy if no heuristic is known for the
     app vertex.
 
-    :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
-        app vertex to give a splitter object to
+    :param app_vertex: app vertex to give a splitter object to
     """
     if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
         app_vertex.splitter = SplitterOneAppOneMachine()

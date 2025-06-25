@@ -47,7 +47,6 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         :param report_writer:
             Determines if a text version of the specification is to be
             written and, if so, where. No report is written if this is `None`.
-        :type report_writer: ~io.TextIOBase or None
         """
         self._x = x
         self._y = y
@@ -77,7 +76,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         .. note::
             This is ignored by the binary file.
 
-        :param str comment: The comment to write
+        :param comment: The comment to write
         """
         self._report(comment)
 
@@ -88,12 +87,10 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         """
         Insert command to reserve a memory region.
 
-        :param int region: The number of the region to reserve, from 0 to 32
-        :param int size: The size to reserve for the region, in bytes
+        :param region: The number of the region to reserve, from 0 to 32
+        :param size: The size to reserve for the region, in bytes
         :param label: An optional label for the region
-        :type label: str or None
         :param reference: A globally unique reference for this region
-        :type reference: int or None
         :raise RegionInUseException: If the ``region`` was already reserved
         :raise ParameterOutOfBoundsException:
             If the ``region`` requested was out of the allowed range, or the
@@ -107,10 +104,9 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         """
         Insert command to reference another memory region.
 
-        :param int region: The number of the region to reserve, from 0 to 15
-        :param int ref: The identifier of the region to reference
+        :param region: The number of the region to reserve, from 0 to 15
+        :param ref: The identifier of the region to reference
         :param label: An optional label for the region
-        :type label: str or None
         :raise RegionInUseException: If the ``region`` was already reserved
         :raise ParameterOutOfBoundsException:
             If the ``region`` requested was out of the allowed range, or the
@@ -122,7 +118,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         """
         Insert command to switch the region being written to.
 
-        :param int region: The ID of the region to switch to, between 0 and 15
+        :param region: The ID of the region to switch to, between 0 and 15
         :raise ParameterOutOfBoundsException:
             If the region identifier is not valid
         :raise DataSpecException: If the region has not been allocated
@@ -151,8 +147,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
             them, use :meth:`write_repeated_value`
 
         :param data: the data to write as a float.
-        :type data: int or float
-        :param DataType data_type: the type to convert ``data`` to
+        :param data_type: the type to convert ``data`` to
         :raise ParameterOutOfBoundsException:
             * If ``data_type`` is an integer type, and ``data`` has a
               fractional part
@@ -191,8 +186,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         to move on by (data type size * the array size), in bytes.
 
         :param array_values: An array of words to be written
-        :type array_values: list(int) or list(float) or ~numpy.ndarray
-        :param DataType data_type: Type of data contained in the array
+        :param data_type: Type of data contained in the array
         """
         assert self._content is not None
         assert self._content_debug is not None

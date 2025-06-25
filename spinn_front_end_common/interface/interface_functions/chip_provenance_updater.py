@@ -32,7 +32,7 @@ def chip_provenance_updater(all_core_subsets: CoreSubsets) -> None:
     """
     Forces all cores to generate provenance data, and then exit.
 
-    :param CoreSubsets all_core_subsets:
+    :param all_core_subsets:
     """
     updater = _ChipProvenanceUpdater(all_core_subsets)
     updater.run()
@@ -46,9 +46,6 @@ class _ChipProvenanceUpdater(object):
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
 
     def __init__(self, all_core_subsets: CoreSubsets):
-        """
-        :param ~spinn_machine.CoreSubsets all_core_subsets:
-        """
         self.__all_cores = all_core_subsets
         self.__app_id = FecDataView.get_app_id()
         self.__txrx = FecDataView.get_transceiver()
@@ -91,11 +88,6 @@ class _ChipProvenanceUpdater(object):
     def _update_provenance(
             self, total_processors: int, processors_completed: int,
             progress: ProgressBar) -> None:
-        """
-        :param int total_processors:
-        :param int processors_completed:
-        :param ~.ProgressBar progress:
-        """
         left_to_do_cores = total_processors - processors_completed
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:

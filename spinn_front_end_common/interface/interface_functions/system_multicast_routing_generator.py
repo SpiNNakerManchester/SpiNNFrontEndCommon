@@ -46,8 +46,6 @@ def system_multicast_routing_generator() -> Tuple[
 
     :return: routing tables, destination-to-key map,
         board-location-to-timeout-key map
-    :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
-        dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
     return _SystemMulticastRoutingGenerator().generate_system_routes()
 
@@ -64,9 +62,6 @@ class _SystemMulticastRoutingGenerator(object):
         "_time_out_keys_by_board")
 
     def __init__(self) -> None:
-        """
-        :param ~pacman.model.placements.Placements placements:
-        """
         self._machine = FecDataView.get_machine()
         self._routing_tables = MulticastRoutingTables()
         self._key_to_destination_map: Dict[XY, int] = dict()
@@ -77,8 +72,6 @@ class _SystemMulticastRoutingGenerator(object):
         """
         :return: routing tables, destination-to-key map,
             board-location-to-timeout-key map
-        :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
-            dict(tuple(int,int),int), dict(tuple(int,int),int))
         """
         # create progress bar
         progress = ProgressBar(
@@ -102,9 +95,8 @@ class _SystemMulticastRoutingGenerator(object):
         """
         Generates a map for each chip to over which link it gets its data.
 
-        :param ~spinn_machine.Chip ethernet_chip:
+        :param ethernet_chip:
         :return: Map of chip to (source_chip, source_link)
-        :rtype: dict(Chip, tuple(Chip, int))
         """
         tree: Dict[Chip, Tuple[Chip, int]] = dict()
         to_reach = set(self._machine.get_chips_by_ethernet(
@@ -178,11 +170,9 @@ class _SystemMulticastRoutingGenerator(object):
         """
         Adds a routing entry on this chip, creating the table if needed.
 
-        :param Chip chip: The chip
-        :param int key: The key to use
-        :param int processor_id:
-            placement.p of the monitor vertex if applicable
-        :param int link_id: If of the link out if applicable
+        :param chip: The chip
+        :param key: The key to use
+        :param processor_id: placement.p of the monitor vertex if applicable
         """
         table = cast(
             Optional[UnCompressedMulticastRoutingTable],
@@ -213,10 +203,8 @@ class _SystemMulticastRoutingGenerator(object):
             - A local route to the monitor core is added.
             - The tree is walked adding a route on each source to get here
 
-        :param ~spinn_machine.Chip ethernet_chip:
-            the Ethernet-enabled chip to make entries for
-        :param dict(Chip,tuple(Chip,int)) tree:
-            map of chips and links
+        :param ethernet_chip: the Ethernet-enabled chip to make entries for
+        :param tree: map of chips and links
         """
         eth_x, eth_y = ethernet_chip.x, ethernet_chip.y
         key = KEY_START_VALUE

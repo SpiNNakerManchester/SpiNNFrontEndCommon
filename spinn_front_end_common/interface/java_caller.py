@@ -201,7 +201,7 @@ class JavaCaller(object):
         Currently this method uses JSON but that may well change to using the
         database.
 
-        :param ~pacman.model.placements.Placements used_placements:
+        :param used_placements:
             Placements that are recording. May not be all placements
         """
         path = get_report_path(
@@ -221,10 +221,6 @@ class JavaCaller(object):
         return self.__placement_json
 
     def _json_placement(self, placement: Placement) -> JsonObject:
-        """
-        :param ~pacman.model.placements.Placement placement:
-        :rtype: dict
-        """
         vertex = placement.vertex
         json_placement: JsonObject = {
             "x": placement.x,
@@ -258,10 +254,6 @@ class JavaCaller(object):
         return json_placement
 
     def _json_iptag(self, iptag: IPTag) -> JsonObject:
-        """
-        :param ~pacman.model.tags.IPTag iptag:
-        :rtype: dict
-        """
         return {
             "x": iptag.destination_x,
             "y": iptag.destination_y,
@@ -275,10 +267,6 @@ class JavaCaller(object):
     def _placements_grouped(
             self, recording_placements: Iterable[Placement]) -> Dict[
                 Chip, Dict[Chip, List[Placement]]]:
-        """
-        :param ~pacman.model.placements.Placements recording_placementss:
-        :rtype: dict(Chip,dict(Chip,~pacman.model.placements.Placement))
-        """
         by_ethernet: Dict[Chip, Dict[Chip, List[Placement]]] = defaultdict(
             lambda: defaultdict(list))
         machine = FecDataView.get_machine()
@@ -294,10 +282,9 @@ class JavaCaller(object):
     def _write_gather(
             self, used_placements: Iterable[Placement], path: str) -> str:
         """
-        :param ~pacman.model.placements.Placements used_placements:
+        :param used_placements:
             placements that are being used. May not be all placements
-        :param str path:
-        :rtype: str
+        :param path:
         """
         assert self._chip_by_ethernet is not None
         assert self._gatherer_cores is not None
@@ -338,10 +325,9 @@ class JavaCaller(object):
     def _write_placements(
             self, used_placements: Iterable[Placement], path: str) -> str:
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param used_placements:
             Placements that are being used. May not be all placements
-        :param str path:
-        :rtype: str
+        :param path:
         """
         # Read back the regions
         json_obj: JsonArray = list()
@@ -361,9 +347,6 @@ class JavaCaller(object):
         """
         Does the actual running of `JavaSpiNNaker`. Arguments are those that
         will be processed by the `main` method on the Java side.
-
-        :type list(str) args:
-        :rtype: int
         """
         if self._java_properties is None:
             params = [self._java_call, '-jar', self._jar_file]
@@ -451,7 +434,7 @@ class JavaCaller(object):
             May assume that system cores are already loaded and running if
             `use_monitors` is set to `True`.
 
-        :param bool use_monitors:
+        :param use_monitors:
         :raises subprocess.CalledProcessError:
             On failure of the Java code.
         """

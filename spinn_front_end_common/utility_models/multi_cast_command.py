@@ -25,17 +25,15 @@ class MultiCastCommand(object):
             time: Optional[int] = None, repeat: int = 0,
             delay_between_repeats: int = 0):
         """
-        :param int key: The key of the command
+        :param key: The key of the command
         :param payload: The payload of the command
-        :type payload: int or None
         :param time: The time within the simulation at which to send the
             command, or ``None`` if this is not a timed command
-        :type time: int or None
-        :param int repeat:
+        :param repeat:
             The number of times that the command should be repeated after
             sending it once. This could be used to ensure that the command is
             sent despite lost packets. Must be between 0 and 65535
-        :param int delay_between_repeats:
+        :param delay_between_repeats:
             The amount of time in microseconds to wait between sending repeats
             of the same command. Must be between 0 and 65535, and must be 0 if
             repeat is 0
@@ -63,8 +61,6 @@ class MultiCastCommand(object):
         """
         The time within the simulation at which to send the
         command, or `None` if this is not a timed command.
-
-        :rtype: int or None
         """
         return self._time
 
@@ -72,29 +68,27 @@ class MultiCastCommand(object):
     def is_timed(self) -> bool:
         """
         Whether this command is a timed command.
-
-        :rtype: bool
         """
         return self._time is not None
 
     @property
     def key(self) -> int:
         """
-        :rtype: int
+        The key of the command
         """
         return self._key
 
     @property
     def repeat(self) -> int:
         """
-        :rtype: int
+        The number of times that the command should be repeated
         """
         return self._repeat
 
     @property
     def delay_between_repeats(self) -> int:
         """
-        :rtype: int
+        The amount of time in microseconds to wait between sending repeats
         """
         return self._delay_between_repeats
 
@@ -102,8 +96,6 @@ class MultiCastCommand(object):
     def payload(self) -> Optional[int]:
         """
         The payload of the command, or `None` if there is no payload.
-
-        :rtype: int or None
         """
         return self._payload
 
@@ -114,8 +106,6 @@ class MultiCastCommand(object):
         True if the payload passed in to the constructor is not `None`, but
         this can be overridden to indicate that a payload will be
         generated, despite `None` being passed to the constructor
-
-        :rtype: bool
         """
         return self.payload is not None
 

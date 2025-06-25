@@ -41,7 +41,6 @@ def graph_data_specification_writer(
     :param placement_order:
         the optional order in which placements should be examined
     :return: Path to DSG targets database
-    :rtype: str
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
@@ -68,10 +67,9 @@ class _GraphDataSpecificationWriter(object):
     def run(self,
             placement_order: Optional[Sequence[Placement]] = None) -> str:
         """
-        :param list(~pacman.model.placements.Placement) placement_order:
+        :param placement_order:
             the optional order in which placements should be examined
         :return: Path to DSG targets database
-        :rtype: str
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """
@@ -116,11 +114,10 @@ class _GraphDataSpecificationWriter(object):
             self, placement: Placement, vertex: AbstractVertex,
             ds_db: DsSqlliteDatabase) -> bool:
         """
-        :param ~.Placement placement: placement of machine graph to cores
-        :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
-        :param DsSqlliteDatabase ds_db:
+        :param placement: placement of machine graph to cores
+        :param vertex: the specific vertex to write DSG for.
+        :param ds_db:
         :return: True if the vertex was data spec-able, False otherwise
-        :rtype: bool
         :raises ConfigurationException: if things don't fit
         """
         # if the vertex can generate a DSG, call it

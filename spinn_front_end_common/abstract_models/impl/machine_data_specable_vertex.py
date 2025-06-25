@@ -46,14 +46,9 @@ class MachineDataSpecableVertex(
             iptags: Optional[Iterable[IPTag]],
             reverse_iptags: Optional[Iterable[ReverseIPTag]]) -> None:
         """
-        :param ~data_specification.DataSpecificationGenerator spec:
-            The data specification to write into.
-        :param ~pacman.model.placements.Placement placement:
-            Where this node is on the SpiNNaker machine.
+        :param spec: The data specification to write into.
+        :param placement: Where this node is on the SpiNNaker machine.
         :param iptags: The (forward) IP tags for the vertex, if any
-        :type iptags: iterable(~spinn_machine.tags.IPTag) or None
         :param reverse_iptags: The reverse IP tags for the vertex, if any
-        :type reverse_iptags:
-            iterable(~spinn_machine.tags.ReverseIPTag) or None
         """
         raise NotImplementedError

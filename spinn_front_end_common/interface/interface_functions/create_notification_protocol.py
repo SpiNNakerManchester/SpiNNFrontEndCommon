@@ -19,7 +19,6 @@ def create_notification_protocol() -> NotificationProtocol:
     """
     Builds the notification protocol for GUI and external device interaction.
 
-    :rtype: NotificationProtocol
     """
     notification_protocol = NotificationProtocol()
     notification_protocol.send_read_notification()

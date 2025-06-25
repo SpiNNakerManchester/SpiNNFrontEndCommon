@@ -44,14 +44,13 @@ def application_runner(
     Ensures all cores are initialised correctly, ran, and completed
     successfully.
 
-    :param int runtime:
-    :param int time_threshold:
-    :param bool run_until_complete:
-    :param Condition state_condition:
+    :param runtime:
+    :param time_threshold:
+    :param run_until_complete:
+    :param state_condition:
     :return:
         The current latest time-step if runtime is None and
         run_until_complete is False, else None
-    :rtype: int or None
     :raises ConfigurationException:
     """
     return _ApplicationRunner().run_app(
@@ -75,14 +74,13 @@ class _ApplicationRunner(object):
             run_until_complete: bool,
             state_condition: Condition) -> Optional[int]:
         """
-        :param int runtime:
-        :param int time_threshold:
-        :param bool run_until_complete:
-        :param Condition state_condition:
+        :param runtime:
+        :param time_threshold:
+        :param run_until_complete:
+        :param state_condition:
         :return:
             The current latest time-step if runtime is None and
             run_until_complete is False, else None
-        :rtype: int or None
         :raises ConfigurationException:
         """
         logger.info("*** Running simulation... *** ")
@@ -164,10 +162,6 @@ class _ApplicationRunner(object):
 
     def _run_wait(self, runtime: Optional[float],
                   time_threshold: Optional[float]) -> None:
-        """
-        :param int runtime:
-        :param float time_threshold:
-        """
         assert runtime is not None
         factor = (FecDataView.get_time_scale_factor() /
                   MICRO_TO_MILLISECOND_CONVERSION)
@@ -180,10 +174,6 @@ class _ApplicationRunner(object):
         self._wait_for_end(timeout=time_threshold)
 
     def _wait_for_start(self, timeout: Optional[float] = None) -> None:
-        """
-        :param timeout:
-        :type timeout: float or None
-        """
         for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.start_state, timeout=timeout)
@@ -205,10 +195,6 @@ class _ApplicationRunner(object):
                 self.__txrx.send_signal(self.__app_id, sync_signal)
 
     def _wait_for_end(self, timeout: Optional[float] = None) -> None:
-        """
-        :param timeout:
-        :type timeout: float or None
-        """
         for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.end_state, timeout=timeout)
@@ -219,7 +205,6 @@ class _ApplicationRunner(object):
         states for further checks.
 
         :return: the sync signal
-        :rtype: ~.Signal
         :raises ConfigurationException:
         """
         sync_signal = None

@@ -58,9 +58,9 @@ class BuffersSentDeque(object):
     def __init__(self, region: int, sent_stop_message: bool = False,
                  n_sequences_per_tranmission: int = 64):
         """
-        :param int region: The region being managed
-        :param bool sent_stop_message: True if the stop message has been sent
-        :param int n_sequences_per_tranmission:
+        :param region: The region being managed
+        :param sent_stop_message: True if the stop message has been sent
+        :param n_sequences_per_tranmission:
             The number of sequences allowed in each transmission set
         """
         self._region = region
@@ -77,16 +77,12 @@ class BuffersSentDeque(object):
         """
         Whether the number of messages sent is at the limit for the
         sequencing system.
-
-        :rtype: bool
         """
         return len(self._buffers_sent) >= self._n_sequences_per_transmission
 
     def is_empty(self) -> bool:
         """
         Determine if there are no messages.
-
-        :rtype: bool
         """
         return len(self._buffers_sent) == 0
 
@@ -104,8 +100,6 @@ class BuffersSentDeque(object):
         message.
 
         :param message: The message to be added
-        :type message:
-            ~spinnman.messages.eieio.abstract_messages.AbstractEIEIOMessage
         """
         # If full, raise an exception
         if self.is_full:
@@ -125,9 +119,6 @@ class BuffersSentDeque(object):
     def messages(self) -> Iterable[HostSendSequencedData]:
         """
         The messages that have been added to the set.
-
-        :rtype:
-            iterable(~spinnman.messages.eieio.command_messages.HostSendSequencedData)
         """
         return self._buffers_sent
 
@@ -141,9 +132,8 @@ class BuffersSentDeque(object):
         not within the valid window, it is assumed to be invalid and so is
         ignored.
 
-        :param int last_received_sequence_no: The new sequence number
+        :param last_received_sequence_no: The new sequence number
         :return: True if update went ahead, False if it was ignored
-        :rtype: bool
         """
         # The sequence number window is between the last received and
         # the last received + window size, taking account that the end

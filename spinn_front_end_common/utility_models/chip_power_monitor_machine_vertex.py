@@ -75,8 +75,7 @@ class ChipPowerMonitorMachineVertex(
 
     def __init__(self, label: str):
         """
-        :param str label: vertex label
-        :param int sampling_frequency: how often to sample, in microseconds
+        :param label: vertex label
         """
         super().__init__(
             label=label, app_vertex=None, vertex_slice=None)
@@ -113,8 +112,6 @@ class ChipPowerMonitorMachineVertex(
     def binary_file_name() -> str:
         """
         Get the filename of the binary.
-
-        :rtype: str
         """
         return BINARY_FILE_NAME
 
@@ -136,8 +133,7 @@ class ChipPowerMonitorMachineVertex(
         """
         Write the data needed by the C code to configure itself.
 
-        :param ~data_specification.DataSpecificationGenerator spec:
-            specification writer
+        :param spec: specification writer
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG)
         spec.write_value(self.__n_samples_per_recording)
@@ -147,8 +143,7 @@ class ChipPowerMonitorMachineVertex(
         """
         Writes the system data as required.
 
-        :param ~data_specification.DataSpecificationGenerator spec:
-            the DSG specification writer
+        :param spec: the DSG specification writer
         """
         spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
@@ -166,8 +161,7 @@ class ChipPowerMonitorMachineVertex(
         """
         Reserve the DSG memory regions as required.
 
-        :param ~data_specification.DataSpecificationGenerator spec:
-            the DSG specification to reserve in
+        :param spec: the DSG specification to reserve in
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -194,7 +188,6 @@ class ChipPowerMonitorMachineVertex(
         The type of binary that implements this vertex.
 
         :return: start-type
-        :rtype: ExecutableType
         """
         return ExecutableType.USES_SIMULATION_INTERFACE
 
@@ -212,7 +205,6 @@ class ChipPowerMonitorMachineVertex(
         Deduce SDRAM usage per timer tick.
 
         :return: the SDRAM usage
-        :rtype: int
         """
         recording_time = (
             self.__sampling_frequency * self.__n_samples_per_recording)

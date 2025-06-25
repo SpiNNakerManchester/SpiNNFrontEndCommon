@@ -33,14 +33,14 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest[CheckOKResponse]):
                  point_to_point: bool, fixed_route: bool,
                  nearest_neighbour: bool):
         """
-        :param int x: The x-coordinate of a chip, between 0 and 255
-        :param int y: The y-coordinate of a chip, between 0 and 255
-        :param int p:
+        :param x: The x-coordinate of a chip, between 0 and 255
+        :param y: The y-coordinate of a chip, between 0 and 255
+        :param p:
             The processor running the extra monitor vertex, between 0 and 17
-        :param bool point_to_point: If point to point should be set
-        :param bool multicast: If multicast should be set
-        :param bool nearest_neighbour: If nearest neighbour should be set
-        :param bool fixed_route: If fixed route should be set
+        :param point_to_point: If point to point should be set
+        :param multicast: If multicast should be set
+        :param nearest_neighbour: If nearest neighbour should be set
+        :param fixed_route: If fixed route should be set
         """
         super().__init__(
             SDPHeader(

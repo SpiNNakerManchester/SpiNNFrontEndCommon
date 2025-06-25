@@ -61,13 +61,13 @@ class DatabaseConnection(UDPConnection):
             local_host: Optional[str] = None,
             local_port: Optional[int] = NOTIFY_PORT):
         """
-        :param callable start_resume_callback_function:
+        :param start_resume_callback_function:
             A function to be called when the start message has been received.
             This function should not take any parameters or return anything.
-        :param str local_host:
+        :param local_host:
             Optional specification of the local hostname or IP address of the
             interface to listen on
-        :param int local_port:
+        :param local_port:
             Optional specification of the local port to listen on. Must match
             the port that the toolchain will send the notification on (19999
             by default)
@@ -90,7 +90,7 @@ class DatabaseConnection(UDPConnection):
         """
         Add a database callback to be called when the database is ready.
 
-        :param callable(DatabaseReader,None) database_callback_function:
+        :param database_callback_function:
             A function to be called when the database message has been
             received.  This function should take a single parameter, which
             will be a DatabaseReader object. Once the function returns, it

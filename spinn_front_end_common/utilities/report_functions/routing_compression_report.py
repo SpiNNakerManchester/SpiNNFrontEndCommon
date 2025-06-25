@@ -30,11 +30,8 @@ def generate_routing_compression_checker_report(
     Make a full report of how the compressed covers all routes in the
     and uncompressed routing table.
 
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-        the original routing tables
+    :param routing_tables: the original routing tables
     :param compressed_routing_tables: the compressed routing tables
-    :type compressed_routing_tables:
-        ~pacman.model.routing_tables.MulticastRoutingTables
     """
     file_name = get_report_path(
         section="Mapping", option="path_compression_checker")

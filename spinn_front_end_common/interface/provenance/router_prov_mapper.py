@@ -104,8 +104,6 @@ class Plotter(ContextManager[SQLiteDB]):
     def get_per_chip_prov_types(self) -> FrozenSet[str]:
         """
         Get a set of the descriptions available at chip level
-
-        :rtype: set(str)
         """
         query = """
             SELECT DISTINCT description_name AS "description"
@@ -120,10 +118,9 @@ class Plotter(ContextManager[SQLiteDB]):
         """
         Gets the provenance of a per chip basis
 
-        :param str info:
+        :param info:
             The name of the metadata to sum
         :return: name, max x, max y and data
-        :rtype: tuple(str, int, int, numpy.ndarray)
         """
         data = []
         xs = []
@@ -182,8 +179,6 @@ class Plotter(ContextManager[SQLiteDB]):
     def get_per_core_prov_types(self) -> FrozenSet[str]:
         """
         Get a set of the descriptions available at core level
-
-        :rtype: set(str)
         """
         query = """
             SELECT DISTINCT description_name AS "description"
@@ -200,10 +195,9 @@ class Plotter(ContextManager[SQLiteDB]):
         """
         Gets the sum of the provenance
 
-        :param str info:
+        :param info:
             The name of the metadata to sum
         :return: name, max x, max y and data
-        :rtype: tuple(str, int, int, numpy.ndarray)
         """
         data: List[Tuple[int, int, Any]] = []
         xs: List[int] = []
@@ -241,9 +235,9 @@ class Plotter(ContextManager[SQLiteDB]):
         """
         Plots the metadata for this key/term to the file at a core level
 
-        :param str key:
+        :param key:
             The name of the metadata to plot, or a unique fragment of it
-        :param str output_filename:
+        :param output_filename:
         """
         plot, seaborn = self.__plotter_apis()
         if self.__verbose:
@@ -265,9 +259,9 @@ class Plotter(ContextManager[SQLiteDB]):
         """
         Plots the metadata for this key/term to the file at a chip level
 
-        :param str key:
+        :param key:
             The name of the metadata to plot, or a unique fragment of it
-        :param str output_filename:
+        :param output_filename:
         """
         plot, seaborn = self.__plotter_apis()
         if self.__verbose:

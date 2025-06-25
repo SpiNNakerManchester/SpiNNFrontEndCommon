@@ -33,9 +33,8 @@ class AbstractSupportsBitFieldRoutingCompression(
         """
         Returns the SDRAM address for the bit-field table data.
 
-        :param ~pacman.model.placements.Placement placement:
+        :param placement:
         :return: the SDRAM address for the bitfield address
-        :rtype: int
         """
         raise NotImplementedError
 
@@ -46,11 +45,10 @@ class AbstractSupportsBitFieldRoutingCompression(
         Returns the SDRAM addresses and sizes for the cores' SDRAM that
         are available (borrowed) for generating bitfield tables.
 
-        :param ~pacman.model.placements.Placement placement:
+        :param placement:
         :return: list of tuples containing (the SDRAM address for the cores
             SDRAM address's for the core's SDRAM that can be used to generate
             bitfield tables loaded, and the size of memory chunks located
             there)
-        :rtype: list(tuple(int,int))
         """
         raise NotImplementedError

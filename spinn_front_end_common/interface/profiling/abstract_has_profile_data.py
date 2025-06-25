@@ -34,7 +34,6 @@ class AbstractHasProfileData(object, metaclass=AbstractBase):
         """
         Get the profile data recorded during simulation.
 
-        :param ~pacman.model.placements.Placement placement:
-        :rtype: ~spinn_front_end_common.interface.profiling.ProfileData
+        :param placement:
         """
         raise NotImplementedError

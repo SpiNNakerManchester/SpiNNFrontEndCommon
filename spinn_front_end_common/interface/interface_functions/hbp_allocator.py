@@ -43,8 +43,8 @@ class _HBPJobController(MachineAllocationController):
 
     def __init__(self, url: str, machine_name: str):
         """
-        :param str url:
-        :param str machine_name:
+        :param url:
+        :param machine_name:
         """
         self._extend_lease_url = f"{url}/extendLease"
         self._check_lease_url = f"{url}/checkLease"
@@ -100,16 +100,12 @@ class _HBPJobController(MachineAllocationController):
     def power(self) -> bool:
         """
         The last power state set.
-
-        :rtype: bool
         """
         return self._power_on
 
     def set_power(self, power: bool) -> None:
         """
         Sets the power to the new state.
-
-        :param bool power:
         """
         self._set_power(self._machine_name, power)
         self._power_on = power
@@ -133,12 +129,10 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
     Request a machine from the HBP remote access server that will fit
     a number of chips.
 
-    :param int total_run_time: The total run time to request
+    :param total_run_time: The total run time to request
     :return: machine name, machine version, BMP details (if any),
         reset on startup flag, auto-detect BMP, SCAMP connection details,
         boot port, allocation controller
-    :rtype: tuple(str, int, object, bool, bool, object, object,
-        MachineAllocationController)
     :raises ~pacman.exceptions.PacmanConfigurationException:
         If neither `n_chips` or `n_boards` provided
     """
@@ -158,11 +152,6 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
 
 
 def _get_machine(url: str, total_run_time: Optional[float]) -> JsonObject:
-    """
-    :param str url:
-    :param int total_run_time:
-    :rtype: dict
-    """
     if FecDataView.has_n_boards_required():
         get_machine_request = requests.get(
             url, params={"nBoards": FecDataView.get_n_boards_required(),

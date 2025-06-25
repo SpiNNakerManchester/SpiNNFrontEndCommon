@@ -75,48 +75,38 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             # splitter object
             splitter: Optional[AbstractSplitterCommon] = None):
         """
-        :param int n_keys:
+        :param n_keys:
             The number of keys to be sent via this multicast source
-        :param str label: The label of this vertex
-        :param int max_atoms_per_core:
-        :param board_address: The IP address of the board on which to place
-            this vertex if receiving data, either buffered or live (by
-            default, any board is chosen)
-        :type board_address: str or None
+        :param label: The label of this vertex
+        :param max_atoms_per_core:
         :param receive_port: The port on the board that will listen for
             incoming event packets (default is to disable this feature; set a
             value to enable it)
-        :type receive_port: int or None
-        :param int receive_sdp_port:
+        :param receive_sdp_port:
             The SDP port to listen on for incoming event packets
             (defaults to 1)
-        :param ~spinn_machine.tags.IPTag receive_tag:
+        :param receive_tag:
             The IP tag to use for receiving live events
             (uses any by default)
-        :param float receive_rate:
+        :param receive_rate:
             The estimated rate of packets that will be sent by this source
-        :param int virtual_key:
+        :param virtual_key:
             The base multicast key to send received events with
             (assigned automatically by default)
-        :param int prefix:
+        :param prefix:
             The prefix to "or" with generated multicast keys
             (default is no prefix)
-        :param ~spinnman.messages.eieio.EIEIOPrefix prefix_type:
+        :param prefix_type:
             Whether the prefix should apply to the upper or lower half of the
             multicast keys (default is upper half)
-        :param bool check_keys:
+        :param check_keys:
             True if the keys of received events should be verified before
             sending (default False)
         :param send_buffer_times: An array of arrays of times at which keys
             should be sent (one array for each key, default disabled)
-        :type send_buffer_times:
-            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
-            list(~numpy.ndarray(~numpy.int32)) or None
-        :param bool reserve_reverse_ip_tag:
+        :param reserve_reverse_ip_tag:
             Extra flag for input without a reserved port
         :param splitter: the splitter object needed for this vertex
-        :type splitter:
-            ~pacman.model.partitioner_splitters.AbstractSplitterCommon or None
         """
         super().__init__(label, max_atoms_per_core, splitter=splitter)
 
@@ -165,9 +155,6 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
     def send_buffer_times(self) -> _SendBufferTimes:
         """
         When messages will be sent.
-
-        :rtype: ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
-            list(~numpy.ndarray(~numpy.int32)) or None
         """
         return self.__send_buffer_times
 
@@ -186,7 +173,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         """
         Turns on or of the recording for this vertex.
 
-        :param bool new_state: True if recording should be done
+        :param new_state: True if recording should be done
         """
         self._is_recording = new_state
 

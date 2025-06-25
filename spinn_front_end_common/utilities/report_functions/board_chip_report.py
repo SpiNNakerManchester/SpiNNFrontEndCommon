@@ -41,11 +41,6 @@ def board_chip_report() -> None:
 
 def _write_report(
         writer: TextIO, machine: Machine, progress_bar: ProgressBar) -> None:
-    """
-    :param ~io.FileIO writer:
-    :param ~spinn_machine.Machine machine:
-    :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
-    """
     down_links: List[Tuple[int, int, int, str]] = []
     down_chips: List[Tuple[int, int, str]] = []
     down_cores: List[Tuple[int, int, str, str]] = []

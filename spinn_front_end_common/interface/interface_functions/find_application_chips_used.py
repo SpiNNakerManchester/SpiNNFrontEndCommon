@@ -30,15 +30,13 @@ class FindApplicationChipsUsed(object):
         """
         Finds how many application chips there were and the cost on each chip
 
-        :param ~pacman.model.placements.Placements placements: placements
+        :param placements: placements
         :return: a tuple with 4 elements.
 
             1. how many chips were used
             2. the max application cores on any given chip
             3. the lowest number of application cores on any given chip
             4. the average number of application cores on any given chip
-
-        :rtype: tuple(int,int,int,float)
         """
         chips_used = self._get_chips_used(placements)
 
@@ -57,10 +55,6 @@ class FindApplicationChipsUsed(object):
         return n_chips_used, high, low, average
 
     def _get_chips_used(self, placements: Placements) -> Dict[XY, int]:
-        """
-        :param ~.Placements placements:
-        :rtype: dict(tuple(int,int), int)
-        """
         chips_used: Dict[XY, int] = defaultdict(int)
         for placement in placements:
             # find binary type if applicable

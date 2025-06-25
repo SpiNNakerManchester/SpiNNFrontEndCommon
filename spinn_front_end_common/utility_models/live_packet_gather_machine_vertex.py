@@ -73,9 +73,9 @@ class LivePacketGatherMachineVertex(
             app_vertex: Optional[LivePacketGather] = None,
             label: Optional[str] = None):
         """
-        :param LivePacketGatherParameters lpg_params: The parameters object
-        :param LivePacketGather app_vertex: The application vertex
-        :param str label: An optional label
+        :param lpg_params: The parameters object
+        :param app_vertex: The application vertex
+        :param label: An optional label
         """
         # inheritance
         super().__init__(
@@ -90,9 +90,8 @@ class LivePacketGatherMachineVertex(
         """
         Add a machine vertex source incoming into this gatherer.
 
-        :param ~pacman.model.graphs.machine.MachineVertex m_vertex:
-            The source machine vertex
-        :param str partition_id: The incoming partition id
+        :param m_vertex: The source machine vertex
+        :param partition_id: The incoming partition id
         """
         if (isinstance(m_vertex.vertex_slice, MDSlice) and
                 self._lpg_params.translate_keys):
@@ -188,8 +187,6 @@ class LivePacketGatherMachineVertex(
             self, spec: DataSpecificationGenerator) -> None:
         """
         Reserve SDRAM space for memory areas.
-
-        :param ~.DataSpecificationGenerator spec:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -208,9 +205,8 @@ class LivePacketGatherMachineVertex(
         """
         Write the configuration region to the spec.
 
-        :param ~.DataSpecificationGenerator spec:
-        :param iterable(~.IPTag) iptags:
-            The set of IP tags assigned to the object
+        :param spec:
+        :param iptags: The set of IP tags assigned to the object
         :raise ConfigurationException: if `iptags` is empty
         :raise DataSpecificationException:
             when something goes wrong with the DSG generation
@@ -263,8 +259,6 @@ class LivePacketGatherMachineVertex(
     def _write_setup_info(self, spec: DataSpecificationGenerator) -> None:
         """
         Write basic info to the system region.
-
-        :param ~.DataSpecificationGenerator spec:
         """
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(region=self._REGIONS.SYSTEM)
@@ -275,8 +269,6 @@ class LivePacketGatherMachineVertex(
     def get_sdram_usage(cls) -> int:
         """
         Get the SDRAM used by this vertex.
-
-        :rtype: int
         """
         return (
             SYSTEM_BYTES_REQUIREMENT + cls._CONFIG_SIZE +
@@ -286,7 +278,5 @@ class LivePacketGatherMachineVertex(
     def params(self) -> LivePacketGatherParameters:
         """
         The lpg_params as passed into the init.
-
-        :rtype: LivePacketGatherParameters
         """
         return self._lpg_params
