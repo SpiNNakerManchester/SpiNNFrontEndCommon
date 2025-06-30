@@ -45,6 +45,9 @@ class LogStoreDB(LogStore):
         except ConfigException:
             # This will be when trying to log before the configs are setup
             return
+        except KeyError as ex:
+            # This happens in rare case of parallel tests
+            return
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(
