@@ -43,6 +43,9 @@ class LogStoreDB(LogStore):
                     return
                 # all others are bad
                 raise
+        else:
+            # Only expected to happen when running parallel tests
+            print("store logs skipped as configs not loaded.")
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(
