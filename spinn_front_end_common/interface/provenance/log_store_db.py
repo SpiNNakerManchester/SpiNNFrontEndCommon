@@ -33,22 +33,18 @@ class LogStoreDB(LogStore):
     def store_log(
             self, level: int, message: str,
             timestamp: Optional[datetime] = None) -> None:
-        try:
-            with GlobalProvenance() as db:
-                db.store_log(level, message, timestamp)
-        except sqlite3.OperationalError as ex:
-            if "database is locked" in ex.args:
-                # OK ignore this one
-                # DO NOT log this error here or you will loop forever!
-                return
-            # all others are bad
-            raise
-        except ConfigException:
-            # This will be when trying to log before the configs are setup
-            return
-        except NoOptionError as ex:
-            # This happens in rare case of parallel tests
-            return
+        # Check global provenance exists for parallel tests
+        if GlobalProvenance.has_global_provenace_path():
+            try:
+                with GlobalProvenance() as db:
+                    db.store_log(level, message, timestamp)
+            except sqlite3.OperationalError as ex:
+                if "database is locked" in ex.args:
+                    # OK ignore this one
+                    # DO NOT log this error here or you will loop forever!
+                    return
+                # all others are bad
+                raise
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(

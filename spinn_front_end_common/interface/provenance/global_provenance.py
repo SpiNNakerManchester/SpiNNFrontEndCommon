@@ -19,7 +19,8 @@ import re
 from sqlite3 import Row
 from typing import Iterable, List, Optional, Tuple, Union
 
-from spinn_utilities.config_holder import get_timestamp_path
+from spinn_utilities.config_holder import (
+    get_timestamp_path, has_config_option)
 from spinn_utilities.log import FormatAdapter
 
 from spinn_front_end_common.data import FecDataView
@@ -65,6 +66,10 @@ class GlobalProvenance(SQLiteDB):
             for example before run is called
         """
         return get_timestamp_path("tpath_global_provenance")
+
+    @classmethod
+    def has_global_provenace_path(cls) -> bool:
+        return has_config_option("Reports", "tpath_global_provenance")
 
     def __init__(
             self, database_file: Optional[str] = None, memory: bool = False):
