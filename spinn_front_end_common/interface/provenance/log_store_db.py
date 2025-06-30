@@ -16,7 +16,7 @@ from datetime import datetime
 import sqlite3
 from typing import List, Optional
 
-from spinn_utilities.exceptions import ConfigException
+from spinn_utilities.config_holder import configs_loaded
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
 from .global_provenance import GlobalProvenance
@@ -32,19 +32,17 @@ class LogStoreDB(LogStore):
     def store_log(
             self, level: int, message: str,
             timestamp: Optional[datetime] = None) -> None:
-        try:
-            with GlobalProvenance() as db:
-                db.store_log(level, message, timestamp)
-        except sqlite3.OperationalError as ex:
-            if "database is locked" in ex.args:
-                # OK ignore this one
-                # DO NOT log this error here or you will loop forever!
-                return
-            # all others are bad
-            raise
-        except ConfigException:
-            # This will be when trying to log before the configs are setup
-            return
+        if configs_loaded():
+            try:
+                with GlobalProvenance() as db:
+                    db.store_log(level, message, timestamp)
+            except sqlite3.OperationalError as ex:
+                if "database is locked" in ex.args:
+                    # OK ignore this one
+                    # DO NOT log this error here or you will loop forever!
+                    return
+                # all others are bad
+                raise
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(
