@@ -101,9 +101,6 @@ class _LoadDataSpecification(object):
             receiver.load_application_routing_tables()
 
     def __java_app(self, use_monitors: bool) -> None:
-        """
-        :param bool use_monitors:
-        """
         # create a progress bar for end users
         progress = ProgressBar(
             2,
@@ -257,14 +254,13 @@ class _LoadDataSpecification(object):
         Allocates the storage for all DSG regions on the core and tells
         the core and our caller where that storage is.
 
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int size:
+        :param x:
+        :param y:
+        :param p:
+        :param size:
             The total size of all storage for regions on that core, including
             for the header metadata.
         :return: address of region header table (not yet filled)
-        :rtype: int
         """
         txrx = FecDataView.get_transceiver()
 

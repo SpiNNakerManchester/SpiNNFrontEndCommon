@@ -113,8 +113,6 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
 
         :return:
              A set of (LPG machine vertex, source machine vertex, partition_id)
-        :rtype: set(tuple(LivePacketGatherMachineVertex,
-            ~pacman.model.graphs.machine.MachineVertex, str))
         """
         return self.__targeted_lpgs
 
@@ -144,8 +142,8 @@ class LivePacketGather(ApplicationVertex[LivePacketGatherMachineVertex]):
     def __init__(self, params: LivePacketGatherParameters,
                  label: Optional[str] = None):
         """
-        :param LivePacketGatherParameters params: The parameters object
-        :param str label: An optional label
+        :param params: The parameters object
+        :param label: An optional label
         """
         super().__init__(label=label, splitter=_LPGSplitter())
         self.__params = params
@@ -158,7 +156,5 @@ class LivePacketGather(ApplicationVertex[LivePacketGatherMachineVertex]):
     def params(self) -> LivePacketGatherParameters:
         """
         The params value passed into the init.
-
-        :rtype: LivePacketGatherParameters
         """
         return self.__params

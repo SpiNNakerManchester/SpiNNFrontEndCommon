@@ -21,7 +21,7 @@ def routing_table_loader(router_tables: MulticastRoutingTables) -> None:
     """
     Loads routes into initialised routers.
 
-    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
+    :param router_tables:
     """
     progress = ProgressBar(router_tables.routing_tables,
                            "Loading routing data onto the machine")

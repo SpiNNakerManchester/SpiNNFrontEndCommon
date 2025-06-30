@@ -32,15 +32,14 @@ class SetRouterTimeoutMessage(AbstractSCPRequest[CheckOKResponse]):
     def __init__(self, x: int, y: int, p: int, *,
                  timeout_mantissa: int, timeout_exponent: int, wait: int):
         """
-        :param int x: The x-coordinate of a chip, between 0 and 255
-        :param int y: The y-coordinate of a chip, between 0 and 255
-        :param int p:
-            The processor running the extra monitor vertex, between 0 and 17
-        :param int timeout_mantissa:
+        :param x: The x-coordinate of a chip
+        :param y: The y-coordinate of a chip
+        :param p: The processor running the extra monitor vertex
+        :param timeout_mantissa:
             The mantissa of the timeout value, between 0 and 15
-        :param int timeout_exponent:
+        :param timeout_exponent:
             The exponent of the timeout value, between 0 and 15
-        :param int wait:
+        :param wait:
             Which wait to set. Should be 1 or 2.
         """
         cmd = ReinjectorSCPCommands.SET_ROUTER_WAIT1_TIMEOUT if wait == 1 \

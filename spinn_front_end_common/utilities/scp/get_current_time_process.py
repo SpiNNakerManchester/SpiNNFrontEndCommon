@@ -65,9 +65,9 @@ class _GetCurrentTimeResponse(AbstractSCPResponse):
 class _GetCurrentTimeRequest(AbstractSCPRequest[_GetCurrentTimeResponse]):
     def __init__(self, x: int, y: int, p: int):
         """
-        :param int x:
-        :param int y:
-        :param int p:
+        :param x:
+        :param y:
+        :param p:
         """
         sdp_flags = SDPFlag.REPLY_EXPECTED
 
@@ -114,8 +114,8 @@ class GetCurrentTimeProcess(
     def get_latest_runtime(
             self, n_cores: int, core_subsets: CoreSubsets) -> Optional[int]:
         """
-        :param ~spinn_machine.CoreSubsets core_subsets:
-        :param int n_cores: Number of cores being updated
+        :param core_subsets:
+        :param n_cores: Number of cores being updated
         """
         self.__latest_time = None
         with ProgressBar(n_cores, "Getting current time") as progress, \

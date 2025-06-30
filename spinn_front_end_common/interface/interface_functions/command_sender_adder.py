@@ -30,7 +30,6 @@ def add_command_senders(system_placements: Placements) -> List[CommandSender]:
     Add command senders
 
     :return: The command senders that were added
-    :rtype: list(CommandSender)
     """
     return list(CommandSenderAdder(system_placements).add_command_senders())
 
@@ -56,7 +55,6 @@ class CommandSenderAdder(object):
         Add the needed command senders.
 
         :return: The command senders that were added
-        :rtype: iterable(CommandSender)
         """
         progress = ProgressBar(FecDataView.get_n_vertices(), "Adding commands")
         for vertex in progress.over(FecDataView.iterate_vertices()):

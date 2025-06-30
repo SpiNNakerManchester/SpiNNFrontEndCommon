@@ -41,7 +41,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
     def __init__(self, thread_name: str, hostname: Optional[str] = None,
                  connection_data: Optional[Dict[XY, str]] = None):
         """
-        :param str thread_name:
+        :param thread_name:
         """
         thread = Thread(name=thread_name, target=self.__manage_allocation)
         thread.daemon = True
@@ -55,7 +55,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         """
         Extend the allocation of the machine from the original run time.
 
-        :param float new_total_run_time:
+        :param new_total_run_time:
             The total run time that is now required starting from when the
             machine was first allocated
         """
@@ -74,7 +74,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         of the machine allocation.
 
         :return: Whether the machine is still (believed to be) allocated.
-        :rtype: bool
         """
         raise NotImplementedError
 
@@ -85,10 +84,9 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         Locates and returns cabinet, frame, board for a given chip in a
         machine allocated to this job.
 
-        :param int chip_x: chip x location
-        :param int chip_y: chip y location
+        :param chip_x: chip x location
+        :param chip_y: chip y location
         :return: (cabinet, frame, board)
-        :rtype: tuple(int,int,int)
         """
         raise NotImplementedError
 
@@ -114,8 +112,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         Create a transceiver for talking to the allocated machine, and
         make sure everything is ready for use (i.e. boot and discover
         connections if needed).
-
-        :rtype: ~spinnman.transceiver.Transceiver
         """
         if not self.__hostname:
             raise NotImplementedError("Needs a hostname")
@@ -126,8 +122,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
     def can_create_transceiver(self) -> bool:
         """
         Detects if a call to create_transceiver could work.
-
-        :rtype: bool
         """
         return self.__hostname is not None
 
@@ -146,12 +140,11 @@ class MachineAllocationController(object, metaclass=AbstractBase):
 
         The coordinates will be job-relative.
 
-        :param int chip_x: Ethernet-enabled chip X coordinate
-        :param int chip_y: Ethernet-enabled chip Y coordinate
-        :param int udp_port:
+        :param chip_x: Ethernet-enabled chip X coordinate
+        :param chip_y: Ethernet-enabled chip Y coordinate
+        :param udp_port:
             the UDP port on the chip to connect to; connecting to a non-SCP
             port will result in a connection that can't easily be configured.
-        :rtype: ~spinnman.connections.udp_packet_connections.SDPConnection
         """
         host = self.__host(chip_x, chip_y)
         if not host:
@@ -165,8 +158,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         """
         Open an unbound EIEIO connection. This may be used to communicate with
         any board of the job.
-
-        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
         host = self.__host(chip_x, chip_y)
         if not host:
@@ -177,8 +168,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         """
         Open an unbound EIEIO connection. This may be used to communicate with
         any board of the job.
-
-        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
         return EIEIOConnection()
 
@@ -186,8 +175,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
     def proxying(self) -> bool:
         """
         Whether this is a proxying connection. False unless overridden.
-
-        :rtype: bool
         """
         return False
 

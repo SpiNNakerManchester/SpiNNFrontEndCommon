@@ -79,8 +79,6 @@ def placer_reports_with_application_graph() -> None:
 def router_summary_report() -> Optional[RouterSummary]:
     """
     Generates a text file of routing summaries.
-
-    :rtype: RouterSummary
     """
     file_name = get_report_path("path_router_summary_report")
     progress = ProgressBar(FecDataView.get_machine().n_chips,
@@ -94,9 +92,7 @@ def router_compressed_summary_report(
     """
     Generates a text file of routing summaries.
 
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-        The in-operation COMPRESSED routing tables.
-    :rtype: RouterSummary
+    :param routing_tables: The in-operation COMPRESSED routing tables.
     """
     file_name = get_report_path("path_compression_summary")
     progress = ProgressBar(FecDataView.get_machine().n_chips,
@@ -108,9 +104,9 @@ def _do_router_summary_report(
         file_name: str, progress: ProgressBar,
         routing_tables: MulticastRoutingTables) -> Optional[RouterSummary]:
     """
-    :param str file_name:
-    :param ~spinn_utilities.progress_bar.Progress progress:
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
+    :param file_name:
+    :param progress:
+    :param routing_tables:
         The compressed or uncompressed tables being reported
     :return: RouterSummary
     """
@@ -196,10 +192,6 @@ def router_report_from_paths() -> None:
 
 def _write_one_router_partition_report(
         f: TextIO, partition: ApplicationEdgePartition) -> None:
-    """
-    :param ~io.FileIO f:
-    :param AbstractSingleSourcePartition partition:
-    """
     source = partition.pre_vertex
     outgoing = source.splitter.get_out_going_vertices(partition.identifier)
     f.write(f"Source Application vertex {source}, partition"
@@ -247,10 +239,6 @@ def partitioner_report() -> None:
 
 
 def _write_one_vertex_partition(f: TextIO, vertex: ApplicationVertex) -> None:
-    """
-    :param ~io.FileIO f:
-    :param ~pacman.model.graphs.application.ApplicationVertex vertex:
-    """
     vertex_name = vertex.label
     vertex_model = vertex.__class__.__name__
     num_atoms = vertex.n_atoms
@@ -297,10 +285,6 @@ def placement_report_with_application_graph_by_vertex() -> None:
 
 def _write_one_vertex_application_placement(
         f: TextIO, vertex: ApplicationVertex) -> None:
-    """
-    :param ~io.FileIO f:
-    :param ~pacman.model.graphs.application.ApplicationVertex vertex:
-    """
     vertex_name = vertex.label
     vertex_model = vertex.__class__.__name__
     num_atoms = vertex.n_atoms
@@ -361,11 +345,6 @@ def placement_report_with_application_graph_by_core() -> None:
 
 
 def _write_one_chip_application_placement(f: TextIO, chip: Chip) -> None:
-    """
-    :param ~io.FileIO f:
-    :param ~spinn_machine.Chip chip:
-    :param ~pacman.model.placements.Placements placements:
-    """
     written_header = False
     total_sdram = None
     for placement in FecDataView.iterate_placements_on_core(chip):
@@ -435,12 +414,12 @@ def _sdram_usage_report_per_chip_with_timesteps(
         f: TextIO, timesteps: Optional[int], progress: ProgressBar,
         end_progress: bool, details: bool) -> None:
     """
-    :param ~io.FileIO f:
-    :param int timesteps: Either the plan or data timesteps
+    :param f:
+    :param timesteps: Either the plan or data timesteps
         depending on which is being reported
-    :param ~spinn_utilities.progress_bar.ProgressBar progress:
-    :param bool end_progress:
-    :param bool details: If True will get costs printed by regions
+    :param progress:
+    :param end_progress:
+    :param details: If True will get costs printed by regions
     """
     f.write(f"Based on {timesteps} timesteps\n\n")
     sdram_by_chip = dict()
@@ -491,8 +470,6 @@ def routing_info_report(extra_allocations: Iterable[
 
     :param extra_allocations:
         Extra vertex/partition ID pairs to report on.
-    :type extra_allocations:
-        iterable(tuple(~pacman.model.graphs.application.ApplicationVertex,str))
     """
     file_name = get_report_path("path_router_info_report")
     routing_infos = FecDataView.get_routing_infos()
@@ -514,12 +491,6 @@ def routing_info_report(extra_allocations: Iterable[
 def _write_vertex_virtual_keys(
         f: TextIO, pre_vertex: ApplicationVertex, part_id: str,
         routing_infos: RoutingInfo) -> None:
-    """
-    :param ~io.FileIO f:
-    :param ~pacman.model.graphs.application.ApplicationVertex pre_vertex:
-    :param str part_id:
-    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-    """
     # If there are no outgoing machine vertices, then there is no routing
     outgoing = pre_vertex.splitter.get_out_going_vertices(part_id)
     if not outgoing:
@@ -556,8 +527,7 @@ def router_report_from_compressed_router_tables(
     """
     Report the compressed routing tables.
 
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-        the compressed routing tables
+    :param routing_tables: the compressed routing tables
     """
     top_level_folder = get_report_path("path_compressed", is_dir=True)
     if not os.path.exists(top_level_folder):
@@ -573,9 +543,7 @@ def generate_routing_table(routing_table: AbstractMulticastRoutingTable,
                            top_level_folder: str) -> None:
     """
     :param routing_table: The routing table to describe
-    :type routing_table:
-        ~pacman.model.routing_tables.AbstractMulticastRoutingTable
-    :param str top_level_folder:
+    :param top_level_folder:
     """
     file_name = f"routing_table_{routing_table.x}_{routing_table.y}.rpt"
     file_path = os.path.join(top_level_folder, file_name)
@@ -609,10 +577,6 @@ def generate_routing_table(routing_table: AbstractMulticastRoutingTable,
 def _compression_ratio(uncompressed: int, compressed: int) -> float:
     """
     Get the compression ratio, as a percentage.
-
-    :param int uncompressed:
-    :param int compressed:
-    :rtype: float
     """
     if uncompressed == 0:
         return 0
@@ -626,8 +590,6 @@ def generate_comparison_router_report(
     routing tables.
 
     :param compressed_routing_tables: the compressed routing tables
-    :type compressed_routing_tables:
-        ~pacman.model.routing_tables.MulticastRoutingTables
     """
     routing_tables = FecDataView.get_uncompressed().routing_tables
     file_name = get_report_path("path_compression_comparison")
@@ -682,11 +644,6 @@ def generate_comparison_router_report(
 
 def _search_route(
         source_vertex: MachineVertex, key_and_mask: BaseKeyAndMask) -> str:
-    """
-    :param ~pacman.model.graphs.machine.MachineVertex source_vertex:
-    :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:
-    :rtype: tuple(str, int)
-    """
     # Create text for starting point
     machine = FecDataView.get_machine()
     text = ""
@@ -721,10 +678,6 @@ def _recursive_trace_to_destinations(
     """
     Recursively search though routing tables till no more entries are
     registered with this key
-
-    :param ~spinn_machine.Chip chip:
-    :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:
-    :rtype: str
     """
     text = f"-> Chip {chip.x}:{chip.y}"
     routing_tables = FecDataView.get_uncompressed()
@@ -759,11 +712,9 @@ def _locate_routing_entry(
     """
     Locate the entry from the router based off the edge
 
-    :param ~spinn_machine.MulticastRoutingTable current_router:
-        the current router being used in the trace
-    :param int key: the key being used by the source placement
+    :param current_router: the current router being used in the trace
+    :param key: the key being used by the source placement
     :return: the routing table entry
-    :rtype: ~spinn_machine.MulticastRoutingEntry
     :raise PacmanRoutingException:
         when there is no entry located on this router.
     """

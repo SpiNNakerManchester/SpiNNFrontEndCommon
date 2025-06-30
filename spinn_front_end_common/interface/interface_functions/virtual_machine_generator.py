@@ -30,7 +30,6 @@ def virtual_machine_generator() -> Machine:
     Generates a virtual machine with given dimensions and configuration.
 
     :return: The virtual machine.
-    :rtype: ~spinn_machine.Machine
     :raises Exception: If given bad arguments
     """
 

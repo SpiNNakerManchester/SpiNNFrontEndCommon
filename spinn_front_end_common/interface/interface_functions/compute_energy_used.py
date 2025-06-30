@@ -53,9 +53,7 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     This algorithm does the actual work of computing energy used by a
     simulation (or other application) running on SpiNNaker.
 
-    :param int checkpoint: the time at which to compute execution energy up to
-
-    :rtype: PowerUsed
+    :param checkpoint: the time at which to compute execution energy up to
     """
     # Get data from provenance
     with GlobalProvenance() as db:
@@ -165,9 +163,8 @@ def _calculate_n_frames(machine: Machine) -> int:
     Figures out how many frames are being used in this setup.
     A key of cabinet,frame will be used to identify unique frame.
 
-    :param ~.Machine machine: the machine object
+    :param machine: the machine object
     :return: number of frames
-    :rtype: int
     """
     # if not spalloc, then could be any type of board, but unknown cooling
     if not FecDataView.has_allocation_controller():

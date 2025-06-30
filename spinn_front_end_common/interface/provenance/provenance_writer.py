@@ -46,10 +46,6 @@ class ProvenanceWriter(BaseDatabase):
             database holding the data.
             If omitted, either the default file path or an unshared in-memory
             database will be used (suitable only for testing).
-        :type database_file: str or None
-        :param bool memory:
-            Flag to say unshared in-memory can be used.
-            Otherwise a `None` file will mean the default should be used
         """
         super().__init__(database_file)
 
@@ -57,8 +53,8 @@ class ProvenanceWriter(BaseDatabase):
         """
         Inserts a general power value into the `power_provenance` table.
 
-        :param str description: Type of value
-        :param float the_value: data
+        :param description: Type of value
+        :param the_value: data
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
@@ -76,13 +72,13 @@ class ProvenanceWriter(BaseDatabase):
         """
         Records provenance into the `gatherer_provenance` table.
 
-        :param int x: X coordinate of the chip
-        :param int y: Y coordinate of the chip
-        :param int address: SDRAM address read from
-        :param int bytes_read: number of bytes read
-        :param int run: run number
-        :param str description: type of value
-        :param float the_value: data
+        :param x: X coordinate of the chip
+        :param y: Y coordinate of the chip
+        :param address: SDRAM address read from
+        :param bytes_read: number of bytes read
+        :param run: run number
+        :param description: type of value
+        :param the_value: data
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
@@ -100,10 +96,10 @@ class ProvenanceWriter(BaseDatabase):
 
         Will only save data is write_provance is on.
 
-        :param int x: X coordinate of the chip
-        :param int y: Y coordinate of the chip
-        :param str description: type of value
-        :param int the_value: data
+        :param x: X coordinate of the chip
+        :param y: Y coordinate of the chip
+        :param description: type of value
+        :param the_value: data
         """
         if get_config_bool("Reports", "write_provenance"):
             self.insert_monitor_value(x, y, description, the_value)
@@ -115,9 +111,9 @@ class ProvenanceWriter(BaseDatabase):
 
         Always saves the data even if write_provence is off.
 
-        :param int x: X coordinate of the chip
-        :param int y: Y coordinate of the chip
-        :param str description: type of value
+        :param x: X coordinate of the chip
+        :param y: Y coordinate of the chip
+        :param description: type of value
         :param the_value: data
         """
         self.cursor().execute(
@@ -134,12 +130,11 @@ class ProvenanceWriter(BaseDatabase):
         """
         Inserts data into the `router_provenance` table.
 
-        :param int x: X coordinate of the chip
-        :param int y: Y coordinate of the chip
-        :param str description: type of value
+        :param x: X coordinate of the chip
+        :param y: Y coordinate of the chip
+        :param  description: type of value
         :param the_value: data
-        :type the_value: int or float
-        :param bool expected: Flag to say this data was expected
+        :param expected: Flag to say this data was expected
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
@@ -156,11 +151,11 @@ class ProvenanceWriter(BaseDatabase):
         """
         Inserts data for a specific core into the `core_provenance` table.
 
-        :param int x: X coordinate of the chip
-        :param int y: Y coordinate of the chip
-        :param int p: ID of the core
-        :param str description: type of value
-        :param int the_value: data
+        :param x: X coordinate of the chip
+        :param y: Y coordinate of the chip
+        :param p: ID of the core
+        :param description: type of value
+        :param the_value: data
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
@@ -179,7 +174,7 @@ class ProvenanceWriter(BaseDatabase):
         Only logs the messages up to the cut-off set by
         configuration `provenance_report_cutoff`
 
-        :param str message:
+        :param message:
         """
         if not get_config_bool("Reports", "write_provenance"):
             logger.warning(message)
@@ -205,11 +200,11 @@ class ProvenanceWriter(BaseDatabase):
         """
         Inserts edge data into the `connector_provenance`
 
-        :param str pre_population: Name of the pre-population / vertex
-        :param str post_population: Name of the post-population / vertex
-        :param str the_type: Class of the connector
-        :param str description: type of value
-        :param int the_value: data
+        :param pre_population: Name of the pre-population / vertex
+        :param post_population: Name of the post-population / vertex
+        :param the_type: Class of the connector
+        :param description: type of value
+        :param the_value: data
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
@@ -230,7 +225,6 @@ class ProvenanceWriter(BaseDatabase):
         `boards_provenance` table.
 
         :param connections: {(x, y): hostname, ...} or None
-        :type connections: dict((int, int): str) or None
         """
         if not get_config_bool("Reports", "write_provenance"):
             return

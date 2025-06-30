@@ -183,8 +183,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __init__(
             self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
         """
-        :param FecDataWriter data_writer_cls:
-            The Global data writer class
+        :param data_writer_cls: The Global data writer class
         """
         super().__init__(data_writer_cls)
 
@@ -305,7 +304,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __bearer_token(self) -> Optional[str]:
         """
         :return: The OIDC bearer token
-        :rtype: str or None
         """
         # Try using Jupyter if we have the right variables
         jupyter_token = os.getenv("JUPYTERHUB_API_TOKEN")
@@ -326,7 +324,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __group_collab_or_job(self) -> Dict[str, str]:
         """
         :return: The group, collab, or NMPI Job ID to associate with jobs
-        :rtype: dict()
         """
         # Try to get a NMPI Job
         nmpi_job = os.getenv("NMPI_JOB_ID")
@@ -391,9 +388,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Handler of exceptions.
 
-        :param type exc_type: the type of exception received
-        :param Exception value: the value of the exception
-        :param traceback traceback_obj: the trace back stuff
+        :param exc_type: the type of exception received
+        :param value: the value of the exception
+        :param traceback_obj: the trace back stuff
         """
         logger.error("Shutdown on exception")
         self._shutdown()
@@ -420,7 +417,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Run a simulation until it completes.
 
-        :param int n_steps:
+        :param n_steps:
             If not `None`, this specifies that the simulation should be
             requested to run for the given number of steps.  The host will
             still wait until the simulation itself says it has completed.
@@ -434,8 +431,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Run a simulation for a fixed amount of time.
 
-        :param int run_time: the run duration in milliseconds.
-        :param float sync_time:
+        :param run_time: the run duration in milliseconds.
+        :param sync_time:
             If not 0, this specifies that the simulation should pause after
             this duration.  The continue_simulation() method must then be
             called for the simulation to continue.
@@ -451,7 +448,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Get a number of timesteps for a given time in milliseconds.
 
         :return: The number of timesteps
-        :rtype: int
         """
         time_step_ms = self._data_writer.get_simulation_time_step_ms()
         n_time_steps = int(math.ceil(time_in_ms / time_step_ms))
@@ -478,10 +474,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         If run_time is `None` (run forever) both values will be `None`
 
         :param run_time: time user requested to run for in milliseconds
-        :type run_time: float or None
         :return: n_machine_time_steps as a whole int and
             total_run_time in milliseconds
-        :rtype: tuple(int,float) or tuple(None,None)
         """
         if run_time is None:
             # TODO does this make sense?
@@ -536,7 +530,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __is_main_thread() -> bool:
         """
         :return: Whether this is the main thread.
-        :rtype: bool
         """
         return threading.get_ident() == threading.main_thread().ident
 
@@ -587,8 +580,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         The main internal run function.
 
-        :param int run_time: the run duration in milliseconds.
-        :param int sync_time:
+        :param run_time: the run duration in milliseconds.
+        :param sync_time:
             the time in milliseconds between synchronisations, or 0 to disable.
         """
         if not self._should_run():
@@ -723,9 +716,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Generates the list of "timer" runs. These are usually in terms of
         time steps, but need not be.
 
-        :param int n_steps: the total runtime in machine time steps
+        :param n_steps: the total runtime in machine time steps
         :return: list of time step lengths
-        :rtype: list(int)
         """
         if n_steps == 0:
             return [0]
@@ -754,12 +746,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the SpallocAllocator or HBPAllocator if required.
 
         :param total_run_time: The total run time to request
-        :type total_run_time: int or None
         :return: machine name, machine version, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller
-        :rtype: tuple(str, int, object, bool, bool, object, object,
-            MachineAllocationController)
         """
         if self._data_writer.has_machine():
             return None
@@ -785,9 +774,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             (machine name, machine version, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller)
-        :type allocator_data: None or
-            tuple(str, int, object, bool, bool, object, object,
-            MachineAllocationController)
         """
         if self._data_writer.has_machine():
             return
@@ -823,8 +809,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         The Python machine description object.
 
-        :param float total_run_time: The total run time to request
-        :rtype: ~spinn_machine.Machine
+        :param total_run_time: The total run time to request
         """
         if not self._data_writer.has_machine():
             if get_config_bool("Machine", "virtual_board"):
@@ -984,7 +969,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         into account preallocated resources.
 
         :return: number of available cores
-        :rtype: int
         """
         machine = self._data_writer.get_machine()
         # get cores of machine
@@ -1182,10 +1166,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         This method is the entry point for adding a new Info Allocator
 
-        :param list(tuple(ApplicationVertex,str)) extra_allocations:
-            Additional (vertex, partition identifier) pairs to allocate
-            keys to.  These might not appear in partitions in the graph
-            due to being added by the system.
         :raise ConfigurationException:
             if the configuration info_allocator value is unexpected
         """
@@ -1298,7 +1278,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, time and log the inter-board timer drift.
 
-        :param bool start: Is this the start or the end
+        :param start: Is this the start or the end
         """
         with FecTimer("Drift report", TimerWork.REPORT) as timer:
             if timer.skip_if_virtual_board():
@@ -1358,7 +1338,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Control synchronisation on board.
 
-        :param bool do_sync: Whether to enable synchronisation
+        :param do_sync: Whether to enable synchronisation
         """
         with FecTimer("Control Sync", TimerWork.CONTROL) as timer:
             if timer.skip_if_virtual_board():
@@ -1369,8 +1349,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     n_machine_time_steps: Optional[int]) -> None:
         """
         Runs, times and logs all the algorithms in the mapping stage.
-
-        :param float total_run_time:
         """
         FecTimer.start_category(TimerCategory.MAPPING)
         if self._data_writer.is_soft_reset():
@@ -1482,7 +1460,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             virtual_compressor value
 
         :return: Compressed routing tables
-        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
         with FecTimer("Ordered covering compressor", TimerWork.OTHER) as timer:
             self._multicast_routes_loaded = False
@@ -1525,7 +1502,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             virtual_compressor value
 
         :return: Compressed routing table
-        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
         with FecTimer("Pair compressor", TimerWork.OTHER) as timer:
             precompressed = self._data_writer.get_precompressed()
@@ -1567,7 +1543,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             virtual_compressor value
 
         :return: compressed routing tables
-        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
         with FecTimer("Pair unordered compressor", TimerWork.OTHER) as timer:
             self._multicast_routes_loaded = False
@@ -1626,11 +1601,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             This method is the entry point for adding a new compressor that
              can or must run early.
 
-        :param str name: Name of a compressor
+        :param name: Name of a compressor
         :return: CompressedRoutingTables (likely to be `None)`,
             RouterCompressorProvenanceItems (may be an empty list)
-        :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables or
-            None, list(ProvenanceDataItem))
         :raise ConfigurationException: if the name is not expected
         """
         if name == "OrderedCoveringCompressor":
@@ -1652,9 +1625,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self, compressed: Optional[MulticastRoutingTables]) -> None:
         """
         Runs, times and logs the RoutingTableLoader if required.
-
-        :param compressed:
-        :type compressed: ~.MulticastRoutingTables or None
         """
         if not compressed:
             return
@@ -1739,7 +1709,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if required.
 
         :return: map of placement and DSG data, and loaded data flag.
-        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         with FecTimer("Load Application data specification",
                       TimerWork.LOADING_DATA) as timer:
@@ -1804,9 +1773,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             MulticastRoutingTables]) -> None:
         """
         Runs, times and logs the compressor reports if requested.
-
-        :param compressed:
-        :type compressed: ~.MulticastRoutingTables or None
         """
         with FecTimer("Compressor report", TimerWork.REPORT) as timer:
             if timer.skip_all_cfgs_false(
@@ -1974,8 +1940,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _do_read_provenance(self) -> None:
         """
         Runs, times and log the methods that gather provenance.
-
-        :rtype: list(ProvenanceDataItem)
         """
         self._execute_graph_provenance_gatherer()
         self._execute_placements_provenance_gatherer()
@@ -2034,7 +1998,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the runtime updater if required.
 
-        :param int n_sync_steps:
+        :param n_sync_steps:
             The number of timesteps between synchronisations
         """
         with FecTimer("Runtime Update", TimerWork.LOADING) as timer:
@@ -2053,7 +2017,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the _database_file_path data object
 
-        :param int run_time: the run duration in milliseconds.
+        :param run_time: the run duration in milliseconds.
         """
         with FecTimer("Create database interface", TimerWork.OTHER):
             # Used to used compressed routing tables if available on host
@@ -2076,9 +2040,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the ApplicationRunner.
 
-        :param int n_sync_steps:
+        :param n_sync_steps:
             The number of timesteps between synchronisations
-        :param int run_time: the run duration in milliseconds.
+        :param run_time: the run duration in milliseconds.
         """
         with FecTimer(FecTimer.APPLICATION_RUNNER, TimerWork.RUNNING) as timer:
             if timer.skip_if_virtual_board():
@@ -2120,9 +2084,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _do_extract_from_machine(self) -> None:
         """
         Runs, times and logs the steps to extract data from the machine.
-
-        :param run_time: the run duration in milliseconds.
-        :type run_time: int or None
         """
         self._execute_router_provenance_gatherer("Run", TimerWork.EXTRACTING)
         self._execute_clear_router_diagnostic_counters()
@@ -2143,8 +2104,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the do run steps.
 
         :param n_machine_time_steps: Number of timesteps run
-        :type n_machine_time_steps: int or None
-        :param int n_sync_steps:
+        :param n_sync_steps:
             The number of timesteps between synchronisations
         """
         # TODO virtual board
@@ -2180,8 +2140,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the do run steps.
 
         :param n_machine_time_steps: Number of timesteps run
-        :type n_machine_time_steps: int or None
-        :param int n_sync_steps:
+        :param n_sync_steps:
             The number of timesteps between synchronisations
         """
         try:
@@ -2197,9 +2156,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise run_e
 
     def _recover_from_error(self, exception: Exception) -> None:
-        """
-        :param Exception exception:
-        """
         try:
             self.__recover_from_error(exception)
         except Exception as rec_e:
@@ -2207,9 +2163,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 f"Error {rec_e} when attempting to recover from error")
 
     def __recover_from_error(self, exception: Exception) -> None:
-        """
-        :param Exception exception:
-        """
         # if exception has an exception, print to system
         logger.error("An error has occurred during simulation")
         # Print the detail including the traceback
@@ -2290,10 +2243,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @staticmethod
     def _print_iobuf(errors: Iterable[str], warnings: Iterable[str]) -> None:
-        """
-        :param list(str) errors:
-        :param list(str) warnings:
-        """
         for warning in warnings:
             logger.warning(warning)
         for error in errors:

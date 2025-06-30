@@ -32,9 +32,8 @@ def get_profile_region_size(n_samples: int) -> int:
     """
     Get the size of the region of the profile data.
 
-    :param int n_samples: number of different samples to record
+    :param n_samples: number of different samples to record
     :return: the size in bytes used by the profile region
-    :rtype: int
     """
     return _PROFILE_HEADER_SIZE_BYTES + (
         n_samples * _SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES)
@@ -45,10 +44,9 @@ def reserve_profile_region(
     """
     Reserves the profile region for recording the profile data.
 
-    :param ~data_specification.DataSpecificationGenerator spec:
-        the DSG specification writer
-    :param int region: region ID for the profile data
-    :param int n_samples: number of elements being sampled
+    :param spec: the DSG specification writer
+    :param region: region ID for the profile data
+    :param n_samples: number of elements being sampled
     """
     size = get_profile_region_size(n_samples)
     spec.reserve_memory_region(
@@ -60,10 +58,9 @@ def write_profile_region_data(
     """
     Writes the profile region data.
 
-    :param ~data_specification.DataSpecificationGenerator spec:
-        the DSG specification writer
-    :param int region: region ID for the profile data
-    :param int n_samples: number of elements being sampled
+    :param spec: the DSG specification writer
+    :param region: region ID for the profile data
+    :param n_samples: number of elements being sampled
     """
     spec.switch_write_focus(region)
     spec.write_value(n_samples)
@@ -75,10 +72,9 @@ def get_profiling_data(
     """
     Utility function to get profile data from a profile region.
 
-    :param int profile_region: DSG region to get profiling data out of SDRAM
-    :param list(str) tag_labels: labels for the profiling data
-    :param ~pacman.model.placements.Placement placement: placement
-    :rtype: ProfileData
+    :param profile_region: DSG region to get profiling data out of SDRAM
+    :param tag_labels: labels for the profiling data
+    :param placement: placement
     """
     txrx = FecDataView.get_transceiver()
     profile_data = ProfileData(tag_labels)

@@ -55,10 +55,8 @@ class _DummyProgress(object):
         Simple wrapper for the cases where a progress bar is being used
         to show progress through the iteration over a single collection.
 
-        :param ~collections.abc.Iterable values:
-            The base collection (any iterable) being iterated over
+        :param values: The base collection (any iterable) being iterated over
         :return: The passed in collection unchanged.
-        :rtype: ~collections.abc.Iterable
         """
         return values
 
@@ -84,10 +82,9 @@ class IOBufExtractor(object):
         :param executable_targets:
             Which Binaries and core to extract from.
             `None` to extract from all.
-        :type executable_targets: ~spinnman.model.ExecutableTargets or None
-        :param bool recovery_mode:
-        :param str filename_template:
-        :param bool suppress_progress:
+        :param recovery_mode:
+        :param filename_template:
+        :param suppress_progress:
         """
         self._filename_template = filename_template
         self._recovery_mode = bool(recovery_mode)
@@ -117,7 +114,6 @@ class IOBufExtractor(object):
         Perform the extraction of IOBUF.
 
         :return: error_entries, warn_entries
-        :rtype: tuple(list(str),list(str))
         """
         if self.__from_cores == "ALL":
             return self.__extract_all_cores()
@@ -132,10 +128,6 @@ class IOBufExtractor(object):
             return [], []
 
     def __progress(self, bins: Sized) -> Union[ProgressBar, _DummyProgress]:
-        """
-        :param list bins:
-        :rtype: ~.ProgressBar
-        """
         if self.__suppress_progress:
             return _DummyProgress()
         label = (("Recovering" if self._recovery_mode else "Extracting")
@@ -143,18 +135,10 @@ class IOBufExtractor(object):
         return ProgressBar(len(bins), label)
 
     def __prov_path(self, binary: str) -> str:
-        """
-        :param str binary:
-        :return: provenance directory path
-        :rtype: str
-        """
         return (self.__sys_path if binary in self.__system_binaries
                 else self.__app_path)
 
     def __extract_all_cores(self) -> Tuple[List[str], List[str]]:
-        """
-        :rtype: tuple(list(str), list(str))
-        """
         error_entries: List[str] = list()
         warn_entries: List[str] = list()
         # all the cores
@@ -168,9 +152,6 @@ class IOBufExtractor(object):
 
     def __extract_selected_cores_and_types(
             self) -> Tuple[List[str], List[str]]:
-        """
-        :rtype: tuple(list(str), list(str))
-        """
         error_entries: List[str] = list()
         warn_entries: List[str] = list()
         # bit of both
@@ -191,9 +172,6 @@ class IOBufExtractor(object):
         return error_entries, warn_entries
 
     def __extract_selected_cores(self) -> Tuple[List[str], List[str]]:
-        """
-        :rtype: tuple(list(str), list(str))
-        """
         error_entries: List[str] = list()
         warn_entries: List[str] = list()
         # some hard coded cores
@@ -208,9 +186,6 @@ class IOBufExtractor(object):
         return error_entries, warn_entries
 
     def __extract_selected_types(self) -> Tuple[List[str], List[str]]:
-        """
-        :rtype: tuple(list(str), list(str))
-        """
         error_entries: List[str] = list()
         warn_entries: List[str] = list()
         # some binaries
@@ -229,11 +204,11 @@ class IOBufExtractor(object):
             self, core_subsets: CoreSubsets, binary: str,
             error_entries: List[str], warn_entries: List[str]) -> None:
         """
-        :param ~.CoreSubsets core_subsets: Where the binary is deployed
-        :param str binary: What binary was deployed there.
+        :param core_subsets: Where the binary is deployed
+        :param binary: What binary was deployed there.
             This is used to determine how to decompress the IOBUF output.
-        :param list(str) error_entries:
-        :param list(str) warn_entries:
+        :param error_entries:
+        :param warn_entries:
         """
         replacer = Replacer()
         prov_path = self.__prov_path(binary)
@@ -253,13 +228,6 @@ class IOBufExtractor(object):
     def __process_one_iobuf(
             self, iobuf: IOBuffer, file_path: str, replacer: Replacer,
             error_entries: List[str], warn_entries: List[str]) -> None:
-        """
-        :param ~.IOBuffer iobuf:
-        :param str file_path:
-        :param ~.Replacer replacer:
-        :param list(str) error_entries:
-        :param list(str) warn_entries:
-        """
         file_name = os.path.join(
             file_path, self._filename_template.format(
                 iobuf.x, iobuf.y, iobuf.p))
@@ -279,10 +247,6 @@ class IOBufExtractor(object):
                     WARNING_ENTRY, replaced, warn_entries, iobuf)
 
     def __recover_iobufs(self, core_subsets: CoreSubsets) -> List[IOBuffer]:
-        """
-        :param ~.CoreSubsets core_subsets:
-        :rtype: list(~.IOBuffer)
-        """
         io_buffers: List[IOBuffer] = []
         for core_subset in core_subsets:
             for p in core_subset.processor_ids:
@@ -302,12 +266,6 @@ class IOBufExtractor(object):
     @staticmethod
     def __add_value_if_match(regex: Pattern, line: str,
                              entries: List[str], iobuf: IOBuffer) -> None:
-        """
-        :param ~typing.Pattern regex:
-        :param str line:
-        :param list(str) entries:
-        :param ~.IOBuffer iobuf:
-        """
         match = regex.match(line)
         if match:
             entries.append(f"{iobuf.x}, {iobuf.y}, {iobuf.p}: "

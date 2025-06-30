@@ -60,8 +60,6 @@ class ProvidesProvenanceDataFromMachineImpl(
     def _provenance_region_id(self) -> int:
         """
         The index of the provenance region.
-
-        :rtype: int
         """
         raise NotImplementedError
 
@@ -70,16 +68,13 @@ class ProvidesProvenanceDataFromMachineImpl(
     def _n_additional_data_items(self) -> int:
         """
         The number of extra machine words of provenance that the model reports.
-
-        :rtype: int
         """
         raise NotImplementedError
 
     def reserve_provenance_data_region(
             self, spec: DataSpecificationGenerator) -> None:
         """
-        :param ~data_specification.DataSpecificationGenerator spec:
-            The data specification being written.
+        :param spec: The data specification being written.
         """
         spec.reserve_memory_region(
             self._provenance_region_id,
@@ -89,8 +84,7 @@ class ProvidesProvenanceDataFromMachineImpl(
     @classmethod
     def get_provenance_data_size(cls, n_additional_data_items: int) -> int:
         """
-        :param int n_additional_data_items:
-        :rtype: int
+        :param n_additional_data_items:
         """
         return (
             (cls.N_SYSTEM_PROVENANCE_WORDS + n_additional_data_items)
@@ -98,11 +92,6 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     def _get_provenance_region_address(
             self, transceiver: Transceiver, placement: Placement) -> int:
-        """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-        :param ~pacman.model.placements.Placement placement:
-        :rtype: int
-        """
         # Get the App Data for the core
         region_table_address = transceiver.get_region_base_address(
             placement.x, placement.y, placement.p)
@@ -114,10 +103,6 @@ class ProvidesProvenanceDataFromMachineImpl(
             placement.x, placement.y, prov_region_entry_address)
 
     def _read_provenance_data(self, placement: Placement) -> Sequence[int]:
-        """
-        :param ~pacman.model.placements.Placement placement:
-        :rtype: iterable(int)
-        """
         transceiver = FecDataView.get_transceiver()
         provenance_address = self._get_provenance_region_address(
             transceiver, placement)
@@ -132,11 +117,10 @@ class ProvidesProvenanceDataFromMachineImpl(
     def _get_provenance_placement_description(
             placement: Placement) -> Tuple[str, int, int, int]:
         """
-        :param ~pacman.model.placements.Placement placement:
+        :param placement:
         :returns:
             A descriptive (human-readable) label and the (x, y, p) coordinates
             for provenance items from the given placement.
-        :rtype: tuple(str, int, int, int)
         """
         x, y, p = placement.x, placement.y, placement.p
         desc_label = f"{placement.vertex.label} on {x},{y},{p}"
@@ -152,13 +136,13 @@ class ProvidesProvenanceDataFromMachineImpl(
         Called by
         :py:meth:`~spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items.get_provenance_data_from_machine`
 
-        :param str label:
+        :param label:
             A descriptive label for the vertex (derived from label and placed
             position) to be used for provenance error reporting to the user.
-        :param int x: x coordinate of the chip where this core
-        :param int y: y coordinate of the core where this core
-        :param int p: virtual id of the core
-        :param list(int) provenance_data:
+        :param x: x coordinate of the chip where this core
+        :param y: y coordinate of the core where this core
+        :param p: virtual id of the core
+        :param provenance_data:
         """
         (tx_overflow, cb_overload, dma_overload, user_overload, tic_overruns,
          tic_overrun_max) = provenance_data[:self.N_SYSTEM_PROVENANCE_WORDS]
@@ -241,8 +225,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
         Gets the words of provenance data not used for system provenance.
 
-        :param list(int) provenance_data:
-        :rtype: list(int)
+        :param provenance_data:
         """
         return provenance_data[self.N_SYSTEM_PROVENANCE_WORDS:]
 
@@ -256,13 +239,13 @@ class ProvidesProvenanceDataFromMachineImpl(
         Called by
         :py:meth:`~spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items.get_provenance_data_from_machine`
 
-        :param str label:
+        :param label:
             A descriptive label for the vertex (derived from label and placed
             position) to be used for provenance error reporting to the user.
-        :param int x: x coordinate of the chip where this core
-        :param int y: y coordinate of the core where this core
-        :param int p: virtual id of the core
-        :param list(int) provenance_data:
+        :param x: x coordinate of the chip where this core
+        :param y: y coordinate of the core where this core
+        :param p: virtual id of the core
+        :param provenance_data:
             The list of words of raw provenance data.
         """
         if self._n_additional_data_items:
@@ -279,7 +262,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
         Retrieve the provenance data.
 
-        :param ~pacman.model.placements.Placement placement:
+        :param placement:
             Which vertex are we retrieving from, and where was it
         """
         provenance_data = self._read_provenance_data(placement)

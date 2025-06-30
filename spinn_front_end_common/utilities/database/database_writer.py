@@ -80,7 +80,6 @@ class DatabaseWriter(SQLiteDB):
         Auto detects if there is a need to activate the database system.
 
         :return: whether the database is needed for the application
-        :rtype: bool
         """
         if FecDataView.get_vertices_by_type(LivePacketGather):
             return True
@@ -93,15 +92,11 @@ class DatabaseWriter(SQLiteDB):
     @property
     def database_path(self) -> str:
         """
-        :rtype: str
+        The location of this database
         """
         return self._database_path
 
     def __insert(self, sql: str, *args: Union[str, int, None]) -> int:
-        """
-        :param str sql:
-        :rtype: int
-        """
         try:
             self.cursor().execute(sql, args)
             return self.lastrowid
@@ -164,7 +159,7 @@ class DatabaseWriter(SQLiteDB):
         """
         Write system parameters into the database.
 
-        :param int runtime: the amount of time the application is to run for
+        :param runtime: the amount of time the application is to run for
         """
         self.cursor().executemany(
             """
@@ -233,8 +228,6 @@ class DatabaseWriter(SQLiteDB):
                 Iterable[Tuple[MachineVertex, str]]]) -> None:
         """
         :param machine_vertices:
-        :type machine_vertices:
-            list(tuple(~pacman.model.graphs.machine.MachineVertex,str))
         """
         routing_infos = FecDataView.get_routing_infos()
         # This could happen if there are no LPGs
@@ -314,7 +307,6 @@ class DatabaseWriter(SQLiteDB):
         Add mapping from machine vertex to LPG machine vertex.
 
         :return: A list of (source vertex, partition id)
-        :rtype: list(~pacman.model.graphs.machine.MachineVertex, str)
         """
         targets: List[Tuple[MachineVertex, str, MachineVertex]] = [
             (m_vertex, part_id, lpg_m_vertex)

@@ -29,8 +29,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 def graph_binary_gatherer() -> ExecutableTargets:
     """
     Extracts binaries to be executed.
-
-    :rtype: ~spinnman.model.ExecutableTargets
     """
     return _GraphBinaryGatherer().gather_binaries()
 
@@ -46,7 +44,7 @@ class _GraphBinaryGatherer(object):
 
     def gather_binaries(self) -> ExecutableTargets:
         """
-        :rtype: ~spinnman.model.ExecutableTargets
+        Gather the binary for each placement
         """
         progress = ProgressBar(
             FecDataView.get_n_placements(), "Finding binaries")
@@ -56,9 +54,6 @@ class _GraphBinaryGatherer(object):
         return self._exe_targets
 
     def __get_binary(self, placement: Placement) -> None:
-        """
-        :param ~pacman.model.placements.Placement placement:
-        """
         # if the vertex cannot be executed, ignore it
         vertex = placement.vertex
         if not isinstance(vertex, AbstractHasAssociatedBinary):

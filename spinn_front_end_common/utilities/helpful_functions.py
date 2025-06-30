@@ -41,9 +41,8 @@ def locate_extra_monitor_mc_receiver(
     Get the data speed up gatherer that can be used to talk to a
     particular chip. This will be on the same board.
 
-    :param int placement_x: The X coordinate of the reference chip
-    :param int placement_y: The Y coordinate of the reference chip
-    :rtype: DataSpeedUpPacketGatherMachineVertex
+    :param placement_x: The X coordinate of the reference chip
+    :param placement_y: The Y coordinate of the reference chip
     """
     chip = FecDataView.get_chip_at(placement_x, placement_y)
     return FecDataView.get_gatherer_by_xy(
@@ -55,14 +54,13 @@ def read_data(x: int, y: int, address: int, length: int,
     """
     Reads and converts a single data item from memory.
 
-    :param int x: chip x
-    :param int y: chip y
-    :param int address: base address of the SDRAM chip to read
-    :param int length: length to read
-    :param str data_format:
+    :param x: chip x
+    :param y: chip y
+    :param address: base address of the SDRAM chip to read
+    :param length: length to read
+    :param data_format:
         the format to read memory (see :py:func:`struct.pack`)
     :return: whatever is produced by unpacking the data
-    :rtype: tuple
     """
     data = FecDataView.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
@@ -73,8 +71,8 @@ def get_region_base_address_offset(
     """
     Find the address of the of a given region for the DSG.
 
-    :param int app_data_base_address: base address for the core
-    :param int region: the region ID we're looking for
+    :param app_data_base_address: base address for the core
+    :param region: the region ID we're looking for
     """
     return (app_data_base_address +
             APP_PTR_TABLE_HEADER_BYTE_SIZE +
@@ -86,11 +84,10 @@ def locate_memory_region_for_placement(
     """
     Get the address of a region for a placement.
 
-    :param int region: the region to locate the base address of
-    :param ~pacman.model.placements.Placement placement:
+    :param region: the region to locate the base address of
+    :param placement:
         the placement object to get the region address of
     :return: the address
-    :rtype: int
     """
     transceiver = FecDataView.get_transceiver()
     regions_base_address = transceiver.get_region_base_address(
@@ -110,8 +107,6 @@ def convert_string_into_chip_and_core_subset(
 
     :param cores:
         string representing down cores formatted as x,y,p[:x,y,p]*
-    :type cores: str or None
-    :rtype: ~spinn_machine.CoreSubsets
     """
     ignored_cores = CoreSubsets()
     if cores is not None and cores != "None":
@@ -125,10 +120,9 @@ def flood_fill_binary_to_spinnaker(binary: str) -> int:
     """
     Flood fills a binary to SpiNNaker.
 
-    :param str binary:
+    :param binary:
         The name of the file containing the APLX binary to load
     :return: the number of cores it was loaded onto
-    :rtype: int
     """
     executable_targets = FecDataView.get_executable_targets()
     core_subset = executable_targets.get_cores_for_binary(binary)
@@ -142,12 +136,11 @@ def generate_unique_folder_name(
     """
     Generate a unique file name with a given extension in a given folder.
 
-    :param str folder: where to put this unique file
-    :param str filename:
+    :param folder: where to put this unique file
+    :param filename:
         the name of the first part of the file without extension
-    :param str extension: extension of the file
+    :param extension: extension of the file
     :return: file path with a unique addition
-    :rtype: str
     """
     new_file_path = os.path.join(folder, f"{filename}{extension}")
     count = 2
@@ -161,10 +154,9 @@ def get_ethernet_chip(machine: Machine, board_address: str) -> Chip:
     """
     Locate the chip with the given board IP address.
 
-    :param ~spinn_machine.Machine machine: the SpiNNaker machine
-    :param str board_address: the board address to locate the chip of.
+    :param machine: the SpiNNaker machine
+    :param board_address: the board address to locate the chip of.
     :return: The chip that supports that board address
-    :rtype: ~spinn_machine.Chip
     :raises ConfigurationException:
         when that board address has no chip associated with it
     """
@@ -184,12 +176,10 @@ def determine_flow_states(
     """
     Get the start and end states for these executable types.
 
-    :param dict(ExecutableType,any) executable_types:
+    :param executable_types:
         the execute types to locate start and end states from
-    :param int no_sync_changes: the number of times sync signals been sent
+    :param  no_sync_changes: the number of times sync signals been sent
     :return: dict of executable type to states.
-    :rtype: tuple(dict(ExecutableType,tuple(~spinnman.model.enums.CPUState)),
-        dict(ExecutableType,tuple(~spinnman.model.enums.CPUState)))
     """
     expected_start_states: Dict[ExecutableType, Collection[CPUState]] = dict()
     expected_end_states: Dict[ExecutableType, Collection[CPUState]] = dict()
@@ -226,10 +216,9 @@ def convert_vertices_to_core_subset(
     """
     Converts vertices into core subsets.
 
-    :param iterable(~pacman.model.graphs.machine.MachineVertex) vertices:
+    :param vertices:
         the vertices to convert to core subsets
     :return: the CoreSubSets of the vertices
-    :rtype: ~spinn_machine.CoreSubsets
     """
     core_subsets = CoreSubsets()
     for vertex in vertices:
@@ -253,9 +242,8 @@ def n_word_struct(n_words: int) -> struct.Struct:
     except quite a bit more efficient because things are shared including the
     cost of parsing the format.
 
-    :param int n_words: The number of *SpiNNaker words* to be handled.
+    :param n_words: The number of *SpiNNaker words* to be handled.
     :return: A struct for working with that many words.
-    :rtype: ~struct.Struct
     """
     # pylint: disable=global-statement
     global _n_word_structs
@@ -273,10 +261,8 @@ def get_defaultable_source_id(entry: MulticastRoutingEntry) -> int:
     """
     Hack to support the source requirement for the router compressor on chip.
 
-    :param ~spinn_machine.MulticastRoutingEntry entry:
-        the multicast router table entry.
+    :param entry: the multicast router table entry.
     :return: return the source value
-    :rtype: int
     """
     if entry.defaultable:
         return (list(entry.link_ids)[0] + 3) % 6
