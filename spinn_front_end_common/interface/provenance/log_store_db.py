@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from configparser import NoOptionError
 from datetime import datetime
 import sqlite3
 from typing import List, Optional
@@ -45,7 +46,7 @@ class LogStoreDB(LogStore):
         except ConfigException:
             # This will be when trying to log before the configs are setup
             return
-        except KeyError as ex:
+        except NoOptionError as ex:
             # This happens in rare case of parallel tests
             return
 
