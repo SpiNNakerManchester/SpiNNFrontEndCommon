@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from configparser import NoOptionError
 from datetime import datetime
 import sqlite3
 from typing import List, Optional
 
-from spinn_utilities.exceptions import ConfigException
+from spinn_utilities.config_holder import configs_loaded
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
 from .global_provenance import GlobalProvenance
@@ -33,8 +32,7 @@ class LogStoreDB(LogStore):
     def store_log(
             self, level: int, message: str,
             timestamp: Optional[datetime] = None) -> None:
-        # Check global provenance exists for parallel tests
-        if GlobalProvenance.has_global_provenace_path():
+        if configs_loaded():
             try:
                 with GlobalProvenance() as db:
                     db.store_log(level, message, timestamp)
