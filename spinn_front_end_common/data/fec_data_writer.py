@@ -147,7 +147,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         Allows the end of a run forever to set the runtime read from the cores
 
         :param current_run_timesteps:
-        :return:
         """
         if self.__fec_data._current_run_timesteps is not None:
             raise NotImplementedError(
