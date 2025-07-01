@@ -102,6 +102,25 @@ static inline void copy_data(
     }
 }
 
+bool recording_is_space(uint8_t channel, uint32_t size_bytes, bool flag_missing) {
+    recording_channel_t *rec = &channels[channel];
+    if (has_been_initialised(rec)) {
+        // Check if there is enough space
+        if (rec->space >= size_bytes) {
+            return true;
+        }
+        if (flag_missing) {
+            // If there is not enough space, set the missing flag
+            if (!rec->missing) {
+                log_warning("WARNING: recording channel %u out of space",
+                        channel);
+                rec->missing = 1;
+            }
+        }
+    }
+    return false;
+}
+
 bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     recording_channel_t *rec = &channels[channel];
     if (has_been_initialised(rec)) {

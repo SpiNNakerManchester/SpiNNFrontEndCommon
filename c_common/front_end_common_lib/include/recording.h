@@ -30,6 +30,16 @@
 //! \brief The type of channel indices.
 typedef uint8_t channel_index_t;
 
+//! \brief determine if there is space in a specific recording channel.
+//! \param[in] channel the channel to check.
+//! \param[in] size_bytes the number of bytes that this data will take up.
+//! \param[in] flag_missing if True, then the raise the missing data flag if
+//!            there is not enough space in the channel
+//! \return boolean which is True if there is enough space in the channel,
+//!         False otherwise.
+bool recording_is_space(channel_index_t channel, size_t size_bytes,
+        bool flag_missing);
+
 //! \brief records some data into a specific recording channel.
 //! \param[in] channel the channel to store the data into.
 //! \param[in] data the data to store into the channel.
