@@ -41,7 +41,9 @@ class MachineAllocationController(object, metaclass=AbstractBase):
     def __init__(self, thread_name: str, hostname: Optional[str] = None,
                  connection_data: Optional[Dict[XY, str]] = None):
         """
-        :param thread_name:
+        :param thread_name: Name for the Thread object
+        :param hostname: host to use to create a Transceiver
+        :param connection_data: Chip to remote hosts mapping
         """
         thread = Thread(name=thread_name, target=self.__manage_allocation)
         thread.daemon = True

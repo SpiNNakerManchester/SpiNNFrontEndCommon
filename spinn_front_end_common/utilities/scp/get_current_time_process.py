@@ -98,6 +98,10 @@ class GetCurrentTimeProcess(
     )
 
     def __init__(self, connection_selector: MostDirectConnectionSelector):
+        """
+         :param connection_selector:
+            Connection to send the request over.
+        """
         super().__init__(connection_selector)
         self.__latest_time: Optional[int] = None
         self.__earliest_time: Optional[int] = None

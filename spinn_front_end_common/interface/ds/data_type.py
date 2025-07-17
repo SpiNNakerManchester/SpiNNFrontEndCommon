@@ -347,10 +347,25 @@ class DataType(Enum):
         obj.__doc__ = _doc
         return obj
 
-    def __init__(self, __: int, size: int, min_val: Decimal, max_val: Decimal,
+    def __init__(self, value: int, size: int, min_val: Decimal, max_val: Decimal,
                  scale: Decimal, struct_encoding: str, apply_scale: bool,
                  force_cast: Optional[Callable[[Any], int]],
                  numpy_typename: type, _doc: str) -> None:
+        """
+        :param value: ID for the enum
+        :param size: The size in bytes of the type.
+        :param min_val: The minimum possible value for the type.
+        :param max_val: The maximum possible value for the type.
+        :param scale: The scale of the input value to convert it in integer.
+        :param struct_encoding:
+            The encoding string used for struct. Scaling may also be required.
+        :param apply_scale:
+            Flag to say if scale should be appiled in all cases
+        :param force_cast: class to cast return values to
+        :param numpy_typename: Type to use in numpy array
+        :param _doc: Description of the enum
+        """
+        _ = value
         self._size = size
         self._min = min_val
         self._max = max_val

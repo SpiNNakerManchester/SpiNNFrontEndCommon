@@ -27,6 +27,16 @@ class RouterSummary(object):
 
     def __init__(self, total_entries: int, max_per_chip: int,
                  max_defaultable: int, max_link: int, unqiue_routes: int):
+        """
+        :param total_entries: Total entries in all routes
+        :param max_per_chip: Largest number of routes on any Chip
+        :param max_defaultable:
+            Largest number of defaultable routes on any Chip
+        :param max_link:
+            Largest number of link only routes on any Chip
+        :param unqiue_routes:
+            Largest number of unique spinnaker routes on any Chip
+        """
         self._total_entries = total_entries
         self._max_per_chip = max_per_chip
         self._max_defaultable = max_defaultable

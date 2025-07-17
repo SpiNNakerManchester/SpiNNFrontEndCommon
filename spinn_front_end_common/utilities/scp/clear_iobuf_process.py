@@ -26,6 +26,11 @@ from spinnman.model.enums import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
 
 class _ClearIOBUFRequest(AbstractSCPRequest[CheckOKResponse]):
     def __init__(self, x: int, y: int, p: int):
+        """
+        :param x: X of core to clear
+        :param y: Y of core to clear
+        :param p: P of core to clear
+        """
         super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,

@@ -62,6 +62,12 @@ class Plotter(ContextManager[SQLiteDB]):
     __seaborn: Optional[ModuleType] = None
 
     def __init__(self, db_filename: str, verbose: bool = False):
+        """
+        :param db_filename:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data.
+        :param verbose: Flag to trigger prin tmessages
+        """
         self._db = SQLiteDB(db_filename, read_only=True, text_factory=str)
         self.__have_insertion_order = True
         self.__verbose = verbose

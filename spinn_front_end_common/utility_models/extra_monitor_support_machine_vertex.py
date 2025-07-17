@@ -502,6 +502,13 @@ class _Recoverer:
     """
     def __init__(self, vtx: ExtraMonitorSupportMachineVertex,
                  placement: Placement):
+        """
+        :param vtx:
+            The vertex to retrieve the IOBUF from
+            if it is suspected as being dead
+        :param placement:
+            Where the vertex is located.
+        """
         self.__vtx = vtx
         self.__placement = placement
 

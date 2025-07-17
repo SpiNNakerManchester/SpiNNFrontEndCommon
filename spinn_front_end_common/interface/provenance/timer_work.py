@@ -38,7 +38,11 @@ class TimerWork(Enum):
         obj._value_ = value
         return obj
 
-    def __init__(self, __: int, work_name: str):
+    def __init__(self, value: int, work_name: str):
+        """
+        :param value: Enum ID
+        :param work_name: Descriptor for this Enum
+        """
         self._work_name = work_name
 
     @property

@@ -51,6 +51,12 @@ class DsSqlliteDatabase(SQLiteDB):
     __slots__ = ["_init_file"]
 
     def __init__(self, database_file:  Optional[str] = None):
+        """
+        :param database_file:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data.
+            If omitted the default location is used.
+        """
         if database_file is None:
             database_file = FecDataView.get_ds_database_path()
 

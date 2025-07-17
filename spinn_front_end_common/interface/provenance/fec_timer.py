@@ -80,6 +80,11 @@ class FecTimer(object):
             "Reports", "display_algorithm_timings") or False
 
     def __init__(self, algorithm: str, work: TimerWork):
+        """
+
+        :param algorithm: Name of algorithm being timed
+        :param work: Type of work being timed
+        """
         self._start_time: Optional[int] = None
         self._algorithm = algorithm
         self._work = work
