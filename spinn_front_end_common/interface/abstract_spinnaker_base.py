@@ -47,7 +47,8 @@ from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import CoreSubsets
 
 from spinnman import __version__ as spinnman_version
-from spinnman.exceptions import SpiNNManCoresNotInStateException
+from spinnman.exceptions import (
+    SpinnmanBootException, SpiNNManCoresNotInStateException)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 
@@ -739,7 +740,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_machine(virtual_machine_generator())
             self._data_writer.set_ipaddress("virtual")
 
-    def _allocate_machine(self, total_run_time: Optional[float]) -> None:
+    def _do_allocate_machine(
+            self, total_run_time: Optional[float], retry: int = 0) -> None:
         """
         Combines execute allocator and execute machine generator
 
@@ -750,7 +752,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.has_machine():
             return
         allocator_data = self._execute_allocator(total_run_time)
-        self._execute_machine_generator(allocator_data)
+        try:
+            self._execute_machine_generator(allocator_data)
+        except SpinnmanBootException:
+            if allocator_data is not None:
+                logger.info(f"Boot Error using {allocator_data}")
+                max_retry = get_config_int("Machine", "spalloc_retry")
+                if retry < max_retry:
+                    logger.info("retrying allocate and get machine")
+                    self._do_allocate_machine(total_run_time, retry + 1)
+                else:
+                    raise
 
     def _execute_allocator(self, total_run_time: Optional[float]) -> Optional[
             Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
@@ -824,7 +836,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if get_config_bool("Machine", "virtual_board"):
                 self._execute_get_virtual_machine()
             else:
-                self._allocate_machine(total_run_time)
+                self._do_allocate_machine(total_run_time)
 
     def _get_machine(self) -> None:
         """
@@ -1373,7 +1385,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
-        self._allocate_machine(total_run_time)
+        self._do_allocate_machine(total_run_time)
         self._json_machine()
         self._report_board_chip()
 
