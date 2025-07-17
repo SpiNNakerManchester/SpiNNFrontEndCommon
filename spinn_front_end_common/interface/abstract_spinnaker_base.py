@@ -739,6 +739,19 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_machine(virtual_machine_generator())
             self._data_writer.set_ipaddress("virtual")
 
+    def _allocate_machine(self, total_run_time: Optional[float]) -> None:
+        """
+        Combines execute allocator and execute machine generator
+
+        This allows allocator to be run again if it is useful to do so
+
+        :param total_run_time: The total run time to request
+        """
+        if self._data_writer.has_machine():
+            return
+        allocator_data = self._execute_allocator(total_run_time)
+        self._execute_machine_generator(allocator_data)
+
     def _execute_allocator(self, total_run_time: Optional[float]) -> Optional[
             Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
                   MachineAllocationController]]:
@@ -750,8 +763,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller
         """
-        if self._data_writer.has_machine():
-            return None
         if not is_config_none("Machine", "spalloc_server"):
             with FecTimer("SpallocAllocator", TimerWork.OTHER):
                 return spalloc_allocator(
@@ -775,8 +786,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller)
         """
-        if self._data_writer.has_machine():
-            return
         machine_name = get_config_str_or_none("Machine", "machine_name")
         if machine_name is not None:
             self._data_writer.set_ipaddress(machine_name)
@@ -815,8 +824,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if get_config_bool("Machine", "virtual_board"):
                 self._execute_get_virtual_machine()
             else:
-                allocator_data = self._execute_allocator(total_run_time)
-                self._execute_machine_generator(allocator_data)
+                self._allocate_machine(total_run_time)
 
     def _get_machine(self) -> None:
         """
@@ -1365,8 +1373,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
-        allocator_data = self._execute_allocator(total_run_time)
-        self._execute_machine_generator(allocator_data)
+        self._allocate_machine(total_run_time)
         self._json_machine()
         self._report_board_chip()
 
