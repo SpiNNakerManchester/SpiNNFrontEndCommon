@@ -317,6 +317,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_ipaddress(self, ip_address: str) -> None:
         """
+        Sets the ip address
+
         :param ip_address:
         """
         if not isinstance(ip_address, str):
@@ -326,6 +328,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def set_fixed_routes(
             self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]) -> None:
         """
+        Sets the routes.
+
         :param fixed_routes:
         """
         if not isinstance(fixed_routes, dict):
@@ -334,6 +338,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_java_caller(self, java_caller: JavaCaller) -> None:
         """
+        Sets/ overwrrites the method to call Java
+
         :param java_caller:
         """
         if not isinstance(java_caller, JavaCaller):
@@ -349,6 +355,10 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def set_executable_types(self, executable_types: Dict[
             ExecutableType, CoreSubsets]) -> None:
         """
+        Sets/ overwrites the executable types
+
+        Checks it is a disc but not the keys and valuess types
+
         :param executable_types:
         """
         if not isinstance(executable_types, dict):

@@ -74,6 +74,8 @@ class ProvidesProvenanceDataFromMachineImpl(
     def reserve_provenance_data_region(
             self, spec: DataSpecificationGenerator) -> None:
         """
+        Insert command to reserve a memory region.
+
         :param spec: The data specification being written.
         """
         spec.reserve_memory_region(

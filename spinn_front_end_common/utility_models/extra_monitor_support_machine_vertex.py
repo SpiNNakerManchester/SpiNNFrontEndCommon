@@ -431,6 +431,8 @@ class ExtraMonitorSupportMachineVertex(
             nearest_neighbour: Optional[bool] = None,
             fixed_route: Optional[bool] = None) -> None:
         """
+        Sends the reinjection packets for this vertex
+
         :param point_to_point:
             If point to point should be set, or `None` if left as before
         :param multicast:

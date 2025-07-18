@@ -75,6 +75,8 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
                        infinite_run: bool, core_subsets: CoreSubsets,
                        n_cores: int, n_sync_steps: int) -> None:
         """
+        Sends an update runtime to all cores in the subset
+
         :param current_time:
         :param run_time:
         :param infinite_run:

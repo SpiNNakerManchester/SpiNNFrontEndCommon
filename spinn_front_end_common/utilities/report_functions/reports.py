@@ -542,6 +542,8 @@ def router_report_from_compressed_router_tables(
 def generate_routing_table(routing_table: AbstractMulticastRoutingTable,
                            top_level_folder: str) -> None:
     """
+    Creates a report of this routing table into the folder.
+
     :param routing_table: The routing table to describe
     :param top_level_folder:
     """
