@@ -22,6 +22,7 @@ import re
 import signal
 import sys
 import threading
+import traceback
 import types
 from threading import Condition
 from typing import (
@@ -753,16 +754,29 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
         allocator_data = self._execute_allocator(total_run_time)
         try:
+            # hack to be removed
+            if retry < 2:
+                pop = 1/0
             self._execute_machine_generator(allocator_data)
-        except SpinnmanBootException:
-            if allocator_data is not None:
-                logger.info(f"Boot Error using {allocator_data}")
-                max_retry = get_config_int("Machine", "spalloc_retry")
-                if retry < max_retry:
-                    logger.info("retrying allocate and get machine")
-                    self._do_allocate_machine(total_run_time, retry + 1)
-                else:
-                    raise
+            return
+        except Exception as ex:  # pylint: disable=broad-except
+            logger.exception("Error on machine_generation")
+            logger.exception(ex)
+            path =  self._data_writer.get_error_file()
+            with open(path, "a", encoding="utf-8") as f:
+                f.write("Error on machine_generation\n")
+                f.write(traceback.format_exc())
+        # retry but outside of except so errors do not stack
+        if allocator_data is not None:
+            logger.exception(f"{allocator_data=}")
+            with open(path, "a", encoding="utf-8") as f:
+                f.write(f"{allocator_data=}\n")
+            max_retry = get_config_int("Machine", "spalloc_retry")
+            if retry < max_retry:
+                logger.info("retrying allocate and get machine")
+                self._do_allocate_machine(total_run_time, retry + 1)
+            else:
+                raise
 
     def _execute_allocator(self, total_run_time: Optional[float]) -> Optional[
             Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
