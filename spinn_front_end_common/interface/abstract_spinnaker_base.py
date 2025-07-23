@@ -754,9 +754,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
         allocator_data = self._execute_allocator(total_run_time)
         try:
-            # hack to be removed
-            if retry < 2:
-                pop = 1/0
             self._execute_machine_generator(allocator_data)
             return
         except Exception as ex:  # pylint: disable=broad-except
