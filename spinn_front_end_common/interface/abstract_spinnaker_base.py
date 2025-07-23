@@ -750,6 +750,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param total_run_time: The total run time to request
         """
+
         if self._data_writer.has_machine():
             return
         allocator_data = self._execute_allocator(total_run_time)
@@ -763,17 +764,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             with open(path, "a", encoding="utf-8") as f:
                 f.write("Error on machine_generation\n")
                 f.write(traceback.format_exc())
+            max_retry = get_config_int("Machine", "spalloc_retry")
+            if retry >= max_retry:
+                raise
         # retry but outside of except so errors do not stack
         if allocator_data is not None:
             logger.exception(f"{allocator_data=}")
             with open(path, "a", encoding="utf-8") as f:
                 f.write(f"{allocator_data=}\n")
-            max_retry = get_config_int("Machine", "spalloc_retry")
-            if retry < max_retry:
-                logger.info("retrying allocate and get machine")
-                self._do_allocate_machine(total_run_time, retry + 1)
-            else:
-                raise
+            logger.info("retrying allocate and get machine")
+            self._do_allocate_machine(total_run_time, retry + 1)
 
     def _execute_allocator(self, total_run_time: Optional[float]) -> Optional[
             Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
