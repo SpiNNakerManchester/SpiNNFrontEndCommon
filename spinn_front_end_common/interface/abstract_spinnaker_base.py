@@ -49,7 +49,7 @@ from spinn_machine import CoreSubsets
 
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import (
-    SpinnmanBootException, SpiNNManCoresNotInStateException)
+    SpiNNManCoresNotInStateException)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 
@@ -759,7 +759,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         except Exception as ex:  # pylint: disable=broad-except
             logger.exception("Error on machine_generation")
             logger.exception(ex)
-            path =  self._data_writer.get_error_file()
+            path = self._data_writer.get_error_file()
             with open(path, "a", encoding="utf-8") as f:
                 f.write("Error on machine_generation\n")
                 f.write(traceback.format_exc())
