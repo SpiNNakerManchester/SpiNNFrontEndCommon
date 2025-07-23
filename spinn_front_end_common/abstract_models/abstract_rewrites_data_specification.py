@@ -46,7 +46,7 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     @abstractmethod
     def reload_required(self) -> bool:
         """
-        Return true if any data region needs to be reloaded.
+        :returns: True if any data region needs to be reloaded.
         """
         raise NotImplementedError
 

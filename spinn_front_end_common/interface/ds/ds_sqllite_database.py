@@ -513,11 +513,9 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_max_content_size(self, is_system: bool) -> int:
         """
-        Returns the size of the largest content.
-
         :param is_system: if True returns system cores
             otherwise application cores
-
+        :returns: The size of the largest content.
         :raises DsDatabaseException:
         """
         for row in self.cursor().execute(
@@ -541,6 +539,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
         :param is_system: if True returns system cores
             otherwise application cores
+        :returns: The sizes of the content and the count of each size
         """
         sizes: List[Tuple[int, int]] = []
         for row in self.cursor().execute(
@@ -580,6 +579,7 @@ class DsSqlliteDatabase(SQLiteDB):
         Includes cores where DataSpecs started even if no regions reserved
 
         :raises DsDatabaseException:
+        :returns: The number for cores with a data specification.
         """
         for row in self.cursor().execute(
                 """

@@ -35,8 +35,7 @@ _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
 
 def get_n_bytes(n_keys: int) -> int:
     """
-    Get the number of bytes used by a given number of keys.
-
+    :returns: The number of bytes used by a given number of keys.
     :param n_keys: The number of keys
     """
     # Get the total number of messages
@@ -110,8 +109,7 @@ class BufferedSendingRegion(object):
 
     def get_n_keys(self, timestamp: int) -> int:
         """
-        Get the number of keys for a given timestamp.
-
+        :returns: The number of keys for a given timestamp.
         :param timestamp:
             the time stamp to check if there's still keys to transmit
         """
@@ -131,7 +129,8 @@ class BufferedSendingRegion(object):
     @property
     def next_timestamp(self) -> Optional[int]:
         """
-        The next timestamp of the data to be sent, or `None` if no more data.
+        :returns: The next timestamp of the data to be sent,
+            or `None` if no more data.
         """
         if self.is_next_timestamp:
             return self._timestamps[self._current_timestamp_pos]
@@ -143,6 +142,8 @@ class BufferedSendingRegion(object):
 
         :param timestamp:
             the time stamp to check if there's still keys to transmit
+        :returns:
+            True if there is at least on key still to send for this timestamp.
         """
         if timestamp in self._buffer:
             return bool(self._buffer[timestamp])
@@ -152,6 +153,8 @@ class BufferedSendingRegion(object):
         """
         The next key to be sent.
         Only call if :py:meth:`is_next_key` returns True.
+
+        :returns: The next key
         """
         next_timestamp = self.next_timestamp
         assert next_timestamp is not None

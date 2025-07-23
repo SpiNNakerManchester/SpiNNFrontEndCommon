@@ -442,6 +442,7 @@ class DataType(Enum):
         Returns the value as an integer, according to this type.
 
         :param value:
+        :return: The value as an integer
         """
         if self._apply_scale:
             # Deal with the cases that return np.int64  or np.int32
@@ -466,6 +467,7 @@ class DataType(Enum):
             Only works with integer and fixed point data types.
 
         :param value:
+        :returns: The values as a numpy unsigned 32 bit int
         """
         return np.round(self.encode_as_int(value)).astype(self.struct_encoding)
 
@@ -473,6 +475,8 @@ class DataType(Enum):
         """
         Returns the numpy array as an integer numpy array, according to
         this type.
+
+        :returns: The array using int types
         """
         if self._apply_scale:
             where = np.logical_or(array < self._min, self._max < array)
@@ -489,20 +493,27 @@ class DataType(Enum):
     def as_bytes(self, value: Union[int, float]) -> bytes:
         """
         Encode the Python value as bytes with NO padding.
+
+        :return: value as a byte array
         """
         return self._struct.pack(self.encode_as_int(value))
 
     def decode_numpy_array(self, array: NDArray[uint32]) -> NDArray:
         """
         Decode the numpy array of SpiNNaker values according to this type.
+
+        :return: numpy array of spinnaker values
         """
         return array / float(self._scale)
 
     def decode_array(self, values: Union[NDArray, bytes]) -> NDArray:
         """
-        Decodes a byte array into iterable of this type.
+        Decodes a byte array into numpy array of this type.
 
-        :param values: the bytes to decode into this given data type
+        Will apply scaling of needed.
+
+        :param values: The bytes to decode into this given data type
+        :returns: The values as a Numpy Array for this type.
         """
         array: np.ndarray = np.asarray(values, dtype="uint8").view(
             dtype=self.numpy_typename)
