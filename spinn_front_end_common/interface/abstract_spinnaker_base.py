@@ -22,6 +22,7 @@ import re
 import signal
 import sys
 import threading
+import traceback
 import types
 from threading import Condition
 from typing import (
@@ -47,7 +48,8 @@ from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import CoreSubsets
 
 from spinnman import __version__ as spinnman_version
-from spinnman.exceptions import SpiNNManCoresNotInStateException
+from spinnman.exceptions import (
+    SpiNNManCoresNotInStateException)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 
@@ -737,6 +739,40 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_machine(virtual_machine_generator())
             self._data_writer.set_ipaddress("virtual")
 
+    def _do_allocate_machine(
+            self, total_run_time: Optional[float], retry: int = 0) -> None:
+        """
+        Combines execute allocator and execute machine generator
+
+        This allows allocator to be run again if it is useful to do so
+
+        :param total_run_time: The total run time to request
+        """
+
+        if self._data_writer.has_machine():
+            return
+        allocator_data = self._execute_allocator(total_run_time)
+        try:
+            self._execute_machine_generator(allocator_data)
+            return
+        except Exception as ex:  # pylint: disable=broad-except
+            logger.exception("Error on machine_generation")
+            logger.exception(ex)
+            path = self._data_writer.get_error_file()
+            with open(path, "a", encoding="utf-8") as f:
+                f.write("Error on machine_generation\n")
+                f.write(traceback.format_exc())
+            max_retry = get_config_int("Machine", "spalloc_retry")
+            if retry >= max_retry:
+                raise
+        # retry but outside of except so errors do not stack
+        if allocator_data is not None:
+            logger.exception(f"{allocator_data=}")
+            with open(path, "a", encoding="utf-8") as f:
+                f.write(f"{allocator_data=}\n")
+            logger.info("retrying allocate and get machine")
+            self._do_allocate_machine(total_run_time, retry + 1)
+
     def _execute_allocator(self, total_run_time: Optional[float]) -> Optional[
             Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
                   MachineAllocationController]]:
@@ -748,8 +784,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller
         """
-        if self._data_writer.has_machine():
-            return None
         if not is_config_none("Machine", "spalloc_server"):
             with FecTimer("SpallocAllocator", TimerWork.OTHER):
                 return spalloc_allocator(
@@ -773,8 +807,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller)
         """
-        if self._data_writer.has_machine():
-            return
         machine_name = get_config_str_or_none("Machine", "machine_name")
         if machine_name is not None:
             self._data_writer.set_ipaddress(machine_name)
@@ -813,8 +845,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if get_config_bool("Machine", "virtual_board"):
                 self._execute_get_virtual_machine()
             else:
-                allocator_data = self._execute_allocator(total_run_time)
-                self._execute_machine_generator(allocator_data)
+                self._do_allocate_machine(total_run_time)
 
     def _get_machine(self) -> None:
         """
@@ -1363,8 +1394,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
-        allocator_data = self._execute_allocator(total_run_time)
-        self._execute_machine_generator(allocator_data)
+        self._do_allocate_machine(total_run_time)
         self._json_machine()
         self._report_board_chip()
 

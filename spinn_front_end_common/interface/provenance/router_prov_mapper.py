@@ -109,7 +109,7 @@ class Plotter(ContextManager[SQLiteDB]):
 
     def get_per_chip_prov_types(self) -> FrozenSet[str]:
         """
-        Get a set of the descriptions available at chip level
+        :returns: A set of the descriptions available at chip level
         """
         query = """
             SELECT DISTINCT description_name AS "description"
@@ -184,7 +184,7 @@ class Plotter(ContextManager[SQLiteDB]):
 
     def get_per_core_prov_types(self) -> FrozenSet[str]:
         """
-        Get a set of the descriptions available at core level
+        :returns: A set of the descriptions available at core level
         """
         query = """
             SELECT DISTINCT description_name AS "description"

@@ -79,6 +79,8 @@ def placer_reports_with_application_graph() -> None:
 def router_summary_report() -> Optional[RouterSummary]:
     """
     Generates a text file of routing summaries.
+
+    :return: A summary of the routing information if the writing worked.
     """
     file_name = get_report_path("path_router_summary_report")
     progress = ProgressBar(FecDataView.get_machine().n_chips,
@@ -93,6 +95,7 @@ def router_compressed_summary_report(
     Generates a text file of routing summaries.
 
     :param routing_tables: The in-operation COMPRESSED routing tables.
+    :return: A summary of the routing information if the writing worked.
     """
     file_name = get_report_path("path_compression_summary")
     progress = ProgressBar(FecDataView.get_machine().n_chips,

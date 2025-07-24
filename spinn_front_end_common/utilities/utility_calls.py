@@ -68,10 +68,9 @@ def _mkdir(directory: str) -> None:
 def get_region_base_address_offset(
         app_data_base_address: int, region: int) -> int:
     """
-    Find the address of the of a given region for the DSG.
-
     :param app_data_base_address: base address for the core
     :param region: the region ID we're looking for
+    :returns: The address of the of a given region for the DSG.
     """
     return (app_data_base_address +
             APP_PTR_TABLE_HEADER_BYTE_SIZE +
@@ -177,9 +176,10 @@ def retarget_tag(
 def open_scp_connection(
         chip_x: int, chip_y: int, chip_ip_address: str) -> SCAMPConnection:
     """
-    Create an SCP connection to the given Ethernet-enabled chip. SpiNNaker will
-    not be configured to map that connection to a tag; that is the
-    caller's responsibility.
+    Create an SCP connection to the given Ethernet-enabled chip.
+
+    SpiNNaker will not be configured to map that connection to a tag;
+    that is the caller's responsibility.
 
     :param chip_x:
         X coordinate of the Ethernet-enabled chip to connect to.
@@ -187,6 +187,8 @@ def open_scp_connection(
         Y coordinate of the Ethernet-enabled chip to connect to.
     :param chip_ip_address:
         IP address of the Ethernet-enabled chip to connect to.
+    :returns: A Connection
+        or None if for example there is no known host for this Chip
     """
     if FecDataView.has_allocation_controller():
         # See if the allocation controller wants to do it

@@ -29,6 +29,7 @@ def write_json_routing_tables(router_tables: MulticastRoutingTables) -> str:
 
     :param router_tables:
         Routing Tables to convert. Could be uncompressed or compressed
+    :returns: Path to the json file
     """
     file_path = get_report_path("path_json_routing_tables")
     # Steps are create json object, validate json and write json to a file

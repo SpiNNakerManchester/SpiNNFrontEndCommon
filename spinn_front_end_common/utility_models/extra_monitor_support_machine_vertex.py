@@ -244,6 +244,8 @@ class ExtraMonitorSupportMachineVertex(
     def static_get_binary_start_type() -> ExecutableType:
         """
         The type of the binary implementing this vertex.
+
+        :returns: The System type as this is a System vertex
         """
         return ExecutableType.SYSTEM
 
@@ -255,6 +257,8 @@ class ExtraMonitorSupportMachineVertex(
     def static_get_binary_file_name() -> str:
         """
         The name of the binary implementing this vertex.
+
+        :return: Name of theaplx files for this vertex
         """
         return "extra_monitor_support.aplx"
 
@@ -418,6 +422,8 @@ class ExtraMonitorSupportMachineVertex(
             Chip, ReInjectionStatus]:
         """
         Get the reinjection status from a set of extra monitor cores.
+
+        :returns: Mapping of the Chips to their reinjection status.
         """
         core_subsets = convert_vertices_to_core_subset(
             FecDataView.iterate_monitors())

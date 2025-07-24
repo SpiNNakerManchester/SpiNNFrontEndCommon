@@ -118,8 +118,13 @@ class GetCurrentTimeProcess(
     def get_latest_runtime(
             self, n_cores: int, core_subsets: CoreSubsets) -> Optional[int]:
         """
+        Reads the runtime off all cores in the subset
+
+        Logger warns if not all ocres reported the same runtime
+
         :param core_subsets:
         :param n_cores: Number of cores being updated
+        :returns: The lastest found
         """
         self.__latest_time = None
         with ProgressBar(n_cores, "Getting current time") as progress, \

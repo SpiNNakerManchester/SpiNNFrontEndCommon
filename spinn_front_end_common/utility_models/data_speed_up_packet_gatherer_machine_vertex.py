@@ -187,6 +187,8 @@ _PROVENANCE_DATA_SIZE: Final = _FOUR_WORDS.size
 def ceildiv(dividend: float, divisor: int) -> int:
     """
     How to divide two possibly-integer numbers and round up.
+
+    :returns: dividend / divisor rounded UP to th enearest integer
     """
     assert divisor > 0
     q, r = divmod(dividend, divisor)

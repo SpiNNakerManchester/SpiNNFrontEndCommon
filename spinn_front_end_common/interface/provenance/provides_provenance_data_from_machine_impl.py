@@ -87,6 +87,7 @@ class ProvidesProvenanceDataFromMachineImpl(
     def get_provenance_data_size(cls, n_additional_data_items: int) -> int:
         """
         :param n_additional_data_items:
+        :returns: Size of the provenance data to read
         """
         return (
             (cls.N_SYSTEM_PROVENANCE_WORDS + n_additional_data_items)
