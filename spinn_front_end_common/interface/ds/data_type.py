@@ -347,10 +347,11 @@ class DataType(Enum):
         obj.__doc__ = _doc
         return obj
 
-    def __init__(self, value: int, size: int, min_val: Decimal, max_val: Decimal,
-                 scale: Decimal, struct_encoding: str, apply_scale: bool,
-                 force_cast: Optional[Callable[[Any], int]],
-                 numpy_typename: type, _doc: str) -> None:
+    def __init__(
+            self, value: int, size: int, min_val: Decimal, max_val: Decimal,
+            scale: Decimal, struct_encoding: str, apply_scale: bool,
+            force_cast: Optional[Callable[[Any], int]],
+            numpy_typename: type, _doc: str) -> None:
         """
         :param value: ID for the enum
         :param size: The size in bytes of the type.
