@@ -43,6 +43,7 @@ class TimerWork(Enum):
         :param value: Enum ID
         :param work_name: Descriptor for this Enum
         """
+        _ = value
         self._work_name = work_name
 
     @property
