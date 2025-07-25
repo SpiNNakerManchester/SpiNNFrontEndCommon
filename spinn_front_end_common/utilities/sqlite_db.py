@@ -271,7 +271,7 @@ class SQLiteDB(object):
 
         :raises DatabaseException: If there is no cursor.
             Typically because database was used outside of a with
-        :returns: (First) Row of the last quesry run
+        :returns: (First) Row of the last query run
         """
         if self.__cursor is None:
             raise DatabaseException(

@@ -66,7 +66,7 @@ class Plotter(ContextManager[SQLiteDB]):
         :param db_filename:
             The name of a file that contains (or will contain) an SQLite
             database holding the data.
-        :param verbose: Flag to trigger prin tmessages
+        :param verbose: Flag to trigger print messages
         """
         self._db = SQLiteDB(db_filename, read_only=True, text_factory=str)
         self.__have_insertion_order = True

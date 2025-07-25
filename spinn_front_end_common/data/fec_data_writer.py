@@ -317,7 +317,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_ipaddress(self, ip_address: str) -> None:
         """
-        Sets the ip address
+        Sets the IP address
 
         :param ip_address:
         """
@@ -338,7 +338,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_java_caller(self, java_caller: JavaCaller) -> None:
         """
-        Sets/ overwrrites the method to call Java
+        Sets/ overwrites the method to call Java
 
         :param java_caller:
         """
@@ -357,7 +357,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         Sets/ overwrites the executable types
 
-        Checks it is a disc but not the keys and valuess types
+        Checks it is a disc but not the keys and values types
 
         :param executable_types:
         """

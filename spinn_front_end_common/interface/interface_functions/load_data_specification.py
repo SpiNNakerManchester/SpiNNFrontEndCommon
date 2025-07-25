@@ -43,7 +43,7 @@ def load_using_advanced_monitors() -> bool:
     """
     Check varies config settings and the size to decided to use monitors.
 
-    As it takes time to setup and takedown the system of advanced monitors,
+    As it takes time to setup and take down the system of advanced monitors,
     tests show it does not make sense unless there large context
 
     :returns: True if advanced monitors should be used for data specs

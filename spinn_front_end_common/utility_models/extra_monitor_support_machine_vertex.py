@@ -258,7 +258,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         The name of the binary implementing this vertex.
 
-        :return: Name of theaplx files for this vertex
+        :return: Name of the aplx files for this vertex
         """
         return "extra_monitor_support.aplx"
 
@@ -508,16 +508,16 @@ class _Recoverer:
     Helper class that will run the emergency state recovery system if its
     context body throws.
     """
-    def __init__(self, vtx: ExtraMonitorSupportMachineVertex,
+    def __init__(self, vertex: ExtraMonitorSupportMachineVertex,
                  placement: Placement):
         """
-        :param vtx:
+        :param vertex:
             The vertex to retrieve the IOBUF from
             if it is suspected as being dead
         :param placement:
             Where the vertex is located.
         """
-        self.__vtx = vtx
+        self.__vtx = vertex
         self.__placement = placement
 
     def __enter__(self) -> Placement:

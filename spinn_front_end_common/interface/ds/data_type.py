@@ -361,7 +361,7 @@ class DataType(Enum):
         :param struct_encoding:
             The encoding string used for struct. Scaling may also be required.
         :param apply_scale:
-            Flag to say if scale should be appiled in all cases
+            Flag to say if scale should be applied in all cases
         :param force_cast: class to cast return values to
         :param numpy_typename: Type to use in numpy array
         :param _doc: Description of the enum

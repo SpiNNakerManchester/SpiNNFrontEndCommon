@@ -613,7 +613,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         The behaviour when Mocked is currently to always return False.
 
-        :returns: True if Java should be ued/ get_java_caller will work.
+        :returns: True if Java should be used/ get_java_caller will work.
         """
         return cls.__fec_data._java_caller is not None
 

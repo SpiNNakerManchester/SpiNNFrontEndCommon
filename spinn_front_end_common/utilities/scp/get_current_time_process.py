@@ -120,11 +120,11 @@ class GetCurrentTimeProcess(
         """
         Reads the runtime off all cores in the subset
 
-        Logger warns if not all ocres reported the same runtime
+        Logger warns if not all cores reported the same runtime
 
         :param core_subsets:
         :param n_cores: Number of cores being updated
-        :returns: The lastest found
+        :returns: The latest found
         """
         self.__latest_time = None
         with ProgressBar(n_cores, "Getting current time") as progress, \

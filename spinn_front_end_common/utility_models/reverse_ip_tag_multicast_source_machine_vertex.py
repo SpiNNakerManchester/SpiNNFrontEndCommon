@@ -658,7 +658,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         Updates and returns the virtual key. `None` is give a zero value
 
-        :returns: The key used or 0 if nno key used
+        :returns: The key used or 0 if no key used
         """
         self.update_virtual_key()
         if self._virtual_key:

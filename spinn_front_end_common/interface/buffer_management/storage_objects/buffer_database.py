@@ -524,7 +524,7 @@ class BufferDatabase(BaseDatabase):
         :param x: core x
         :param y: core y
         :param p: core p
-        :returns: label for (vertx on) this core or None
+        :returns: label for (vertex on) this core or None
         """
         for row in self.cursor().execute(
                 """

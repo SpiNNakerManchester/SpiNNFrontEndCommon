@@ -188,7 +188,7 @@ def ceildiv(dividend: float, divisor: int) -> int:
     """
     How to divide two possibly-integer numbers and round up.
 
-    :returns: dividend / divisor rounded UP to th enearest integer
+    :returns: dividend / divisor rounded UP to the nearest integer
     """
     assert divisor > 0
     q, r = divmod(dividend, divisor)
