@@ -996,8 +996,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         The number of available cores on the machine after taking
         into account preallocated resources.
-
-        :return: number of available cores
         """
         machine = self._data_writer.get_machine()
         # get cores of machine
