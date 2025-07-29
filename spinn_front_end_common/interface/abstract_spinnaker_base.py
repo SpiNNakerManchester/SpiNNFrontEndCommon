@@ -1021,8 +1021,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the configuration placer value
         """
         with FecTimer("Application Placer", TimerWork.OTHER):
-            self._data_writer.set_placements(place_application_graph(
-                system_placements))
+            place_application_graph(system_placements)
 
     def _do_placer(self, system_placements: Placements) -> None:
         """
@@ -1401,6 +1400,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_board_chip()
 
         system_placements = Placements()
+        self._data_writer.set_placements(system_placements)
         self._add_commands_to_command_sender(system_placements)
         self._execute_split_lpg_vertices(system_placements)
         self._execute_insert_chip_power_monitors(system_placements)
