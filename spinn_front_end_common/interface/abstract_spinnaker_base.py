@@ -1399,15 +1399,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._json_machine()
         self._report_board_chip()
 
+        self._report_partitioner()
+
         system_placements = Placements()
         self._data_writer.set_placements(system_placements)
         self._add_commands_to_command_sender(system_placements)
         self._execute_split_lpg_vertices(system_placements)
+
+        self._do_placer(system_placements)
         self._execute_insert_chip_power_monitors(system_placements)
         self._execute_insert_extra_monitor_vertices(system_placements)
 
-        self._report_partitioner()
-        self._do_placer(system_placements)
         self._report_placements_with_application_graph()
         self._json_placements()
 
