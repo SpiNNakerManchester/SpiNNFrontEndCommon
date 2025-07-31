@@ -210,8 +210,10 @@ class _SystemMulticastRoutingGenerator(object):
         key = KEY_START_VALUE
         for chip in self._machine.get_chips_by_ethernet(eth_x, eth_y):
             self._key_to_destination_map[chip.x, chip.y] = key
-            placement = FecDataView.get_placement_of_vertex(
-                FecDataView.get_monitor_by_chip(chip))
+            monitor = FecDataView.get_monitor_by_chip(chip)
+            if monitor is None:
+                continue
+            placement = FecDataView.get_placement_of_vertex(monitor)
             self._add_routing_entry(chip, key, processor_id=placement.p)
             while chip in tree:
                 chip, link = tree[chip]
@@ -227,8 +229,10 @@ class _SystemMulticastRoutingGenerator(object):
         # add broadcast router timeout keys
         time_out_key = key
         for chip in self._machine.get_chips_by_ethernet(eth_x, eth_y):
-            placement = FecDataView.get_placement_of_vertex(
-                FecDataView.get_monitor_by_chip(chip))
+            monitor = FecDataView.get_monitor_by_chip(chip)
+            if monitor is None:
+                continue
+            placement = FecDataView.get_placement_of_vertex(monitor)
             self._add_routing_entry(
                 chip, time_out_key, processor_id=placement.p,
                 link_ids=links_per_chip[chip])
