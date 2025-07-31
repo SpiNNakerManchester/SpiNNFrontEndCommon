@@ -198,17 +198,19 @@ def open_scp_connection(
 
 
 def pick_core_for_system_placement(
-        system_placements: Placements, chip: Chip) -> int:
+        placements: Placements, chip: Chip) -> int:
     """
     Get a core number for use putting a system placement on a chip.
 
-    :param system_placements:
+    :param placements:
         Already-made system placements
     :param chip: Chip of interest
     :return: a core that a system placement could be put on
     """
-    cores = chip.placable_processors_ids
-    return cores[system_placements.n_placements_on_chip(chip)]
+    cores = list(chip.placable_processors_ids)
+    for placement in placements.placements_on_chip(chip):
+        cores.remove(placement.p)
+    return cores[0]
 
 
 def check_file_exists(path: str) -> None:
