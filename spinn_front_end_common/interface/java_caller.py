@@ -294,6 +294,8 @@ class JavaCaller(object):
         placements_by_ethernet = self._placements_grouped(used_placements)
         json_obj: JsonArray = list()
         for ethernet in self._chip_by_ethernet:
+            if ethernet not in self._gatherer_iptags:
+                continue
             by_chip = placements_by_ethernet[ethernet]
             json_gather: JsonObject = {
                 "x": ethernet.x,
@@ -302,6 +304,8 @@ class JavaCaller(object):
                 "iptag": self._json_iptag(self._gatherer_iptags[ethernet])}
             json_chips: JsonArray = list()
             for chip in self._chip_by_ethernet[ethernet]:
+                if chip not in self._monitor_cores:
+                    continue
                 json_chip: JsonObject = {
                     "x": chip.x,
                     "y": chip.y,
