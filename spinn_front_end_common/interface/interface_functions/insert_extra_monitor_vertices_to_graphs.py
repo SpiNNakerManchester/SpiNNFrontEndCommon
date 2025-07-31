@@ -56,15 +56,24 @@ def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
         len(ethernet_chips), "Inserting extra monitors into graphs")
 
     for eth in progress.over(ethernet_chips):
-        assert eth.ip_address is not None
-        gatherer = DataSpeedUpPacketGatherMachineVertex(
-            x=eth.x, y=eth.y, ip_address=eth.ip_address)
-        chip_to_gatherer_map[eth] = gatherer
-        p = pick_core_for_system_placement(placements, eth)
-        placements.add_placement(Placement(gatherer, eth.x, eth.y, p))
+        gatherer_placed = False
+
         for chip in machine.get_chips_by_ethernet(eth.x, eth.y):
+            if placements.n_placements_on_chip(chip) == 0:
+                continue
+
             monitor = ExtraMonitorSupportMachineVertex()
             chip_to_monitor_map[chip] = monitor
             p = pick_core_for_system_placement(placements, chip)
             placements.add_placement(Placement(monitor, chip.x, chip.y, p))
+
+            if not gatherer_placed:
+                gatherer_placed = True
+                assert eth.ip_address is not None
+                gatherer = DataSpeedUpPacketGatherMachineVertex(
+                    x=eth.x, y=eth.y, ip_address=eth.ip_address)
+                chip_to_gatherer_map[eth] = gatherer
+                p = pick_core_for_system_placement(placements, eth)
+                placements.add_placement(Placement(gatherer, eth.x, eth.y, p))
+
     return chip_to_gatherer_map, chip_to_monitor_map
