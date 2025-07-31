@@ -827,18 +827,21 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_monitor_by_chip(
-            cls, chip: Chip) -> ExtraMonitorSupportMachineVertex:
+            cls, chip: Chip) -> Optional[ExtraMonitorSupportMachineVertex]:
         """
         The ExtraMonitorSupportMachineVertex for chip.
 
+        This returns None if the chip (x,y) does not have a monitor
+
         :param chip: chip to get monitor for
+        :returns: The ExtraMonitorSupportMachineVertex for chip or None
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the monitors are currently unavailable
         :raises KeyError: If chip does not have a monitor
         """
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
-        return cls.__fec_data._monitor_map[chip]
+        return cls.__fec_data._monitor_map.get(chip, None)
 
     @classmethod
     def iterate_monitor_items(cls) -> \
