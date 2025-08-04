@@ -59,8 +59,8 @@ def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
         gatherer_placed = False
 
         for chip in machine.get_chips_by_ethernet(eth.x, eth.y):
-            if placements.n_placements_on_chip(chip) == 0:
-                continue
+            #if placements.n_placements_on_chip(chip) == 0:
+            #    continue
 
             monitor = ExtraMonitorSupportMachineVertex()
             chip_to_monitor_map[chip] = monitor
