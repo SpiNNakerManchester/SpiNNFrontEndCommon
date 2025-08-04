@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Tuple, Dict
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import Chip
 from pacman.model.placements import Placement, Placements
@@ -54,14 +55,16 @@ def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
     ethernet_chips = machine.ethernet_connected_chips
     progress = ProgressBar(
         len(ethernet_chips), "Inserting extra monitors into graphs")
+    selective_placing = not get_config_bool(
+        "Machine", "monitors_on_all_chips")
 
     for eth in progress.over(ethernet_chips):
         gatherer_placed = False
 
         for chip in machine.get_chips_by_ethernet(eth.x, eth.y):
-            #if placements.n_placements_on_chip(chip) == 0:
-            #    continue
-
+            if (selective_placing and
+                    placements.n_placements_on_chip(chip) == 0):
+                continue
             monitor = ExtraMonitorSupportMachineVertex()
             chip_to_monitor_map[chip] = monitor
             p = pick_core_for_system_placement(placements, chip)
