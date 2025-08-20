@@ -36,7 +36,7 @@ import requests
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
-    config_options,
+    config_options, config_sections,
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
     get_report_path, get_timestamp_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
@@ -247,14 +247,15 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def __reset_remove_data(self) -> None:
         if not get_config_bool("Reports", "keep_json_files"):
-            for option in config_options("Reports"):
-                if option.startswith("pathjson"):
-                    path = get_report_path(option)
-                    if os.path.exists(path):
-                        os.remove(path)
-                        dir_name = os.path.dirname(path)
-                        if not os.listdir(dir_name):
-                            os.removedirs(dir_name)
+            for section in config_sections():
+                for option in config_options(section):
+                    if option.startswith("pathjson"):
+                        path = get_report_path(option, section=section)
+                        if os.path.exists(path):
+                            os.remove(path)
+                            dir_name = os.path.dirname(path)
+                            if not os.listdir(dir_name):
+                                os.removedirs(dir_name)
 
         if not get_config_bool("Reports", "keep_dataspec_database"):
             path = get_report_path("path_dataspec_database")
