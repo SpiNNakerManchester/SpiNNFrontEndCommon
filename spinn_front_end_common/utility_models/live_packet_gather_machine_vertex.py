@@ -268,7 +268,7 @@ class LivePacketGatherMachineVertex(
     @classmethod
     def get_sdram_usage(cls) -> int:
         """
-        Get the SDRAM used by this vertex.
+        :returns: the SDRAM used by this vertex
         """
         return (
             SYSTEM_BYTES_REQUIREMENT + cls._CONFIG_SIZE +

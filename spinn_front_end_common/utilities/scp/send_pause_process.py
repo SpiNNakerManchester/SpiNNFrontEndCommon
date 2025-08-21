@@ -63,7 +63,9 @@ class SendPauseProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
 
     def send_pause(self, core_subsets: CoreSubsets, n_cores: int) -> None:
         """
-        :param core_subsets:
+        Sends the pause request to all cores in the subset.
+
+        :param core_subsets: Where to send the pause
         :param n_cores: Number of cores being updated
         """
         with ProgressBar(n_cores, "Sending pause request") as progress, \

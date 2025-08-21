@@ -41,7 +41,12 @@ MONITOR_CUTOFF = 12800  # 50 packets of 256 bytes
 
 def load_using_advanced_monitors() -> bool:
     """
-    Detects if advanced monitors should be used for data specs
+    Check varies config settings and the size to decided to use monitors.
+
+    As it takes time to setup and take down the system of advanced monitors,
+    tests show it does not make sense unless there large context
+
+    :returns: True if advanced monitors should be used for data specs
     """
     if not get_config_bool(
             "Machine", "enable_advanced_monitor_support"):

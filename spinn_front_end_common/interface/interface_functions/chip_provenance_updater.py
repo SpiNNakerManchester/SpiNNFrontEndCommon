@@ -46,6 +46,10 @@ class _ChipProvenanceUpdater(object):
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
 
     def __init__(self, all_core_subsets: CoreSubsets):
+        """
+
+        :param all_core_subsets:
+        """
         self.__all_cores = all_core_subsets
         self.__app_id = FecDataView.get_app_id()
         self.__txrx = FecDataView.get_transceiver()

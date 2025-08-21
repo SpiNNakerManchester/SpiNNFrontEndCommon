@@ -102,7 +102,8 @@ class DatabaseReader(SQLiteDB):
         Get the IP address, port and whether the SDP headers are to be
         stripped from the output from a vertex.
 
-        :param label: The label of the vertex
+        :param label: The label of the pre vertex
+        :param receiver_label: The label of the post vertex
         :return: tuple of (IP address, port, strip SDP, board address, tag,
             chip_x, chip_y)
         """

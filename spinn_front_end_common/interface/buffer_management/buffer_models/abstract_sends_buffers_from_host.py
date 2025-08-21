@@ -30,7 +30,7 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
     @abstractmethod
     def buffering_input(self) -> bool:
         """
-        Return True if the input of this vertex is to be buffered.
+        :returns: True if the input of this vertex is to be buffered.
         """
         raise NotImplementedError
 

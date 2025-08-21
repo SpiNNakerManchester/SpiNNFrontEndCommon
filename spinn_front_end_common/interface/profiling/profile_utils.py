@@ -75,6 +75,7 @@ def get_profiling_data(
     :param profile_region: DSG region to get profiling data out of SDRAM
     :param tag_labels: labels for the profiling data
     :param placement: placement
+    :returns: profile data read from the Machine
     """
     txrx = FecDataView.get_transceiver()
     profile_data = ProfileData(tag_labels)

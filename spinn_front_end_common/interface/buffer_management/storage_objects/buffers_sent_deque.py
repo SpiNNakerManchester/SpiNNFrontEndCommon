@@ -82,7 +82,7 @@ class BuffersSentDeque(object):
 
     def is_empty(self) -> bool:
         """
-        Determine if there are no messages.
+        :returns: True if there are no messages.
         """
         return len(self._buffers_sent) == 0
 

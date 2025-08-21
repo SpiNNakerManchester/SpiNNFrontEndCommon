@@ -43,6 +43,7 @@ def locate_extra_monitor_mc_receiver(
 
     :param placement_x: The X coordinate of the reference chip
     :param placement_y: The Y coordinate of the reference chip
+    :return: Monitor on the Ethernet Chip of the board x, y is on
     """
     chip = FecDataView.get_chip_at(placement_x, placement_y)
     return FecDataView.get_gatherer_by_xy(
@@ -69,10 +70,9 @@ def read_data(x: int, y: int, address: int, length: int,
 def get_region_base_address_offset(
         app_data_base_address: int, region: int) -> int:
     """
-    Find the address of the of a given region for the DSG.
-
     :param app_data_base_address: base address for the core
     :param region: the region ID we're looking for
+    :returns: The address of the given region for the DSG.
     """
     return (app_data_base_address +
             APP_PTR_TABLE_HEADER_BYTE_SIZE +
@@ -106,7 +106,8 @@ def convert_string_into_chip_and_core_subset(
     Translate a string list of cores into a core subset.
 
     :param cores:
-        string representing down cores formatted as x,y,p[:x,y,p]*
+        string representing cores formatted as x,y,p[:x,y,p]*
+    :returns: Core(s) read from the String
     """
     ignored_cores = CoreSubsets()
     if cores is not None and cores != "None":

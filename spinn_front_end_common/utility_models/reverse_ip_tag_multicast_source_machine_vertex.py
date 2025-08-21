@@ -165,6 +165,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
             eieio_params: Optional[EIEIOParameters] = None,
             # Send buffer parameters
             send_buffer_times: _SendBufferTimes = None):
+        """
+
+        :param label: The optional name of the vertex
+        :param vertex_slice:
+            The slice of the application vertex that this machine vertex
+            implements.
+        :param app_vertex:
+            The application vertex that caused this machine vertex to be
+            created. If `None`, there is no such application vertex.
+        :param n_keys: Number of keys.
+            Only used to create a slice if vertex_slice is None.
+        :param eieio_params: Parameters to override the defaults
+        :param send_buffer_times: Times to spike at
+        """
         if vertex_slice is None:
             if n_keys is None:
                 raise KeyError("Either provide a vertex_slice or n_keys")
@@ -368,6 +382,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param recording_enabled: Whether recording is done
         :param receive_rate: What the expected message receive rate is
         :param n_keys: How many keys are being sent
+        :returns: Variable SDRAM based on the parameters
         """
         static_usage = (
             SYSTEM_BYTES_REQUIREMENT +
@@ -483,6 +498,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def calculate_mask(n_neurons: int) -> int:
         """
         :param n_neurons:
+        :returns:
         """
         temp_value = n_neurons.bit_length()
         max_key = 2**temp_value - 1
@@ -641,6 +657,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_virtual_key(self) -> int:
         """
         Updates and returns the virtual key. `None` is give a zero value
+
+        :returns: The key used or 0 if no key used
         """
         self.update_virtual_key()
         if self._virtual_key:

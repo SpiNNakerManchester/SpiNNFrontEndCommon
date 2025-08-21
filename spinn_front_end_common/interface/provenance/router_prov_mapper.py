@@ -62,6 +62,12 @@ class Plotter(ContextManager[SQLiteDB]):
     __seaborn: Optional[ModuleType] = None
 
     def __init__(self, db_filename: str, verbose: bool = False):
+        """
+        :param db_filename:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data.
+        :param verbose: Flag to trigger print messages
+        """
         self._db = SQLiteDB(db_filename, read_only=True, text_factory=str)
         self.__have_insertion_order = True
         self.__verbose = verbose
@@ -103,7 +109,7 @@ class Plotter(ContextManager[SQLiteDB]):
 
     def get_per_chip_prov_types(self) -> FrozenSet[str]:
         """
-        Get a set of the descriptions available at chip level
+        :returns: A set of the descriptions available at chip level
         """
         query = """
             SELECT DISTINCT description_name AS "description"
@@ -178,7 +184,7 @@ class Plotter(ContextManager[SQLiteDB]):
 
     def get_per_core_prov_types(self) -> FrozenSet[str]:
         """
-        Get a set of the descriptions available at core level
+        :returns: A set of the descriptions available at core level
         """
         query = """
             SELECT DISTINCT description_name AS "description"

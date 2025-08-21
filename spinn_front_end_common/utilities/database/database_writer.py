@@ -227,6 +227,8 @@ class DatabaseWriter(SQLiteDB):
             self, machine_vertices: Optional[
                 Iterable[Tuple[MachineVertex, str]]]) -> None:
         """
+        Creates atom keys and stores them in the database.
+
         :param machine_vertices:
         """
         routing_infos = FecDataView.get_routing_infos()

@@ -221,8 +221,8 @@ class LivePacketGatherParameters(object):
 
     def get_iptag_resource(self) -> IPtagResource:
         """
-        Get a description of the :py:class:`~spinn_machine.tags.IPTag`
-        that the LPG for these parameters will require.
+        :returns: A description of the :py:class:`~spinn_machine.tags.IPTag`
+           that the LPG for these parameters will require.
         """
         return IPtagResource(
             ip_address=self.hostname, port=self.port,

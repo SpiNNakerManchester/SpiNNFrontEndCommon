@@ -54,6 +54,10 @@ class ConfigHandler(object):
         "_data_writer", )
 
     def __init__(self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
+        """
+        :param data_writer_cls:
+            Class of the DataWriter used to store the global data
+        """
         load_config()
 
         if data_writer_cls:

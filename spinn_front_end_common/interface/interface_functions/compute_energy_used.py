@@ -54,6 +54,7 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     simulation (or other application) running on SpiNNaker.
 
     :param checkpoint: the time at which to compute execution energy up to
+    :returns: Summary object of power used
     """
     # Get data from provenance
     with GlobalProvenance() as db:
@@ -316,6 +317,7 @@ def compute_energy_over_time(
         packets sent by the machine during extraction
     :param run_router_packets:
         packets sent by the machine during running
+    :returns: Summary object of power used
     """
 
     # Time and energy spent on the host machine, with the machine (at least

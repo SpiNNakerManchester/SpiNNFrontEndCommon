@@ -98,6 +98,10 @@ class GetCurrentTimeProcess(
     )
 
     def __init__(self, connection_selector: MostDirectConnectionSelector):
+        """
+         :param connection_selector:
+            Connection to send the request over.
+        """
         super().__init__(connection_selector)
         self.__latest_time: Optional[int] = None
         self.__earliest_time: Optional[int] = None
@@ -114,8 +118,13 @@ class GetCurrentTimeProcess(
     def get_latest_runtime(
             self, n_cores: int, core_subsets: CoreSubsets) -> Optional[int]:
         """
+        Reads the runtime off all cores in the subset
+
+        Logger warns if not all cores reported the same runtime
+
         :param core_subsets:
         :param n_cores: Number of cores being updated
+        :returns: The latest found
         """
         self.__latest_time = None
         with ProgressBar(n_cores, "Getting current time") as progress, \

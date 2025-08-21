@@ -141,26 +141,24 @@ class ProfileData(object):
 
     def get_mean_ms(self, tag: str) -> float:
         """
-        Get the mean time in milliseconds spent on operations with the
-        given tag.
-
         :param tag: The tag to get the mean time for
+        :returns: The mean time in milliseconds spent on operations with the
+            given tag.
         """
         return numpy.average(self._tags[tag][_DURATION])
 
     def get_n_calls(self, tag: str) -> int:
         """
-        Get the number of times the given tag was recorded.
-
         :param tag: The tag to get the number of calls of
+        :returns: The number of times the given tag was recorded.
         """
         return self._tags[tag][_DURATION].size
 
     def get_mean_n_calls_per_ts(self, tag: str) -> float:
         """
-        Get the mean number of times the given tag was recorded per timestep.
-
         :param tag: The tag to get the data for
+        :returns: The mean number of times the given tag
+           was recorded per timestep.
         """
         time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(self._max_time / time_step_ms)
@@ -171,10 +169,9 @@ class ProfileData(object):
 
     def get_mean_ms_per_ts(self, tag: str) -> float:
         """
-        Get the mean time in milliseconds spent on operations with the
-        given tag per timestep.
-
         :param tag: The tag to get the data for
+        :return: The mean time in milliseconds spent on operations with the
+           given tag per timestep.
         """
         time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(self._max_time / time_step_ms)

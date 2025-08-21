@@ -46,6 +46,8 @@ class MachineDataSpecableVertex(
             iptags: Optional[Iterable[IPTag]],
             reverse_iptags: Optional[Iterable[ReverseIPTag]]) -> None:
         """
+        Generates and stores the data specifications
+
         :param spec: The data specification to write into.
         :param placement: Where this node is on the SpiNNaker machine.
         :param iptags: The (forward) IP tags for the vertex, if any

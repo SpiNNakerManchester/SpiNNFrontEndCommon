@@ -61,6 +61,12 @@ class SpallocJobController(MachineAllocationController):
 
     def __init__(
             self, client: SpallocClient, job: SpallocJob, use_proxy: bool):
+        """
+
+        :param client:
+        :param job:
+        :param use_proxy:
+        """
         if job is None:
             raise TypeError("must have a real job")
         self.__client = client
@@ -197,6 +203,10 @@ class _OldSpallocJobController(MachineAllocationController):
     )
 
     def __init__(self, job: Job, host: str):
+        """
+        :param job: spalloc job to be used.
+        :param host: host to use to create a Transceiver
+        """
         if job is None:
             raise TypeError("must have a real job")
         self._job = job

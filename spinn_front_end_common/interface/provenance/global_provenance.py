@@ -56,6 +56,9 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the path of the current provenance database of the last run
 
+        Used the cfg setting tpath_global_provenance
+        placing this in the timestamp directory
+
         .. warning::
             Calling this method between start/reset and run may result in a
             path to a database not yet created.
@@ -63,6 +66,7 @@ class GlobalProvenance(SQLiteDB):
         :raises ValueError:
             if the system is in a state where path can't be retrieved,
             for example before run is called
+        :returns: Directory for this database based on the cfg setting
         """
         return get_timestamp_path("tpath_global_provenance")
 
@@ -118,6 +122,7 @@ class GlobalProvenance(SQLiteDB):
         :param category: Name of Category starting
         :param machine_on: If the machine was done during all
             or some of the time
+        :returns: ID of the inserted category
         """
         self.cursor().execute(
             """
@@ -315,7 +320,6 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param category:
         :return: total off all run times with this category
         """
         if n_reset is None:
@@ -388,7 +392,6 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param category:
         :return: total of all run times with this category
         """
         if n_reset is None:
@@ -452,7 +455,7 @@ class GlobalProvenance(SQLiteDB):
     def retreive_log_messages(
             self, min_level: int = 0) -> List[str]:
         """
-        Retrieves all log messages at or above the min_level
+        :returns: All log messages at or above the min_level
         """
         query = """
             SELECT message

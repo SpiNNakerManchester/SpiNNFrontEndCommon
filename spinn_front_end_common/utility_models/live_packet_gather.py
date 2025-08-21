@@ -111,8 +111,7 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
         Which LPG machine vertex is targeted by which machine vertex
         and partition.
 
-        :return:
-             A set of (LPG machine vertex, source machine vertex, partition_id)
+        A set of (LPG machine vertex, source machine vertex, partition_id)
         """
         return self.__targeted_lpgs
 
