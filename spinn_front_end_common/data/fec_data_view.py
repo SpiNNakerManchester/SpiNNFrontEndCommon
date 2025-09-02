@@ -90,7 +90,6 @@ class _FecDataModel(object):
         "_gatherer_map",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
-        "_ipaddress",
         "_java_caller",
         "_live_packet_recorder_params",
         "_live_output_vertices",
@@ -163,7 +162,6 @@ class _FecDataModel(object):
         self._fixed_routes: Optional[Dict[XY, RoutingEntry]] = None
         self._gatherer_map: \
             Optional[Dict[Chip, DataSpeedUpPacketGatherMachineVertex]] = None
-        self._ipaddress: Optional[str] = None
         self._next_sync_signal: Signal = Signal.SYNC0
         self._notification_protocol: Optional[NotificationProtocol] = None
         self._max_run_time_steps: Optional[int] = None
@@ -536,29 +534,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._system_multicast_router_timeout_keys is None:
             raise cls._exception("system_multicast_router_timeout_keys")
         return cls.__fec_data._system_multicast_router_timeout_keys
-
-    # IP address
-
-    @classmethod
-    def has_ipaddress(cls) -> bool:
-        """
-        Detects if the IP address of the board with chip 0,0 is known.
-        """
-        return cls.__fec_data._ipaddress is not None
-
-    @classmethod
-    def get_ipaddress(cls) -> str:
-        """
-        Gets the IP address of the board with chip 0,0 if it has been set.
-
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the IP address is currently unavailable
-        """
-        if cls.__fec_data._ipaddress is None:
-            if cls._is_mocked():
-                return "127.0.0.1"
-            raise cls._exception("ipaddress")
-        return cls.__fec_data._ipaddress
 
     # fixed_routes
     @classmethod
