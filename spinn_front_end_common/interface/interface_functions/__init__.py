@@ -49,7 +49,6 @@ from .router_provenance_gatherer import router_provenance_gatherer
 from .routing_table_loader import routing_table_loader
 from .spalloc_allocator import spalloc_allocator
 from .tags_loader import tags_loader
-from .virtual_machine_generator import virtual_machine_generator
 from .read_routing_tables_from_machine import read_routing_tables_from_machine
 from .sdram_outgoing_partition_allocator import (
     sdram_outgoing_partition_allocator)
@@ -79,4 +78,4 @@ __all__ = (
     "routing_table_loader", "sdram_outgoing_partition_allocator",
     "spalloc_allocator",
     "system_multicast_routing_generator", "tags_loader",
-    "virtual_machine_generator", "add_command_senders")
+    "add_command_senders")

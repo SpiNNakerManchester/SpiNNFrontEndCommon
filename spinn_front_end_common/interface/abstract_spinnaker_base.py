@@ -110,7 +110,7 @@ from spinn_front_end_common.interface.interface_functions import (
     read_routing_tables_from_machine, router_provenance_gatherer,
     routing_table_loader, sdram_outgoing_partition_allocator,
     spalloc_allocator, system_multicast_routing_generator,
-    tags_loader, virtual_machine_generator, add_command_senders)
+    tags_loader, add_command_senders)
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
@@ -733,14 +733,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         return steps
 
     def _execute_get_virtual_machine(self) -> None:
-        """
-        Runs, times and logs the VirtualMachineGenerator if required.
-
-        May set then "machine" value
-        """
         with FecTimer("Virtual machine generator", TimerWork.OTHER):
-            self._data_writer.set_machine(virtual_machine_generator())
-            self._data_writer.set_ipaddress("virtual")
+            super()._execute_get_virtual_machine()
 
     def _do_allocate_machine(
             self, total_run_time: Optional[float], retry: int = 0) -> None:
