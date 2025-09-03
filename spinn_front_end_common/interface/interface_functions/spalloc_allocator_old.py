@@ -41,7 +41,6 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
 
 
 class SpallocJobController(MachineAllocationController):
@@ -251,33 +250,10 @@ class _OldSpallocJobController(MachineAllocationController):
         super()._teardown()
 
 
-_MACHINE_VERSION = 5
-
-
-def spalloc_allocator(
-        bearer_token: Optional[str] = None, group: Optional[str] = None,
-        collab: Optional[str] = None, nmpi_job: Union[int, str, None] = None,
-        nmpi_user: Optional[str] = None) -> Tuple[
-            str, int, None, bool, bool, Dict[XY, str],
-            MachineAllocationController]:
-    """
-    Request a machine from a SPALLOC server that will fit the given
-    number of chips.
-
-    :param bearer_token: The bearer token to use
-    :param group: The group to associate with or None for no group
-    :param collab: The collab to associate with or None for no collab
-    :param nmpi_job: The NMPI Job to associate with or None for no job
-    :param nmpi_user: The NMPI username to associate with or None for no user
-    :return:
-        host, board version, BMP details, reset on startup flag,
-        auto-detect BMP flag, board address map, allocation controller
-    """
-    spalloc_server = get_config_str("Machine", "spalloc_server")
-
+def get_n_boards() -> int:
     # Work out how many boards are needed
     if FecDataView.has_n_boards_required():
-        n_boards = FecDataView.get_n_boards_required()
+        return FecDataView.get_n_boards_required()
     else:
         n_chips = FecDataView.get_n_chips_needed()
         # reduce max chips by 2 in case you get a bad board(s)
@@ -291,20 +267,10 @@ def spalloc_allocator(
         n_boards = int(math.ceil(n_boards_float))
         if n_boards - n_boards_float < 0.5:
             n_boards += 1
+        return n_boards
 
-    if is_server_address(spalloc_server):
-        host, connections, mac = _allocate_job_new(
-            spalloc_server, n_boards, bearer_token, group, collab,
-            int(nmpi_job) if nmpi_job is not None else None,
-            nmpi_user)
-    else:
-        host, connections, mac = _allocate_job_old(spalloc_server, n_boards)
-    return (host, _MACHINE_VERSION, None, False, False, connections, mac)
-
-
-def _allocate_job_new(
-        spalloc_server: str, n_boards: int,
-        bearer_token: Optional[str] = None, group: Optional[str] = None,
+def spalloc_allocate_job_new(
+        spalloc_server: str, bearer_token: Optional[str] = None, group: Optional[str] = None,
         collab: Optional[str] = None, nmpi_job: Optional[int] = None,
         nmpi_user: Optional[str] = None) -> Tuple[
             str, Dict[XY, str], MachineAllocationController]:
@@ -312,15 +278,14 @@ def _allocate_job_new(
     Request a machine from an new-style spalloc server that will fit the
     given number of boards.
 
-    :param spalloc_server:
-        The server from which the machine should be requested
-    :param n_boards: The number of boards required
     :param bearer_token: The bearer token to use
     :param group: The group to associate with or None for no group
     :param collab: The collab to associate with or None for no collab
     :param nmpi_job: The NMPI Job to associate with or None for no job
     :param nmpi_user: The NMPI username to associate with or None for no user
     """
+    spalloc_server = get_config_str("Machine", "spalloc_server")
+    n_boards = get_n_boards()
     logger.info(f"Requesting job with {n_boards} boards")
     with ExitStack() as stack:
         spalloc_machine = get_config_str_or_none("Machine", "spalloc_machine")
@@ -349,7 +314,7 @@ def _allocate_job_new(
     return (root, connections, allocation_controller)
 
 
-def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[
+def spalloc_allocate_job_old() -> Tuple[
         str, Dict[XY, str], MachineAllocationController]:
     """
     Request a machine from an old-style spalloc server that will fit the
@@ -359,6 +324,8 @@ def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[
         The server from which the machine should be requested
     :param n_boards: The number of boards required
     """
+    spalloc_server = get_config_str("Machine", "spalloc_server")
+    n_boards = get_n_boards()
     host, port, owner = parse_old_spalloc(
         spalloc_server, get_config_int("Machine", "spalloc_port"),
         get_config_str("Machine", "spalloc_user"))

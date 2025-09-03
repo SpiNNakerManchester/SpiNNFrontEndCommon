@@ -53,7 +53,7 @@ from spinnman.exceptions import (
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 from spinnman.spalloc import (
-    MachineAllocationController)
+    is_server_address, MachineAllocationController)
 
 from spalloc_client import (  # type: ignore[import]
     __version__ as spalloc_version)
@@ -109,7 +109,8 @@ from spinn_front_end_common.interface.interface_functions import (
     placements_provenance_gatherer, profile_data_gatherer,
     read_routing_tables_from_machine, router_provenance_gatherer,
     routing_table_loader, sdram_outgoing_partition_allocator,
-    spalloc_allocator, system_multicast_routing_generator,
+    spalloc_allocate_job_new, spalloc_allocate_job_old,
+    system_multicast_routing_generator,
     tags_loader, add_command_senders)
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
@@ -781,10 +782,20 @@ class AbstractSpinnakerBase(ConfigHandler):
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller
         """
-        if not is_config_none("Machine", "spalloc_server"):
+        spalloc_server = get_config_str_or_none("Machine", "spalloc_server")
+        if spalloc_server:
+            _MACHINE_VERSION = 5
             with FecTimer("SpallocAllocator", TimerWork.OTHER):
-                return spalloc_allocator(
-                    self.__bearer_token, **self.__group_collab_or_job)
+                if is_server_address(spalloc_server):
+                    nmpi_job: Union[int, str, None] = None
+                    nmpi_user: Optional[str] = None
+                    host, connections, mac = spalloc_allocate_job_new(
+                        self.__bearer_token, self.__group_collab_or_job,
+                        nmpi_job, nmpi_user)
+                else:
+                    host, connections, mac = spalloc_allocate_job_old()
+                return (
+                    host, _MACHINE_VERSION, None, False, False, connections, mac)
         if not is_config_none("Machine", "remote_spinnaker_url"):
             with FecTimer("HBPAllocator", TimerWork.OTHER):
                 # TODO: Would passing the bearer token to this ever make sense?

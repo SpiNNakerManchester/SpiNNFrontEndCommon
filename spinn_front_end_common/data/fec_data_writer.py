@@ -33,7 +33,7 @@ from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
 from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
+from spinn_front_end_common.interface.interface_functions.spalloc_allocator_old \
     import SpallocJobController
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
