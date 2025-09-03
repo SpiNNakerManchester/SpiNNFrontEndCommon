@@ -22,19 +22,20 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
+
 from spinn_machine import Chip, CoreSubsets, RoutingEntry
+
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
+from spinnman.spalloc.spalloc_allocator import SpallocJobController
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
 from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.interface.interface_functions.spalloc_allocator_old \
-    import SpallocJobController
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)

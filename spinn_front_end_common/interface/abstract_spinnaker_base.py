@@ -54,6 +54,7 @@ from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 from spinnman.spalloc import (
     is_server_address, MachineAllocationController)
+from spinnman.spalloc.spalloc_allocator import spalloc_allocate_job
 
 from spalloc_client import (  # type: ignore[import]
     __version__ as spalloc_version)
@@ -109,7 +110,7 @@ from spinn_front_end_common.interface.interface_functions import (
     placements_provenance_gatherer, profile_data_gatherer,
     read_routing_tables_from_machine, router_provenance_gatherer,
     routing_table_loader, sdram_outgoing_partition_allocator,
-    spalloc_allocate_job_new, spalloc_allocate_job_old,
+    spalloc_allocate_job_old,
     system_multicast_routing_generator,
     tags_loader, add_command_senders)
 from spinn_front_end_common.interface.interface_functions.\
@@ -787,11 +788,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             _MACHINE_VERSION = 5
             with FecTimer("SpallocAllocator", TimerWork.OTHER):
                 if is_server_address(spalloc_server):
-                    nmpi_job: Union[int, str, None] = None
-                    nmpi_user: Optional[str] = None
-                    host, connections, mac = spalloc_allocate_job_new(
-                        self.__bearer_token, self.__group_collab_or_job,
-                        nmpi_job, nmpi_user)
+                    host, connections, mac = spalloc_allocate_job(
+                        self.__bearer_token, **self.__group_collab_or_job)
                 else:
                     host, connections, mac = spalloc_allocate_job_old()
                 return (

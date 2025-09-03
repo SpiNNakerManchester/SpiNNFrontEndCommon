@@ -47,8 +47,7 @@ from .placements_provenance_gatherer import placements_provenance_gatherer
 from .profile_data_gatherer import profile_data_gatherer
 from .router_provenance_gatherer import router_provenance_gatherer
 from .routing_table_loader import routing_table_loader
-from .spalloc_allocator_old import (
-    spalloc_allocate_job_new, spalloc_allocate_job_old)
+from .spalloc_allocator_old import spalloc_allocate_job_old
 from .tags_loader import tags_loader
 from .read_routing_tables_from_machine import read_routing_tables_from_machine
 from .sdram_outgoing_partition_allocator import (
