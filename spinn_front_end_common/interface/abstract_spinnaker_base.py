@@ -750,7 +750,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if self._data_writer.has_machine():
             return
-        allocator_data = self._execute_allocator(total_run_time)
+        allocator_data = self._do_get_allocator_data(total_run_time)
         try:
             self._execute_machine_generator(allocator_data)
             return
@@ -772,7 +772,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.info("retrying allocate and get machine")
             self._do_allocate_machine(total_run_time, retry + 1)
 
-    def _execute_allocator(self, total_run_time: Optional[float]) -> Optional[
+    def _do_get_allocator_data(self, total_run_time: Optional[float]) -> Optional[
             Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
                   MachineAllocationController]]:
         """
@@ -799,6 +799,16 @@ class AbstractSpinnakerBase(ConfigHandler):
                 # TODO: Would passing the bearer token to this ever make sense?
                 return hbp_allocator(total_run_time)
         return None
+
+    def _execute_spalloc_allocate_job(self) -> Tuple[
+        str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
+        MachineAllocationController]:
+        _MACHINE_VERSION = 5
+        with FecTimer("SpallocAllocator", TimerWork.OTHER):
+            host, connections, mac = spalloc_allocate_job(
+                self.__bearer_token, **self.__group_collab_or_job)
+            return (
+                host, _MACHINE_VERSION, None, False, False, connections, mac)
 
     def _execute_machine_generator(self, allocator_data: Optional[Tuple[
             str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
