@@ -52,6 +52,8 @@ from spinnman.exceptions import (
     SpiNNManCoresNotInStateException)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
+from spinnman.spalloc import (
+    MachineAllocationController)
 
 from spalloc_client import (  # type: ignore[import]
     __version__ as spalloc_version)
@@ -85,8 +87,6 @@ from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices,
     AbstractCanReset)
-from spinn_front_end_common.abstract_models.impl import (
-    MachineAllocationController)
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.storage_objects \

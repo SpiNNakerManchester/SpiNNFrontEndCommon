@@ -35,7 +35,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
-    from spinn_front_end_common.abstract_models.impl import (
+    from spinnman.spalloc import (
         MachineAllocationController)
     from spinn_front_end_common.interface.buffer_management import (
         BufferManager)

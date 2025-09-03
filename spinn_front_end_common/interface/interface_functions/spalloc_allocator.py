@@ -32,11 +32,10 @@ from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, EIEIOConnection)
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
-    is_server_address, SpallocClient, SpallocJob, SpallocState)
+    is_server_address, MachineAllocationController,
+    SpallocClient, SpallocJob, SpallocState)
 from spinnman.transceiver import Transceiver
 
-from spinn_front_end_common.abstract_models.impl import (
-    MachineAllocationController)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc

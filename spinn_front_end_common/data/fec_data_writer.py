@@ -41,7 +41,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
-from spinn_front_end_common.abstract_models.impl import (
+from spinnman.spalloc import (
     MachineAllocationController)
 from .fec_data_view import FecDataView, _FecDataModel
 

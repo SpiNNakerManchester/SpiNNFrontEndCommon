@@ -21,10 +21,9 @@ from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.json import JsonArray, JsonObject
 
+from spinnman.spalloc import MachineAllocationController
 from pacman.exceptions import PacmanConfigurationException
 
-from spinn_front_end_common.abstract_models.impl import (
-    MachineAllocationController)
 from spinn_front_end_common.data import FecDataView
 
 
