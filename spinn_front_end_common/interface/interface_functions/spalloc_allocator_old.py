@@ -99,7 +99,7 @@ class _OldSpallocJobController(MachineAllocationController):
 
 
 def spalloc_allocate_job_old() -> Tuple[
-        str, Dict[XY, str], MachineAllocationController]:
+        str, int, Dict[XY, str], MachineAllocationController]:
     """
     Request a machine from an old-style spalloc server that will fit the
     requested number of boards.
@@ -118,7 +118,9 @@ def spalloc_allocate_job_old() -> Tuple[
     job, hostname, scamp_connection_data = _launch_checked_job_old(
         n_boards, host, port, owner, machine)
     machine_allocation_controller = _OldSpallocJobController(job, hostname)
-    return (hostname, scamp_connection_data, machine_allocation_controller)
+    _MACHINE_VERSION = 5
+    return (hostname, _MACHINE_VERSION, scamp_connection_data,
+            machine_allocation_controller)
 
 
 def _launch_checked_job_old(

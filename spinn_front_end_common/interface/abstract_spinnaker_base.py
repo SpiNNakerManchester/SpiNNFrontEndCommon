@@ -41,6 +41,7 @@ from spinn_utilities.config_holder import (
     get_report_path, get_timestamp_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -117,7 +118,7 @@ from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, GlobalProvenance, TimerCategory, TimerWork)
+    FecTimer, GlobalProvenance, ProvenanceWriter, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
@@ -734,6 +735,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             steps.append(int(left_over_steps))
         return steps
 
+    @overrides(ConfigHandler._execute_get_virtual_machine, extend_doc=False)
     def _execute_get_virtual_machine(self) -> None:
         with FecTimer("Virtual machine generator", TimerWork.OTHER):
             super()._execute_get_virtual_machine()
@@ -772,43 +774,36 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.info("retrying allocate and get machine")
             self._do_allocate_machine(total_run_time, retry + 1)
 
-    def _do_get_allocator_data(self, total_run_time: Optional[float]) -> Optional[
-            Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
-                  MachineAllocationController]]:
-        """
-        Runs, times and logs the SpallocAllocator or HBPAllocator if required.
-
-        :param total_run_time: The total run time to request
-        :return: machine name, machine version, BMP details (if any),
-            reset on startup flag, auto-detect BMP, SCAMP connection details,
-            boot port, allocation controller
-        """
-        spalloc_server = get_config_str_or_none("Machine", "spalloc_server")
-        if spalloc_server:
-            _MACHINE_VERSION = 5
-            with FecTimer("SpallocAllocator", TimerWork.OTHER):
-                if is_server_address(spalloc_server):
-                    host, connections, mac = spalloc_allocate_job(
-                        self.__bearer_token, **self.__group_collab_or_job)
-                else:
-                    host, connections, mac = spalloc_allocate_job_old()
-                return (
-                    host, _MACHINE_VERSION, None, False, False, connections, mac)
-        if not is_config_none("Machine", "remote_spinnaker_url"):
-            with FecTimer("HBPAllocator", TimerWork.OTHER):
-                # TODO: Would passing the bearer token to this ever make sense?
-                return hbp_allocator(total_run_time)
-        return None
-
-    def _execute_spalloc_allocate_job(self) -> Tuple[
-        str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
-        MachineAllocationController]:
-        _MACHINE_VERSION = 5
-        with FecTimer("SpallocAllocator", TimerWork.OTHER):
-            host, connections, mac = spalloc_allocate_job(
+    @overrides(ConfigHandler._execute_spalloc_allocate_job)
+    def _execute_spalloc_allocate_job(self) ->  Tuple[
+            str, int, Optional[str], bool, bool, None,
+            MachineAllocationController]:
+        with FecTimer("Spalloc Allocator", TimerWork.OTHER):
+            host, version, connections, mac = spalloc_allocate_job(
                 self.__bearer_token, **self.__group_collab_or_job)
+            with ProvenanceWriter() as db:
+                db.insert_board_provenance(connections)
             return (
-                host, _MACHINE_VERSION, None, False, False, connections, mac)
+                host, version, None, False, False, connections, mac)
+
+    @overrides(ConfigHandler._execute_spalloc_allocate_job_old)
+    def _execute_spalloc_allocate_job_old(self) ->  Tuple[
+            str, int, Optional[str], bool, bool, None,
+            MachineAllocationController]:
+        with FecTimer("Spalloc Allocator Old", TimerWork.OTHER):
+            host, version, connections, mac = spalloc_allocate_job_old()
+            with ProvenanceWriter() as db:
+                db.insert_board_provenance(connections)
+            return (
+                host, version, None, False, False, connections, mac)
+
+    @overrides(ConfigHandler._execute_hbp_allocator)
+    def _execute_hbp_allocator(total_run_time:  int) -> Tuple[
+            str, int, Optional[str], bool, bool, None,
+            MachineAllocationController]:
+        with FecTimer("HBPAllocator", TimerWork.OTHER):
+            # TODO: Would passing the bearer token to this ever make sense?
+            return hbp_allocator(total_run_time)
 
     def _execute_machine_generator(self, allocator_data: Optional[Tuple[
             str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
