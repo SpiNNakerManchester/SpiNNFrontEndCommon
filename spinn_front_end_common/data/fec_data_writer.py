@@ -29,6 +29,8 @@ from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
+from spinnman.spalloc import (
+    MachineAllocationController)
 from spinnman.spalloc.spalloc_allocator import SpallocJobController
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -42,8 +44,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
-from spinnman.spalloc import (
-    MachineAllocationController)
+
 from .fec_data_view import FecDataView, _FecDataModel
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -315,6 +316,14 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._data_in_multicast_key_to_chip_map = key_to_chip_map
         self.__fec_data._data_in_multicast_routing_tables = routing_tables
         self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
+
+    def set_ipaddress(self, ip_address: str) -> None:
+        """
+        :param ip_address:
+        """
+        if not isinstance(ip_address, str):
+            raise TypeError("ipaddress must be a str")
+        self.__fec_data._ipaddress = ip_address
 
     def set_fixed_routes(
             self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]) -> None:

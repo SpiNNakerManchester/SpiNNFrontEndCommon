@@ -291,6 +291,8 @@ class LiveEventConnection(DatabaseConnection):
         :param live_event_callback: A function to be called when events are
             received. This should take as parameters the label of the vertex,
             an int atom ID or key, and an int payload which may be None
+        :param translate_key: If True the key will be converted to an atom id
+            before calling live_event_callback
         """
         if self.__receive_labels is None:
             raise ConfigurationException("no receive labels defined")
@@ -614,17 +616,18 @@ class LiveEventConnection(DatabaseConnection):
                           f"without time for {label} but has no callback." \
                           f" Use add_receive_no_time_callback to register one"
                     warn_once(logger, msg)
-                for c_back, use_atom in callbacks:
+                for live_event_callback, translate_key in callbacks:
                     if isinstance(element, KeyPayloadDataElement):
-                        if use_atom:
-                            c_back(label, atom_id, element.payload)
+                        if translate_key:
+                            live_event_callback(
+                                label, atom_id, element.payload)
                         else:
-                            c_back(label, key, element.payload)
+                            live_event_callback(label, key, element.payload)
                     else:
-                        if use_atom:
-                            c_back(label, atom_id, None)
+                        if translate_key:
+                            live_event_callback(label, atom_id, None)
                         else:
-                            c_back(label, key, None)
+                            live_event_callback(label, key, None)
             else:
                 self.__handle_unknown_key(key)
 

@@ -29,6 +29,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 def graph_binary_gatherer() -> ExecutableTargets:
     """
     Extracts binaries to be executed.
+
+    :returns: The Executable targets loaded with the binaries
     """
     return _GraphBinaryGatherer().gather_binaries()
 
@@ -45,6 +47,8 @@ class _GraphBinaryGatherer(object):
     def gather_binaries(self) -> ExecutableTargets:
         """
         Gather the binary for each placement
+
+        :returns: The Executable targets loaded with the binaries
         """
         progress = ProgressBar(
             FecDataView.get_n_placements(), "Finding binaries")

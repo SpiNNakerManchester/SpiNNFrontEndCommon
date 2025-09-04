@@ -231,7 +231,7 @@ class SQLiteDB(object):
 
     def cursor(self) -> sqlite3.Cursor:
         """
-        Gets the cursor created by the with statement
+        :returns: The cursor created by the with statement
         """
         if self.__cursor is None:
             raise DatabaseException(
@@ -271,6 +271,7 @@ class SQLiteDB(object):
 
         :raises DatabaseException: If there is no cursor.
             Typically because database was used outside of a with
+        :returns: (First) Row of the last query run
         """
         if self.__cursor is None:
             raise DatabaseException(

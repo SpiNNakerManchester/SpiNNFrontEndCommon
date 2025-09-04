@@ -71,11 +71,10 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
     def get_reinjection_status(
             self, x: int, y: int, p: int) -> ReInjectionStatus:
         """
-        Get the reinjection status of a particular monitor.
-
         :param x:
         :param y:
         :param p:
+        :returns: The reinjection status of a particular monitor.
         """
         chip = FecDataView.get_chip_at(x, y)
         status: Dict[Chip, ReInjectionStatus] = dict()
@@ -91,6 +90,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         Get the reinjection status of a collection of monitors.
 
         :param core_subsets:
+        :returns: Mapping of the Chips to their reinjection status.
         """
         status: Dict[Chip, ReInjectionStatus] = dict()
         with self._collect_responses(check_error=False):

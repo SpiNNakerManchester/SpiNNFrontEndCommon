@@ -49,6 +49,12 @@ class DsSqlliteDatabase(SQLiteDB):
     __slots__ = ["_init_file"]
 
     def __init__(self, database_file:  Optional[str] = None):
+        """
+        :param database_file:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data.
+            If omitted the default location is used.
+        """
         if database_file is None:
             database_file = FecDataView.get_ds_database_path()
 
@@ -505,11 +511,9 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_max_content_size(self, is_system: bool) -> int:
         """
-        Returns the size of the largest content.
-
         :param is_system: if True returns system cores
             otherwise application cores
-
+        :returns: The size of the largest content.
         :raises DsDatabaseException:
         """
         for row in self.cursor().execute(
@@ -533,6 +537,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
         :param is_system: if True returns system cores
             otherwise application cores
+        :returns: The sizes of the content and the count of each size
         """
         sizes: List[Tuple[int, int]] = []
         for row in self.cursor().execute(
@@ -572,6 +577,7 @@ class DsSqlliteDatabase(SQLiteDB):
         Includes cores where DataSpecs started even if no regions reserved
 
         :raises DsDatabaseException:
+        :returns: The number for cores with a data specification.
         """
         for row in self.cursor().execute(
                 """
