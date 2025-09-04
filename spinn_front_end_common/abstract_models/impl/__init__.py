@@ -14,4 +14,4 @@
 
 from .machine_data_specable_vertex import MachineDataSpecableVertex
 
-__all__ = ("MachineDataSpecableVertex")
+__all__ = ("MachineDataSpecableVertex",)

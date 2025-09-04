@@ -38,7 +38,7 @@ from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
     config_options, config_sections,
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
-    get_report_path, get_timestamp_path, is_config_none, set_config)
+    get_report_path, get_timestamp_path, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -53,8 +53,7 @@ from spinnman.exceptions import (
     SpiNNManCoresNotInStateException)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
-from spinnman.spalloc import (
-    is_server_address, MachineAllocationController)
+from spinnman.spalloc import MachineAllocationController
 from spinnman.spalloc.spalloc_allocator import spalloc_allocate_job
 
 from spalloc_client import (  # type: ignore[import]
@@ -773,7 +772,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._do_allocate_machine(total_run_time, retry + 1)
 
     @overrides(ConfigHandler._execute_spalloc_allocate_job)
-    def _execute_spalloc_allocate_job(self) ->  Tuple[
+    def _execute_spalloc_allocate_job(self) -> Tuple[
             str, int, Optional[str], bool, bool, Dict[XY, str],
             MachineAllocationController]:
         with FecTimer("Spalloc Allocator", TimerWork.OTHER):
@@ -785,7 +784,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 host, version, None, False, False, connections, mac)
 
     @overrides(ConfigHandler._execute_spalloc_allocate_job_old)
-    def _execute_spalloc_allocate_job_old(self) ->  Tuple[
+    def _execute_spalloc_allocate_job_old(self) -> Tuple[
             str, int, Optional[str], bool, bool, Dict[XY, str],
             MachineAllocationController]:
         with FecTimer("Spalloc Allocator Old", TimerWork.OTHER):
@@ -933,7 +932,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if FecDataView.has_allocation_controller():
                 filename = get_report_path("path_board_chip_report")
                 with open(filename, "a", encoding="utf-8") as report:
-                    report.write(f"{FecDataView.get_allocation_controller()}\n")
+                    report.write(
+                        f"{FecDataView.get_allocation_controller()}\n")
 
     def _execute_splitter_reset(self) -> None:
         """

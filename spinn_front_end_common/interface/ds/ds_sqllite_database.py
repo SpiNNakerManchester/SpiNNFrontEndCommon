@@ -15,7 +15,7 @@
 import logging
 import os
 import sqlite3
-from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
+from typing import Dict, Iterable, List, Optional, Tuple, cast
 
 import numpy
 
