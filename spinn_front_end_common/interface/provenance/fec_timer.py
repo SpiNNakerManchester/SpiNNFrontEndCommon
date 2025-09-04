@@ -80,6 +80,11 @@ class FecTimer(object):
             "Reports", "display_algorithm_timings") or False
 
     def __init__(self, algorithm: str, work: TimerWork):
+        """
+
+        :param algorithm: Name of algorithm being timed
+        :param work: Type of work being timed
+        """
         self._start_time: Optional[int] = None
         self._algorithm = algorithm
         self._work = work
@@ -129,6 +134,8 @@ class FecTimer(object):
 
         Currently not used as a better check is skip_if_empty on the data
         needed for the algorithm.
+
+        :returns: True if skip has been called
         """
         if FecDataView.is_ran_ever():
             return False
@@ -147,6 +154,8 @@ class FecTimer(object):
         ends the timing and returns True (it skipped).
 
         Typically called for algorithms that require a real board to run.
+
+        :returns: True if skip has been called
         """
         if get_config_bool("Machine", "virtual_board"):
             self.skip("virtual_board")
@@ -167,6 +176,7 @@ class FecTimer(object):
 
         :param value: Value to check if True
         :param name: Name to record for that value if skipping
+        :returns: True if skip has been called
         """
         if value:
             return False
@@ -193,6 +203,7 @@ class FecTimer(object):
 
         :param section: Section level to be applied to both options
         :param option: The option to check
+        :returns: True if skip has been called
         """
         if get_config_bool(section, option):
             return False
@@ -217,6 +228,7 @@ class FecTimer(object):
         :param section: Section level to be applied to both options
         :param option1: One of the options to check
         :param option2: The other option to check
+        :returns: True if skip has been called
         """
         if get_config_bool(section, option1):
             return False
@@ -229,7 +241,7 @@ class FecTimer(object):
     def skip_all_cfgs_false(
             self, pairs: List[Tuple[str, str]], reason: str) -> bool:
         """
-        Skips if two Boolean cfg values are both False.
+        Skips if all Boolean cfg values are False.
 
         If either cfg value is True this methods keep the timer running and
         returns False (did not skip).
@@ -242,6 +254,7 @@ class FecTimer(object):
 
         :param pairs: section, options pairs to check
         :param reason: Reason to record for the skip
+        :returns: True if skip has been called
         """
         for section, option in pairs:
             if get_config_bool(section, option):

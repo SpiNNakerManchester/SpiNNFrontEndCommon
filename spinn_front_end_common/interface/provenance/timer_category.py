@@ -36,7 +36,12 @@ class TimerCategory(Enum):
         obj._value_ = value
         return obj
 
-    def __init__(self, __: int, category_name: str) -> None:
+    def __init__(self, value: int, category_name: str) -> None:
+        """
+        :param value: Enum ID
+        :param category_name: Name to use when describing this category
+        """
+        _ = value
         self._category_name = category_name
 
     @property

@@ -159,9 +159,8 @@ class CommandSenderMachineVertex(
 
     def get_fixed_key_and_mask(self, partition_id: str) -> BaseKeyAndMask:
         """
-        Get the key and mask for the given partition.
-
         :param partition_id: The partition to get the key for
+        :returns: The key and mask for the given partition.
         """
         return BaseKeyAndMask(
             self._partition_id_keys[partition_id], self._DEFAULT_COMMAND_MASK)
@@ -315,6 +314,9 @@ class CommandSenderMachineVertex(
     def get_timed_commands_bytes(self) -> int:
         """
         The number of bytes in the timed commands
+
+        :return: Size of the command to send
+           including the number of bytes and timestamp
         """
         n_bytes = self._N_COMMANDS_SIZE
         n_bytes += (
@@ -326,6 +328,7 @@ class CommandSenderMachineVertex(
     def get_n_command_bytes(cls, commands: Sized) -> int:
         """
         :param commands:
+        :return: Size of the command to send including the number of bytes.
         """
         n_bytes = cls._N_COMMANDS_SIZE
         n_bytes += cls._COMMAND_WITH_PAYLOAD_SIZE * len(commands)

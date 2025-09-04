@@ -57,9 +57,11 @@ def add_spinnaker_cfg() -> None:
 
 def fec_cfg_paths_skipped() -> Set[str]:
     """
-    Set of cfg path that would not be found based on other cfg settings
+    Set of cfg path that may not be found based on other cfg settings
 
     Assuming mode = Debug
+
+    :returns: list of cfg path options that point to paths that may not exist
     """
     skipped = man_cfg_paths_skipped()
     skipped.update(packman_cfg_paths_skipped())

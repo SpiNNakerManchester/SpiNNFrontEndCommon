@@ -309,6 +309,8 @@ class BufferDatabase(BaseDatabase):
     def start_new_extraction(self) -> int:
         """
         Stores the metadata for the extractions about to occur
+
+        :returns: Id for this extraction
         """
         run_timesteps = FecDataView.get_current_run_timesteps() or 0
         self.cursor().execute(
@@ -324,7 +326,7 @@ class BufferDatabase(BaseDatabase):
 
     def get_last_extraction_id(self) -> int:
         """
-        Get the id of the current/ last extraction
+        :returns: The id of the current/ last extraction
         """
         for row in self.cursor().execute(
                 """
@@ -522,6 +524,7 @@ class BufferDatabase(BaseDatabase):
         :param x: core x
         :param y: core y
         :param p: core p
+        :returns: label for (vertex on) this core or None
         """
         for row in self.cursor().execute(
                 """
@@ -534,8 +537,8 @@ class BufferDatabase(BaseDatabase):
 
     def get_power_monitor_core(self, x: int, y: int) -> int:
         """
-        Gets the power monitor core for chip x, y
-       """
+        :returns: The power monitor core for chip x, y
+        """
         for row in self.cursor().execute(
                 """
                 SELECT the_value

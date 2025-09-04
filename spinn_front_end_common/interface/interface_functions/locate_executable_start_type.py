@@ -23,6 +23,8 @@ from spinn_front_end_common.data import FecDataView
 def locate_executable_start_type() -> Dict[ExecutableType, CoreSubsets]:
     """
     Discovers where applications of particular types need to be launched.
+
+    :returns: Mapping of type to the cores which have that type
     """
     binary_start_types: Dict[ExecutableType, CoreSubsets] = dict()
 

@@ -35,5 +35,6 @@ class AbstractHasProfileData(object, metaclass=AbstractBase):
         Get the profile data recorded during simulation.
 
         :param placement:
+        :returns: profile data read from the Machine
         """
         raise NotImplementedError

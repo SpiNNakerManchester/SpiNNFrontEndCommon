@@ -244,6 +244,8 @@ class ExtraMonitorSupportMachineVertex(
     def static_get_binary_start_type() -> ExecutableType:
         """
         The type of the binary implementing this vertex.
+
+        :returns: The System type as this is a System vertex
         """
         return ExecutableType.SYSTEM
 
@@ -255,6 +257,8 @@ class ExtraMonitorSupportMachineVertex(
     def static_get_binary_file_name() -> str:
         """
         The name of the binary implementing this vertex.
+
+        :return: Name of the aplx files for this vertex
         """
         return "extra_monitor_support.aplx"
 
@@ -418,6 +422,8 @@ class ExtraMonitorSupportMachineVertex(
             Chip, ReInjectionStatus]:
         """
         Get the reinjection status from a set of extra monitor cores.
+
+        :returns: Mapping of the Chips to their reinjection status.
         """
         core_subsets = convert_vertices_to_core_subset(
             FecDataView.iterate_monitors())
@@ -431,6 +437,8 @@ class ExtraMonitorSupportMachineVertex(
             nearest_neighbour: Optional[bool] = None,
             fixed_route: Optional[bool] = None) -> None:
         """
+        Sends the reinjection packets for this vertex
+
         :param point_to_point:
             If point to point should be set, or `None` if left as before
         :param multicast:
@@ -500,9 +508,16 @@ class _Recoverer:
     Helper class that will run the emergency state recovery system if its
     context body throws.
     """
-    def __init__(self, vtx: ExtraMonitorSupportMachineVertex,
+    def __init__(self, vertex: ExtraMonitorSupportMachineVertex,
                  placement: Placement):
-        self.__vtx = vtx
+        """
+        :param vertex:
+            The vertex to retrieve the IOBUF from
+            if it is suspected as being dead
+        :param placement:
+            Where the vertex is located.
+        """
+        self.__vtx = vertex
         self.__placement = placement
 
     def __enter__(self) -> Placement:

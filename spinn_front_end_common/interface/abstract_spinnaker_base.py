@@ -674,8 +674,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Operates the auto pause and resume functionality by figuring out
         how many timer ticks a simulation can run before SDRAM runs out,
         and breaks simulation into chunks of that long.
-
-        :return: max time a simulation can run.
         """
         # Go through the placements and find how much SDRAM is used
         # on each chip
@@ -999,8 +997,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         The number of available cores on the machine after taking
         into account preallocated resources.
-
-        :return: number of available cores
         """
         machine = self._data_writer.get_machine()
         # get cores of machine
@@ -1738,8 +1734,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs :py:meth:`load_application_data_specs`
         if required.
-
-        :return: map of placement and DSG data, and loaded data flag.
         """
         with FecTimer("Load Application data specification",
                       TimerWork.LOADING_DATA) as timer:
