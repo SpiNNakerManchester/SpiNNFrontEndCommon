@@ -17,7 +17,7 @@ import logging
 import os
 import shutil
 import traceback
-from typing import List, Optional, Type
+from typing import cast, List, Optional, Type
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.configs.camel_case_config_parser import FALSES
@@ -64,6 +64,10 @@ class ConfigHandler(SpiNNManSimulation):
         self._previous_handler()
         self._reserve_system_vertices()
         self._ensure_provenance_for_energy_report()
+
+    @property
+    def _data_writer(self) -> FecDataWriter:
+        return cast(FecDataWriter, self._SpiNNManSimulation__data_writer)
 
     def __toggle_config(self, section: str, option: str, to_false: List[str],
                         to_true: List[str]) -> None:
