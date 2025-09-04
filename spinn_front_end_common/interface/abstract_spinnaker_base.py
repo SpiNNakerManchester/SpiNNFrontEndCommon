@@ -934,9 +934,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if FecDataView.has_allocation_controller():
                 filename = get_report_path("path_board_chip_report")
                 with open(filename, "a", encoding="utf-8") as report:
-                    report.write("Allaction Controller\n")
-                    report.write(f"{FecDataView.get_allocation_controller()}")
-                    report.write("\n")
+                    report.write(f"{FecDataView.get_allocation_controller()}\n")
 
     def _execute_splitter_reset(self) -> None:
         """
