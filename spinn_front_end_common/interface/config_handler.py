@@ -67,7 +67,7 @@ class ConfigHandler(SpiNNManSimulation):
 
     @property
     def _data_writer(self) -> FecDataWriter:
-        return cast(FecDataWriter, self._SpiNNManSimulation__data_writer)
+        return cast(FecDataWriter, self._SpiNNManSimulation__data_writer)  # type: ignore[attr-defined]
 
     def __toggle_config(self, section: str, option: str, to_false: List[str],
                         to_true: List[str]) -> None:

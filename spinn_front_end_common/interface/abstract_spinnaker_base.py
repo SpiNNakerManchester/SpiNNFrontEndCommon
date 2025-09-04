@@ -776,7 +776,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @overrides(ConfigHandler._execute_spalloc_allocate_job)
     def _execute_spalloc_allocate_job(self) ->  Tuple[
-            str, int, Optional[str], bool, bool, None,
+            str, int, Optional[str], bool, bool, Dict[XY, str],
             MachineAllocationController]:
         with FecTimer("Spalloc Allocator", TimerWork.OTHER):
             host, version, connections, mac = spalloc_allocate_job(
@@ -788,7 +788,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @overrides(ConfigHandler._execute_spalloc_allocate_job_old)
     def _execute_spalloc_allocate_job_old(self) ->  Tuple[
-            str, int, Optional[str], bool, bool, None,
+            str, int, Optional[str], bool, bool, Dict[XY, str],
             MachineAllocationController]:
         with FecTimer("Spalloc Allocator Old", TimerWork.OTHER):
             host, version, connections, mac = spalloc_allocate_job_old()
@@ -798,7 +798,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 host, version, None, False, False, connections, mac)
 
     @overrides(ConfigHandler._execute_hbp_allocator)
-    def _execute_hbp_allocator(total_run_time:  int) -> Tuple[
+    def _execute_hbp_allocator(
+            self, total_run_time:  Optional[float]) -> Tuple[
             str, int, Optional[str], bool, bool, None,
             MachineAllocationController]:
         with FecTimer("HBPAllocator", TimerWork.OTHER):

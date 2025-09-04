@@ -23,6 +23,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XYP
 
 from spinnman.model.enums import ExecutableType
+from spinnman.spalloc.spalloc_allocator import SpallocJobController
 from spinnman.spalloc.spalloc_job import SpallocJob
 
 from spinn_front_end_common.data import FecDataView
@@ -32,9 +33,6 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
-if TYPE_CHECKING:
-    from spinn_front_end_common.interface.interface_functions.\
-        spalloc_allocator import SpallocJobController  # @UnusedImport
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -658,7 +656,7 @@ class DsSqlliteDatabase(SQLiteDB):
         if mac.proxying:
             # This is now assumed to be a SpallocJobController;
             # can't check that because of import circularity.
-            job = cast('SpallocJobController', mac).job
+            job = cast(SpallocJobController, mac).job
             if isinstance(job, SpallocJob):
                 config = job.get_session_credentials_for_db()
                 self.cursor().executemany(
