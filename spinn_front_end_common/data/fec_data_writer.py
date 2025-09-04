@@ -317,14 +317,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._data_in_multicast_routing_tables = routing_tables
         self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
 
-    def set_ipaddress(self, ip_address: str) -> None:
-        """
-        :param ip_address:
-        """
-        if not isinstance(ip_address, str):
-            raise TypeError("ipaddress must be a str")
-        self.__fec_data._ipaddress = ip_address
-
     def set_fixed_routes(
             self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]) -> None:
         """
