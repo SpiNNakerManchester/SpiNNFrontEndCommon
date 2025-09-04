@@ -72,6 +72,13 @@ class BaseDatabase(SQLiteDB):
     def default_database_file(cls) -> str:
         """
         The path to the stand place the data.sqlite3 file will be stored
+
+        This will be based on the cfg setting path_data_database
+        and the report directory for the current run.
+
+        There is no guarantee that the database has already been created.
+
+        :returns: The path to the database file
         """
         return get_report_path("path_data_database")
 

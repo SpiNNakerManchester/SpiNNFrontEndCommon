@@ -60,6 +60,9 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
     __slots__ = ("_reinjection_status", "_command_code")
 
     def __init__(self, command_code: ReinjectorSCPCommands):
+        """
+        :param command_code: Text for error message
+        """
         super().__init__()
         self._reinjection_status: Optional[ReInjectionStatus] = None
         self._command_code = command_code

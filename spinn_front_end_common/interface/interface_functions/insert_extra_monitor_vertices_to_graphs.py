@@ -25,7 +25,9 @@ from spinn_front_end_common.utilities.utility_calls import (
 
 def sample_speedup_vertex() -> DataSpeedUpPacketGatherMachineVertex:
     """
-    Vertex to be added to every Ethernet chip
+    Vertex to be added to every Ethernet chip Used for cost models
+
+    :return: An unplaced Vertex
     """
     return DataSpeedUpPacketGatherMachineVertex(
         x=-1, y=-1, ip_address="sample")
@@ -33,7 +35,9 @@ def sample_speedup_vertex() -> DataSpeedUpPacketGatherMachineVertex:
 
 def sample_monitor_vertex() -> ExtraMonitorSupportMachineVertex:
     """
-    Vertex to be added to every Chip
+    Vertex to be added to every Chip for cost models
+
+    :return: An unplaced Vertex
     """
     return ExtraMonitorSupportMachineVertex()
 

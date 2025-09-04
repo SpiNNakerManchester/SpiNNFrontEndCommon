@@ -78,7 +78,12 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         :param n_keys:
             The number of keys to be sent via this multicast source
         :param label: The label of this vertex
-        :param max_atoms_per_core:
+        :param max_atoms_per_core: The max number of atoms that can be
+            placed on a core for each dimension, used in partitioning.
+            If the vertex is n-dimensional, with n > 1, the value must be a
+            tuple with a value for each dimension.  If it is single-dimensional
+            the value can be a 1-tuple or an int.
+
         :param receive_port: The port on the board that will listen for
             incoming event packets (default is to disable this feature; set a
             value to enable it)

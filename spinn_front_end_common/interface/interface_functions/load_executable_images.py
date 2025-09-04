@@ -94,7 +94,10 @@ def filter_targets(
         filter_predicate: Callable[[ExecutableType], bool]
         ) -> ExecutableTargets:
     """
-    :param filter_predicate:
+    Creates a subset of all executable targets that pass the filter.
+
+    :param filter_predicate: method to use as the filter
+    :returns:Executable target with only those that pass the filter check
     """
     cores = ExecutableTargets()
     targets = FecDataView.get_executable_targets()

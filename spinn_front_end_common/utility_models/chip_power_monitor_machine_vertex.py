@@ -108,13 +108,6 @@ class ChipPowerMonitorMachineVertex(
     def get_binary_file_name(self) -> str:
         return BINARY_FILE_NAME
 
-    @staticmethod
-    def binary_file_name() -> str:
-        """
-        Get the filename of the binary.
-        """
-        return BINARY_FILE_NAME
-
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec: DataSpecificationGenerator,
                                     placement: Placement) -> None:
