@@ -76,6 +76,6 @@ __all__ = (
     "profile_data_gatherer",
     "read_routing_tables_from_machine", "router_provenance_gatherer",
     "routing_table_loader", "sdram_outgoing_partition_allocator",
-    "spalloc_allocate_job_new", "spalloc_allocate_job_old",
+    "spalloc_allocate_job_old",
     "system_multicast_routing_generator", "tags_loader",
     "add_command_senders")
