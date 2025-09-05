@@ -46,7 +46,7 @@ from spinn_utilities.typing.coords import XY
 from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_machine import __version__ as spinn_machine_version
-from spinn_machine import CoreSubsets
+from spinn_machine import CoreSubsets, Machine
 
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import (
@@ -225,7 +225,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if external_binaries is not None:
             self._data_writer.register_binary_search_path(external_binaries)
 
-        self._data_writer.set_machine_generator(self._get_machine)
         FecTimer.end_category(TimerCategory.SETTING_UP)
 
     def _hard_reset(self) -> None:
@@ -909,20 +908,27 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._do_allocate_machine(total_run_time)
 
-    def _get_machine(self) -> None:
+    def get_machine(self) -> Machine:
         """
-        The factory method to get a machine.
+        Get the Machine. Creating it if necessary.
+
+        If this is called after run or after reset
+
         """
         FecTimer.start_category(TimerCategory.GET_MACHINE, True)
         if self._data_writer.is_user_mode() and \
                 self._data_writer.is_soft_reset():
+            self._data_writer.clear_machine()
+            self._data_writer.set_user_accessed_machine()
             # Make the reset hard
             logger.warning(
                 "Calling Get machine after a reset force a hard reset and "
                 "therefore generate a new machine")
             self._hard_reset()
         self._get_known_machine()
-        if not self._data_writer.has_machine():
+        if self._data_writer.has_machine():
+            return self._data_writer.get_machine()
+        else:
             raise ConfigurationException(
                 "Not enough information provided to supply a machine")
         FecTimer.end_category(TimerCategory.GET_MACHINE)
