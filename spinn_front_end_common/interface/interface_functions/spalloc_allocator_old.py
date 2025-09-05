@@ -118,8 +118,8 @@ def spalloc_allocate_job_old() -> Tuple[
     job, hostname, scamp_connection_data = _launch_checked_job_old(
         n_boards, host, port, owner, machine)
     machine_allocation_controller = _OldSpallocJobController(job, hostname)
-    _MACHINE_VERSION = 5
-    return (hostname, _MACHINE_VERSION, scamp_connection_data,
+    version = 5
+    return (hostname, version, scamp_connection_data,
             machine_allocation_controller)
 
 
