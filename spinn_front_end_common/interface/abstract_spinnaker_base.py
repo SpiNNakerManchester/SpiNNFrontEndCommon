@@ -869,11 +869,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set the "machine" value if not already set
 
-        :param allocator_data: `None` or
-            (machine name, machine version, BMP details (if any),
-            reset on startup flag, auto-detect BMP, SCAMP connection details,
-            boot port, allocation controller)
-        :raises ConfigException: if machine_name is not set
+        :raises ConfigException: if machine_name is not set in the cfg
         """
         with FecTimer("Machine generator", TimerWork.GET_MACHINE):
             machine_name = get_config_str("Machine", "machine_name")
@@ -914,14 +910,19 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Get the Machine. Creating it if necessary.
 
-        If this is called after run or after reset
+        This method will make sure that any set called
+        before the next run is hard.
 
+        If called after a reset it will return a different Machine
+        to the one from the previous run.
+
+        returns: The Machine now stored in the DataView
         """
         FecTimer.start_category(TimerCategory.GET_MACHINE, True)
+        self._data_writer.set_user_accessed_machine()
         if self._data_writer.is_user_mode() and \
                 self._data_writer.is_soft_reset():
             self._data_writer.clear_machine()
-            self._data_writer.set_user_accessed_machine()
             # Make the reset hard
             logger.warning(
                 "Calling Get machine after a reset force a hard reset and "
