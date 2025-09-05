@@ -772,8 +772,8 @@ class AbstractSpinnakerBase(ConfigHandler):
     @overrides(ConfigHandler._do_get_allocator_data)
     def _do_get_allocator_data(
             self, total_run_time: Optional[float]) -> Tuple[
-        str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
-                  MachineAllocationController]:
+            str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
+            MachineAllocationController]:
         """
         Runs, times and logs the SpallocAllocator or HBPAllocator if required.
 
