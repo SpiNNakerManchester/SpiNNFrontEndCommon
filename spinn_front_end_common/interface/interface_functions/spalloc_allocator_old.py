@@ -43,6 +43,10 @@ class _OldSpallocJobController(MachineAllocationController):
     )
 
     def __init__(self, job: Job, host: str):
+        """
+        :param job: Job Used
+        :param host: IP address of Chip 0, 0
+        """
         if job is None:
             raise TypeError("must have a real job")
         self._job = job
@@ -104,9 +108,9 @@ def spalloc_allocate_job_old() -> Tuple[
     Request a machine from an old-style spalloc server that will fit the
     requested number of boards.
 
-    :param spalloc_server:
-        The server from which the machine should be requested
-    :param n_boards: The number of boards required
+    :return:
+        host, board version, board address map, allocation controller
+
     """
     spalloc_server = get_config_str("Machine", "spalloc_server")
     n_boards = get_n_boards()
