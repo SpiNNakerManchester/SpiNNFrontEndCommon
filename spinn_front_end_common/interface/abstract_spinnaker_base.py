@@ -771,9 +771,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @overrides(ConfigHandler._do_get_allocator_data)
     def _do_get_allocator_data(
-            self, total_run_time: Optional[float]) -> Optional[
-            Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
-                  MachineAllocationController]]:
+            self, total_run_time: Optional[float]) -> Tuple[
+        str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
+                  MachineAllocationController]:
         """
         Runs, times and logs the SpallocAllocator or HBPAllocator if required.
 
@@ -892,7 +892,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
 
-    def _get_known_machine(self, total_run_time: float = 0.0) -> None:
+    def _get_known_machine(
+            self, total_run_time: Optional[float] = 0.0) -> None:
         """
         The Python machine description object.
 
