@@ -769,6 +769,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         logger.info("retrying allocate and get machine")
         self._do_allocate_machine(total_run_time, retry + 1)
 
+    @overrides(ConfigHandler._do_get_allocator_data)
     def _do_get_allocator_data(
             self, total_run_time: Optional[float]) -> Optional[
             Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
