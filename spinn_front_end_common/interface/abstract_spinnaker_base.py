@@ -916,7 +916,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         If called after a reset it will return a different Machine
         to the one from the previous run.
 
-        returns: The Machine now stored in the DataView
+        :returns: The Machine now stored in the DataView
         """
         FecTimer.start_category(TimerCategory.GET_MACHINE, True)
         self._data_writer.set_user_accessed_machine()
