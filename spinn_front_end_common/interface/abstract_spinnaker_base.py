@@ -38,7 +38,7 @@ from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
     config_options, config_sections,
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
-    get_report_path, get_timestamp_path, set_config)
+    get_report_path, get_timestamp_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -53,7 +53,7 @@ from spinnman.exceptions import (
     SpiNNManCoresNotInStateException)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
-from spinnman.spalloc import MachineAllocationController
+from spinnman.spalloc import (is_server_address, MachineAllocationController)
 from spinnman.spalloc.spalloc_allocator import spalloc_allocate_job
 
 from spalloc_client import (  # type: ignore[import]
@@ -746,11 +746,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param total_run_time: The total run time to request
         """
-
-        if self._data_writer.has_machine():
-            return
-        allocator_data = self._do_get_allocator_data(total_run_time)
+        allocator_worked = False
         try:
+            allocator_data = self._do_get_allocator_data(total_run_time)
+            allocator_worked = True
             self._execute_machine_generator(allocator_data)
             return
         except Exception as ex:  # pylint: disable=broad-except
@@ -760,18 +759,40 @@ class AbstractSpinnakerBase(ConfigHandler):
             with open(path, "a", encoding="utf-8") as f:
                 f.write("Error on machine_generation\n")
                 f.write(traceback.format_exc())
+                if allocator_worked:
+                    logger.exception(f"{allocator_data=}")
+                    f.write(f"{allocator_data=}\n")
             max_retry = get_config_int("Machine", "spalloc_retry")
             if retry >= max_retry:
                 raise
-        # retry but outside of except so errors do not stack
-        if allocator_data is not None:
-            logger.exception(f"{allocator_data=}")
-            with open(path, "a", encoding="utf-8") as f:
-                f.write(f"{allocator_data=}\n")
-            logger.info("retrying allocate and get machine")
-            self._do_allocate_machine(total_run_time, retry + 1)
 
-    @overrides(ConfigHandler._execute_spalloc_allocate_job)
+        # retry but outside of except so errors do not stack
+        logger.info("retrying allocate and get machine")
+        self._do_allocate_machine(total_run_time, retry + 1)
+
+    def _do_get_allocator_data(
+            self, total_run_time: Optional[float]) -> Optional[
+            Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
+                  MachineAllocationController]]:
+        """
+        Runs, times and logs the SpallocAllocator or HBPAllocator if required.
+
+        :param total_run_time: The total run time to request
+        :return: machine name, machine version, BMP details (if any),
+            reset on startup flag, auto-detect BMP, SCAMP connection details,
+            boot port, allocation controller
+        """
+        spalloc_server = get_config_str_or_none("Machine", "spalloc_server")
+        if spalloc_server:
+            if is_server_address(spalloc_server):
+                return self._execute_spalloc_allocate_job()
+            else:
+                return self._execute_spalloc_allocate_job_old()
+        if not is_config_none("Machine", "remote_spinnaker_url"):
+            return self._execute_hbp_allocator(total_run_time)
+        raise ConfigurationException(
+            "Neither cfg spalloc_server or remote_spinnaker_url set")
+
     def _execute_spalloc_allocate_job(self) -> Tuple[
             str, int, Optional[str], bool, bool, Dict[XY, str],
             MachineAllocationController]:
@@ -783,7 +804,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return (
                 host, version, None, False, False, connections, mac)
 
-    @overrides(ConfigHandler._execute_spalloc_allocate_job_old)
     def _execute_spalloc_allocate_job_old(self) -> Tuple[
             str, int, Optional[str], bool, bool, Dict[XY, str],
             MachineAllocationController]:
@@ -794,7 +814,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return (
                 host, version, None, False, False, connections, mac)
 
-    @overrides(ConfigHandler._execute_hbp_allocator)
     def _execute_hbp_allocator(
             self, total_run_time:  Optional[float]) -> Tuple[
             str, int, Optional[str], bool, bool, None,
@@ -844,17 +863,51 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
 
+    def _execute_machine_by_name(self) -> None:
+        """
+        Runs, times and logs getting the machine using machine_name.
+
+        May set the "machine" value if not already set
+
+        :param allocator_data: `None` or
+            (machine name, machine version, BMP details (if any),
+            reset on startup flag, auto-detect BMP, SCAMP connection details,
+            boot port, allocation controller)
+        :raises ConfigException: if machine_name is not set
+        """
+        with FecTimer("Machine generator", TimerWork.GET_MACHINE):
+            machine_name = get_config_str("Machine", "machine_name")
+            self._data_writer.set_ipaddress(machine_name)
+            bmp_details = get_config_str_or_none("Machine", "bmp_names")
+            auto_detect_bmp = get_config_bool("Machine", "auto_detect_bmp")
+            scamp_connection_data = None
+            reset_machine = get_config_bool(
+                "Machine", "reset_machine_on_startup")
+            board_version = FecDataView.get_machine_version().number
+
+            machine, transceiver = machine_generator(
+                bmp_details, board_version,
+                auto_detect_bmp or False, scamp_connection_data,
+                reset_machine or False)
+            self._data_writer.set_transceiver(transceiver)
+            self._data_writer.set_machine(machine)
+
     def _get_known_machine(self, total_run_time: float = 0.0) -> None:
         """
         The Python machine description object.
 
         :param total_run_time: The total run time to request
         """
-        if not self._data_writer.has_machine():
-            if get_config_bool("Machine", "virtual_board"):
-                self._execute_get_virtual_machine()
-            else:
-                self._do_allocate_machine(total_run_time)
+        if self._data_writer.has_machine():
+            return
+
+        if get_config_bool("Machine", "virtual_board"):
+            return self._execute_get_virtual_machine()
+
+        if not is_config_none("Machine", "machine_name"):
+            return self._execute_machine_by_name()
+
+        self._do_allocate_machine(total_run_time)
 
     def _get_machine(self) -> None:
         """
@@ -1404,7 +1457,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
-        self._do_allocate_machine(total_run_time)
+        self._get_known_machine(total_run_time)
         self._json_machine()
         self._report_board_chip()
 
