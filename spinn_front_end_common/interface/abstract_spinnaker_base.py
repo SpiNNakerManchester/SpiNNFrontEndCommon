@@ -736,6 +736,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Virtual machine generator", TimerWork.OTHER):
             return super()._execute_get_virtual_machine()
 
+    @overrides(ConfigHandler._do_allocate_machine)
     def _do_allocate_machine(
             self, total_run_time: Optional[float], retry: int = 0) -> Machine:
         """
@@ -772,13 +773,13 @@ class AbstractSpinnakerBase(ConfigHandler):
     @overrides(ConfigHandler._do_get_allocator_data)
     def _do_get_allocator_data(
             self, total_run_time: Optional[float]) -> Tuple[
-            str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
+            str, Optional[str], bool, bool, Optional[Dict[XY, str]],
             MachineAllocationController]:
         """
         Runs, times and logs the SpallocAllocator or HBPAllocator if required.
 
         :param total_run_time: The total run time to request
-        :return: machine name, machine version, BMP details (if any),
+        :return: machine name, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller
         """
@@ -794,36 +795,36 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Neither cfg spalloc_server or remote_spinnaker_url set")
 
     def _execute_spalloc_allocate_job(self) -> Tuple[
-            str, int, Optional[str], bool, bool, Dict[XY, str],
+            str, Optional[str], bool, bool, Dict[XY, str],
             MachineAllocationController]:
         with FecTimer("Spalloc Allocator", TimerWork.OTHER):
-            host, version, connections, mac = spalloc_allocate_job(
+            host, connections, mac = spalloc_allocate_job(
                 self.__bearer_token, **self.__group_collab_or_job)
             with ProvenanceWriter() as db:
                 db.insert_board_provenance(connections)
             return (
-                host, version, None, False, False, connections, mac)
+                host, None, False, False, connections, mac)
 
     def _execute_spalloc_allocate_job_old(self) -> Tuple[
-            str, int, Optional[str], bool, bool, Dict[XY, str],
+            str, Optional[str], bool, bool, Dict[XY, str],
             MachineAllocationController]:
         with FecTimer("Spalloc Allocator Old", TimerWork.OTHER):
-            host, version, connections, mac = spalloc_allocate_job_old()
+            host, connections, mac = spalloc_allocate_job_old()
             with ProvenanceWriter() as db:
                 db.insert_board_provenance(connections)
             return (
-                host, version, None, False, False, connections, mac)
+                host, None, False, False, connections, mac)
 
     def _execute_hbp_allocator(
             self, total_run_time:  Optional[float]) -> Tuple[
-            str, int, Optional[str], bool, bool, None,
+            str, Optional[str], bool, bool, None,
             MachineAllocationController]:
         with FecTimer("HBPAllocator", TimerWork.OTHER):
             # TODO: Would passing the bearer token to this ever make sense?
             return hbp_allocator(total_run_time)
 
     def _execute_machine_generator(self, allocator_data: Tuple[
-            str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
+            str, Optional[str], bool, bool, Optional[Dict[XY, str]],
             MachineAllocationController]) -> Machine:
         """
         Runs, times and logs the MachineGenerator if required.
@@ -831,7 +832,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         May set the "machine" value if not already set
 
         :param allocator_data:
-            (machine name, machine version, BMP details (if any),
+            (machine name, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller)
         :returns: Machine created

@@ -153,7 +153,7 @@ class TestWriteJson(unittest.TestCase):
         writer = FecDataWriter.mock()
         writer.set_n_chips_in_graph(20)
         try:
-            (hostname, version, _, m_allocation_controller) = (
+            (hostname, _, m_allocation_controller) = (
                 spalloc_allocate_job())
         except (JobDestroyedError, ConnectionRefusedError):
             self.skipTest("Skipping as getting Job failed")

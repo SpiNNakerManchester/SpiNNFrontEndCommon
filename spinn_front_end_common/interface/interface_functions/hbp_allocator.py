@@ -122,7 +122,7 @@ class _HBPJobController(MachineAllocationController):
 
 
 def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
-        str, int, Optional[str], bool, bool, None,
+        str, Optional[str], bool, bool, None,
         MachineAllocationController]:
     """
     Request a machine from the HBP remote access server that will fit
@@ -145,8 +145,7 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
     hbp_job_controller = _HBPJobController(url, name)
 
     return (
-        name, cast(int, machine["version"]),
-        cast(Optional[str], machine.get("bmpDetails")),
+        name, cast(Optional[str], machine.get("bmpDetails")),
         False, False, None, hbp_job_controller)
 
 
