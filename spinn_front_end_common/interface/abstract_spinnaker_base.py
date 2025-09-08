@@ -51,7 +51,6 @@ from spinn_machine import CoreSubsets, Machine
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import (
     SpiNNManCoresNotInStateException)
-from spinnman.machine_generator import machine_generator
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 from spinnman.spalloc import (is_server_address, MachineAllocationController)
@@ -838,21 +837,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         :returns: Machine created
         """
         with FecTimer("Allocated Machine generator", TimerWork.GET_MACHINE):
-            (ipaddress, board_version, bmp_details,
-             reset_machine, auto_detect_bmp, scamp_connection_data,
-             machine_allocation_controller) = allocator_data
-            self._data_writer.set_ipaddress(ipaddress)
-            self._data_writer.set_allocation_controller(
-                machine_allocation_controller)
+            return super()._execute_machine_generator(allocator_data)
 
-            machine, transceiver = machine_generator(
-                bmp_details, board_version,
-                auto_detect_bmp or False, scamp_connection_data,
-                reset_machine or False)
-            self._data_writer.set_transceiver(transceiver)
-            self._data_writer.set_machine(machine)
-            return machine
-
+    @overrides(ConfigHandler._execute_machine_by_name)
     def _execute_machine_by_name(self) -> Machine:
         """
         Runs, times and logs getting the machine using machine_name.
@@ -862,41 +849,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raises ConfigException: if machine_name is not set in the cfg
         """
         with FecTimer("Machine generator", TimerWork.GET_MACHINE):
-            machine_name = get_config_str("Machine", "machine_name")
-            self._data_writer.set_ipaddress(machine_name)
-            bmp_details = get_config_str_or_none("Machine", "bmp_names")
-            auto_detect_bmp = get_config_bool("Machine", "auto_detect_bmp")
-            scamp_connection_data = None
-            reset_machine = get_config_bool(
-                "Machine", "reset_machine_on_startup")
-            board_version = FecDataView.get_machine_version().number
-
-            machine, transceiver = machine_generator(
-                bmp_details, board_version,
-                auto_detect_bmp or False, scamp_connection_data,
-                reset_machine or False)
-            self._data_writer.set_transceiver(transceiver)
-            self._data_writer.set_machine(machine)
-            return machine
-
-    def _get_known_machine(
-            self, total_run_time: Optional[float] = 0.0) -> Machine:
-        """
-        Gets and if needed creates a Machine
-
-        :param total_run_time: The total run time to request
-        :returns: The Machine
-        """
-        if self._data_writer.has_machine():
-            return self._data_writer.get_machine()
-
-        if get_config_bool("Machine", "virtual_board"):
-            return self._execute_get_virtual_machine()
-
-        if not is_config_none("Machine", "machine_name"):
-            return self._execute_machine_by_name()
-
-        return self._do_allocate_machine(total_run_time)
+            return super()._execute_machine_by_name()
 
     def get_machine(self) -> Machine:
         """
