@@ -29,9 +29,6 @@ from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
-from spinnman.spalloc import (
-    MachineAllocationController)
-from spinnman.spalloc.spalloc_allocator import SpallocJobController
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.model.graphs.application import ApplicationVertex
@@ -88,27 +85,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         PacmanDataWriter._soft_reset(self)
         SpiNNManDataWriter._local_soft_reset(self)
         self.__fec_data._soft_reset()
-
-    def set_allocation_controller(self, allocation_controller: Optional[
-            MachineAllocationController]) -> None:
-        """
-        Sets the allocation controller variable.
-
-        :param allocation_controller:
-        """
-        if allocation_controller and not isinstance(
-                allocation_controller, MachineAllocationController):
-            raise TypeError(
-                "allocation_controller must be a MachineAllocationController")
-        self.__fec_data._spalloc_job = None
-        self.__fec_data._allocation_controller = allocation_controller
-        if allocation_controller is None:
-            return
-        if allocation_controller.proxying:
-            if not isinstance(allocation_controller, SpallocJobController):
-                raise NotImplementedError(
-                    "Expecting only the SpallocJobController to be proxying")
-            self.__fec_data._spalloc_job = allocation_controller.job
 
     def set_buffer_manager(self, buffer_manager: BufferManager) -> None:
         """

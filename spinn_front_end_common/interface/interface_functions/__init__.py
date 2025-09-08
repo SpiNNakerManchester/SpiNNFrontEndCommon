@@ -41,7 +41,6 @@ from .split_lpg_vertices import split_lpg_vertices
 from .load_executable_images import load_app_images, load_sys_images
 from .load_fixed_routes import load_fixed_routes
 from .locate_executable_start_type import locate_executable_start_type
-from .machine_generator import machine_generator
 from .create_notification_protocol import create_notification_protocol
 from .placements_provenance_gatherer import placements_provenance_gatherer
 from .profile_data_gatherer import profile_data_gatherer
@@ -72,7 +71,7 @@ __all__ = (
     "split_lpg_vertices",
     "load_app_images", "load_fixed_routes", "load_sys_images",
     "locate_executable_start_type",
-    "machine_generator", "placements_provenance_gatherer",
+    "placements_provenance_gatherer",
     "profile_data_gatherer",
     "read_routing_tables_from_machine", "router_provenance_gatherer",
     "routing_table_loader", "sdram_outgoing_partition_allocator",

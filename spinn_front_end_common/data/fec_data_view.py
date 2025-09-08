@@ -27,7 +27,6 @@ from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.messages.scp.enums.signal import Signal
-from spinnman.spalloc import SpallocJob
 
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
@@ -35,8 +34,6 @@ from pacman.model.routing_tables import MulticastRoutingTables
 
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
-    from spinnman.spalloc import (
-        MachineAllocationController)
     from spinn_front_end_common.interface.buffer_management import (
         BufferManager)
     from spinn_front_end_common.interface.java_caller import JavaCaller
@@ -75,7 +72,6 @@ class _FecDataModel(object):
 
     __slots__ = (
         # Data values cached
-        "_allocation_controller",
         "_buffer_manager",
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
@@ -107,7 +103,6 @@ class _FecDataModel(object):
         "_simulation_time_step_per_s",
         "_simulation_time_step_s",
         "_simulation_time_step_us",
-        "_spalloc_job",
         "_system_multicast_router_timeout_keys",
         "_time_scale_factor")
 
@@ -150,8 +145,6 @@ class _FecDataModel(object):
         Clears out all data that should change after a reset and graph change.
         """
         self._buffer_manager: Optional[BufferManager] = None
-        self._allocation_controller: Optional[
-            MachineAllocationController] = None
         self._data_in_multicast_key_to_chip_map: Optional[Dict[XY, int]] = None
         self._data_in_multicast_routing_tables: Optional[
             MulticastRoutingTables] = None
@@ -167,7 +160,6 @@ class _FecDataModel(object):
         self._max_run_time_steps: Optional[int] = None
         self._monitor_map: \
             Optional[Dict[Chip, ExtraMonitorSupportMachineVertex]] = None
-        self._spalloc_job: Optional[SpallocJob] = None
         self._system_multicast_router_timeout_keys: Optional[
             Dict[XY, int]] = None
         self._soft_reset()
@@ -240,36 +232,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return 0.0
         return (cls.__fec_data._current_run_timesteps *
                 cls.get_simulation_time_step_ms())
-
-    # _allocation_controller
-    @classmethod
-    def has_allocation_controller(cls) -> bool:
-        """
-        Reports if an AllocationController object has already been set.
-
-        :return: True if and only if an AllocationController has been added and
-            not reset.
-        """
-        return cls.__fec_data._allocation_controller is not None
-
-    @classmethod
-    def get_allocation_controller(cls) -> MachineAllocationController:
-        """
-        :returns: The allocation controller if known.
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the buffer manager unavailable
-        """
-        if cls.__fec_data._allocation_controller is None:
-            raise cls._exception("allocation_controller")
-
-        return cls.__fec_data._allocation_controller
-
-    @classmethod
-    def get_spalloc_job(cls) -> Optional[SpallocJob]:
-        """
-        :returns: The Spalloc job, if there is one.
-        """
-        return cls.__fec_data._spalloc_job
 
     # _buffer_manager
     @classmethod
