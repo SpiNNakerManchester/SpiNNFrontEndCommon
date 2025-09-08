@@ -732,25 +732,25 @@ class AbstractSpinnakerBase(ConfigHandler):
         return steps
 
     @overrides(ConfigHandler._execute_get_virtual_machine, extend_doc=False)
-    def _execute_get_virtual_machine(self) -> None:
+    def _execute_get_virtual_machine(self) -> Machine:
         with FecTimer("Virtual machine generator", TimerWork.OTHER):
-            super()._execute_get_virtual_machine()
+            return super()._execute_get_virtual_machine()
 
     def _do_allocate_machine(
-            self, total_run_time: Optional[float], retry: int = 0) -> None:
+            self, total_run_time: Optional[float], retry: int = 0) -> Machine:
         """
         Combines execute allocator and execute machine generator
 
         This allows allocator to be run again if it is useful to do so
 
         :param total_run_time: The total run time to request
+        :returns: Machine created
         """
         allocator_worked = False
         try:
             allocator_data = self._do_get_allocator_data(total_run_time)
             allocator_worked = True
-            self._execute_machine_generator(allocator_data)
-            return
+            return self._execute_machine_generator(allocator_data)
         except Exception as ex:  # pylint: disable=broad-except
             logger.exception("Error on machine_generation")
             logger.exception(ex)
@@ -767,7 +767,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # retry but outside of except so errors do not stack
         logger.info("retrying allocate and get machine")
-        self._do_allocate_machine(total_run_time, retry + 1)
+        return self._do_allocate_machine(total_run_time, retry + 1)
 
     @overrides(ConfigHandler._do_get_allocator_data)
     def _do_get_allocator_data(
@@ -822,48 +822,37 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO: Would passing the bearer token to this ever make sense?
             return hbp_allocator(total_run_time)
 
-    def _execute_machine_generator(self, allocator_data: Optional[Tuple[
+    def _execute_machine_generator(self, allocator_data: Tuple[
             str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
-            MachineAllocationController]]) -> None:
+            MachineAllocationController]) -> Machine:
         """
         Runs, times and logs the MachineGenerator if required.
 
         May set the "machine" value if not already set
 
-        :param allocator_data: `None` or
+        :param allocator_data:
             (machine name, machine version, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller)
+        :returns: Machine created
         """
-        machine_name = get_config_str_or_none("Machine", "machine_name")
-        if machine_name is not None:
-            self._data_writer.set_ipaddress(machine_name)
-            bmp_details = get_config_str_or_none("Machine", "bmp_names")
-            auto_detect_bmp = get_config_bool("Machine", "auto_detect_bmp")
-            scamp_connection_data = None
-            reset_machine = get_config_bool(
-                "Machine", "reset_machine_on_startup")
-            board_version = FecDataView.get_machine_version().number
-
-        elif allocator_data:
+        with FecTimer("Allocated Machine generator", TimerWork.GET_MACHINE):
             (ipaddress, board_version, bmp_details,
              reset_machine, auto_detect_bmp, scamp_connection_data,
              machine_allocation_controller) = allocator_data
             self._data_writer.set_ipaddress(ipaddress)
             self._data_writer.set_allocation_controller(
                 machine_allocation_controller)
-        else:
-            return
 
-        with FecTimer("Machine generator", TimerWork.GET_MACHINE):
             machine, transceiver = machine_generator(
                 bmp_details, board_version,
                 auto_detect_bmp or False, scamp_connection_data,
                 reset_machine or False)
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
+            return machine
 
-    def _execute_machine_by_name(self) -> None:
+    def _execute_machine_by_name(self) -> Machine:
         """
         Runs, times and logs getting the machine using machine_name.
 
@@ -887,16 +876,18 @@ class AbstractSpinnakerBase(ConfigHandler):
                 reset_machine or False)
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
+            return machine
 
     def _get_known_machine(
-            self, total_run_time: Optional[float] = 0.0) -> None:
+            self, total_run_time: Optional[float] = 0.0) -> Machine:
         """
-        The Python machine description object.
+        Gets and if needed creates a Machine
 
         :param total_run_time: The total run time to request
+        :returns: The Machine
         """
         if self._data_writer.has_machine():
-            return
+            return self._data_writer.get_machine()
 
         if get_config_bool("Machine", "virtual_board"):
             return self._execute_get_virtual_machine()
@@ -904,7 +895,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not is_config_none("Machine", "machine_name"):
             return self._execute_machine_by_name()
 
-        self._do_allocate_machine(total_run_time)
+        return self._do_allocate_machine(total_run_time)
 
     def get_machine(self) -> Machine:
         """
@@ -928,13 +919,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Calling Get machine after a reset force a hard reset and "
                 "therefore generate a new machine")
             self._hard_reset()
-        self._get_known_machine()
-        if self._data_writer.has_machine():
-            return self._data_writer.get_machine()
-        else:
-            raise ConfigurationException(
-                "Not enough information provided to supply a machine")
+        machine = self._get_known_machine()
         FecTimer.end_category(TimerCategory.GET_MACHINE)
+        return machine
 
     def _create_version_provenance(self) -> None:
         """
