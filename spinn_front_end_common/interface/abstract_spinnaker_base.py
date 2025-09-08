@@ -143,6 +143,7 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     sdram_usage_report_per_chip,
     tag_allocator_report)
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
+from spinnman.transceiver import Transceiver
 
 try:
     from scipy import __version__ as scipy_version
@@ -736,9 +737,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Virtual machine generator", TimerWork.OTHER):
             return super()._execute_get_virtual_machine()
 
-    @overrides(ConfigHandler._do_allocate_machine)
-    def _do_allocate_machine(
-            self, total_run_time: Optional[float], retry: int = 0) -> Machine:
+    @overrides(ConfigHandler._do_allocate_transceiver)
+    def _do_allocate_transceiver(
+            self, total_run_time: Optional[float],
+            retry: int = 0) -> Transceiver:
         """
         Combines execute allocator and execute machine generator
 
@@ -751,7 +753,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         try:
             allocator_data = self._do_get_allocator_data(total_run_time)
             allocator_worked = True
-            return self._execute_machine_generator(allocator_data)
+            return self._execute_transceiver_generator(allocator_data)
         except Exception as ex:  # pylint: disable=broad-except
             logger.exception("Error on machine_generation")
             logger.exception(ex)
@@ -768,7 +770,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # retry but outside of except so errors do not stack
         logger.info("retrying allocate and get machine")
-        return self._do_allocate_machine(total_run_time, retry + 1)
+        return self._do_allocate_transceiver(total_run_time, retry + 1)
 
     @overrides(ConfigHandler._do_get_allocator_data)
     def _do_get_allocator_data(
@@ -823,11 +825,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO: Would passing the bearer token to this ever make sense?
             return hbp_allocator(total_run_time)
 
-    def _execute_machine_generator(self, allocator_data: Tuple[
+    @overrides(ConfigHandler._execute_transceiver_generator)
+    def _execute_transceiver_generator(self, allocator_data: Tuple[
             str, Optional[str], bool, bool, Optional[Dict[XY, str]],
             MachineAllocationController]) -> Machine:
         """
-        Runs, times and logs the MachineGenerator if required.
+        Runs, times and logs the transceiver_generator.
 
         May set the "machine" value if not already set
 
@@ -837,11 +840,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             boot port, allocation controller)
         :returns: Machine created
         """
-        with FecTimer("Allocated Machine generator", TimerWork.GET_MACHINE):
-            return super()._execute_machine_generator(allocator_data)
+        with FecTimer("Allocated Transceiver generator", TimerWork.GET_MACHINE):
+            return super()._execute_transceiver_generator(allocator_data)
 
-    @overrides(ConfigHandler._execute_machine_by_name)
-    def _execute_machine_by_name(self) -> Machine:
+    @overrides(ConfigHandler._execute_tranceiver_by_name)
+    def _execute_tranceiver_by_name(self) -> Machine:
         """
         Runs, times and logs getting the machine using machine_name.
 
@@ -850,7 +853,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raises ConfigException: if machine_name is not set in the cfg
         """
         with FecTimer("Machine generator", TimerWork.GET_MACHINE):
-            return super()._execute_machine_by_name()
+            return super()._execute_tranceiver_by_name()
 
     def get_machine(self) -> Machine:
         """
