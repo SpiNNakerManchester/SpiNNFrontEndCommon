@@ -739,31 +739,32 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Virtual machine generator", TimerWork.OTHER):
             return super()._execute_get_virtual_machine()
 
+    @overrides(ConfigHandler._do_transceiver_by_remote)
     def _do_transceiver_by_remote(self, total_run_time: Optional[float]):
         spalloc_server = get_config_str_or_none("Machine", "spalloc_server")
         if spalloc_server:
             if is_server_address(spalloc_server):
-                return self._execute_transceiver_by_spalloc()
+                transceiver, _ = self._execute_spalloc_transceiver()
+                return transceiver
             else:
                 return self._execute_transceiver_by_spalloc_old()
         if not is_config_none("Machine", "remote_spinnaker_url"):
-            x = 1
             return self._execute_transceiver_by_hbp(total_run_time)
         raise ConfigurationException(
             "Neither cfg spalloc_server or remote_spinnaker_url set")
 
     @overrides(ConfigHandler._execute_transceiver_by_spalloc)
-    def _execute_transceiver_by_spalloc(self):
-        with FecTimer("Transceiver by Spalloc", TimerWork.OTHER):
-            ipaddress, connections, controller = spalloc_allocate_job()
-            self._data_writer.set_ipaddress(ipaddress)
+    def _execute_transceiver_by_spalloc(
+            self) -> Tuple[Transceiver, Dict[XY, str]]:
+        """
+        :return: Transceiver and connections to be consitant with super
+        """
+        with (FecTimer("Transceiver by Spalloc", TimerWork.OTHER)):
+            transceiver, connections = (
+                super()._execute_transceiver_by_spalloc())
             with ProvenanceWriter() as db:
                 db.insert_board_provenance(connections)
-            self._data_writer.set_allocation_controller(controller)
-            transceiver = transciever_generator(
-                bmp_details=None, scamp_connection_data=connections)
-            self._data_writer.set_transceiver(transceiver)
-            return transceiver
+            return (transceiver, connections)
 
     def _execute_transceiver_by_spalloc_old(self) -> Tuple[
             str, Optional[str], bool, bool, Dict[XY, str],
@@ -788,27 +789,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_ipaddress(ipaddress)
             self._data_writer.set_allocation_controller(controller)
             transceiver = transciever_generator(
-                bmp_details, scamp_connection_data=None)
+                bmp_details, auto_detect_bmp=False,
+                scamp_connection_data=None, reset_machine_on_start_up=False)
             self._data_writer.set_transceiver(transceiver)
             return transceiver
-
-    @overrides(ConfigHandler._execute_transceiver_generator)
-    def _execute_transceiver_generator(self, allocator_data: Tuple[
-            str, Optional[str], bool, bool, Optional[Dict[XY, str]],
-            MachineAllocationController]) -> Machine:
-        """
-        Runs, times and logs the transceiver_generator.
-
-        May set the "machine" value if not already set
-
-        :param allocator_data:
-            (machine name, BMP details (if any),
-            reset on startup flag, auto-detect BMP, SCAMP connection details,
-            boot port, allocation controller)
-        :returns: Machine created
-        """
-        with FecTimer("Allocated Transceiver generator", TimerWork.GET_MACHINE):
-            return super()._execute_transceiver_generator(allocator_data)
 
     @overrides(ConfigHandler._execute_tranceiver_by_name)
     def _execute_tranceiver_by_name(self) -> Machine:
