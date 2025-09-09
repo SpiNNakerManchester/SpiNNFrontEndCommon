@@ -55,6 +55,8 @@ from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 from spinnman.spalloc import (is_server_address, MachineAllocationController)
 from spinnman.spalloc.spalloc_allocator import spalloc_allocate_job
+from spinnman.transceiver_generator import transciever_generator
+from spinnman.transceiver import create_transceiver_from_hostname
 
 from spalloc_client import (  # type: ignore[import]
     __version__ as spalloc_version)
@@ -737,93 +739,58 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Virtual machine generator", TimerWork.OTHER):
             return super()._execute_get_virtual_machine()
 
-    @overrides(ConfigHandler._do_allocate_transceiver)
-    def _do_allocate_transceiver(
-            self, total_run_time: Optional[float],
-            retry: int = 0) -> Transceiver:
-        """
-        Combines execute allocator and execute machine generator
-
-        This allows allocator to be run again if it is useful to do so
-
-        :param total_run_time: The total run time to request
-        :returns: Machine created
-        """
-        allocator_worked = False
-        try:
-            allocator_data = self._do_get_allocator_data(total_run_time)
-            allocator_worked = True
-            return self._execute_transceiver_generator(allocator_data)
-        except Exception as ex:  # pylint: disable=broad-except
-            logger.exception("Error on machine_generation")
-            logger.exception(ex)
-            path = self._data_writer.get_error_file()
-            with open(path, "a", encoding="utf-8") as f:
-                f.write("Error on machine_generation\n")
-                f.write(traceback.format_exc())
-                if allocator_worked:
-                    logger.exception(f"{allocator_data=}")
-                    f.write(f"{allocator_data=}\n")
-            max_retry = get_config_int("Machine", "spalloc_retry")
-            if retry >= max_retry:
-                raise
-
-        # retry but outside of except so errors do not stack
-        logger.info("retrying allocate and get machine")
-        return self._do_allocate_transceiver(total_run_time, retry + 1)
-
-    @overrides(ConfigHandler._do_get_allocator_data)
-    def _do_get_allocator_data(
-            self, total_run_time: Optional[float]) -> Tuple[
-            str, Optional[str], bool, bool, Optional[Dict[XY, str]],
-            MachineAllocationController]:
-        """
-        Runs, times and logs the SpallocAllocator or HBPAllocator if required.
-
-        :param total_run_time: The total run time to request
-        :return: machine name, BMP details (if any),
-            reset on startup flag, auto-detect BMP, SCAMP connection details,
-            boot port, allocation controller
-        """
+    def _do_transceiver_by_remote(self, total_run_time: Optional[float]):
         spalloc_server = get_config_str_or_none("Machine", "spalloc_server")
         if spalloc_server:
             if is_server_address(spalloc_server):
-                return self._execute_spalloc_allocate_job()
+                return self._execute_transceiver_by_spalloc()
             else:
-                return self._execute_spalloc_allocate_job_old()
+                return self._execute_transceiver_by_spalloc_old()
         if not is_config_none("Machine", "remote_spinnaker_url"):
-            return self._execute_hbp_allocator(total_run_time)
+            x = 1
+            return self._execute_transceiver_by_hbp(total_run_time)
         raise ConfigurationException(
             "Neither cfg spalloc_server or remote_spinnaker_url set")
 
-    def _execute_spalloc_allocate_job(self) -> Tuple[
-            str, Optional[str], bool, bool, Dict[XY, str],
-            MachineAllocationController]:
-        with FecTimer("Spalloc Allocator", TimerWork.OTHER):
-            host, connections, mac = spalloc_allocate_job(
-                self.__bearer_token, **self.__group_collab_or_job)
+    @overrides(ConfigHandler._execute_transceiver_by_spalloc)
+    def _execute_transceiver_by_spalloc(self):
+        with FecTimer("Transceiver by Spalloc", TimerWork.OTHER):
+            ipaddress, connections, controller = spalloc_allocate_job()
+            self._data_writer.set_ipaddress(ipaddress)
             with ProvenanceWriter() as db:
                 db.insert_board_provenance(connections)
-            return (
-                host, None, False, False, connections, mac)
+            self._data_writer.set_allocation_controller(controller)
+            transceiver = transciever_generator(
+                bmp_details=None, scamp_connection_data=connections)
+            self._data_writer.set_transceiver(transceiver)
+            return transceiver
 
-    def _execute_spalloc_allocate_job_old(self) -> Tuple[
+    def _execute_transceiver_by_spalloc_old(self) -> Tuple[
             str, Optional[str], bool, bool, Dict[XY, str],
             MachineAllocationController]:
-        with FecTimer("Spalloc Allocator Old", TimerWork.OTHER):
-            host, connections, mac = spalloc_allocate_job_old()
+        with FecTimer("Transceiver by Spalloc Old", TimerWork.OTHER):
+            ipaddress, connections, controller = spalloc_allocate_job_old()
+            self._data_writer.set_ipaddress(ipaddress)
             with ProvenanceWriter() as db:
                 db.insert_board_provenance(connections)
-            return (
-                host, None, False, False, connections, mac)
+            self._data_writer.set_allocation_controller(controller)
+            transceiver = create_transceiver_from_hostname(ipaddress)
+            self._data_writer.set_transceiver(transceiver)
+            return transceiver
 
-    def _execute_hbp_allocator(
+    def _execute_transceiver_by_hbp(
             self, total_run_time:  Optional[float]) -> Tuple[
             str, Optional[str], bool, bool, None,
             MachineAllocationController]:
-        with FecTimer("HBPAllocator", TimerWork.OTHER):
+        with (FecTimer("HBPAllocator", TimerWork.OTHER)):
             # TODO: Would passing the bearer token to this ever make sense?
-            return hbp_allocator(total_run_time)
+            ipaddress, bmp_details, controller = hbp_allocator(total_run_time)
+            self._data_writer.set_ipaddress(ipaddress)
+            self._data_writer.set_allocation_controller(controller)
+            transceiver = transciever_generator(
+                bmp_details, scamp_connection_data=None)
+            self._data_writer.set_transceiver(transceiver)
+            return transceiver
 
     @overrides(ConfigHandler._execute_transceiver_generator)
     def _execute_transceiver_generator(self, allocator_data: Tuple[

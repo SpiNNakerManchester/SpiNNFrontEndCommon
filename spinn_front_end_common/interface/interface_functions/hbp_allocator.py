@@ -17,7 +17,7 @@ from typing import Optional, Tuple, cast
 
 import requests
 
-from spinn_utilities.config_holder import get_config_str
+from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.json import JsonArray, JsonObject
 
@@ -129,11 +129,9 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
     a number of chips.
 
     :param total_run_time: The total run time to request
-    :return: machine name, machine version, BMP details (if any),
-        reset on startup flag, auto-detect BMP, SCAMP connection details,
-        boot port, allocation controller
+    :return: IP address, BMP details (if any), allocation controller
     :raises ~pacman.exceptions.PacmanConfigurationException:
-        If neither `n_chips` or `n_boards` provided
+        If neither `n_chips` or `n_boards` provided or if version is incorrect
     """
 
     url = get_config_str("Machine", "remote_spinnaker_url")
@@ -141,12 +139,16 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
         url = url[:-1]
 
     machine = _get_machine(url, total_run_time)
+    if int(machine["version"]) == get_config_int("machne", "version"):
+        raise PacmanConfigurationException(
+            f"Version returned by HBP {machine['version']} == "
+            f"version in cfg {get_config_int("machne", "version")}")
     name = cast(str, machine["machineName"])
     hbp_job_controller = _HBPJobController(url, name)
 
     return (
         name, cast(Optional[str], machine.get("bmpDetails")),
-        False, False, None, hbp_job_controller)
+        hbp_job_controller)
 
 
 def _get_machine(url: str, total_run_time: Optional[float]) -> JsonObject:
