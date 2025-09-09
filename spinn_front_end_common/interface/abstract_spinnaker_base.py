@@ -776,6 +776,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 db.insert_board_provenance(connections)
             self._data_writer.set_allocation_controller(controller)
             transceiver = create_transceiver_from_hostname(ipaddress)
+            transceiver.discover_scamp_connections()
             self._data_writer.set_transceiver(transceiver)
             return transceiver
 

@@ -42,16 +42,16 @@ class _OldSpallocJobController(MachineAllocationController):
         "_state"
     )
 
-    def __init__(self, job: Job, host: str):
+    def __init__(self, job: Job):
         """
         :param job: Job Used
-        :param host: IP address of Chip 0, 0
         """
         if job is None:
             raise TypeError("must have a real job")
         self._job = job
         self._state = job.state
-        super().__init__("SpallocJobController", host)
+
+        super().__init__("SpallocJobController")
 
     @overrides(MachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time: float) -> None:
@@ -121,7 +121,7 @@ def spalloc_allocate_job_old() -> Tuple[
 
     job, hostname, scamp_connection_data = _launch_checked_job_old(
         n_boards, host, port, owner, machine)
-    machine_allocation_controller = _OldSpallocJobController(job, hostname)
+    machine_allocation_controller = _OldSpallocJobController(job)
     return (hostname, scamp_connection_data, machine_allocation_controller)
 
 
