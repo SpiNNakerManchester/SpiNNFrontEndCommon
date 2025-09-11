@@ -147,6 +147,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         :returns:
            Connection to the Chip with a know host over this port or None
         """
+        _ = (chip_x, chip_y, udp_port)
         return None
 
     def open_eieio_listener(self) -> EIEIOConnection:
