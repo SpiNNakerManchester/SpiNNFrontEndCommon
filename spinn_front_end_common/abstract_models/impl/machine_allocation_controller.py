@@ -128,36 +128,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         """
         return self.__hostname is not None
 
-    def open_sdp_connection(
-            self, chip_x: int, chip_y: int,
-            udp_port: int = SCP_SCAMP_PORT) -> Optional[SCAMPConnection]:
-        """
-        Open a connection to a specific Ethernet-enabled SpiNNaker chip.
-        Caller will have to arrange for SpiNNaker to pay attention to the
-        connection.
-
-        The coordinates will be job-relative.
-
-        :param chip_x: Ethernet-enabled chip X coordinate
-        :param chip_y: Ethernet-enabled chip Y coordinate
-        :param udp_port:
-            the UDP port on the chip to connect to; connecting to a non-SCP
-            port will result in a connection that can't easily be configured.
-        :returns:
-           Connection to the Chip with a know host over this port or None
-        """
-        _ = (chip_x, chip_y, udp_port)
-        return None
-
-    def open_eieio_listener(self) -> EIEIOConnection:
-        """
-        Open an unbound EIEIO connection. This may be used to communicate with
-        any board of the job.
-
-        :returns: The new EIEIO connection
-        """
-        return EIEIOConnection()
-
     @property
     def proxying(self) -> bool:
         """

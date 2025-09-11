@@ -52,7 +52,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset, open_scp_connection, retarget_tag)
+    get_region_base_address_offset, retarget_tag)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.scp import ReinjectorControlProcess
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
@@ -588,8 +588,22 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :return: The opened connection, ready for use.
         """
+        # delayed import due to circular dependencies
+        # pylint: disable=import-outside-toplevel
+        # Moved in another PR
+        from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
+            import SpallocJobController
         assert self._remote_tag is not None
-        connection = open_scp_connection(self._x, self._y, self._ip_address)
+        connection: Optional[SCAMPConnection] = None
+        if FecDataView.has_allocation_controller():
+            # See if the allocation controller wants to do it
+            controller = FecDataView.get_allocation_controller()
+            if isinstance(controller, SpallocJobController):
+                connection = controller.open_sdp_connection(
+                    self._x, self._y)
+        if connection is None:
+            connection = SCAMPConnection(self._x, self._y, self._ip_address)
+
         retarget_tag(connection, self._x, self._y, self._remote_tag)
         return connection
 
