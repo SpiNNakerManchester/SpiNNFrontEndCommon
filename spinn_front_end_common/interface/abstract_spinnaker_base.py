@@ -744,7 +744,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         spalloc_server = get_config_str_or_none("Machine", "spalloc_server")
         if spalloc_server:
             if is_server_address(spalloc_server):
-                transceiver, _ = self._execute_spalloc_transceiver()
+                transceiver, _ = self._execute_transceiver_by_spalloc()
                 return transceiver
             else:
                 return self._execute_transceiver_by_spalloc_old()
