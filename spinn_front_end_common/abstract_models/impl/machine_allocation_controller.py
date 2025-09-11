@@ -15,10 +15,9 @@
 import logging
 import sys
 from threading import Thread
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
-from spinn_utilities.typing.coords import XY
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.transceiver import create_transceiver_from_hostname, Transceiver
