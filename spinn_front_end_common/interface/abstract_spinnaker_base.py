@@ -55,7 +55,7 @@ from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 from spinnman.spalloc import is_server_address
 from spinnman.transceiver import (
-    create_transceiver_from_hostname, transceiver, transceiver_generator)
+    create_transceiver_from_hostname, Transceiver, transceiver_generator)
 
 from spalloc_client import (  # type: ignore[import]
     __version__ as spalloc_version)
