@@ -766,9 +766,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 db.insert_board_provenance(connections)
             return (transceiver, connections)
 
-    def _execute_transceiver_by_spalloc_old(self) -> Tuple[
-            str, Optional[str], bool, bool, Dict[XY, str],
-            MachineAllocationController]:
+    def _execute_transceiver_by_spalloc_old(self) -> Transceiver:
         with FecTimer("Transceiver by Spalloc Old", TimerWork.OTHER):
             ipaddress, connections, controller = spalloc_allocate_job_old()
             self._data_writer.set_ipaddress(ipaddress)
@@ -781,9 +779,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return transceiver
 
     def _execute_transceiver_by_hbp(
-            self, total_run_time:  Optional[float]) -> Tuple[
-            str, Optional[str], bool, bool, None,
-            MachineAllocationController]:
+            self, total_run_time:  Optional[float]) -> Transceiver:
         with (FecTimer("HBPAllocator", TimerWork.OTHER)):
             # TODO: Would passing the bearer token to this ever make sense?
             ipaddress, bmp_details, controller = hbp_allocator(total_run_time)
@@ -796,14 +792,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return transceiver
 
     @overrides(ConfigHandler._execute_tranceiver_by_name)
-    def _execute_tranceiver_by_name(self) -> Machine:
-        """
-        Runs, times and logs getting the machine using machine_name.
-
-        May set the "machine" value if not already set
-
-        :raises ConfigException: if machine_name is not set in the cfg
-        """
+    def _execute_tranceiver_by_name(self) -> Transceiver:
         with FecTimer("Machine generator", TimerWork.GET_MACHINE):
             return super()._execute_tranceiver_by_name()
 
