@@ -53,10 +53,9 @@ from spinnman.exceptions import (
     SpiNNManCoresNotInStateException)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
-from spinnman.spalloc import (is_server_address, MachineAllocationController)
-from spinnman.spalloc.spalloc_allocator import spalloc_allocate_job
-from spinnman.transceiver_generator import transciever_generator
-from spinnman.transceiver import create_transceiver_from_hostname
+from spinnman.spalloc import is_server_address
+from spinnman.transceiver import (
+    create_transceiver_from_hostname, transceiver, transceiver_generator)
 
 from spalloc_client import (  # type: ignore[import]
     __version__ as spalloc_version)
@@ -145,7 +144,6 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     sdram_usage_report_per_chip,
     tag_allocator_report)
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
-from spinnman.transceiver import Transceiver
 
 try:
     from scipy import __version__ as scipy_version
@@ -785,7 +783,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             ipaddress, bmp_details, controller = hbp_allocator(total_run_time)
             self._data_writer.set_ipaddress(ipaddress)
             self._data_writer.set_allocation_controller(controller)
-            transceiver = transciever_generator(
+            transceiver = transceiver_generator(
                 bmp_details, auto_detect_bmp=False,
                 scamp_connection_data=None, reset_machine_on_start_up=False)
             self._data_writer.set_transceiver(transceiver)
