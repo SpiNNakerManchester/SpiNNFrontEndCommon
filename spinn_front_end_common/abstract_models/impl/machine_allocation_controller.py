@@ -35,11 +35,9 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         #: Boolean flag for telling this thread when the system has ended
         "_exited",
         #: the address of the root board of the allocation
-        "__hostname",
-        "__connection_data")
+        "__hostname")
 
-    def __init__(self, thread_name: str, hostname: Optional[str] = None,
-                 connection_data: Optional[Dict[XY, str]] = None):
+    def __init__(self, thread_name: str, hostname: Optional[str] = None):
         """
         :param thread_name: Name for the Thread object
         :param hostname: host to use to create a Transceiver
@@ -49,7 +47,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         thread.daemon = True
         self._exited = False
         self.__hostname = hostname
-        self.__connection_data = connection_data
         thread.start()
 
     @abstractmethod
@@ -133,16 +130,6 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         """
         return self.__hostname is not None
 
-    def __host(self, chip_x: int, chip_y: int) -> Optional[str]:
-        """
-        :param chip_x: X of chip to get connection for
-        :param chip_y: Y of chip to get connection for
-        :return: Known connection for this Chip or None
-        """
-        if not self.__connection_data:
-            return None
-        return self.__connection_data.get((chip_x, chip_y))
-
     def open_sdp_connection(
             self, chip_x: int, chip_y: int,
             udp_port: int = SCP_SCAMP_PORT) -> Optional[SCAMPConnection]:
@@ -161,27 +148,7 @@ class MachineAllocationController(object, metaclass=AbstractBase):
         :returns:
            Connection to the Chip with a know host over this port or None
         """
-        host = self.__host(chip_x, chip_y)
-        if not host:
-            return None
-        return SCAMPConnection(
-            chip_x=chip_x, chip_y=chip_y,
-            remote_host=host, remote_port=udp_port)
-
-    def open_eieio_connection(
-            self, chip_x: int, chip_y: int) -> Optional[EIEIOConnection]:
-        """
-        Open an unbound EIEIO connection. This may be used to communicate with
-        any board of the job.
-
-        :param chip_x: X of Chip to get connection to
-        :param chip_y: Y of Chip to get connection to
-        :return: Connection to the Chip with a known host or None
-        """
-        host = self.__host(chip_x, chip_y)
-        if not host:
-            return None
-        return EIEIOConnection(remote_host=host, remote_port=SCP_SCAMP_PORT)
+        return None
 
     def open_eieio_listener(self) -> EIEIOConnection:
         """

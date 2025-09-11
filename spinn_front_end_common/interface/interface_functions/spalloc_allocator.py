@@ -153,21 +153,9 @@ class SpallocJobController(MachineAllocationController):
             allows it to work even outside the UNIMAN firewall.
         """
         if not self.__use_proxy:
+            # None
             return super().open_sdp_connection(chip_x, chip_y, udp_port)
         return self._job.connect_to_board(chip_x, chip_y, udp_port)
-
-    @overrides(MachineAllocationController.open_eieio_connection,
-               extend_doc=True)
-    def open_eieio_connection(
-            self, chip_x: int, chip_y: int) -> Optional[EIEIOConnection]:
-        """
-        .. note::
-            This allocation controller proxies connections via Spalloc. This
-            allows it to work even outside the UNIMAN firewall.
-        """
-        if not self.__use_proxy:
-            return super().open_eieio_connection(chip_x, chip_y)
-        return self._job.open_eieio_connection(chip_x, chip_y)
 
     @overrides(MachineAllocationController.open_eieio_listener,
                extend_doc=True)
