@@ -26,7 +26,7 @@ from spalloc_client import Job
 from spalloc_client.states import JobState
 
 from spinnman.spalloc import MachineAllocationController
-from spinnman.spalloc.spalloc_allocator import get_n_boards
+from spinnman.spalloc.spalloc_client import get_n_boards
 
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
