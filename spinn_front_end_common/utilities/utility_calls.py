@@ -173,32 +173,6 @@ def retarget_tag(
         reprogram_tag(connection, tag, strip)
 
 
-def open_scp_connection(
-        chip_x: int, chip_y: int, chip_ip_address: str) -> SCAMPConnection:
-    """
-    Create an SCP connection to the given Ethernet-enabled chip.
-
-    SpiNNaker will not be configured to map that connection to a tag;
-    that is the caller's responsibility.
-
-    :param chip_x:
-        X coordinate of the Ethernet-enabled chip to connect to.
-    :param chip_y:
-        Y coordinate of the Ethernet-enabled chip to connect to.
-    :param chip_ip_address:
-        IP address of the Ethernet-enabled chip to connect to.
-    :returns: A Connection
-        or None if for example there is no known host for this Chip
-    """
-    if FecDataView.has_allocation_controller():
-        # See if the allocation controller wants to do it
-        conn = FecDataView.get_allocation_controller().open_sdp_connection(
-            chip_x, chip_y)
-        if conn:
-            return conn
-    return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
-
-
 def pick_core_for_system_placement(
         system_placements: Placements, chip: Chip) -> int:
     """
