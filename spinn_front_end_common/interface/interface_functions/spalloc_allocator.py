@@ -28,8 +28,7 @@ from spinn_utilities.config_holder import get_config_int, get_config_str
 from spalloc_client import Job
 from spalloc_client.states import JobState
 
-from spinnman.connections.udp_packet_connections import (
-    SCAMPConnection, EIEIOConnection)
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
     is_server_address, SpallocClient, SpallocJob, SpallocState)
@@ -142,44 +141,32 @@ class SpallocJobController(MachineAllocationController):
             return super().can_create_transceiver()
         return True
 
-    @overrides(MachineAllocationController.open_sdp_connection,
-               extend_doc=True)
     def open_sdp_connection(
             self, chip_x: int, chip_y: int,
             udp_port: int = SCP_SCAMP_PORT) -> Optional[SCAMPConnection]:
         """
-        .. note::
-            This allocation controller proxies connections via Spalloc. This
-            allows it to work even outside the UNIMAN firewall.
-        """
-        if not self.__use_proxy:
-            return super().open_sdp_connection(chip_x, chip_y, udp_port)
-        return self._job.connect_to_board(chip_x, chip_y, udp_port)
+        Open a connection to a specific Ethernet-enabled SpiNNaker chip.
+        Caller will have to arrange for SpiNNaker to pay attention to the
+        connection.
 
-    @overrides(MachineAllocationController.open_eieio_connection,
-               extend_doc=True)
-    def open_eieio_connection(
-            self, chip_x: int, chip_y: int) -> Optional[EIEIOConnection]:
-        """
-        .. note::
-            This allocation controller proxies connections via Spalloc. This
-            allows it to work even outside the UNIMAN firewall.
-        """
-        if not self.__use_proxy:
-            return super().open_eieio_connection(chip_x, chip_y)
-        return self._job.open_eieio_connection(chip_x, chip_y)
+        The coordinates will be job-relative.
 
-    @overrides(MachineAllocationController.open_eieio_listener,
-               extend_doc=True)
-    def open_eieio_listener(self) -> EIEIOConnection:
-        """
         .. note::
             This allocation controller proxies connections via Spalloc. This
             allows it to work even outside the UNIMAN firewall.
+
+        :param chip_x: Ethernet-enabled chip X coordinate
+        :param chip_y: Ethernet-enabled chip Y coordinate
+        :param udp_port:
+            the UDP port on the chip to connect to; connecting to a non-SCP
+            port will result in a connection that can't easily be configured.
+        :returns:
+           Connection to the Chip with a know host over this port or None
         """
-        if not self.__use_proxy:
-            return super().open_eieio_listener()
-        return self._job.open_eieio_listener_connection()
+        if self.__use_proxy:
+            return self._job.connect_to_board(chip_x, chip_y, udp_port)
+        else:
+            return None
 
     @property
     @overrides(MachineAllocationController.proxying)
