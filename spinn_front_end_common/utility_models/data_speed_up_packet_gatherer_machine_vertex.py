@@ -591,8 +591,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         # delayed import due to circular dependencies
         # pylint: disable=import-outside-toplevel
         # Moved in another PR
-        from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
-            import SpallocJobController
+        from spinn_front_end_common.interface.interface_functions.\
+            spalloc_allocator import SpallocJobController
         assert self._remote_tag is not None
         connection: Optional[SCAMPConnection] = None
         if FecDataView.has_allocation_controller():

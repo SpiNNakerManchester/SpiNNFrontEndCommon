@@ -28,8 +28,7 @@ from spinn_utilities.config_holder import get_config_int, get_config_str
 from spalloc_client import Job
 from spalloc_client.states import JobState
 
-from spinnman.connections.udp_packet_connections import (
-    SCAMPConnection, EIEIOConnection)
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
     is_server_address, SpallocClient, SpallocJob, SpallocState)
