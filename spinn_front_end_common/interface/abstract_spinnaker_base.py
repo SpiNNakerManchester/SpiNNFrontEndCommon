@@ -2272,15 +2272,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # if stopping on machine, clear IP tags and routing table
         self.__clear()
 
-        # stop the transceiver and allocation controller
-        if self._data_writer.has_transceiver():
-            transceiver = self._data_writer.get_transceiver()
-            transceiver.stop_application(self._data_writer.get_app_id())
-
-        self.__close_allocation_controller()
+        super()._shutdown()
         self._data_writer.clear_notification_protocol()
         FecTimer.stop_category_timing()
-        self._data_writer.shut_down()
 
     def __clear(self) -> None:
         if not self._data_writer.has_transceiver():
@@ -2299,11 +2293,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # if clearing routing table entries, clear
         if get_config_bool("Machine", "clear_routing_tables"):
             transceiver.clear_multicast_routes()
-
-    def __close_allocation_controller(self) -> None:
-        if FecDataView.has_allocation_controller():
-            FecDataView.get_allocation_controller().close()
-            self._data_writer.set_allocation_controller(None)
 
     def stop(self) -> None:
         """
