@@ -771,7 +771,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             with ProvenanceWriter() as db:
                 db.insert_board_provenance(connections)
             self._data_writer.set_allocation_controller(controller)
-            transceiver = create_transceiver_from_hostname(ipaddress)
+            transceiver = create_transceiver_from_hostname(
+                ipaddress, ensure_board_is_ready=True)
             transceiver.discover_scamp_connections()
             self._data_writer.set_transceiver(transceiver)
             return transceiver
@@ -785,14 +786,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_allocation_controller(controller)
             transceiver = transceiver_generator(
                 bmp_details, auto_detect_bmp=False,
-                scamp_connection_data=None, reset_machine_on_start_up=False)
+                scamp_connection_data=None, reset_machine_on_start_up=False,
+                ensure_board_is_ready=True)
             self._data_writer.set_transceiver(transceiver)
             return transceiver
 
     @overrides(ConfigHandler._execute_tranceiver_by_name)
     def _execute_tranceiver_by_name(self) -> Transceiver:
         with FecTimer("Machine generator", TimerWork.GET_MACHINE):
-            return super()._execute_tranceiver_by_name()
+            return super()._execute_tranceiver_by_name(
+                ensure_board_is_ready=True)
 
     def get_machine(self) -> Machine:
         """
