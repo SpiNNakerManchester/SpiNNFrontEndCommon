@@ -16,7 +16,7 @@ import os
 from typing import Set
 
 from spinn_utilities.config_holder import (
-    add_default_cfg, clear_cfg_files, get_config_bool)
+    add_default_cfg, add_template, clear_cfg_files, get_config_bool)
 from spinn_utilities.configs.camel_case_config_parser import optionxform
 
 from spinnman.config_setup import add_spinnman_cfg, man_cfg_paths_skipped
@@ -27,7 +27,7 @@ from spinn_front_end_common.interface.interface_functions \
     import load_using_advanced_monitors
 
 BASE_CONFIG_FILE = "spinnaker.cfg"
-
+TEMPLATE_FILE = "spinnaker.cfg.template"
 
 def unittest_setup() -> None:
     """
@@ -53,7 +53,7 @@ def add_spinnaker_cfg() -> None:
     add_pacman_cfg()  # This add its dependencies too
     add_spinnman_cfg()  # double adds of dependencies ignored
     add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))
-
+    add_template(os.path.join(os.path.dirname(__file__), TEMPLATE_FILE))
 
 def fec_cfg_paths_skipped() -> Set[str]:
     """
