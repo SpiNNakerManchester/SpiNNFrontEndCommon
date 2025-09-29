@@ -597,7 +597,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 connection = controller.open_sdp_connection(
                     self._x, self._y)
         if connection is None:
-            connection = SCAMPConnection(self._x, self._y, self._ip_address)
+            connection = SCAMPConnection(
+                self._x, self._y, remote_host=self._ip_address)
 
         assert self._remote_tag is not None
         retarget_tag(connection, self._x, self._y, self._remote_tag)
