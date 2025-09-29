@@ -792,7 +792,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return transceiver
 
     @overrides(ConfigHandler._execute_tranceiver_by_name)
-    def _execute_tranceiver_by_name(self) -> Transceiver:
+    def _execute_tranceiver_by_name(
+            self, ensure_board_is_ready: bool = True) -> Transceiver:
         with FecTimer("Machine generator", TimerWork.GET_MACHINE):
             return super()._execute_tranceiver_by_name(
                 ensure_board_is_ready=True)
