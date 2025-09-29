@@ -29,6 +29,7 @@ from spinn_front_end_common.interface.interface_functions \
 BASE_CONFIG_FILE = "spinnaker.cfg"
 TEMPLATE_FILE = "spinnaker.cfg.template"
 
+
 def unittest_setup() -> None:
     """
     Does all the steps that may be required before a unit test.
@@ -54,6 +55,7 @@ def add_spinnaker_cfg() -> None:
     add_spinnman_cfg()  # double adds of dependencies ignored
     add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))
     add_template(os.path.join(os.path.dirname(__file__), TEMPLATE_FILE))
+
 
 def fec_cfg_paths_skipped() -> Set[str]:
     """
