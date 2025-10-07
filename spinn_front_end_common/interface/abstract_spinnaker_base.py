@@ -22,7 +22,6 @@ import re
 import signal
 import sys
 import threading
-import traceback
 import types
 from threading import Condition
 from typing import (
