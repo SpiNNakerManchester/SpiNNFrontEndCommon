@@ -738,13 +738,17 @@ class AbstractSpinnakerBase(ConfigHandler):
             return super()._execute_get_virtual_machine()
 
     @overrides(ConfigHandler._do_transceiver_by_remote)
-    def _do_transceiver_by_remote(self, total_run_time: Optional[float]):
+    def _do_transceiver_by_remote(
+            self, total_run_time: Optional[float],
+            ensure_board_is_ready: bool) -> Transceiver:
         spalloc_server = get_config_str_or_none("Machine", "spalloc_server")
         if spalloc_server:
             if is_server_address(spalloc_server):
-                transceiver, _ = self._execute_transceiver_by_spalloc()
+                transceiver, _ = self._execute_transceiver_by_spalloc(
+                    ensure_board_is_ready)
                 return transceiver
             else:
+                assert ensure_board_is_ready
                 return self._execute_transceiver_by_spalloc_old()
         if not is_config_none("Machine", "remote_spinnaker_url"):
             return self._execute_transceiver_by_hbp(total_run_time)
@@ -753,13 +757,15 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @overrides(ConfigHandler._execute_transceiver_by_spalloc)
     def _execute_transceiver_by_spalloc(
-            self) -> Tuple[Transceiver, Dict[XY, str]]:
+            self, ensure_board_is_ready: bool
+            ) -> Tuple[Transceiver, Dict[XY, str]]:
         """
         :return: Transceiver and connections to be consitant with super
         """
         with (FecTimer("Transceiver by Spalloc", TimerWork.OTHER)):
             transceiver, connections = (
-                super()._execute_transceiver_by_spalloc())
+                super()._execute_transceiver_by_spalloc(
+                    ensure_board_is_ready))
             with ProvenanceWriter() as db:
                 db.insert_board_provenance(connections)
             return (transceiver, connections)
