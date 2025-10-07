@@ -758,9 +758,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_transceiver_by_spalloc(
             self, ensure_board_is_ready: bool
             ) -> Tuple[Transceiver, Dict[XY, str]]:
-        """
-        :return: Transceiver and connections to be consitant with super
-        """
         with (FecTimer("Transceiver by Spalloc", TimerWork.OTHER)):
             transceiver, connections = (
                 super()._execute_transceiver_by_spalloc(
