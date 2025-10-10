@@ -17,14 +17,13 @@ from typing import Optional, Tuple, cast
 
 import requests
 
-from spinn_utilities.config_holder import get_config_str
+from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.json import JsonArray, JsonObject
 
+from spinnman.spalloc import MachineAllocationController
 from pacman.exceptions import PacmanConfigurationException
 
-from spinn_front_end_common.abstract_models.impl import (
-    MachineAllocationController)
 from spinn_front_end_common.data import FecDataView
 
 
@@ -123,18 +122,15 @@ class _HBPJobController(MachineAllocationController):
 
 
 def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
-        str, int, Optional[str], bool, bool, None,
-        MachineAllocationController]:
+        str, Optional[str], MachineAllocationController]:
     """
     Request a machine from the HBP remote access server that will fit
     a number of chips.
 
     :param total_run_time: The total run time to request
-    :return: machine name, machine version, BMP details (if any),
-        reset on startup flag, auto-detect BMP, SCAMP connection details,
-        boot port, allocation controller
+    :return: IP address, BMP details (if any), allocation controller
     :raises ~pacman.exceptions.PacmanConfigurationException:
-        If neither `n_chips` or `n_boards` provided
+        If neither `n_chips` or `n_boards` provided or if version is incorrect
     """
 
     url = get_config_str("Machine", "remote_spinnaker_url")
@@ -142,13 +138,16 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
         url = url[:-1]
 
     machine = _get_machine(url, total_run_time)
+    if cast(int, machine["version"]) != get_config_int("Machine", "version"):
+        raise PacmanConfigurationException(
+            f"Version returned by HBP {machine['version']} == "
+            f'version in cfg {get_config_int("Machine", "version")}')
     name = cast(str, machine["machineName"])
     hbp_job_controller = _HBPJobController(url, name)
 
     return (
-        name, cast(int, machine["version"]),
-        cast(Optional[str], machine.get("bmpDetails")),
-        False, False, None, hbp_job_controller)
+        name, cast(Optional[str], machine.get("bmpDetails")),
+        hbp_job_controller)
 
 
 def _get_machine(url: str, total_run_time: Optional[float]) -> JsonObject:

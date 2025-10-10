@@ -21,11 +21,11 @@ import unittest
 from spinn_utilities.exceptions import SimulatorShutdownException
 from spinn_utilities.overrides import overrides
 
+from spinnman.spalloc import MachineAllocationController
+
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
-from spinn_front_end_common.abstract_models.impl import (
-    MachineAllocationController)
 
 
 class Close_Once(MachineAllocationController):

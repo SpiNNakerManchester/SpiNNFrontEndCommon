@@ -25,14 +25,13 @@ from spinn_utilities.typing.json import JsonArray
 from spalloc_client.job import JobDestroyedError
 
 from spinnman.exceptions import SpinnmanIOException
+from spinnman.spalloc.spalloc_allocator import spalloc_allocate_job
 from spinnman.transceiver import create_transceiver_from_hostname
 
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import (write_json_machine)
-from spinn_front_end_common.interface.interface_functions import (
-    spalloc_allocator)
 
 
 class TestWriteJson(unittest.TestCase):
@@ -154,8 +153,8 @@ class TestWriteJson(unittest.TestCase):
         writer = FecDataWriter.mock()
         writer.set_n_chips_in_graph(20)
         try:
-            (hostname, version, _, _, _, _, m_allocation_controller) = \
-                spalloc_allocator()
+            (hostname, _, m_allocation_controller) = (
+                spalloc_allocate_job())
         except (JobDestroyedError, ConnectionRefusedError):
             self.skipTest("Skipping as getting Job failed")
 
