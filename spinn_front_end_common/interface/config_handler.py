@@ -17,7 +17,7 @@ import logging
 import os
 import shutil
 import traceback
-from typing import List, Optional, Type
+from typing import cast, List, Optional, Type
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.configs.camel_case_config_parser import FALSES
@@ -25,6 +25,7 @@ from spinn_utilities.config_holder import (
     config_options, has_config_option, load_config, get_config_bool,
     get_config_int, get_config_str, get_config_str_list, get_timestamp_path,
     set_config)
+from spinnman.spinnman_simulation import SpiNNManSimulation
 from spinn_front_end_common.interface.interface_functions.\
     insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
 from spinn_front_end_common.interface.interface_functions.\
@@ -43,15 +44,13 @@ _DEBUG_MAPPING_OPTS = frozenset([
     "routertablecompressasfaraspossible", "runcompressionchecker"])
 
 
-class ConfigHandler(object):
+class ConfigHandler(SpiNNManSimulation):
     """
     Superclass of AbstractSpinnakerBase that handles function only
     dependent of the configuration and the order its methods are called.
     """
 
-    __slots__ = (
-        # The writer and therefore view of the global data
-        "_data_writer", )
+    __slots__ = ()
 
     def __init__(self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
         """
@@ -59,11 +58,10 @@ class ConfigHandler(object):
             Class of the DataWriter used to store the global data
         """
         load_config()
+        if data_writer_cls is None:
+            data_writer_cls = FecDataWriter
+        super().__init__(data_writer_cls)
 
-        if data_writer_cls:
-            self._data_writer = data_writer_cls.setup()
-        else:
-            self._data_writer = FecDataWriter.setup()
         logger.set_log_store(LogStoreDB())
 
         # set up machine targeted data
@@ -71,6 +69,10 @@ class ConfigHandler(object):
         self._previous_handler()
         self._reserve_system_vertices()
         self._ensure_provenance_for_energy_report()
+
+    @property
+    def _data_writer(self) -> FecDataWriter:
+        return cast(FecDataWriter, self._untyped_data_writer)
 
     def __toggle_config(self, section: str, option: str, to_false: List[str],
                         to_true: List[str]) -> None:

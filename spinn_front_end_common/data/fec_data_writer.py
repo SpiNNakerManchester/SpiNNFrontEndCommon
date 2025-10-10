@@ -22,7 +22,9 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
+
 from spinn_machine import Chip, CoreSubsets, RoutingEntry
+
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
@@ -33,16 +35,13 @@ from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
 from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
-    import SpallocJobController
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
-from spinn_front_end_common.abstract_models.impl import (
-    MachineAllocationController)
+
 from .fec_data_view import FecDataView, _FecDataModel
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -86,27 +85,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         PacmanDataWriter._soft_reset(self)
         SpiNNManDataWriter._local_soft_reset(self)
         self.__fec_data._soft_reset()
-
-    def set_allocation_controller(self, allocation_controller: Optional[
-            MachineAllocationController]) -> None:
-        """
-        Sets the allocation controller variable.
-
-        :param allocation_controller:
-        """
-        if allocation_controller and not isinstance(
-                allocation_controller, MachineAllocationController):
-            raise TypeError(
-                "allocation_controller must be a MachineAllocationController")
-        self.__fec_data._spalloc_job = None
-        self.__fec_data._allocation_controller = allocation_controller
-        if allocation_controller is None:
-            return
-        if allocation_controller.proxying:
-            if not isinstance(allocation_controller, SpallocJobController):
-                raise NotImplementedError(
-                    "Expecting only the SpallocJobController to be proxying")
-            self.__fec_data._spalloc_job = allocation_controller.job
 
     def set_buffer_manager(self, buffer_manager: BufferManager) -> None:
         """
@@ -315,16 +293,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._data_in_multicast_routing_tables = routing_tables
         self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
 
-    def set_ipaddress(self, ip_address: str) -> None:
-        """
-        Sets the IP address
-
-        :param ip_address:
-        """
-        if not isinstance(ip_address, str):
-            raise TypeError("ipaddress must be a str")
-        self.__fec_data._ipaddress = ip_address
-
     def set_fixed_routes(
             self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]) -> None:
         """
@@ -356,8 +324,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             ExecutableType, CoreSubsets]) -> None:
         """
         Sets/ overwrites the executable types
-
-        Checks it is a disc but not the keys and values types
 
         :param executable_types:
         """

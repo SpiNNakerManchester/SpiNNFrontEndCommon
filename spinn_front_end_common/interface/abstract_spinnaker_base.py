@@ -22,7 +22,6 @@ import re
 import signal
 import sys
 import threading
-import traceback
 import types
 from threading import Condition
 from typing import (
@@ -30,9 +29,7 @@ from typing import (
     TypeVar, Union, cast, final)
 from types import FrameType
 
-import ebrains_drive  # type: ignore[import]
 from numpy import __version__ as numpy_version
-import requests
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
@@ -41,17 +38,21 @@ from spinn_utilities.config_holder import (
     get_report_path, get_timestamp_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
 from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_machine import __version__ as spinn_machine_version
-from spinn_machine import CoreSubsets
+from spinn_machine import CoreSubsets, Machine
 
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import (
     SpiNNManCoresNotInStateException)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
+from spinnman.spalloc import is_server_address
+from spinnman.transceiver import (
+    create_transceiver_from_hostname, Transceiver, transceiver_generator)
 
 from spalloc_client import (  # type: ignore[import]
     __version__ as spalloc_version)
@@ -85,8 +86,6 @@ from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices,
     AbstractCanReset)
-from spinn_front_end_common.abstract_models.impl import (
-    MachineAllocationController)
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.storage_objects \
@@ -105,17 +104,18 @@ from spinn_front_end_common.interface.interface_functions import (
     insert_chip_power_monitors_to_graphs,
     insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
-    locate_executable_start_type, machine_generator,
+    locate_executable_start_type,
     placements_provenance_gatherer, profile_data_gatherer,
     read_routing_tables_from_machine, router_provenance_gatherer,
     routing_table_loader, sdram_outgoing_partition_allocator,
-    spalloc_allocator, system_multicast_routing_generator,
-    tags_loader, virtual_machine_generator, add_command_senders)
+    spalloc_allocate_job_old,
+    system_multicast_routing_generator,
+    tags_loader, add_command_senders)
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, GlobalProvenance, TimerCategory, TimerWork)
+    FecTimer, GlobalProvenance, ProvenanceWriter, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
@@ -223,7 +223,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if external_binaries is not None:
             self._data_writer.register_binary_search_path(external_binaries)
 
-        self._data_writer.set_machine_generator(self._get_machine)
         FecTimer.end_category(TimerCategory.SETTING_UP)
 
     def _hard_reset(self) -> None:
@@ -302,88 +301,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         logger.error("User has cancelled simulation")
         self._shutdown()
-
-    @property
-    def __bearer_token(self) -> Optional[str]:
-        """
-        :return: The OIDC bearer token
-        """
-        # Try using Jupyter if we have the right variables
-        jupyter_token = os.getenv("JUPYTERHUB_API_TOKEN")
-        jupyter_ip = os.getenv("JUPYTERHUB_SERVICE_HOST")
-        jupyter_port = os.getenv("JUPYTERHUB_SERVICE_PORT")
-        if (jupyter_token is not None and jupyter_ip is not None and
-                jupyter_port is not None):
-            jupyter_url = (f"http://{jupyter_ip}:{jupyter_port}/services/"
-                           "access-token-service/access-token")
-            headers = {"Authorization": f"Token {jupyter_token}"}
-            response = requests.get(jupyter_url, headers=headers, timeout=10)
-            return response.json().get('access_token')
-
-        # Try a simple environment variable, or None if that doesn't exist
-        return os.getenv("OIDC_BEARER_TOKEN")
-
-    @property
-    def __group_collab_or_job(self) -> Dict[str, str]:
-        """
-        :return: The group, collab, or NMPI Job ID to associate with jobs
-        """
-        # Try to get a NMPI Job
-        nmpi_job = os.getenv("NMPI_JOB_ID")
-        if nmpi_job is not None and nmpi_job != "":
-            nmpi_user = os.getenv("NMPI_USER")
-            if nmpi_user is not None and nmpi_user != "":
-                logger.info("Requesting job for NMPI job {}, user {}",
-                            nmpi_job, nmpi_user)
-                return {"nmpi_job": nmpi_job, "nmpi_user": nmpi_user}
-            logger.info("Requesting spalloc job for NMPI job {}", nmpi_job)
-            return {"nmpi_job": nmpi_job}
-
-        # Try to get the collab from the path
-        cwd = os.getcwd()
-        match_obj = SHARED_PATH.match(cwd)
-        if match_obj:
-            collab = self.__get_collab_id_from_folder(
-                match_obj.group(SHARED_GROUP))
-            if collab is not None:
-                return collab
-        match_obj = SHARED_WITH_PATH.match(cwd)
-        if match_obj:
-            collab = self.__get_collab_id_from_folder(
-                match_obj.group(SHARED_WITH_GROUP))
-            if collab is not None:
-                return collab
-
-        # Try to use the config to get a group
-        group = get_config_str_or_none("Machine", "spalloc_group")
-        if group is not None:
-            return {"group": group}
-
-        # Nothing ventured, nothing gained
-        return {}
-
-    def __get_collab_id_from_folder(
-            self, folder: str) -> Optional[Dict[str, str]]:
-        """
-        Currently hacky way to get the EBRAINS collab id from the
-        drive folder, replicated from the NMPI collab template.
-        """
-        token = self.__bearer_token
-        if token is None:
-            return None
-        ebrains_drive_client = ebrains_drive.connect(token=token)
-        repo_by_title = ebrains_drive_client.repos.get_repos_by_name(folder)
-        if len(repo_by_title) != 1:
-            logger.warning(f"The repository for collab {folder} could not be"
-                           " found; continuing as if not in a collaboratory")
-            return {}
-        # Owner is formatted as collab-<collab_id>-<permission>, and we want
-        # to extract the <collab-id>
-        owner = repo_by_title[0].owner
-        collab_id = owner[:owner.rindex("-")]
-        collab_id = collab_id[collab_id.find("-") + 1:]
-        logger.info(f"Requesting job in collaboratory {collab_id}")
-        return {"collab": collab_id}
 
     def exception_handler(
             self, exc_type: Type[BaseException], value: BaseException,
@@ -730,141 +647,100 @@ class AbstractSpinnakerBase(ConfigHandler):
             steps.append(int(left_over_steps))
         return steps
 
-    def _execute_get_virtual_machine(self) -> None:
-        """
-        Runs, times and logs the VirtualMachineGenerator if required.
-
-        May set then "machine" value
-        """
+    @overrides(ConfigHandler._execute_get_virtual_machine, extend_doc=False)
+    def _execute_get_virtual_machine(self) -> Machine:
         with FecTimer("Virtual machine generator", TimerWork.OTHER):
-            self._data_writer.set_machine(virtual_machine_generator())
-            self._data_writer.set_ipaddress("virtual")
+            return super()._execute_get_virtual_machine()
 
-    def _do_allocate_machine(
-            self, total_run_time: Optional[float], retry: int = 0) -> None:
-        """
-        Combines execute allocator and execute machine generator
-
-        This allows allocator to be run again if it is useful to do so
-
-        :param total_run_time: The total run time to request
-        """
-
-        if self._data_writer.has_machine():
-            return
-        allocator_data = self._execute_allocator(total_run_time)
-        try:
-            self._execute_machine_generator(allocator_data)
-            return
-        except Exception as ex:  # pylint: disable=broad-except
-            logger.exception("Error on machine_generation")
-            logger.exception(ex)
-            path = self._data_writer.get_error_file()
-            with open(path, "a", encoding="utf-8") as f:
-                f.write("Error on machine_generation\n")
-                f.write(traceback.format_exc())
-            max_retry = get_config_int("Machine", "spalloc_retry")
-            if retry >= max_retry:
-                raise
-        # retry but outside of except so errors do not stack
-        if allocator_data is not None:
-            logger.exception(f"{allocator_data=}")
-            with open(path, "a", encoding="utf-8") as f:
-                f.write(f"{allocator_data=}\n")
-            logger.info("retrying allocate and get machine")
-            self._do_allocate_machine(total_run_time, retry + 1)
-
-    def _execute_allocator(self, total_run_time: Optional[float]) -> Optional[
-            Tuple[str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
-                  MachineAllocationController]]:
-        """
-        Runs, times and logs the SpallocAllocator or HBPAllocator if required.
-
-        :param total_run_time: The total run time to request
-        :return: machine name, machine version, BMP details (if any),
-            reset on startup flag, auto-detect BMP, SCAMP connection details,
-            boot port, allocation controller
-        """
-        if not is_config_none("Machine", "spalloc_server"):
-            with FecTimer("SpallocAllocator", TimerWork.OTHER):
-                return spalloc_allocator(
-                    self.__bearer_token, **self.__group_collab_or_job)
-        if not is_config_none("Machine", "remote_spinnaker_url"):
-            with FecTimer("HBPAllocator", TimerWork.OTHER):
-                # TODO: Would passing the bearer token to this ever make sense?
-                return hbp_allocator(total_run_time)
-        return None
-
-    def _execute_machine_generator(self, allocator_data: Optional[Tuple[
-            str, int, Optional[str], bool, bool, Optional[Dict[XY, str]],
-            MachineAllocationController]]) -> None:
-        """
-        Runs, times and logs the MachineGenerator if required.
-
-        May set the "machine" value if not already set
-
-        :param allocator_data: `None` or
-            (machine name, machine version, BMP details (if any),
-            reset on startup flag, auto-detect BMP, SCAMP connection details,
-            boot port, allocation controller)
-        """
-        machine_name = get_config_str_or_none("Machine", "machine_name")
-        if machine_name is not None:
-            self._data_writer.set_ipaddress(machine_name)
-            bmp_details = get_config_str_or_none("Machine", "bmp_names")
-            auto_detect_bmp = get_config_bool("Machine", "auto_detect_bmp")
-            scamp_connection_data = None
-            reset_machine = get_config_bool(
-                "Machine", "reset_machine_on_startup")
-            board_version = FecDataView.get_machine_version().number
-
-        elif allocator_data:
-            (ipaddress, board_version, bmp_details,
-             reset_machine, auto_detect_bmp, scamp_connection_data,
-             machine_allocation_controller) = allocator_data
-            self._data_writer.set_ipaddress(ipaddress)
-            self._data_writer.set_allocation_controller(
-                machine_allocation_controller)
-        else:
-            return
-
-        with FecTimer("Machine generator", TimerWork.GET_MACHINE):
-            machine, transceiver = machine_generator(
-                bmp_details, board_version,
-                auto_detect_bmp or False, scamp_connection_data,
-                reset_machine or False)
-            self._data_writer.set_transceiver(transceiver)
-            self._data_writer.set_machine(machine)
-
-    def _get_known_machine(self, total_run_time: float = 0.0) -> None:
-        """
-        The Python machine description object.
-
-        :param total_run_time: The total run time to request
-        """
-        if not self._data_writer.has_machine():
-            if get_config_bool("Machine", "virtual_board"):
-                self._execute_get_virtual_machine()
+    @overrides(ConfigHandler._do_transceiver_by_remote)
+    def _do_transceiver_by_remote(
+            self, total_run_time: Optional[float],
+            ensure_board_is_ready: bool) -> Transceiver:
+        spalloc_server = get_config_str_or_none("Machine", "spalloc_server")
+        if spalloc_server:
+            if is_server_address(spalloc_server):
+                transceiver, _ = self._execute_transceiver_by_spalloc(
+                    ensure_board_is_ready)
+                return transceiver
             else:
-                self._do_allocate_machine(total_run_time)
+                assert ensure_board_is_ready
+                return self._execute_transceiver_by_spalloc_old()
+        if not is_config_none("Machine", "remote_spinnaker_url"):
+            return self._execute_transceiver_by_hbp(total_run_time)
+        raise ConfigurationException(
+            "Neither cfg spalloc_server or remote_spinnaker_url set")
 
-    def _get_machine(self) -> None:
+    @overrides(ConfigHandler._execute_transceiver_by_spalloc)
+    def _execute_transceiver_by_spalloc(
+            self, ensure_board_is_ready: bool
+            ) -> Tuple[Transceiver, Dict[XY, str]]:
+        with (FecTimer("Transceiver by Spalloc", TimerWork.OTHER)):
+            transceiver, connections = (
+                super()._execute_transceiver_by_spalloc(
+                    ensure_board_is_ready))
+            with ProvenanceWriter() as db:
+                db.insert_board_provenance(connections)
+            return (transceiver, connections)
+
+    def _execute_transceiver_by_spalloc_old(self) -> Transceiver:
+        with FecTimer("Transceiver by Spalloc Old", TimerWork.OTHER):
+            ipaddress, connections, controller = spalloc_allocate_job_old()
+            self._data_writer.set_ipaddress(ipaddress)
+            with ProvenanceWriter() as db:
+                db.insert_board_provenance(connections)
+            self._data_writer.set_allocation_controller(controller)
+            transceiver = create_transceiver_from_hostname(
+                ipaddress, ensure_board_is_ready=True)
+            transceiver.discover_scamp_connections()
+            self._data_writer.set_transceiver(transceiver)
+            return transceiver
+
+    def _execute_transceiver_by_hbp(
+            self, total_run_time:  Optional[float]) -> Transceiver:
+        with (FecTimer("HBPAllocator", TimerWork.OTHER)):
+            # TODO: Would passing the bearer token to this ever make sense?
+            ipaddress, bmp_details, controller = hbp_allocator(total_run_time)
+            self._data_writer.set_ipaddress(ipaddress)
+            self._data_writer.set_allocation_controller(controller)
+            transceiver = transceiver_generator(
+                bmp_details, auto_detect_bmp=False,
+                scamp_connection_data=None, reset_machine_on_start_up=False,
+                ensure_board_is_ready=True)
+            self._data_writer.set_transceiver(transceiver)
+            return transceiver
+
+    @overrides(ConfigHandler._execute_tranceiver_by_name)
+    def _execute_tranceiver_by_name(
+            self, ensure_board_is_ready: bool = True) -> Transceiver:
+        with FecTimer("Machine generator", TimerWork.GET_MACHINE):
+            return super()._execute_tranceiver_by_name(
+                ensure_board_is_ready=True)
+
+    def get_machine(self) -> Machine:
         """
-        The factory method to get a machine.
+        Get the Machine. Creating it if necessary.
+
+        This method will make sure that any set called
+        before the next run is hard.
+
+        If called after a reset it will return a different Machine
+        to the one from the previous run.
+
+        :returns: The Machine now stored in the DataView
         """
         FecTimer.start_category(TimerCategory.GET_MACHINE, True)
+        self._data_writer.set_user_accessed_machine()
         if self._data_writer.is_user_mode() and \
                 self._data_writer.is_soft_reset():
+            self._data_writer.clear_machine()
             # Make the reset hard
             logger.warning(
                 "Calling Get machine after a reset force a hard reset and "
                 "therefore generate a new machine")
             self._hard_reset()
-        self._get_known_machine()
-        if not self._data_writer.has_machine():
-            raise ConfigurationException(
-                "Not enough information provided to supply a machine")
+        machine = self._get_known_machine()
         FecTimer.end_category(TimerCategory.GET_MACHINE)
+        return machine
 
     def _create_version_provenance(self) -> None:
         """
@@ -922,7 +798,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             board_chip_report()
             if FecDataView.has_allocation_controller():
-                FecDataView.get_allocation_controller().add_report()
+                filename = get_report_path("path_board_chip_report")
+                with open(filename, "a", encoding="utf-8") as report:
+                    report.write(
+                        f"{FecDataView.get_allocation_controller()}\n")
 
     def _execute_splitter_reset(self) -> None:
         """
@@ -1393,7 +1272,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
-        self._do_allocate_machine(total_run_time)
+        self._get_known_machine(total_run_time)
         self._json_machine()
         self._report_board_chip()
 
@@ -2315,15 +2194,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # if stopping on machine, clear IP tags and routing table
         self.__clear()
 
-        # stop the transceiver and allocation controller
-        if self._data_writer.has_transceiver():
-            transceiver = self._data_writer.get_transceiver()
-            transceiver.stop_application(self._data_writer.get_app_id())
-
-        self.__close_allocation_controller()
+        super()._shutdown()
         self._data_writer.clear_notification_protocol()
         FecTimer.stop_category_timing()
-        self._data_writer.shut_down()
 
     def __clear(self) -> None:
         if not self._data_writer.has_transceiver():
@@ -2342,11 +2215,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # if clearing routing table entries, clear
         if get_config_bool("Machine", "clear_routing_tables"):
             transceiver.clear_multicast_routes()
-
-    def __close_allocation_controller(self) -> None:
-        if FecDataView.has_allocation_controller():
-            FecDataView.get_allocation_controller().close()
-            self._data_writer.set_allocation_controller(None)
 
     def stop(self) -> None:
         """

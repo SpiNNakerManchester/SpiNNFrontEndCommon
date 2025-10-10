@@ -41,15 +41,13 @@ from .split_lpg_vertices import split_lpg_vertices
 from .load_executable_images import load_app_images, load_sys_images
 from .load_fixed_routes import load_fixed_routes
 from .locate_executable_start_type import locate_executable_start_type
-from .machine_generator import machine_generator
 from .create_notification_protocol import create_notification_protocol
 from .placements_provenance_gatherer import placements_provenance_gatherer
 from .profile_data_gatherer import profile_data_gatherer
 from .router_provenance_gatherer import router_provenance_gatherer
 from .routing_table_loader import routing_table_loader
-from .spalloc_allocator import spalloc_allocator
+from .spalloc_allocator_old import spalloc_allocate_job_old
 from .tags_loader import tags_loader
-from .virtual_machine_generator import virtual_machine_generator
 from .read_routing_tables_from_machine import read_routing_tables_from_machine
 from .sdram_outgoing_partition_allocator import (
     sdram_outgoing_partition_allocator)
@@ -73,10 +71,10 @@ __all__ = (
     "split_lpg_vertices",
     "load_app_images", "load_fixed_routes", "load_sys_images",
     "locate_executable_start_type",
-    "machine_generator", "placements_provenance_gatherer",
+    "placements_provenance_gatherer",
     "profile_data_gatherer",
     "read_routing_tables_from_machine", "router_provenance_gatherer",
     "routing_table_loader", "sdram_outgoing_partition_allocator",
-    "spalloc_allocator",
+    "spalloc_allocate_job_old",
     "system_multicast_routing_generator", "tags_loader",
-    "virtual_machine_generator", "add_command_senders")
+    "add_command_senders")
