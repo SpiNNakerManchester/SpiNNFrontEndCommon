@@ -8,11 +8,11 @@ This code depends on SpiNNUtils_, SpiNNMachine_, SpiNNMan_, PACMAN_,
 
 .. _SpiNNaker: https://apt.cs.manchester.ac.uk/projects/SpiNNaker
 .. _SpiNNFrontEndCommon: https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon
-.. _SpiNNUtils: https://spinnutils.readthedocs.io
-.. _SpiNNMachine: https://spinnmachine.readthedocs.io
-.. _SpiNNMan: https://spinnman.readthedocs.io
-.. _PACMAN: https://pacman.readthedocs.io
-.. _Combined_documentation: https://spinnakermanchester.readthedocs.io
+.. _SpiNNUtils: https://spinnutils.readthedocs.io/en/7.4.0
+.. _SpiNNMachine: https://spinnmachine.readthedocs.io/en/7.4.0
+.. _SpiNNMan: https://spinnman.readthedocs.io/en/7.4.0
+.. _PACMAN: https://pacman.readthedocs.io/en/7.4.0
+.. _Combined_documentation: https://spinnakermanchester.readthedocs.io/en/7.4.0
 .. _c_common: c_common/
 
 SpiNNFrontEndCommon
