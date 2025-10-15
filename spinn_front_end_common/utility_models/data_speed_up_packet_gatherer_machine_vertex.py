@@ -182,7 +182,7 @@ _FIVE_WORDS = struct.Struct("<IIIII")
 VERIFY_SENT_DATA = False
 
 # provenance data size
-PROVENANCE_DATA_SIZE: Final = _FOUR_WORDS.size
+_PROVENANCE_DATA_SIZE: Final = _FOUR_WORDS.size
 
 
 def ceildiv(dividend: float, divisor: int) -> int:
@@ -336,7 +336,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def sdram_required(self) -> ConstantSDRAM:
         return ConstantSDRAM(
                 CONFIG_SIZE + SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
-                SIZE_DATA_IN_CHIP_TO_KEY_SPACE + PROVENANCE_DATA_SIZE)
+                SIZE_DATA_IN_CHIP_TO_KEY_SPACE + _PROVENANCE_DATA_SIZE)
 
     @property
     @overrides(MachineVertex.iptags)
@@ -442,7 +442,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             label="mc_key_map")
         spec.reserve_memory_region(
             region=_DataRegions.PROVENANCE_REGION,
-            size=PROVENANCE_DATA_SIZE, label="Provenance")
+            size=_PROVENANCE_DATA_SIZE, label="Provenance")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self) -> str:
@@ -1385,7 +1385,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         x, y, p = placement.x, placement.y, placement.p
         # Get the App Data for the core
         data = FecDataView.read_memory(
-            x, y, self.__provenance_address(x, y, p), PROVENANCE_DATA_SIZE)
+            x, y, self.__provenance_address(x, y, p), _PROVENANCE_DATA_SIZE)
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = (
             _FOUR_WORDS.unpack_from(data))
         with ProvenanceWriter() as db:
