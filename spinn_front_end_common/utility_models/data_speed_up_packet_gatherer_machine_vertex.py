@@ -131,6 +131,21 @@ BYTES_IN_FULL_PACKET_WITH_KEY = (
 # the reinjector base key.
 SIZE_DATA_IN_CHIP_TO_KEY_SPACE = ((3 * 48) + 2) * BYTES_PER_WORD
 
+# precompiled structures
+_ONE_WORD = struct.Struct("<I")
+_TWO_WORDS = struct.Struct("<II")
+_THREE_WORDS = struct.Struct("<III")
+_FOUR_WORDS = struct.Struct("<IIII")
+_FIVE_WORDS = struct.Struct("<IIIII")
+
+
+# Set to true to check that the data is correct after it has been sent in.
+# This is expensive, and only works in Python 3.5 or later.
+VERIFY_SENT_DATA = False
+
+# provenance data size
+_PROVENANCE_DATA_SIZE = int(_FOUR_WORDS.size)
+
 
 class _DataRegions(IntEnum):
     """
@@ -167,22 +182,6 @@ class _DataInCommands(IntEnum):
     SEND_TELL = 2001
     RECEIVE_MISSING_SEQ_DATA = 2002
     RECEIVE_FINISHED = 2003
-
-
-# precompiled structures
-_ONE_WORD = struct.Struct("<I")
-_TWO_WORDS = struct.Struct("<II")
-_THREE_WORDS = struct.Struct("<III")
-_FOUR_WORDS = struct.Struct("<IIII")
-_FIVE_WORDS = struct.Struct("<IIIII")
-
-
-# Set to true to check that the data is correct after it has been sent in.
-# This is expensive, and only works in Python 3.5 or later.
-VERIFY_SENT_DATA = False
-
-# provenance data size
-_PROVENANCE_DATA_SIZE = _FOUR_WORDS.size
 
 
 def ceildiv(dividend: float, divisor: int) -> int:
