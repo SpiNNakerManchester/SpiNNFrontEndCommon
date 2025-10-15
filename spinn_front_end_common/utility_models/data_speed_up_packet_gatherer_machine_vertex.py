@@ -19,7 +19,7 @@ import time
 import struct
 from enum import Enum, IntEnum
 from typing import (
-    Any, BinaryIO, Final, Iterable, List, Optional, Set, Tuple, Union,
+    Any, BinaryIO, Iterable, List, Optional, Set, Tuple, Union,
     TYPE_CHECKING)
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path
@@ -182,7 +182,7 @@ _FIVE_WORDS = struct.Struct("<IIIII")
 VERIFY_SENT_DATA = False
 
 # provenance data size
-_PROVENANCE_DATA_SIZE: Final = _FOUR_WORDS.size
+_PROVENANCE_DATA_SIZE = int(_FOUR_WORDS.size)
 
 
 def ceildiv(dividend: float, divisor: int) -> int:
