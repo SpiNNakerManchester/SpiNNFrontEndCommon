@@ -981,7 +981,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             notify_host_name=database_notify_host,
             notify_port_no=database_notify_port_num)
 
-        self.add_database_socket_address(database_socket)
+        cls.add_database_socket_address(database_socket)
 
     @classmethod
     def get_notification_protocol(cls) -> NotificationProtocol:
