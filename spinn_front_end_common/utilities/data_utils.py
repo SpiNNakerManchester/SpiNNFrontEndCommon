@@ -19,6 +19,7 @@ from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array, get_simulation_header_array_no_timestep)
 
+
 def generate_system_data_region(
         spec: DataSpecificationGenerator, region_id: int,
         machine_vertex: AbstractHasAssociatedBinary) -> None:
