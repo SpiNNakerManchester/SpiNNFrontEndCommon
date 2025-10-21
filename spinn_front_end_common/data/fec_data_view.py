@@ -961,9 +961,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         for socket_address in database_socket_addresses:
             cls.add_database_socket_address(socket_address)
 
-    def add_database_socket_port(self, database_ack_port_num: Optional[int],
-                                 database_notify_host: Optional[str],
-                                 database_notify_port_num: Optional[int]) -> None:
+    def add_database_socket_port(
+            self, database_ack_port_num: Optional[int],
+            database_notify_host: Optional[str],
+            database_notify_port_num: Optional[int]) -> None:
         """
         Add a socket address for the notification protocol.
 
