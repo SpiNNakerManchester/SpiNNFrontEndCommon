@@ -39,8 +39,8 @@ class TestWriteJson(unittest.TestCase):
 
     spin4Host = "spinn-4.cs.man.ac.uk"
     spalloc = "spinnaker.cs.man.ac.uk"
-    spin2Port = 22245
-    mainPort = 22244
+    spin2Port = 22244
+    spin2Machine = "spinn2"
 
     def setUp(self) -> None:
         unittest_setup()
@@ -150,6 +150,7 @@ class TestWriteJson(unittest.TestCase):
             "Machine", "spalloc_user", "Integration testing OK to kill")
         set_config("Machine", "spalloc_server", self.spalloc)
         set_config("Machine", "spalloc_port", str(self.spin2Port))
+        set_config("Machine", "spalloc_machine", self.spin2Machine)
 
         writer = FecDataWriter.mock()
         writer.set_n_chips_in_graph(20)
