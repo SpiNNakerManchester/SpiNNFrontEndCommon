@@ -138,10 +138,6 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
         url = url[:-1]
 
     machine = _get_machine(url, total_run_time)
-    if cast(int, machine["version"]) != get_config_int("Machine", "version"):
-        raise PacmanConfigurationException(
-            f"Version returned by HBP {machine['version']} == "
-            f'version in cfg {get_config_int("Machine", "version")}')
     name = cast(str, machine["machineName"])
     hbp_job_controller = _HBPJobController(url, name)
 
