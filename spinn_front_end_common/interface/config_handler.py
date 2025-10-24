@@ -52,15 +52,21 @@ class ConfigHandler(SpiNNManSimulation):
 
     __slots__ = ()
 
-    def __init__(self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
+    def __init__(self, n_boards_required: Optional[int] = None,
+                 n_chips_required: Optional[int] = None,
+                 data_writer_cls: Optional[Type[FecDataWriter]] = None):
         """
+        :param n_boards_required:
+            `None` or the number of boards requested by the user
+        :param n_chips_required:
+            `None` or the number of chips requested by the user
         :param data_writer_cls:
             Class of the DataWriter used to store the global data
         """
         load_config()
         if data_writer_cls is None:
             data_writer_cls = FecDataWriter
-        super().__init__(data_writer_cls)
+        super().__init__(n_boards_required, n_chips_required, data_writer_cls)
 
         logger.set_log_store(LogStoreDB())
 
