@@ -17,7 +17,7 @@ from typing import Optional, Tuple, cast
 
 import requests
 
-from spinn_utilities.config_holder import get_config_int, get_config_str
+from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.json import JsonArray, JsonObject
 
