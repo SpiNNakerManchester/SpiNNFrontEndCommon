@@ -99,7 +99,8 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
             raise ValueError(
                 "Cannot compute energy without knowing the end time")
         ts_factor = FecDataView.get_time_scale_factor()
-        execute_on_machine_ms = int(round(timesteps * ts_factor))
+        timestep = FecDataView.get_simulation_time_step_ms()
+        execute_on_machine_ms = int(round(timesteps * ts_factor) * timestep)
 
     run_loop_ms -= execute_on_machine_ms
 
