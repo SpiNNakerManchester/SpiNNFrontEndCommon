@@ -183,8 +183,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_multicast_routes_loaded")
 
     def __init__(
-            self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
+            self, timestep: Optional[float],
+            time_scale_factor: Optional[float],
+            data_writer_cls: Optional[Type[FecDataWriter]] = None):
         """
+        :param timestep:
+            An explicitly specified time step for the simulation in ms.
+            If `None`, the value is read from the configuration
+        :param time_scale_factor:
+            An explicitly specified time scale factor for the simulation.
+            If `None`, the value is read from the configuration
         :param data_writer_cls: The Global data writer class
         """
         super().__init__(data_writer_cls)
@@ -217,6 +225,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
+
+        self._data_writer.set_up_timings(timestep, time_scale_factor)
 
         external_binaries = get_config_str_or_none(
             "Mapping", "external_binaries")

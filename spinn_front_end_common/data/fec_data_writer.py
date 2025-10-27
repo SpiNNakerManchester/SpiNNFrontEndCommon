@@ -153,9 +153,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._max_run_time_steps = max_run_time_steps
 
     def set_up_timings(
-            self, simulation_time_step_ms: Optional[int],
-            time_scale_factor: Optional[float],
-            default_time_scale_factor: float = 1.0) -> None:
+            self, simulation_time_step_ms: Optional[float],
+            time_scale_factor: Optional[float]) -> None:
         """
         Set up timings for the simulation.
 

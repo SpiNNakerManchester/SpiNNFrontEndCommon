@@ -68,7 +68,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         path = os.path.dirname(os.path.abspath(class_file))
         assert path is not None
         os.chdir(path)
-        interface = AbstractSpinnakerBase()
+        interface = AbstractSpinnakerBase(1, 1)
         mock_contoller = Close_Once()
         interface._data_writer.set_allocation_controller(mock_contoller)
         self.assertFalse(mock_contoller.closed)
@@ -83,7 +83,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         path = os.path.dirname(os.path.abspath(class_file))
         assert path is not None
         os.chdir(path)
-        AbstractSpinnakerBase()
+        AbstractSpinnakerBase(1, 1)
 
 
 if __name__ == "__main__":
