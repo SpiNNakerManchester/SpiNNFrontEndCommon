@@ -62,7 +62,7 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_simulation_time_step_us()
-        writer.set_up_timings(1000, 1)
+        writer.set_up_timings(1, 1)
         FecDataView.get_simulation_time_step_us()
 
     def test_mock(self) -> None:
@@ -145,7 +145,7 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_current_run_time_ms()
-        writer.set_up_timings(500, 4)
+        writer.set_up_timings(0.5, 4)
         self.assertEqual(0, FecDataView.get_current_run_time_ms())
         writer.increment_current_run_timesteps(88)
         self.assertEqual(44, FecDataView.get_current_run_time_ms())
@@ -188,7 +188,7 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_hardware_time_step_us()
         self.assertFalse(FecDataView.has_time_step())
 
-        writer.set_up_timings(500, 4)
+        writer.set_up_timings(0.5, 4)
         self.assertEqual(500, FecDataView.get_simulation_time_step_us())
         self.assertEqual(0.5, FecDataView.get_simulation_time_step_ms())
         self.assertEqual(2, FecDataView.get_simulation_time_step_per_ms())
