@@ -182,12 +182,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO remove this when the data change only algorithms are done
         "_multicast_routes_loaded")
 
-    def __init__(
-            self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
+    def __init__(self):
         """
         :param data_writer_cls: The Global data writer class
         """
-        super().__init__(data_writer_cls)
+        super().__init__()
 
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SETTING_UP)
