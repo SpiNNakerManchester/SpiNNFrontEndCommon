@@ -164,10 +164,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :param time_scale_factor:
             An explicitly specified time scale factor for the simulation.
             If `None`, the value is read from the configuration
-        :param default_time_scale_factor:
-            A back up time scale factor for the simulation.
-            Only used if time_scale_factor parameter and configuration are
-            both `None`, by default this is 1.0.
         """
         try:
             self._set_simulation_time_step(simulation_time_step_ms)
