@@ -183,11 +183,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_multicast_routes_loaded")
 
     def __init__(
-            self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
+            self, n_boards_required: Optional[int] = None,
+            n_chips_required: Optional[int] = None,
+            data_writer_cls: Optional[Type[FecDataWriter]] = None):
         """
+        :param n_boards_required:
+            `None` or the number of boards requested by the user
+        :param n_chips_required:
+            `None` or the number of chips requested by the user
         :param data_writer_cls: The Global data writer class
         """
-        super().__init__(data_writer_cls)
+        super().__init__(n_boards_required, n_chips_required, data_writer_cls)
 
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SETTING_UP)
