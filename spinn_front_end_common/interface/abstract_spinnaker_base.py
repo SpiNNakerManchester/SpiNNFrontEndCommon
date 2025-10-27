@@ -183,7 +183,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_multicast_routes_loaded")
 
     def __init__(
-            self, n_boards_required: Optional[int] = None,
+            self, *, n_boards_required: Optional[int] = None,
             n_chips_required: Optional[int] = None,
             timestep: Optional[float] = None,
             time_scale_factor: Optional[float] = None,
