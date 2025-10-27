@@ -17,7 +17,7 @@ import logging
 import os
 import shutil
 import traceback
-from typing import cast, List, Optional, Type
+from typing import cast, List, Optional
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.configs.camel_case_config_parser import FALSES

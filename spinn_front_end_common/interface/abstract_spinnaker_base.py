@@ -140,7 +140,6 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     router_report_from_router_tables, router_summary_report,
     sdram_usage_report_per_chip,
     tag_allocator_report)
-from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 
 try:
     from scipy import __version__ as scipy_version
