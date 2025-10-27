@@ -183,8 +183,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_multicast_routes_loaded")
 
     def __init__(
-            self, timestep: Optional[float],
-            time_scale_factor: Optional[float],
+            self, timestep: Optional[float] = None,
+            time_scale_factor: Optional[float] = None,
             data_writer_cls: Optional[Type[FecDataWriter]] = None):
         """
         :param timestep:
