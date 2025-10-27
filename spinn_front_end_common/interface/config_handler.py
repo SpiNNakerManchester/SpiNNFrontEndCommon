@@ -51,7 +51,7 @@ class ConfigHandler(AbstractSpiNNManSimulation):
 
     __slots__ = ()
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         :param data_writer_cls:
             Class of the DataWriter used to store the global data

@@ -182,7 +182,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO remove this when the data change only algorithms are done
         "_multicast_routes_loaded")
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         :param data_writer_cls: The Global data writer class
         """
