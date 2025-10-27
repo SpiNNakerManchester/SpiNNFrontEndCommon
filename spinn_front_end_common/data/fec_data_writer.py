@@ -185,11 +185,12 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise
 
     def _set_simulation_time_step(
-            self, simulation_time_step_ms: Optional[int]) -> None:
+            self, simulation_time_step_ms: Optional[float]) -> None:
         """
         :param simulation_time_step_ms:
-            An explicitly specified time step for the simulation in ms.
-            If `None`, the value is read from the configuration
+            A specified time step for the simulation in milliseconds.
+            This value will be rounded to the nearest micro second
+            Or `None` to read the value from the configuration
         """
         if simulation_time_step_ms is None:
             simulation_time_step_us = get_config_int(
