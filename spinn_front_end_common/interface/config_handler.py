@@ -43,6 +43,7 @@ _DEBUG_MAPPING_OPTS = frozenset([
     "routertablecompressasfaraspossible", "runcompressionchecker"])
 
 
+# pylint: disable=abstract-method
 class ConfigHandler(AbstractSpiNNManSimulation):
     """
     Superclass of AbstractSpinnakerBase that handles function only

@@ -155,6 +155,7 @@ SHARED_WITH_PATH = re.compile(r".*\/Shared with (all|groups|me)\/([^\/]+)")
 SHARED_WITH_GROUP = 2
 
 
+# pylint: disable=abstract-method
 class AbstractSpinnakerBase(ConfigHandler):
     """
     Main interface into the tools logic flow.
