@@ -183,9 +183,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_multicast_routes_loaded")
 
     def __init__(self) -> None:
-        """
-        :param data_writer_cls: The Global data writer class
-        """
         super().__init__()
 
         FecTimer.start_category(TimerCategory.WAITING)
