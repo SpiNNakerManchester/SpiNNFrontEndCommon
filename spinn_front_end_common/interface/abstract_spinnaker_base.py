@@ -140,7 +140,6 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     router_report_from_router_tables, router_summary_report,
     sdram_usage_report_per_chip,
     tag_allocator_report)
-from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 
 try:
     from scipy import __version__ as scipy_version
@@ -156,6 +155,7 @@ SHARED_WITH_PATH = re.compile(r".*\/Shared with (all|groups|me)\/([^\/]+)")
 SHARED_WITH_GROUP = 2
 
 
+# pylint: disable=abstract-method
 class AbstractSpinnakerBase(ConfigHandler):
     """
     Main interface into the tools logic flow.
@@ -186,8 +186,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self, *, n_boards_required: Optional[int] = None,
             n_chips_required: Optional[int] = None,
             timestep: Optional[float] = None,
-            time_scale_factor: Optional[float] = None,
-            data_writer_cls: Optional[Type[FecDataWriter]] = None):
+            time_scale_factor: Optional[float] = None):
         """
         :param n_boards_required:
             `None` or the number of boards requested by the user
@@ -199,7 +198,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param time_scale_factor:
             An explicitly specified time scale factor for the simulation.
             If `None`, the value is read from the configuration
-        :param data_writer_cls: The Global data writer class
         """
         super().__init__(n_boards_required, n_chips_required, data_writer_cls)
 
