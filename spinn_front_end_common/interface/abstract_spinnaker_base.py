@@ -199,7 +199,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             An explicitly specified time scale factor for the simulation.
             If `None`, the value is read from the configuration
         """
-        super().__init__(n_boards_required, n_chips_required, data_writer_cls)
+        super().__init__(n_boards_required, n_chips_required)
 
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SETTING_UP)

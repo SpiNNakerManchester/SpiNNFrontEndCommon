@@ -60,9 +60,6 @@ class ConfigHandler(AbstractSpiNNManSimulation):
         :param n_chips_required:
             `None` or the number of chips requested by the user
         """
-        load_config()
-        if data_writer_cls is None:
-            data_writer_cls = FecDataWriter
         super().__init__(n_boards_required, n_chips_required)
 
         logger.set_log_store(LogStoreDB())
