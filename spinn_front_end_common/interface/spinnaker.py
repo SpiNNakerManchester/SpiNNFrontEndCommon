@@ -32,18 +32,18 @@ class SpiNNaker(AbstractSpinnakerBase):
         It is the callers responsibility to only have a single instance.
     """
 
-    @overrides(AbstractSpinnakerBase.add_cfg_defaults_and_template)
-    def add_cfg_defaults_and_template(self) -> None:
+    @overrides(AbstractSpinnakerBase._add_cfg_defaults_and_template)
+    def _add_cfg_defaults_and_template(self) -> None:
         add_spinnaker_cfg()
         add_spinnaker_template()
 
     @property
-    @overrides(AbstractSpinnakerBase.user_cfg_file)
-    def user_cfg_file(self) -> str:
+    @overrides(AbstractSpinnakerBase._user_cfg_file)
+    def _user_cfg_file(self) -> str:
         # Any name can be used here.
         return "spinnaker.cfg"
 
     @property
-    @overrides(AbstractSpinnakerBase.data_writer_cls)
-    def data_writer_cls(self) -> Type[FecDataWriter]:
+    @overrides(AbstractSpinnakerBase._data_writer_cls)
+    def _data_writer_cls(self) -> Type[FecDataWriter]:
         return FecDataWriter
