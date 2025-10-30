@@ -22,15 +22,14 @@ from spinn_utilities.config_holder import get_report_path, set_config
 from spinn_utilities.ping import Ping
 from spinn_utilities.typing.json import JsonArray
 
-from spalloc_client.job import JobDestroyedError
+from spinnman.exceptions import SpallocBoardUnavailableException
 
 from spinnman.exceptions import SpinnmanIOException
 from spinnman.transceiver import create_transceiver_from_hostname
 
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
-from spinn_front_end_common.interface.interface_functions import (
-    spalloc_allocate_job_old)
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.interface.spinnaker import SpiNNaker
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import (write_json_machine)
 
@@ -39,8 +38,6 @@ class TestWriteJson(unittest.TestCase):
 
     spin4Host = "spinn-4.cs.man.ac.uk"
     spalloc = "spinnaker.cs.man.ac.uk"
-    spin2Port = 22244
-    spin2Machine = "spinn2"
 
     def setUp(self) -> None:
         unittest_setup()
@@ -144,28 +141,14 @@ class TestWriteJson(unittest.TestCase):
         trans.close()
 
     def testSpin2(self) -> None:
-        if not Ping.host_is_reachable(self.spalloc):
-            raise unittest.SkipTest(self.spalloc + " appears to be down")
-        set_config(
-            "Machine", "spalloc_user", "Integration testing OK to kill")
-        set_config("Machine", "spalloc_server", self.spalloc)
-        set_config("Machine", "spalloc_port", str(self.spin2Port))
-        set_config("Machine", "spalloc_machine", self.spin2Machine)
-
-        writer = FecDataWriter.mock()
-        writer.set_n_chips_in_graph(20)
         try:
-            (hostname, _, m_allocation_controller) = (
-                spalloc_allocate_job_old())
-        except (JobDestroyedError, ConnectionRefusedError):
-            self.skipTest("Skipping as getting Job failed")
+            simulator = SpiNNaker()
+            simulator._data_writer.set_n_required(1, None)
+            machine1 = simulator.get_machine()
+            print(machine1)
 
-        trans = create_transceiver_from_hostname(hostname)
-        writer.set_machine(trans.get_machine_details())
+            filename = write_json_machine(False)
 
-        m_allocation_controller.close()
-
-        filename = write_json_machine(False)
-
-        self.json_compare(filename, "spinn2.json")
-        trans.close()
+            self.json_compare(filename, "spinn2.json")
+        except SpallocBoardUnavailableException as ex:
+            raise unittest.SkipTest(str(ex))

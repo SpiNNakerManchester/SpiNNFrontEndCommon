@@ -33,7 +33,7 @@ from numpy import __version__ as numpy_version
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
-    config_options, config_sections,
+    check_user_cfg, config_options, config_sections,
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
     get_report_path, get_timestamp_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
@@ -681,8 +681,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return self._execute_transceiver_by_spalloc_old()
         if not is_config_none("Machine", "remote_spinnaker_url"):
             return self._execute_transceiver_by_hbp(total_run_time)
+        check_user_cfg()
         raise ConfigurationException(
-            "Neither cfg spalloc_server or remote_spinnaker_url set")
+            "None of cfg machineName, spalloc_server, virtual_board "
+            "or remote_spinnaker_url set")
 
     @overrides(ConfigHandler._execute_transceiver_by_spalloc)
     def _execute_transceiver_by_spalloc(
