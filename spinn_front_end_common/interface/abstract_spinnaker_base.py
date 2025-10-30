@@ -33,7 +33,7 @@ from numpy import __version__ as numpy_version
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
-    config_options, config_sections,
+    check_user_cfg, config_options, config_sections,
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
     get_report_path, get_timestamp_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
@@ -140,7 +140,6 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     router_report_from_router_tables, router_summary_report,
     sdram_usage_report_per_chip,
     tag_allocator_report)
-from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 
 try:
     from scipy import __version__ as scipy_version
@@ -156,6 +155,7 @@ SHARED_WITH_PATH = re.compile(r".*\/Shared with (all|groups|me)\/([^\/]+)")
 SHARED_WITH_GROUP = 2
 
 
+# pylint: disable=abstract-method
 class AbstractSpinnakerBase(ConfigHandler):
     """
     Main interface into the tools logic flow.
@@ -182,12 +182,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO remove this when the data change only algorithms are done
         "_multicast_routes_loaded")
 
-    def __init__(
-            self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
-        """
-        :param data_writer_cls: The Global data writer class
-        """
-        super().__init__(data_writer_cls)
+    def __init__(self) -> None:
+        super().__init__()
 
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SETTING_UP)
@@ -667,8 +663,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return self._execute_transceiver_by_spalloc_old()
         if not is_config_none("Machine", "remote_spinnaker_url"):
             return self._execute_transceiver_by_hbp(total_run_time)
+        check_user_cfg()
         raise ConfigurationException(
-            "Neither cfg spalloc_server or remote_spinnaker_url set")
+            "None of cfg machineName, spalloc_server, virtual_board "
+            "or remote_spinnaker_url set")
 
     @overrides(ConfigHandler._execute_transceiver_by_spalloc)
     def _execute_transceiver_by_spalloc(
