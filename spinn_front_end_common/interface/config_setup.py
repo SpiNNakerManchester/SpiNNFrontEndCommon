@@ -57,6 +57,9 @@ def add_spinnaker_cfg() -> None:
 
 
 def add_spinnaker_template() -> None:
+    """
+    Adds the template for the users cfg file
+    """
     add_template(os.path.join(os.path.dirname(__file__), TEMPLATE_FILE))
 
 
