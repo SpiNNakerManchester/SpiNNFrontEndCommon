@@ -23,13 +23,13 @@ from spinn_utilities.ping import Ping
 from spinn_utilities.typing.json import JsonArray
 
 from spinnman.exceptions import SpallocBoardUnavailableException
-import spinnman.spinnman_script as sim
 
 from spinnman.exceptions import SpinnmanIOException
 from spinnman.transceiver import create_transceiver_from_hostname
 
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.interface.spinnaker import SpiNNaker
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import (write_json_machine)
 
@@ -142,18 +142,13 @@ class TestWriteJson(unittest.TestCase):
 
     def testSpin2(self) -> None:
         try:
-            sim.setup(n_boards_required=1)
-            machine1 = sim.get_machine()
+            simulator = SpiNNaker()
+            simulator._data_writer.set_n_required(1, None)
+            machine1 = simulator.get_machine()
             print(machine1)
 
-            # needs to be set this way as not part of spinnman.cfg
-            set_config("Reports", "path_json_machine",
-                       "json_files\machine.json")
-            set_config("Mapping", "validate_json","true")
             filename = write_json_machine(False)
 
             self.json_compare(filename, "spinn2.json")
         except SpallocBoardUnavailableException as ex:
             raise unittest.SkipTest(str(ex))
-        finally:
-            sim.end()
