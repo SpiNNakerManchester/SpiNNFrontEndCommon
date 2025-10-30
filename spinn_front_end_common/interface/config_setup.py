@@ -54,6 +54,8 @@ def add_spinnaker_cfg() -> None:
     add_pacman_cfg()  # This add its dependencies too
     add_spinnman_cfg()  # double adds of dependencies ignored
     add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))
+
+def add_spinnaker_template() -> None:
     add_template(os.path.join(os.path.dirname(__file__), TEMPLATE_FILE))
 
 
