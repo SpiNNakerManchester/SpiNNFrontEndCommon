@@ -140,7 +140,7 @@ class TestWriteJson(unittest.TestCase):
         self.json_compare(filename, "spinn4_fiddle.json")
         trans.close()
 
-    def testSpin2(self) -> None:
+    def test_test48(self) -> None:
         try:
             simulator = SpiNNaker()
             simulator._data_writer.set_n_required(1, None)
@@ -149,6 +149,6 @@ class TestWriteJson(unittest.TestCase):
 
             filename = write_json_machine(False)
 
-            self.json_compare(filename, "spinn2.json")
+            self.json_compare(filename, "test48.json")
         except SpallocBoardUnavailableException as ex:
             raise unittest.SkipTest(str(ex))
