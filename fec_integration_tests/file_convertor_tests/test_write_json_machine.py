@@ -147,6 +147,7 @@ class TestWriteJson(unittest.TestCase):
 
         machine = trans.get_machine_details()
         FecDataWriter.mock().set_machine(machine)
+        trans.close()
 
         filename = write_json_machine(True)
 
@@ -165,12 +166,12 @@ class TestWriteJson(unittest.TestCase):
         filename = write_json_machine(True)
 
         self.json_compare(filename, "spinn4_fiddle.json")
-        trans.close()
 
     def test_test48(self) -> None:
         try:
             simulator = SpiNNaker()
             simulator._data_writer.set_n_required(1, None)
+            simulator.stop()
             machine1 = simulator.get_machine()
             print(machine1)
 
