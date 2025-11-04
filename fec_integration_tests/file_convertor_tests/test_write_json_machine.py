@@ -171,8 +171,8 @@ class TestWriteJson(unittest.TestCase):
         try:
             simulator = SpiNNaker()
             simulator._data_writer.set_n_required(1, None)
-            simulator.stop()
             machine1 = simulator.get_machine()
+            simulator.stop()
             print(machine1)
 
             filename = write_json_machine(False)
