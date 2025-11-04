@@ -22,9 +22,10 @@ from spinn_utilities.config_holder import get_report_path, set_config
 from spinn_utilities.ping import Ping
 from spinn_utilities.typing.json import JsonArray
 
-from spinnman.exceptions import SpallocBoardUnavailableException
-
-from spinnman.exceptions import SpinnmanIOException
+from spinn_machine.json_machine import machine_from_json
+from spinn_machine.virtual_machine import virtual_machine
+from spinnman.exceptions import (
+    SpallocBoardUnavailableException, SpinnmanIOException)
 from spinnman.transceiver import create_transceiver_from_hostname
 
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
@@ -110,6 +111,32 @@ class TestWriteJson(unittest.TestCase):
                         "Values differ for {} found {} {}".format(
                             key, json1[key], json2[key]))
 
+    def test_virtual(self) -> None:
+        set_config("Machine", "version", "5")
+        machine = virtual_machine(8, 8, False)
+        FecDataWriter.mock().set_machine(machine)
+        filename = write_json_machine(True)
+        self.json_compare(filename, "virtual.json")
+
+        # Create a machine with Exception
+        chip = machine[1, 1]
+        chip._sdram = chip._sdram - 100
+        chip._router._n_available_multicast_entries -= 10
+        chip = machine[1, 2]
+        chip._sdram = chip._sdram - 101
+
+        json_file = get_report_path("path_json_machine")
+        if os.path.exists(json_file):
+            os.remove(json_file)
+        filename = write_json_machine(True)
+        self.json_compare(filename, "virtual_fiddle.json")
+
+        machine2 = machine_from_json(filename)
+        self.assertEqual(machine[1, 1].sdram, machine2[1, 1].sdram)
+        self.assertEqual(machine[1, 1].router.n_available_multicast_entries,
+                         machine2[1, 1].router.n_available_multicast_entries)
+        self.assertEqual(machine[1, 2].sdram, machine2[1, 2].sdram)
+
     def testSpin4(self) -> None:
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
@@ -120,6 +147,7 @@ class TestWriteJson(unittest.TestCase):
 
         machine = trans.get_machine_details()
         FecDataWriter.mock().set_machine(machine)
+        trans.close()
 
         filename = write_json_machine(True)
 
@@ -138,17 +166,17 @@ class TestWriteJson(unittest.TestCase):
         filename = write_json_machine(True)
 
         self.json_compare(filename, "spinn4_fiddle.json")
-        trans.close()
 
-    def testSpin2(self) -> None:
+    def test_test48(self) -> None:
         try:
             simulator = SpiNNaker()
             simulator._data_writer.set_n_required(1, None)
             machine1 = simulator.get_machine()
+            simulator.stop()
             print(machine1)
 
             filename = write_json_machine(False)
 
-            self.json_compare(filename, "spinn2.json")
+            self.json_compare(filename, "test48.json")
         except SpallocBoardUnavailableException as ex:
             raise unittest.SkipTest(str(ex))
