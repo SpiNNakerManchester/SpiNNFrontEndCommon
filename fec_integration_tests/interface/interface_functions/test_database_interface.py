@@ -105,11 +105,11 @@ def _add_rinfo(
         app_vertex: ApplicationVertex, partition_id: str,
         routing_info: RoutingInfo, base_key: int, app_mask: int, mac_mask: int,
         m_vertex_shift: int) -> None:
-    routing_info.add_routing_info(AppVertexRoutingInfo(
+    routing_info.add_application_info(AppVertexRoutingInfo(
         BaseKeyAndMask(base_key, app_mask), partition_id, app_vertex,
         mac_mask, 1, 1))
     for i, m_vertex in enumerate(app_vertex.machine_vertices):
-        routing_info.add_routing_info(MachineVertexRoutingInfo(
+        routing_info.add_machine_info(MachineVertexRoutingInfo(
             BaseKeyAndMask(
                 base_key | i << m_vertex_shift, app_mask | mac_mask),
             partition_id, m_vertex, i))

@@ -242,7 +242,7 @@ class DatabaseWriter(SQLiteDB):
                 atom_keys = list(m_vertex.app_vertex.get_atom_key_map(
                     m_vertex, partition_id, routing_infos))
             else:
-                r_info = routing_infos.get_info_from(
+                r_info = routing_infos.get_machine_info(
                     m_vertex, partition_id)
                 vertex_slice = m_vertex.vertex_slice
                 keys = get_keys(r_info.key, vertex_slice)
