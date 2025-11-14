@@ -1459,14 +1459,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return pair_compressor(ordered=False)
 
     def _compressor_name(self) -> Tuple[str, bool]:
-        if get_config_bool("Machine", "virtual_board"):
-            name = get_config_str_or_none("Mapping", "virtual_compressor")
-            if name is None:
-                logger.info("As no virtual_compressor specified "
-                            "using compressor setting")
-                name = get_config_str("Mapping", "compressor")
-        else:
-            name = get_config_str("Mapping", "compressor")
         pre_compress = "BitField" not in name
         return name, pre_compress
 
@@ -1478,9 +1470,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         return (tables.get_max_number_of_entries()
                 <= machine.min_n_router_enteries)
 
-    def _execute_pre_compression(self, pre_compress: bool) -> None:
+    def _execute_pre_compression(self) -> None:
         name = get_config_str_or_none("Mapping", "precompressor")
-        if not pre_compress or name is None:
+        if name is None:
             # Declare the precompressed data to be the uncompressed data
             self._data_writer.set_precompressed(
                 self._data_writer.get_uncompressed())
@@ -1498,7 +1490,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._data_writer.set_precompressed(range_compressor())
 
-    def _do_early_compression(self, name: str) -> Optional[
+    def _do_compression(self, name: str) -> Optional[
             MulticastRoutingTables]:
         """
         Calls a compressor based on the name provided.
@@ -1512,6 +1504,15 @@ class AbstractSpinnakerBase(ConfigHandler):
             RouterCompressorProvenanceItems (may be an empty list)
         :raise ConfigurationException: if the name is not expected
         """
+        if get_config_bool("Machine", "virtual_board"):
+            name = get_config_str_or_none("Mapping", "virtual_compressor")
+            if name is None:
+                logger.info("As no virtual_compressor specified "
+                            "using compressor setting")
+                name = get_config_str("Mapping", "compressor")
+        else:
+            name = get_config_str("Mapping", "compressor")
+
         if name == "OrderedCoveringCompressor":
             return self._execute_ordered_covering_compressor()
         elif name == "OrderedCoveringOnChipRouterCompression":
@@ -1522,9 +1523,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._execute_pair_compression()
         elif name == "PairUnorderedCompressor":
             return self._execute_pair_unordered_compressor()
-
-        # delay compression until later
-        return None
+        else:
+            raise ConfigurationException(f"Unknown compressor: {name}")
 
     @final
     def _execute_load_routing_tables(
@@ -1723,9 +1723,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_reset_routing()
             self._execute_graph_binary_gatherer()
         # loading_algorithms
-        compressor, pre_compress = self._compressor_name()
-        self._execute_pre_compression(pre_compress)
-        compressed = self._do_early_compression(compressor)
+        self._execute_pre_compression()
+        compressed = self._do_compression()
 
         self._do_data_generation()
 
