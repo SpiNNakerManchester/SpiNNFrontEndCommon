@@ -1474,10 +1474,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return precompressed
             return pair_compressor(ordered=False)
 
-    def _compressor_name(self) -> Tuple[str, bool]:
-        pre_compress = "BitField" not in name
-        return name, pre_compress
-
     def _compression_skipable(self, tables: MulticastRoutingTables) -> bool:
         if get_config_bool(
                 "Mapping", "router_table_compress_as_far_as_possible"):
@@ -1506,19 +1502,19 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._data_writer.set_precompressed(range_compressor())
 
-    def _do_compression(self, name: str) -> Optional[
-            MulticastRoutingTables]:
+    def _do_compression(self) -> Optional[MulticastRoutingTables]:
         """
         Calls a compressor based on the name provided.
 
-        .. note::
-            This method is the entry point for adding a new compressor that
-             can or must run early.
+        Returns the tables if compression was not needed or
+        if the compression is on host  (by python).
+        Returns None if on chip compression was run.
 
-        :param name: Name of a compressor
-        :return: CompressedRoutingTables (likely to be `None)`,
-            RouterCompressorProvenanceItems (may be an empty list)
-        :raise ConfigurationException: if the name is not expected
+        .. note::
+            This method is the entry point for adding a new compressor.
+
+        :return: Routing Tables not yet loaded onto the machine
+        :raise ConfigurationException: if the compressor name is not expected
         """
         if get_config_bool("Machine", "virtual_board"):
             name = get_config_str_or_none("Mapping", "virtual_compressor")
