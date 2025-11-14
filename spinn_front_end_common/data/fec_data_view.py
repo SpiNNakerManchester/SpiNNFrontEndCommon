@@ -962,6 +962,28 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             cls.add_database_socket_address(socket_address)
 
     @classmethod
+    def add_database_socket_port(
+            cls, database_ack_port_num: Optional[int],
+            database_notify_host: Optional[str],
+            database_notify_port_num: Optional[int]) -> None:
+        """
+        Add a socket address for the notification protocol.
+
+        :param database_ack_port_num:
+            port number to send acknowledgement to
+        :param database_notify_host:
+            host IP to send notification to
+        :param database_notify_port_num:
+            port that the external device will be notified on.
+        """
+        database_socket = SocketAddress(
+            listen_port=database_ack_port_num,
+            notify_host_name=database_notify_host,
+            notify_port_no=database_notify_port_num)
+
+        cls.add_database_socket_address(database_socket)
+
+    @classmethod
     def get_notification_protocol(cls) -> NotificationProtocol:
         """
         :returns: The notification protocol handler.

@@ -17,15 +17,14 @@ import logging
 import os
 import shutil
 import traceback
-from typing import cast, List, Optional, Type
+from typing import cast, List, Optional
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.configs.camel_case_config_parser import FALSES
 from spinn_utilities.config_holder import (
-    config_options, has_config_option, load_config, get_config_bool,
-    get_config_int, get_config_str, get_config_str_list, get_timestamp_path,
-    set_config)
-from spinnman.spinnman_simulation import SpiNNManSimulation
+    config_options, has_config_option, get_config_bool, get_config_int,
+    get_config_str, get_config_str_list, get_timestamp_path, set_config)
+from spinnman.spinnman_simulation import AbstractSpiNNManSimulation
 from spinn_front_end_common.interface.interface_functions.\
     insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
 from spinn_front_end_common.interface.interface_functions.\
@@ -44,7 +43,8 @@ _DEBUG_MAPPING_OPTS = frozenset([
     "routertablecompressasfaraspossible", "runcompressionchecker"])
 
 
-class ConfigHandler(SpiNNManSimulation):
+# pylint: disable=abstract-method
+class ConfigHandler(AbstractSpiNNManSimulation):
     """
     Superclass of AbstractSpinnakerBase that handles function only
     dependent of the configuration and the order its methods are called.
@@ -52,15 +52,15 @@ class ConfigHandler(SpiNNManSimulation):
 
     __slots__ = ()
 
-    def __init__(self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
+    def __init__(self, n_boards_required: Optional[int] = None,
+                 n_chips_required: Optional[int] = None):
         """
-        :param data_writer_cls:
-            Class of the DataWriter used to store the global data
+        :param n_boards_required:
+            `None` or the number of boards requested by the user
+        :param n_chips_required:
+            `None` or the number of chips requested by the user
         """
-        load_config()
-        if data_writer_cls is None:
-            data_writer_cls = FecDataWriter
-        super().__init__(data_writer_cls)
+        super().__init__(n_boards_required, n_chips_required)
 
         logger.set_log_store(LogStoreDB())
 

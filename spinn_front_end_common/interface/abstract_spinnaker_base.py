@@ -33,7 +33,7 @@ from numpy import __version__ as numpy_version
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
-    config_options, config_sections,
+    check_user_cfg, config_options, config_sections,
     get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
     get_report_path, get_timestamp_path, is_config_none, set_config)
 from spinn_utilities.exceptions import DataNotYetAvialable
@@ -121,7 +121,7 @@ from spinn_front_end_common.interface.splitter_selectors import (
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
-    bitfield_compressor_report, board_chip_report, EnergyReport,
+    board_chip_report, EnergyReport,
     fixed_route_from_machine_report,
     generate_routing_compression_checker_report, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
@@ -140,7 +140,6 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     router_report_from_router_tables, router_summary_report,
     sdram_usage_report_per_chip,
     tag_allocator_report)
-from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 
 try:
     from scipy import __version__ as scipy_version
@@ -156,6 +155,7 @@ SHARED_WITH_PATH = re.compile(r".*\/Shared with (all|groups|me)\/([^\/]+)")
 SHARED_WITH_GROUP = 2
 
 
+# pylint: disable=abstract-method
 class AbstractSpinnakerBase(ConfigHandler):
     """
     Main interface into the tools logic flow.
@@ -183,11 +183,23 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_multicast_routes_loaded")
 
     def __init__(
-            self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
+            self, *, n_boards_required: Optional[int] = None,
+            n_chips_required: Optional[int] = None,
+            timestep: Optional[float] = None,
+            time_scale_factor: Optional[float] = None):
         """
-        :param data_writer_cls: The Global data writer class
+        :param n_boards_required:
+            `None` or the number of boards requested by the user
+        :param n_chips_required:
+            `None` or the number of chips requested by the user
+        :param timestep:
+            An explicitly specified time step for the simulation in ms.
+            If `None`, the value is read from the configuration
+        :param time_scale_factor:
+            An explicitly specified time scale factor for the simulation.
+            If `None`, the value is read from the configuration
         """
-        super().__init__(data_writer_cls)
+        super().__init__(n_boards_required, n_chips_required)
 
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SETTING_UP)
@@ -217,6 +229,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
+
+        self._data_writer.set_up_timings(timestep, time_scale_factor)
 
         external_binaries = get_config_str_or_none(
             "Mapping", "external_binaries")
@@ -667,8 +681,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return self._execute_transceiver_by_spalloc_old()
         if not is_config_none("Machine", "remote_spinnaker_url"):
             return self._execute_transceiver_by_hbp(total_run_time)
+        check_user_cfg()
         raise ConfigurationException(
-            "Neither cfg spalloc_server or remote_spinnaker_url set")
+            "None of cfg machineName, spalloc_server, virtual_board "
+            "or remote_spinnaker_url set")
 
     @overrides(ConfigHandler._execute_transceiver_by_spalloc)
     def _execute_transceiver_by_spalloc(
@@ -1458,29 +1474,17 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return precompressed
             return pair_compressor(ordered=False)
 
-    def _compressor_name(self) -> Tuple[str, bool]:
-        if get_config_bool("Machine", "virtual_board"):
-            name = get_config_str_or_none("Mapping", "virtual_compressor")
-            if name is None:
-                logger.info("As no virtual_compressor specified "
-                            "using compressor setting")
-                name = get_config_str("Mapping", "compressor")
-        else:
-            name = get_config_str("Mapping", "compressor")
-        pre_compress = "BitField" not in name
-        return name, pre_compress
-
     def _compression_skipable(self, tables: MulticastRoutingTables) -> bool:
         if get_config_bool(
                 "Mapping", "router_table_compress_as_far_as_possible"):
             return False
-        machine = self._get_known_machine()
+        machine = self._data_writer.get_machine()
         return (tables.get_max_number_of_entries()
                 <= machine.min_n_router_enteries)
 
-    def _execute_pre_compression(self, pre_compress: bool) -> None:
+    def _execute_pre_compression(self) -> None:
         name = get_config_str_or_none("Mapping", "precompressor")
-        if not pre_compress or name is None:
+        if name is None:
             # Declare the precompressed data to be the uncompressed data
             self._data_writer.set_precompressed(
                 self._data_writer.get_uncompressed())
@@ -1498,20 +1502,29 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._data_writer.set_precompressed(range_compressor())
 
-    def _do_early_compression(self, name: str) -> Optional[
-            MulticastRoutingTables]:
+    def _do_compression(self) -> Optional[MulticastRoutingTables]:
         """
         Calls a compressor based on the name provided.
 
-        .. note::
-            This method is the entry point for adding a new compressor that
-             can or must run early.
+        Returns the tables if compression was not needed or
+        if the compression is on host  (by python).
+        Returns None if on chip compression was run.
 
-        :param name: Name of a compressor
-        :return: CompressedRoutingTables (likely to be `None)`,
-            RouterCompressorProvenanceItems (may be an empty list)
-        :raise ConfigurationException: if the name is not expected
+        .. note::
+            This method is the entry point for adding a new compressor.
+
+        :return: Routing Tables not yet loaded onto the machine
+        :raise ConfigurationException: if the compressor name is not expected
         """
+        if get_config_bool("Machine", "virtual_board"):
+            name = get_config_str_or_none("Mapping", "virtual_compressor")
+            if name is None:
+                logger.info("As no virtual_compressor specified "
+                            "using compressor setting")
+                name = get_config_str("Mapping", "compressor")
+        else:
+            name = get_config_str("Mapping", "compressor")
+
         if name == "OrderedCoveringCompressor":
             return self._execute_ordered_covering_compressor()
         elif name == "OrderedCoveringOnChipRouterCompression":
@@ -1522,9 +1535,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._execute_pair_compression()
         elif name == "PairUnorderedCompressor":
             return self._execute_pair_unordered_compressor()
-
-        # delay compression until later
-        return None
+        else:
+            raise ConfigurationException(f"Unknown compressor: {name}")
 
     @final
     def _execute_load_routing_tables(
@@ -1561,17 +1573,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             #       "Mapping", "validate_routes_uncompressed"):
             #    return
             validate_routes(self._data_writer.get_uncompressed())
-
-    def _report_bit_field_compressor(self) -> None:
-        """
-        Runs, times and logs the BitFieldCompressorReport if requested.
-        """
-        with FecTimer("Bitfield compressor report", TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false(
-                    "Reports",  "write_bit_field_compressor_report"):
-                return
-            # BitFieldSummary output ignored as never used
-            bitfield_compressor_report()
 
     def _execute_fixed_routes(self) -> None:
         """
@@ -1723,9 +1724,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_reset_routing()
             self._execute_graph_binary_gatherer()
         # loading_algorithms
-        compressor, pre_compress = self._compressor_name()
-        self._execute_pre_compression(pre_compress)
-        compressed = self._do_early_compression(compressor)
+        self._execute_pre_compression()
+        compressed = self._do_compression()
 
         self._do_data_generation()
 
@@ -1739,7 +1739,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._do_extra_load_algorithms()
         self._execute_load_routing_tables(compressed)
-        self._report_bit_field_compressor()
 
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()

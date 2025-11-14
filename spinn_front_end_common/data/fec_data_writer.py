@@ -66,7 +66,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         PacmanDataWriter._mock(self)
         self._spinnman_mock()
         self.__fec_data._clear()
-        self.set_up_timings(1000, 1)
+        self.set_up_timings(1, 1)
 
     @overrides(PacmanDataWriter._setup)
     def _setup(self) -> None:
@@ -153,27 +153,21 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._max_run_time_steps = max_run_time_steps
 
     def set_up_timings(
-            self, simulation_time_step_us: Optional[int],
-            time_scale_factor: Optional[float],
-            default_time_scale_factor: float = 1.0) -> None:
+            self, simulation_time_step_ms: Optional[float],
+            time_scale_factor: Optional[float]) -> None:
         """
         Set up timings for the simulation.
 
-        :param simulation_time_step_us:
-            An explicitly specified time step for the simulation in .
+        :param simulation_time_step_ms:
+            An explicitly specified time step for the simulation in ms.
             If `None`, the value is read from the configuration
         :param time_scale_factor:
             An explicitly specified time scale factor for the simulation.
             If `None`, the value is read from the configuration
-        :param default_time_scale_factor:
-            A back up time scale factor for the simulation.
-            Only used if time_scale_factor parameter and configuration are
-            both `None`, by default this is 1.0.
         """
         try:
-            self._set_simulation_time_step(simulation_time_step_us)
-            self._set_time_scale_factor(
-                time_scale_factor, default_time_scale_factor)
+            self._set_simulation_time_step(simulation_time_step_ms)
+            self._set_time_scale_factor(time_scale_factor)
             self._set_hardware_timestep()
         except ConfigurationException:
             self.__fec_data._simulation_time_step_us = None
@@ -187,18 +181,19 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise
 
     def _set_simulation_time_step(
-            self, simulation_time_step_us: Optional[int]) -> None:
+            self, simulation_time_step_ms: Optional[float]) -> None:
         """
-        :param simulation_time_step_us:
-            An explicitly specified time step for the simulation.  If `None`,
-            the value is read from the configuration
+        :param simulation_time_step_ms:
+            A specified time step for the simulation in milliseconds.
+            This value will be rounded to the nearest micro second
+            Or `None` to read the value from the configuration
         """
-        if simulation_time_step_us is None:
+        if simulation_time_step_ms is None:
             simulation_time_step_us = get_config_int(
                 "Machine", "simulation_time_step")
-
-        if not isinstance(simulation_time_step_us, int):
-            raise TypeError("simulation_time_step_us should be an int")
+        else:
+            simulation_time_step_us = int(round(
+                simulation_time_step_ms * MICRO_TO_MILLISECOND_CONVERSION))
 
         if simulation_time_step_us <= 0:
             raise ConfigurationException(
@@ -216,8 +211,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 simulation_time_step_us / MICRO_TO_SECOND_CONVERSION)
 
     def _set_time_scale_factor(
-            self, time_scale_factor: Optional[float],
-            default_time_scale_factor: float) -> None:
+            self, time_scale_factor: Optional[float]) -> None:
         """
         Set up time_scale_factor.
 
@@ -235,13 +229,12 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             # Note while this reads from the cfg the cfg default is None
             time_scale_factor = get_config_int_or_none(
                 "Machine", "time_scale_factor")
-
-        if time_scale_factor is None:
-            if default_time_scale_factor is not None:
-                time_scale_factor = default_time_scale_factor
-
-        if not isinstance(time_scale_factor, (int, float)):
-            raise TypeError("time_scale_factor should be an int (or float)")
+            if time_scale_factor is None:
+                time_scale_factor = 1
+        else:
+            if not isinstance(time_scale_factor, (int, float)):
+                raise TypeError(
+                    "time_scale_factor should be an int (or float)")
 
         if time_scale_factor <= 0:
             raise ConfigurationException(
