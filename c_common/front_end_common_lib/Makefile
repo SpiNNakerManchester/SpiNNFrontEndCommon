@@ -41,6 +41,7 @@ HEADERS = common-typedefs.h data_specification.h simulation.h recording.h \
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
+DATABASE_KEY = 1
 MAKEFILES = local.mk Makefile.SpiNNFrontEndCommon FrontEndCommon.mk
 INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
 
@@ -62,7 +63,7 @@ $(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
 	$(AR) $@ $(BUILD_OBJS)
 
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
-	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) True
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) 1 True
 
 $(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD)
 	$(CC) $(CFLAGS) -o $@ $<
