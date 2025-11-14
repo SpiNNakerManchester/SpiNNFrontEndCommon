@@ -1728,7 +1728,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         FecTimer.start_category(TimerCategory.LOADING)
 
-
         self._do_data_generation()
 
         self._execute_control_sync(False)
