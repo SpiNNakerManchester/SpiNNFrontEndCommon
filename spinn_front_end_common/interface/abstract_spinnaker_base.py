@@ -531,9 +531,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.get_requires_mapping():
             self._do_mapping(total_run_time, n_machine_time_steps)
 
-        if not self._data_writer.is_ran_last():
-            self._do_write_metadata()
-
         # requires data_generation includes never run and requires_mapping
         if self._data_writer.get_requires_data_generation():
             self._do_load()
@@ -1321,6 +1318,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_buffer_manager_creator()
 
         self._deduce_data_n_timesteps(n_machine_time_steps)
+
+        self._do_write_metadata()
+
+        self._execute_reset_routing()
+        self._execute_graph_binary_gatherer()
+
+        self._execute_pre_compression()
+        compressed = self._do_compression()
+        self._execute_load_routing_tables(compressed)
+        self._report_compressed(compressed)
+
         FecTimer.end_category(TimerCategory.MAPPING)
 
     # Overridden by spy which adds placement_order
@@ -1720,12 +1728,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         FecTimer.start_category(TimerCategory.LOADING)
 
-        if self._data_writer.get_requires_mapping():
-            self._execute_reset_routing()
-            self._execute_graph_binary_gatherer()
-        # loading_algorithms
-        self._execute_pre_compression()
-        compressed = self._do_compression()
 
         self._do_data_generation()
 
@@ -1738,14 +1740,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_load_application_data_specification()
 
         self._do_extra_load_algorithms()
-        self._execute_load_routing_tables(compressed)
 
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
+
         if self._data_writer.get_requires_mapping():
+            # Can only be doen after the data is loaded.
+            # But as the location do not change does not  need rerunning
             self._report_memory_on_host()
             self._report_memory_on_chip()
-            self._report_compressed(compressed)
+
         self._execute_application_load_executables()
         self._execute_router_provenance_gatherer("Load", TimerWork.LOADING)
 
