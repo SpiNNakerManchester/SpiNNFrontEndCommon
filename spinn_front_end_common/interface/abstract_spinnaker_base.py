@@ -121,7 +121,7 @@ from spinn_front_end_common.interface.splitter_selectors import (
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
-    bitfield_compressor_report, board_chip_report, EnergyReport,
+    board_chip_report, EnergyReport,
     fixed_route_from_machine_report,
     generate_routing_compression_checker_report, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
@@ -1562,17 +1562,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             validate_routes(self._data_writer.get_uncompressed())
 
-    def _report_bit_field_compressor(self) -> None:
-        """
-        Runs, times and logs the BitFieldCompressorReport if requested.
-        """
-        with FecTimer("Bitfield compressor report", TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false(
-                    "Reports",  "write_bit_field_compressor_report"):
-                return
-            # BitFieldSummary output ignored as never used
-            bitfield_compressor_report()
-
     def _execute_fixed_routes(self) -> None:
         """
         Runs, times and logs Load Fixed Routes if required.
@@ -1739,7 +1728,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._do_extra_load_algorithms()
         self._execute_load_routing_tables(compressed)
-        self._report_bit_field_compressor()
 
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
