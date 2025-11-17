@@ -29,7 +29,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def database_interface() -> Optional[str]:
     """
-    :param runtime:
+    Creates and loads a DataWriter database
+
     :return: where the database is located, if one is made
     """
     needs_db = DatabaseWriter.auto_detect_database()
