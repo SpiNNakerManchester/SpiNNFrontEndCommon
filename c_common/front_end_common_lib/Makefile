@@ -12,89 +12,78 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# If SPINN_DIRS is not defined, this is an error!
-ifndef SPINN_DIRS
-    $(error SPINN_DIRS is not set.  Please define SPINN_DIRS (possibly by running "source setup" in the spinnaker tools folder))
+# If SPINN_COMMON_INSTALL_DIR is not defined, this is also an error!
+ifndef SPINN_COMMON_INSTALL_DIR
+	$(error SPINN_COMMON_INSTALL_DIR is not set.  Please define SPINN_COMMON_INSTALL_DIR to the location where the common files are installed)
 endif
 
-SPINN_COMMON_BUILD = build
+FEC_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+FEC_BUILD = $(FEC_DIR)/build
 override LIB := 1
-include $(SPINN_DIRS)/make/spinnaker_tools.mk
+include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk
 
 ifndef PRINT_DEBUG
     PRINT_DEBUG = PRODUCTION_CODE
 endif
 
-CFLAGS += $(OSPACE) -I include -D$(PRINT_DEBUG)
-LDFLAGS += -lspinn_common
+CFLAGS += $(OSPACE) -I $(FEC_DIR)/include -D$(PRINT_DEBUG)
 
 # Objects
 OBJS = data_specification.o simulation.o recording.o profiler.o \
        malloc_extras.o
-BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
+BUILD_OBJS = $(OBJS:%.o=$(FEC_BUILD)/%.o)
 
 # Headers
 HEADERS = common-typedefs.h data_specification.h simulation.h recording.h \
           profiler.h buffered_eieio_defs.h debug.h eieio.h sdp_no_scp.h \
           filter_info.h key_atom_map.h malloc_extras.h spinn_extra.h \
           wfi.h
-INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
-MAKEFILES = local.mk Makefile.SpiNNFrontEndCommon FrontEndCommon.mk
-INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
+MAKEFILES = fec.mk
 
 # Libraries
 APP = libspinn_frontend_common
-LIBS = $(APP).a
-INSTALL_LIBS = $(LIBS:%=$(SPINN_LIB_DIR)/%)
 
 # Ensure $(INSTALL) is defined, even on MinGW
 INSTALL ?= install
 
 # Variables needed for file converter
-SRC_DIR = src/
-MODIFIED_DIR = modified_src/
+SRC_DIR = $(FEC_DIR)/src/
+MODIFIED_DIR = $(FEC_DIR)/modified_src/
 
 # Build rules (default)
-$(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
+$(FEC_BUILD)/$(APP).a: $(BUILD_OBJS)
+	$(MKDIR) $(FEC_BUILD)
 	@$(RM) $@
 	$(AR) $@ $(BUILD_OBJS)
 
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
 	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) True
 
-$(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD)
+$(FEC_BUILD)/%.o: $(MODIFIED_DIR)/%.c
 	$(CC) $(CFLAGS) -o $@ $<
 
-$(SPINN_COMMON_BUILD):
-	@$(MKDIR) $@
-
 # Installing rules
-install: install-libraries install-headers install-makefiles
-install-libraries: $(INSTALL_LIBS)
-install-headers: $(INSTALL_HEADERS)
-install-makefiles: $(INSTALL_MAKEFILES)
-
-$(SPINN_LIB_DIR)/%.a: $(SPINN_COMMON_BUILD)/%.a
-	$(INSTALL) -c -m644 $< $(SPINN_LIB_DIR)
-
-$(SPINN_INC_DIR)/%.h: include/%.h
-	$(INSTALL) -c -m644 $< $(SPINN_INC_DIR)
-
-$(SPINN_MAKE_LIB_DIR)/%: %
-	$(INSTALL) -c -m644 $< $(SPINN_MAKE_LIB_DIR)
+install: $(FEC_BUILD)/$(APP).a
+ifndef FEC_INSTALL_DIR
+	$(error FEC_INSTALL_DIR is not set.  Please define FEC_INSTALL_DIR to the location where the front_end_common files are to be installed)
+endif
+	$(MKDIR) $(FEC_INSTALL_DIR)/lib
+	$(MKDIR) $(FEC_INSTALL_DIR)/include
+	$(MKDIR) $(FEC_INSTALL_DIR)/make
+	$(INSTALL) -c -m644 $< $(FEC_INSTALL_DIR)/lib
+	$(INSTALL) -c -m644 $(HEADERS:%=$(FEC_DIR)/include/%) $(FEC_INSTALL_DIR)/include
+	$(INSTALL) -c -m644 $(FEC_DIR)/fec.mk $(FEC_INSTALL_DIR)/make
 
 clean:
-	$(RM) $(SPINN_COMMON_BUILD)/$(APP).a $(BUILD_OBJS) $(OLD_CONVERT_FILES)
+	$(RM) $(FEC_BUILD)/$(APP).a $(BUILD_OBJS)
 	rm -rf $(MODIFIED_DIR)
-
-install-clean:
-	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(SPINN_DIRS)/logs.sqlite3
+	$(RM) $(FEC_BUILD)/logs.sqlite3
 
 .PRECIOUS: $(MODIFIED_DIR)%.c $(BUILD_DIR)%.nm $(BUILD_DIR)%.elf $(BUILD_DIR)%.bin
 
-.PHONY: clean install install-libraries install-headers install-makefiles install-clean
+.PHONY: clean install
 
 test:
 	#$(APP_OUTPUT_DIR)$(APP).dict
