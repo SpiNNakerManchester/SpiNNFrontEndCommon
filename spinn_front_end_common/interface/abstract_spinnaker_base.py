@@ -1319,6 +1319,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_buffer_manager_creator()
 
         self._deduce_data_n_timesteps(n_machine_time_steps)
+        self._report_sdram_usage_per_chip()
 
         self._do_write_metadata()
 
@@ -2039,7 +2040,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.increment_current_run_timesteps(
             n_machine_time_steps)
 
-        self._report_sdram_usage_per_chip()
         self._report_drift(start=True)
         self._execute_update_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
