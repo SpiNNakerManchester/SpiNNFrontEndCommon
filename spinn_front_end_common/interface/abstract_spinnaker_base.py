@@ -1747,7 +1747,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_tags_from_machine_report()
 
         if self._data_writer.get_requires_mapping():
-            # Can only be doen after the data is loaded.
+            # Can only be done after the data is loaded.
             # But as the location do not change does not  need rerunning
             self._report_memory_on_host()
             self._report_memory_on_chip()
