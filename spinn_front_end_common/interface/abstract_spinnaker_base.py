@@ -1926,7 +1926,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_database_file_path(
                 database_interface())
 
-    def _execute_update_database_interface(self, run_time: Optional[float]) -> None:
+    def _execute_update_database_interface(
+            self, run_time: Optional[float]) -> None:
         """
         Runs, times and logs Database Interface Updater.
 
@@ -1941,7 +1942,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             with DatabaseUpdater(database_path) as updater:
                 updater.update_system_params(run_time)
-
 
     def _execute_create_notifiaction_protocol(self) -> None:
         """

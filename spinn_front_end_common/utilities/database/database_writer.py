@@ -155,14 +155,6 @@ class DatabaseWriter(SQLiteDB):
         self.__vertex_to_id[m_vertex] = m_vertex_id
         return m_vertex_id
 
-    def add_system_params(self, runtime: Optional[float]) -> None:
-        """
-        Write system parameters into the database.
-
-        :param runtime: the amount of time the application is to run for
-        """
-        pop = 1/0
-
     def add_proxy_configuration(self) -> None:
         """
         Store the proxy configuration.
