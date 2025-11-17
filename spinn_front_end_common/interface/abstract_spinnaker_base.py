@@ -1135,8 +1135,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_uncompressed(
                 merged_routing_table_generator())
 
-        # TODO Nuke ZonedRoutingTableGenerator
-
     @final
     def _do_routing_table_generator(self) -> None:
         """
@@ -1650,7 +1648,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the Tags Loader if required.
         """
-        # TODO why: if graph_changed or data_changed:
         with FecTimer("Tags Loader", TimerWork.LOADING) as timer:
             if timer.skip_if_virtual_board():
                 return
@@ -1744,7 +1741,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._do_extra_load_algorithms()
 
-        # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
 
         if self._data_writer.get_requires_mapping():
@@ -1759,7 +1755,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         FecTimer.end_category(TimerCategory.LOADING)
 
     def _report_sdram_usage_per_chip(self) -> None:
-        # TODO why in do run
         with FecTimer("Sdram usage per chip report",
                       TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
@@ -1899,7 +1894,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Clear IO buffer", TimerWork.CONTROL) as timer:
             if timer.skip_if_virtual_board():
                 return
-            # TODO Why check empty_graph is always false??
             if timer.skip_if_cfg_false("Reports", "clear_iobuf_during_run"):
                 return
             chip_io_buf_clearer()
