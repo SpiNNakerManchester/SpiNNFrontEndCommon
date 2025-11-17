@@ -772,7 +772,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_extra_mapping_algorithms(self) -> None:
         """
-        Allows overriding classes to add algorithms.
+         Runs, times and logs an any extra Mapping algorithms
         """
 
     def _json_machine(self) -> None:
@@ -1344,13 +1344,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_ds_database_path(
                 graph_data_specification_writer())
 
-    def _do_data_generation(self) -> None:
-        """
-        Runs, Times and logs the data generation.
-        """
-        self._execute_sdram_outgoing_partition_allocator()
-        self._execute_graph_data_specification_writer()
-
     def _execute_reset_routing(self) -> None:
         """
         Runs, times and logs the resetting of routing if required.
@@ -1729,7 +1722,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         FecTimer.start_category(TimerCategory.LOADING)
 
-        self._do_data_generation()
+        self._execute_sdram_outgoing_partition_allocator()
+        self._execute_graph_data_specification_writer()
 
         self._execute_control_sync(False)
         if self._data_writer.get_requires_mapping():
@@ -1871,7 +1865,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_provenance_reports(self) -> None:
         """
-        Runs any reports based on provenance.
+         Runs, times and logs any reports based on provenance.
         """
 
     def _execute_clear_router_diagnostic_counters(self) -> None:
