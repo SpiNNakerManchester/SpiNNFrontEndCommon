@@ -161,19 +161,7 @@ class DatabaseWriter(SQLiteDB):
 
         :param runtime: the amount of time the application is to run for
         """
-        self.cursor().executemany(
-            """
-            INSERT INTO configuration_parameters (
-                parameter_id, value)
-            VALUES (?, ?)
-            """, [
-                ("machine_time_step",
-                 FecDataView.get_simulation_time_step_us()),
-                ("time_scale_factor",
-                 FecDataView.get_time_scale_factor()),
-                ("infinite_run", str(runtime is None)),
-                ("runtime", -1 if runtime is None else runtime),
-                ("app_id", FecDataView.get_app_id())])
+        pop = 1/0
 
     def add_proxy_configuration(self) -> None:
         """

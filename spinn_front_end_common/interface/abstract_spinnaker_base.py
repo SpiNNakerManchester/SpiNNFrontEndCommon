@@ -119,6 +119,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
+from spinn_front_end_common.utilities.database import DatabaseUpdater
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
     board_chip_report, EnergyReport,
@@ -1329,6 +1330,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_load_routing_tables(compressed)
         self._report_compressed(compressed)
 
+        self._execute_create_database_interface()
+
         FecTimer.end_category(TimerCategory.MAPPING)
 
     # Overridden by spy which adds placement_order
@@ -1916,20 +1919,34 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 timer.skip("No Simulation Interface used")
 
-    def _execute_create_database_interface(
-            self, run_time: Optional[float]) -> None:
+    def _execute_create_database_interface(self) -> None:
         """
         Runs, times and logs Database Interface Creator.
 
         Sets the _database_file_path data object
-
-        :param run_time: the run duration in milliseconds.
         """
         with FecTimer("Create database interface", TimerWork.OTHER):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tables.
             self._data_writer.set_database_file_path(
-                database_interface(run_time))
+                database_interface())
+
+    def _execute_update_database_interface(self, run_time: Optional[float]) -> None:
+        """
+        Runs, times and logs Database Interface Updater.
+
+        Sets the _database_file_path data object
+
+        :param run_time: the run duration in milliseconds.
+        """
+        with FecTimer("Update database interface", TimerWork.OTHER) as timer:
+            database_path = self._data_writer.get_database_file_path()
+            if database_path is None:
+                timer.skip("No database to update")
+                return
+            with DatabaseUpdater(database_path) as updater:
+                updater.update_system_params(run_time)
+
 
     def _execute_create_notifiaction_protocol(self) -> None:
         """
@@ -2024,8 +2041,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._report_sdram_usage_per_chip()
         self._report_drift(start=True)
-        if self._data_writer.get_requires_mapping():
-            self._execute_create_database_interface(run_time)
+        self._execute_update_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
         if (self._data_writer.is_ran_ever() and
                 not self._data_writer.get_requires_mapping() and
