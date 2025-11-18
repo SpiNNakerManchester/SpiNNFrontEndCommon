@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+ifndef FEC_INSTALL_DIR
+	$(error FEC_INSTALL_DIR is not set.  Please define FEC_INSTALL_DIR to the location where the front end common files are installed)
+endif
+
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CURRENT_DIR := $(dir $(MAKEFILE_PATH))
 APP_OUTPUT_DIR := $(abspath $(CURRENT_DIR)../../spinn_front_end_common/common_model_binaries/)/
 
-include $(CURRENT_DIR)../front_end_common_lib/local.mk
+include $(FEC_INSTALL_DIR)/make/fec.mk
 
-.PRECIOUS: $(MODIFIED_DIR)%.c
+.PRECIOUS: $(MODIFIED_DIR)%.c $(BUILD_DIR)%.o

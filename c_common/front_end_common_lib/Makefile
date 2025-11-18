@@ -39,11 +39,9 @@ HEADERS = common-typedefs.h data_specification.h simulation.h recording.h \
           filter_info.h key_atom_map.h malloc_extras.h spinn_extra.h \
           wfi.h
 
-# Makefile
-MAKEFILES = fec.mk
-
 # Libraries
 APP = libspinn_frontend_common
+override LIB := 1
 
 # Ensure $(INSTALL) is defined, even on MinGW
 INSTALL ?= install
