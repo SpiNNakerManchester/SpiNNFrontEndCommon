@@ -48,7 +48,7 @@ INSTALL ?= install
 
 # Variables needed for file converter
 SRC_DIR = $(FEC_DIR)/src/
-MODIFIED_DIR = $(FEC_DIR)/modified_src/
+MODIFIED_DIR = $(FEC_BUILD)/modified_src/
 
 # Build rules (default)
 $(FEC_BUILD)/$(APP).a: $(BUILD_OBJS)

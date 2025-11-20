@@ -80,7 +80,7 @@ $$(BUILD_DIR)%.o: $(2)%.c
 endef
 
 define modified_dir#(src_dir)
-    $(dir $(abspath $(1)))modified_src/
+	$(abspath $(BUILD_DIR)modified_src/)/
 endef
 
 # Add the default libraries and options
