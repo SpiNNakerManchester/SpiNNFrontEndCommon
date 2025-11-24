@@ -57,13 +57,13 @@ endif
 define add_source_dir#(src_dir, modified_dir)
 
 $(2): $(1)
-	python -m spinn_utilities.make_tools.converter $(1) $(2) $(DATABASE_ID) $(APP_OUTPUT_DIR)/logs.sqlite3
+	python -m spinn_utilities.make_tools.converter $(1) $(2) $(DATABASE_KEY) $(APP_OUTPUT_DIR)/logs.sqlite3
 
 $(2)%.c: $(1)%.c
-	python -m spinn_utilities.make_tools.converter $(1) $(2) $(DATABASE_ID) $(APP_OUTPUT_DIR)/logs.sqlite3
+	python -m spinn_utilities.make_tools.converter $(1) $(2) $(DATABASE_KEY) $(APP_OUTPUT_DIR)/logs.sqlite3
 
 $(2)%.h: $(1)%.h
-	python -m spinn_utilities.make_tools.converter $(1) $(2) $(DATABASE_ID) $(APP_OUTPUT_DIR)/logs.sqlite3
+	python -m spinn_utilities.make_tools.converter $(1) $(2) $(DATABASE_KEY) $(APP_OUTPUT_DIR)/logs.sqlite3
 
 # Build the o files from the modified sources
 $$(BUILD_DIR)%.o: $(2)%.c

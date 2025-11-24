@@ -41,7 +41,7 @@ HEADERS = common-typedefs.h data_specification.h simulation.h recording.h \
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
-DATABASE_ID = F
+DATABASE_KEY = F
 MAKEFILES = local.mk Makefile.SpiNNFrontEndCommon FrontEndCommon.mk
 INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
 
