@@ -1300,11 +1300,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_reset_routing()
         self._execute_graph_binary_gatherer()
 
-        self._execute_pre_compression()
-        compressed = self._do_compression()
-        self._execute_load_routing_tables(compressed)
-        self._report_compressed(compressed)
-
         self._execute_create_database_interface()
 
         FecTimer.end_category(TimerCategory.MAPPING)
@@ -1698,6 +1693,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         FecTimer.start_category(TimerCategory.LOADING)
 
+        self._execute_pre_compression()
+        compressed = self._do_compression()
+
         self._execute_sdram_outgoing_partition_allocator()
         self._execute_graph_data_specification_writer()
 
@@ -1710,6 +1708,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_load_application_data_specification()
 
         self._do_extra_load_algorithms()
+
+        # Need to reload routint tables to reset weights
+        self._execute_load_routing_tables(compressed)
+        if self._data_writer.get_requires_mapping():
+            self._report_compressed(compressed)
 
         self._execute_tags_from_machine_report()
 
