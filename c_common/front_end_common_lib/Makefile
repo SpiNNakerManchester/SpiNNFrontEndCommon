@@ -57,13 +57,15 @@ INSTALL ?= install
 SRC_DIR = src/
 MODIFIED_DIR = modified_src/
 
+APP_OUTPUT_DIR := $(abspath $(CURRENT_DIR)../../spinn_front_end_common/common_model_binaries/)/
+
 # Build rules (default)
 $(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
 	@$(RM) $@
 	$(AR) $@ $(BUILD_OBJS)
 
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
-	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) F True
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) c $(APP_OUTPUT_DIR)/logs.sqlite3
 
 $(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD)
 	$(CC) $(CFLAGS) -o $@ $<
@@ -91,7 +93,7 @@ clean:
 	rm -rf $(MODIFIED_DIR)
 
 install-clean:
-	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(SPINN_DIRS)/logs.sqlite3
+	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(APP_OUTPUT_DIR)/logs.sqlite3
 
 .PRECIOUS: $(MODIFIED_DIR)%.c $(BUILD_DIR)%.nm $(BUILD_DIR)%.elf $(BUILD_DIR)%.bin
 
