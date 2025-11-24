@@ -47,6 +47,12 @@ ifndef SOURCE_DIRS
 endif
 SOURCE_DIRS := $(patsubst %, %/, $(abspath $(SOURCE_DIRS)))
 
+# MODIFIED_DIR where log-adjusted source files are to be placed.
+ifndef MODIFIED_DIR
+    MODIFIED_DIR := $(BUILD_DIR)/modified_src/
+endif
+MODIFIED_DIR := $(abspath $(MODIFIED_DIR))/
+
 # SOURCES one or more unmodified c files to build
 # Each source in SOURCES MUST be relative to one of the directories in
 # SOURCE_DIRS; it MUST NOT include the full path
@@ -62,8 +68,8 @@ endif
 # 2. Build the object file from the modified source files.
 # Note that the rules for c / h / dict are all the same - the whole set of
 # sources is copied only once after which all the targets are now available
-define add_source_dir#(src_dir, modified_dir)
-$(2): $(1)
+define add_source_dir#(src_dir, mod_dir)
+$(2): $(wildcard $(1)/**/*)
 	python -m spinn_utilities.make_tools.converter $(1) $(2)
 
 $(2)%.c: $(1)%.c
@@ -80,7 +86,7 @@ $$(BUILD_DIR)%.o: $(2)%.c
 endef
 
 define modified_dir#(src_dir)
-	$(abspath $(BUILD_DIR)modified_src/)/
+	$(MODIFIED_DIR)
 endef
 
 # Add the default libraries and options
