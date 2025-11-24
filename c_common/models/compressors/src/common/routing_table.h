@@ -51,22 +51,33 @@ typedef struct table_t {
     entry_t entries[];
 } table_t;
 
+//! \brief The table being manipulated.
+//!
+//! This is common across all the functions in this file.
+table_t *table;
+
 //! \brief Gets a pointer to where this entry is stored
 //! \details Will not check if there is an entry with this id but will RTE if
 //!     the id is too large
 //! \param[in] entry_id_to_find: Id of entry to find pointer to
 //! \return pointer to the entry's location
-entry_t* routing_table_get_entry(uint32_t entry_id_to_find);
+entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
+    return &table->entries[entry_id_to_find];
+}
 
 //! \brief Get the number of entries in the routing table
 //! \return number of appended entries.
-int routing_table_get_n_entries(void);
+int routing_table_get_n_entries(void) {
+    return table->size;
+}
 
 //! \brief updates table stores accordingly.
 //!
 //! will RTE if this causes the total entries to become negative.
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
-void routing_table_remove_from_size(int size_to_remove);
+void routing_table_remove_from_size(int size_to_remove) {
+    table->size -= size_to_remove;
+}
 
 //! \brief Write an entry to a specific index
 //! \param[in] entry: The entry to write
@@ -112,14 +123,12 @@ static inline uint32_t key_mask_get_xs(key_mask_t km) {
     return ~km.key & ~km.mask;
 }
 
-
 //! \brief Get a count of the Xs in a key_mask
 //! \param[in] km: the key mask struct to count
 //! \return the number of bits set in the mask
 static inline unsigned int key_mask_count_xs(key_mask_t km) {
     return __builtin_popcount(key_mask_get_xs(km));
 }
-
 
 //! \brief Determine if two key_masks would match any of the same keys
 //! \param[in] a: key mask struct a
@@ -146,10 +155,6 @@ static inline key_mask_t key_mask_merge(key_mask_t a, key_mask_t b) {
 //! \brief flag for if a rtr_mc_set() failure.
 #define RTR_MC_SET_FAILED 0
 
-//! \brief The table being manipulated.
-//!
-//! This is common across all the functions in this file.
-table_t *table;
 
 //! \brief The header of the routing table information in the input data block.
 //!
@@ -170,18 +175,6 @@ typedef struct {
     //! Routing table entries
     entry_t entries[];
 } header_t;
-
-int routing_table_get_n_entries(void) {
-    return table->size;
-}
-
-void routing_table_remove_from_size(int size_to_remove) {
-    table->size -= size_to_remove;
-}
-
-entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
-    return &table->entries[entry_id_to_find];
-}
 
 //! \brief Print the header object for debug purposes
 //! \param[in] header: the header to print
