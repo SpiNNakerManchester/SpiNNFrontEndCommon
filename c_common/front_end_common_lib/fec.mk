@@ -40,18 +40,12 @@ ifndef BUILD_DIR
 endif
 BUILD_DIR := $(abspath $(BUILD_DIR))/
 
-# SOURCE_DIRS space-separated list of directories where the raw c and h files
-# are
+# SOURCE_DIRS space-separated list of colon separated source and modified source
+# directories where the raw c and h files are and the modified files are to be
+# placed
 ifndef SOURCE_DIRS
-    SOURCE_DIRS := src/
+    SOURCE_DIRS := src/:$(BUILD_DIR)/modified_src/
 endif
-SOURCE_DIRS := $(patsubst %, %/, $(abspath $(SOURCE_DIRS)))
-
-# MODIFIED_DIR where log-adjusted source files are to be placed.
-ifndef MODIFIED_DIR
-    MODIFIED_DIR := $(BUILD_DIR)/modified_src/
-endif
-MODIFIED_DIR := $(abspath $(MODIFIED_DIR))/
 
 # SOURCES one or more unmodified c files to build
 # Each source in SOURCES MUST be relative to one of the directories in
@@ -60,6 +54,8 @@ ifndef SOURCES
     $(error SOURCES is not set.  Please define SOURCES)
 endif
 
+word_by_colon = $(abspath $(word $2, $(subst :, ,$1)))/
+
 # Define a macro to be run for every source directory
 # The chain of operation of compilation for each source directory is:
 # 1. Convert c and h files from original source directory to modified source
@@ -67,26 +63,27 @@ endif
 #    dictionary.
 # 2. Build the object file from the modified source files.
 # Note that the rules for c / h / dict are all the same - the whole set of
-# sources is copied only once after which all the targets are now available
-define add_source_dir#(src_dir, mod_dir)
-$(2): $(wildcard $(1)/**/*)
-	python -m spinn_utilities.make_tools.converter $(1) $(2)
+# sources is copied only once after which all the targets are now available.
+# The argument src_dir is a colon separated source directory and modified source
+# directory pair
+define add_source_dir#(src_dir)
+$(call word_by_colon,$(1),2): $(wildcard $(call word_by_colon,$(1),1)/**/*)
+	python -m spinn_utilities.make_tools.converter $(call word_by_colon,$(1),1) $(call word_by_colon,$(1),2)
 
-$(2)%.c: $(1)%.c
-	python -m spinn_utilities.make_tools.converter $(1) $(2)
-
-$(2)%.h: $(1)%.h
-	python -m spinn_utilities.make_tools.converter $(1) $(2)
+$(call word_by_colon,$(1), 2)%.c: $(call word_by_colon,$(1), 1)%.c
+	python -m spinn_utilities.make_tools.converter $(call word_by_colon,$(1),1) $(call word_by_colon,$(1),2)
+$(call word_by_colon,$(1), 2)%.h: $(call word_by_colon,$(1), 1)%.h
+	python -m spinn_utilities.make_tools.converter $(call word_by_colon,$(1),1) $(call word_by_colon,$(1),2)
 
 # Build the o files from the modified sources
-$$(BUILD_DIR)%.o: $(2)%.c
+$$(BUILD_DIR)%.o: $(call word_by_colon,$(1),2)%.c
 	# local
 	-@mkdir -p $$(dir $$@)
 	$$(CC) $$(CFLAGS) -o $$@ $$<
 endef
 
 define modified_dir#(src_dir)
-	$(MODIFIED_DIR)
+	$(call word_by_colon,$(1),2)
 endef
 
 # Add the default libraries and options
@@ -120,7 +117,7 @@ CFLAGS += $(foreach d, $(sort $(SOURCE_DIRS)), -I $(call modified_dir,$(d)))
 # default rule based on list ALL_TARGETS so more main targets can be added later
 ALL_TARGETS += $(APP_OUTPUT_DIR)$(APP).aplx
 
-$(foreach d, $(sort $(SOURCE_DIRS)), \
+$(foreach d, $(SOURCE_DIRS), \
     $(eval ALL_MODIFIES_DIRS += $(call modified_dir, $(d))))
 
 ALL_TARGETS += $(APP_OUTPUT_DIR)$(APP).aplx
@@ -133,8 +130,8 @@ all: $(ALL_MODIFIES_DIRS) $(ALL_TARGETS)
 #    rules
 _OBJS := $(SOURCES)
 $(eval _OBJS := $(_OBJS:%.c=$(BUILD_DIR)%.o))
-$(foreach d, $(sort $(SOURCE_DIRS)), \
-    $(eval $(call add_source_dir, $(d), $(call modified_dir, $(d)))))
+$(foreach d, $(SOURCE_DIRS), \
+    $(eval $(call add_source_dir, $(d))))
 OBJECTS += $(_OBJS)
 
 # Bring in the common makefile
@@ -143,4 +140,4 @@ include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk
 # Tidy and cleaning dependencies
 clean:
 	$(RM) $(TEMP_FILES) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt $(ALL_TARGETS) $(BUILD_DIR)$(APP).nm $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).bin
-	rm -rf $(foreach d, $(sort $(SOURCE_DIRS)), $(call modified_dir, $(d)))
+	rm -rf $(foreach d, $(SOURCE_DIRS), $(call modified_dir, $(d)))
