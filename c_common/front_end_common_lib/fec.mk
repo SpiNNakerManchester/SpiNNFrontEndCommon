@@ -140,4 +140,3 @@ include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk
 # Tidy and cleaning dependencies
 clean:
 	$(RM) $(TEMP_FILES) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt $(ALL_TARGETS) $(BUILD_DIR)$(APP).nm $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).bin
-	rm -rf $(foreach d, $(SOURCE_DIRS), $(call modified_dir, $(d)))
