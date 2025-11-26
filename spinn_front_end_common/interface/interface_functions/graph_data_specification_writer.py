@@ -19,7 +19,6 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from pacman.model.placements import Placement
@@ -35,16 +34,13 @@ from spinn_front_end_common.utilities.utility_calls import get_report_writer
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def graph_data_specification_writer(
-        placement_order: Optional[Sequence[Placement]] = None) -> str:
+def graph_data_specification_writer() -> str:
     """
-    :param placement_order:
-        the optional order in which placements should be examined
     :return: Path to DSG targets database
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
-    return _GraphDataSpecificationWriter().run(placement_order)
+    return _GraphDataSpecificationWriter().run()
 
 
 class _GraphDataSpecificationWriter(object):
@@ -64,11 +60,8 @@ class _GraphDataSpecificationWriter(object):
             Dict[Tuple[int, int], List[AbstractGeneratesDataSpecification]] =\
             defaultdict(list)
 
-    def run(self,
-            placement_order: Optional[Sequence[Placement]] = None) -> str:
+    def run(self) -> str:
         """
-        :param placement_order:
-            the optional order in which placements should be examined
         :return: Path to DSG targets database
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
@@ -80,26 +73,21 @@ class _GraphDataSpecificationWriter(object):
             ds_db.write_session_credentials_to_db()
             ds_db.set_info()
 
-            placements: Iterable[Placement]
-            if placement_order is None:
-                placements = FecDataView.iterate_placemements()
-                n_placements = FecDataView.get_n_placements()
-            else:
-                placements = placement_order
-                n_placements = len(placement_order)
-
-            progress = ProgressBar(n_placements,
+            progress = ProgressBar(FecDataView.get_n_placements(),
                                    "Generating data specifications")
             vertices_to_reset: List[AbstractRewritesDataSpecification] = list()
 
-            for placement in progress.over(placements):
+            for placement in progress.over(FecDataView.iterate_placemements()):
                 # Try to generate the data spec for the placement
                 vertex = placement.vertex
-                generated = self.__generate_data_spec_for_vertices(
+                if not isinstance(
+                        vertex, AbstractGeneratesDataSpecification):
+                    continue
+
+                self.__generate_data_spec_for_vertices(
                     placement, vertex, ds_db)
 
-                if generated and isinstance(
-                        vertex, AbstractRewritesDataSpecification):
+                if isinstance(vertex, AbstractRewritesDataSpecification):
                     vertices_to_reset.append(vertex)
 
             # Ensure that the vertices know their regions have been reloaded
@@ -111,19 +99,15 @@ class _GraphDataSpecificationWriter(object):
         return path
 
     def __generate_data_spec_for_vertices(
-            self, placement: Placement, vertex: AbstractVertex,
-            ds_db: DsSqlliteDatabase) -> bool:
+            self, placement: Placement,
+            vertex: AbstractGeneratesDataSpecification,
+            ds_db: DsSqlliteDatabase) -> None:
         """
         :param placement: placement of machine graph to cores
         :param vertex: the specific vertex to write DSG for.
         :param ds_db:
-        :return: True if the vertex was data spec-able, False otherwise
         :raises ConfigurationException: if things don't fit
         """
-        # if the vertex can generate a DSG, call it
-        if not isinstance(vertex, AbstractGeneratesDataSpecification):
-            return False
-
         x = placement.x
         y = placement.y
         p = placement.p
@@ -140,34 +124,33 @@ class _GraphDataSpecificationWriter(object):
         total_est_size = 0
 
         # Check per-region memory usage if possible
-        if isinstance(vertex, MachineVertex):
-            sdram = vertex.sdram_required
-            if isinstance(sdram, MultiRegionSDRAM):
-                region_sizes = ds_db.get_region_sizes(x, y, p)
-                for i, size in region_sizes.items():
-                    est_size = sdram.regions.get(i, ConstantSDRAM(0))
-                    est_size = est_size.get_total_sdram(
-                        FecDataView.get_max_run_time_steps())
-                    total_est_size += est_size
-                    if size > est_size:
-                        raise ValueError(
-                            f"Region {i} of vertex {vertex.label} is bigger"
-                            f" than expected: {est_size} estimated vs. {size}"
-                            " actual")
-            else:
-                total_est_size = sdram.get_total_sdram(
+        sdram = vertex.sdram_required
+        if isinstance(sdram, MultiRegionSDRAM):
+            region_sizes = ds_db.get_region_sizes(x, y, p)
+            for i, size in region_sizes.items():
+                est_size = sdram.regions.get(i, ConstantSDRAM(0))
+                est_size = est_size.get_total_sdram(
                     FecDataView.get_max_run_time_steps())
+                total_est_size += est_size
+                if size > est_size:
+                    raise ValueError(
+                        f"Region {i} of vertex {vertex.label} is bigger"
+                        f" than expected: {est_size} estimated vs. {size}"
+                        " actual")
+        else:
+            total_est_size = sdram.get_total_sdram(
+                FecDataView.get_max_run_time_steps())
 
-            if total_size > total_est_size:
-                raise ValueError(
-                    f"Data of vertex {vertex.label} is bigger than expected:"
-                    f" estimated: {total_est_size} vs. actual: {total_size}")
+        if total_size > total_est_size:
+            raise ValueError(
+                f"Data of vertex {vertex.label} is bigger than expected:"
+                f" estimated: {total_est_size} vs. actual: {total_size}")
 
         self._vertices_by_chip[x, y].append(vertex)
         self._sdram_usage[x, y] += total_size
         if (self._sdram_usage[x, y] <=
                 FecDataView().get_chip_at(x, y).sdram):
-            return True
+            return
 
         # creating the error message which contains the memory usage of
         # what each core within the chip uses and its original estimate.
