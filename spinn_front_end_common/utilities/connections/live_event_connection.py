@@ -83,14 +83,6 @@ _SCP_RESPONSE_FLAGS = 7
 _SCP_RESPONSE_DEST = 0xFF
 
 
-def _is_spalloc_eieio(val: UDPConnection) -> TypeGuard[Union[
-        SpallocEIEIOConnection, SpallocEIEIOListener]]:
-    """
-    Do we have a proxied EIEIO connection?
-    """
-    return hasattr(val, "update_tag")
-
-
 class LiveEventConnection(DatabaseConnection):
     """
     A connection for receiving and sending live events from and to SpiNNaker.
@@ -510,8 +502,10 @@ class LiveEventConnection(DatabaseConnection):
     def __send_tag_messages_now(self) -> None:
         if self.__receiver_connection is None:
             return
-        rc = (cast(SpallocEIEIOListener, self.__receiver_connection)
-              if _is_spalloc_eieio(self.__receiver_connection) else None)
+        if isinstance(self.__receiver_connection, SpallocEIEIOListener):
+            rc = self.__receiver_connection
+        else:
+            rc = None
         for (x, y, tag, board_address) in self.__receiver_details:
             with self.__expect_scp_response_lock:
                 self.__scp_response_received = None
