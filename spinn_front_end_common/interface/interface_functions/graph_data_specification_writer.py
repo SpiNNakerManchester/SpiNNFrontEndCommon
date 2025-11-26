@@ -14,12 +14,11 @@
 
 from collections import defaultdict
 import logging
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, List, Tuple
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from pacman.model.placements import Placement
 from spinn_front_end_common.abstract_models import (
