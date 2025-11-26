@@ -1709,7 +1709,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._do_extra_load_algorithms()
 
-        # Need to reload routint tables to reset weights
+        # Need to reload routing tables to reset weights
         self._execute_load_routing_tables(compressed)
         if self._data_writer.get_requires_mapping():
             self._report_compressed(compressed)
