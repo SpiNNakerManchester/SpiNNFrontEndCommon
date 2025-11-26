@@ -128,8 +128,8 @@ class _GraphDataSpecificationWriter(object):
         if isinstance(sdram, MultiRegionSDRAM):
             region_sizes = ds_db.get_region_sizes(x, y, p)
             for i, size in region_sizes.items():
-                est_size = sdram.regions.get(i, ConstantSDRAM(0))
-                est_size = est_size.get_total_sdram(
+                est_sdram = sdram.regions.get(i, ConstantSDRAM(0))
+                est_size = est_sdram.get_total_sdram(
                     FecDataView.get_max_run_time_steps())
                 total_est_size += est_size
                 if size > est_size:
