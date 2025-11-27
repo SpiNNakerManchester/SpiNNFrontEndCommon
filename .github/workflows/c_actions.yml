@@ -60,10 +60,13 @@ jobs:
         CFLAGS: -fdiagnostics-color=always
         C_LOGS_DICT: ${{ github.workspace }}/spinn_front_end_common/common_model_binaries/logs.sqlite3
       run: |
+        ls -lR ${{ github.workspace }}/spinn_dirs
         make -C spinnaker_tools clean
         make -C spinnaker_tools install
+        ls -lR ${{ github.workspace }}/spinn_dirs
         make -C spinn_common clean
         make -C spinn_common install
+        ls -lR ${{ github.workspace }}/spinn_dirs
         make -C c_common clean
         make -C c_common
 
