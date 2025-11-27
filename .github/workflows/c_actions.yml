@@ -32,13 +32,6 @@ jobs:
         install-check-tools: false
         ubuntu-packages: doxygen gcc-arm-none-eabi
 
-    - name: "Prepare: Set Environment variables"
-      run: |
-        echo "SPINN_INSTALL_DIR=$PWD/spinnaker_tools_install" >> $GITHUB_ENV
-        echo "SPINN_COMMON_INSTALL_DIR=$PWD/spinn_common_install" >> $GITHUB_ENV
-        echo "FEC_INSTALL_DIR=$PWD/fec_install" >> $GITHUB_ENV
-        echo "C_LOGS_DICT=$PWD/spinn_front_end_common/common_model_binaries/logs.sqlite3" >> $GITHUB_ENV
-
     - name: "Check: Lint C lib code using Vera++"
       uses: SpiNNakerManchester/SupportScripts/actions/vera@main
       with:
@@ -49,16 +42,27 @@ jobs:
       with:
         base-dir: c_common/models
 
-    - name: "Prepare: Build Supporting C libraries"
+    - name: Build C Code
+      env:
+        SPINN_INSTALL_DIR: ${GITHUB_WORKSPACE}/spinnaker_tools_install
+        SPINN_COMMON_INSTALL_DIR: ${GITHUB_WORKSPACE}/spinn_common_install
+        FEC_INSTALL_DIR: ${GITHUB_WORKSPACE}/fec_install
+        CFLAGS: -fdiagnostics-color=always
+        C_LOGS_DICT: ${GITHUB_WORKSPACE}/spinn_front_end_common/common_model_binaries/logs.sqlite3
       run: |
         make -C spinnaker_tools install
         make -C spinn_common install
+        make -C c_common
 
-    - name: "Check: Build C code"
-      run: make
-      working-directory: c_common
+    - name: Build C Code central install
       env:
+        SPINN_DIRS: ${GITHUB_WORKSPACE}/spinn_dirs
         CFLAGS: -fdiagnostics-color=always
+        C_LOGS_DICT: ${GITHUB_WORKSPACE}/spinn_front_end_common/common_model_binaries/logs.sqlite3
+      run: |
+        make -C spinnaker_tools clean install
+        make -C spinn_common clean install
+        make -C c_common clean install
 
     - name: "Check: Build documentation"
       run: make doxysetup doxygen

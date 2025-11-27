@@ -13,9 +13,7 @@
 # limitations under the License.
 
 # If SPINN_COMMON_INSTALL_DIR is not defined, this is also an error!
-ifndef SPINN_COMMON_INSTALL_DIR
-	$(error SPINN_COMMON_INSTALL_DIR is not set.  Please define SPINN_COMMON_INSTALL_DIR to the location where the common files are installed)
-endif
+SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_COMMON_INSTALL_DIR), $(if $(SPINN_DIRS), $(SPINN_DIRS)/spinn_common_install, $(error SPINN_COMMON_INSTALL_DIR or SPINN_DIRS is not set.  Please define SPINN_COMMON_INSTALL_DIR or SPINN_DIRS))))
 
 FEC_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 FEC_BUILD = $(FEC_DIR)/build
@@ -64,9 +62,7 @@ $(FEC_BUILD)/%.o: $(MODIFIED_DIR)/%.c
 
 # Installing rules
 install: $(FEC_BUILD)/$(APP).a
-ifndef FEC_INSTALL_DIR
-	$(error FEC_INSTALL_DIR is not set.  Please define FEC_INSTALL_DIR to the location where the front_end_common files are to be installed)
-endif
+	$(eval FEC_INSTALL_DIR := $(strip $(if $(FEC_INSTALL_DIR), $(FEC_INSTALL_DIR), $(if $(SPINN_DIRS), $(SPINN_DIRS)/fec_install, $(error FEC_INSTALL_DIR or SPINN_DIRS is not set.  Please define FEC_INSTALL_DIR or SPINN_DIRS)))))
 	$(MKDIR) $(FEC_INSTALL_DIR)/lib
 	$(MKDIR) $(FEC_INSTALL_DIR)/include
 	$(MKDIR) $(FEC_INSTALL_DIR)/make

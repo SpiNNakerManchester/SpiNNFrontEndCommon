@@ -15,9 +15,7 @@
 # FEC_INSTALL_DIR must be set for this file to be found
 
 # We also need SPINN_COMMON_INSTALL_DIR for common library
-ifndef SPINN_COMMON_INSTALL_DIR
-	$(error SPINN_COMMON_INSTALL_DIR is not set.  Please define SPINN_COMMON_INSTALL_DIR to the location where the common files are installed)
-endif
+SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_COMMON_INSTALL_DIR), $(if $(SPINN_DIRS), $(SPINN_DIRS)/spinn_common_install, $(error SPINN_COMMON_INSTALL_DIR or SPINN_DIRS is not set.  Please define SPINN_COMMON_INSTALL_DIR or SPINN_DIRS))))
 
 # Find out where we are installed now (in the make subdirectory, so go up one)
 FEC_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../)
