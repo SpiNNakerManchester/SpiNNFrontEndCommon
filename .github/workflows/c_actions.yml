@@ -44,11 +44,11 @@ jobs:
 
     - name: Build C Code
       env:
-        SPINN_INSTALL_DIR: ${GITHUB_WORKSPACE}/spinnaker_tools_install
-        SPINN_COMMON_INSTALL_DIR: ${GITHUB_WORKSPACE}/spinn_common_install
-        FEC_INSTALL_DIR: ${GITHUB_WORKSPACE}/fec_install
+        SPINN_INSTALL_DIR: ${{ github.workspace }}/spinnaker_tools_install
+        SPINN_COMMON_INSTALL_DIR: ${{ github.workspace }}/spinn_common_install
+        FEC_INSTALL_DIR: ${{ github.workspace }}/fec_install
         CFLAGS: -fdiagnostics-color=always
-        C_LOGS_DICT: ${GITHUB_WORKSPACE}/spinn_front_end_common/common_model_binaries/logs.sqlite3
+        C_LOGS_DICT: ${{ github.workspace }}/spinn_front_end_common/common_model_binaries/logs.sqlite3
       run: |
         make -C spinnaker_tools install
         make -C spinn_common install
@@ -56,9 +56,9 @@ jobs:
 
     - name: Build C Code central install
       env:
-        SPINN_DIRS: ${GITHUB_WORKSPACE}/spinn_dirs
+        SPINN_DIRS: ${{ github.workspace }}/spinn_dirs
         CFLAGS: -fdiagnostics-color=always
-        C_LOGS_DICT: ${GITHUB_WORKSPACE}/spinn_front_end_common/common_model_binaries/logs.sqlite3
+        C_LOGS_DICT: ${{ github.workspace }}/spinn_front_end_common/common_model_binaries/logs.sqlite3
       run: |
         make -C spinnaker_tools clean install
         make -C spinn_common clean install
