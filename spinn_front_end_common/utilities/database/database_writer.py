@@ -155,26 +155,6 @@ class DatabaseWriter(SQLiteDB):
         self.__vertex_to_id[m_vertex] = m_vertex_id
         return m_vertex_id
 
-    def add_system_params(self, runtime: Optional[float]) -> None:
-        """
-        Write system parameters into the database.
-
-        :param runtime: the amount of time the application is to run for
-        """
-        self.cursor().executemany(
-            """
-            INSERT INTO configuration_parameters (
-                parameter_id, value)
-            VALUES (?, ?)
-            """, [
-                ("machine_time_step",
-                 FecDataView.get_simulation_time_step_us()),
-                ("time_scale_factor",
-                 FecDataView.get_time_scale_factor()),
-                ("infinite_run", str(runtime is None)),
-                ("runtime", -1 if runtime is None else runtime),
-                ("app_id", FecDataView.get_app_id())])
-
     def add_proxy_configuration(self) -> None:
         """
         Store the proxy configuration.
