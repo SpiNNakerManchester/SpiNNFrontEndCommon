@@ -52,7 +52,10 @@ ifndef SOURCES
     $(error SOURCES is not set.  Please define SOURCES)
 endif
 
-word_by_colon = $(abspath $(word $2, $(subst :, ,$1)))/
+# Get one of the paths from the colon separated pair in SOURCE_DIRS
+# $1 = colon separated pair
+# $2 = 1 for original source dir, 2 for modified source dir
+get_path = $(abspath $(word $2, $(subst :, ,$1)))/
 
 # Define a macro to be run for every source directory
 # The chain of operation of compilation for each source directory is:
@@ -65,23 +68,23 @@ word_by_colon = $(abspath $(word $2, $(subst :, ,$1)))/
 # The argument src_dir is a colon separated source directory and modified source
 # directory pair
 define add_source_dir#(src_dir)
-$(call word_by_colon,$(1),2): $(wildcard $(call word_by_colon,$(1),1)/**/*)
-	python -m spinn_utilities.make_tools.converter $(call word_by_colon,$(1),1) $(call word_by_colon,$(1),2)
+$(call get_path,$(1),2): $(wildcard $(call get_path,$(1),1)/**/*)
+	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2)
 
-$(call word_by_colon,$(1), 2)%.c: $(call word_by_colon,$(1), 1)%.c
-	python -m spinn_utilities.make_tools.converter $(call word_by_colon,$(1),1) $(call word_by_colon,$(1),2)
-$(call word_by_colon,$(1), 2)%.h: $(call word_by_colon,$(1), 1)%.h
-	python -m spinn_utilities.make_tools.converter $(call word_by_colon,$(1),1) $(call word_by_colon,$(1),2)
+$(call get_path,$(1), 2)%.c: $(call get_path,$(1), 1)%.c
+	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2)
+$(call get_path,$(1), 2)%.h: $(call get_path,$(1), 1)%.h
+	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2)
 
 # Build the o files from the modified sources
-$$(BUILD_DIR)%.o: $(call word_by_colon,$(1),2)%.c
+$$(BUILD_DIR)%.o: $(call get_path,$(1),2)%.c
 	# local
 	-@mkdir -p $$(dir $$@)
 	$$(CC) $$(CFLAGS) -o $$@ $$<
 endef
 
 define modified_dir#(src_dir)
-	$(call word_by_colon,$(1),2)
+	$(call get_path,$(1),2)
 endef
 
 # Add the default libraries and options
