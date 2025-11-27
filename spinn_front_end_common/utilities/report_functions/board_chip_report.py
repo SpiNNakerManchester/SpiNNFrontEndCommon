@@ -38,6 +38,7 @@ def board_chip_report() -> None:
     with open(directory_name, "w", encoding="utf-8") as writer:
         _write_report(writer, machine, progress_bar)
 
+
 def _write_report(
         writer: TextIO, machine: Machine, progress_bar: ProgressBar) -> None:
     n_cores = FecDataView.get_machine_version().max_cores_per_chip
@@ -51,7 +52,8 @@ def _write_report(
             x, y = machine.get_global_xy(l_x, l_y, e_chip.x, e_chip.y)
             if machine.is_chip_at(x, y):
                 chip = machine[x, y]
-                writer.write(f"\t{x}, {y}, scamp core 0:"
+                writer.write(
+                    f"\t{x}, {y}, scamp core 0:"
                     f"{FecDataView.get_physical_string(chip, 0)}\n")
 
                 if chip.n_processors < n_cores:
