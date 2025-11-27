@@ -2603,26 +2603,20 @@
     <class kind="struct">key_mask_t</class>
     <class kind="struct">entry_t</class>
     <class kind="struct">table_t</class>
+    <class kind="struct">header_t</class>
+    <member kind="define">
+      <type>#define</type>
+      <name>RTR_MC_SET_FAILED</name>
+      <anchorfile>routing__table_8h.html</anchorfile>
+      <anchor>a72d10a02534aa3861e8c2006389f37dd</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function">
       <type>entry_t *</type>
       <name>routing_table_get_entry</name>
       <anchorfile>routing__table_8h.html</anchorfile>
       <anchor>adb2bcbe2159d55f3e4cc6fceeee791cf</anchor>
       <arglist>(uint32_t entry_id_to_find)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>routing_table_get_entries</name>
-      <anchorfile>routing__table_8h.html</anchorfile>
-      <anchor>a3fbd652e889e3257343cca2c23484e36</anchor>
-      <arglist>(uint32_t start_entry, uint32_t n_entries, entry_t *output)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>routing_table_wait_for_last_transfer</name>
-      <anchorfile>routing__table_8h.html</anchorfile>
-      <anchor>ae33971749c691f83d107b2b8a831fb97</anchor>
-      <arglist>(void)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -2687,6 +2681,34 @@
       <anchor>a9efd2d990798953ddd0af7c16de23235</anchor>
       <arglist>(key_mask_t a, key_mask_t b)</arglist>
     </member>
+    <member kind="function">
+      <type>void</type>
+      <name>print_header</name>
+      <anchorfile>routing__table_8h.html</anchorfile>
+      <anchor>a25b8adca57d29ea8cfeefab69b682e03</anchor>
+      <arglist>(header_t *header)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>read_table</name>
+      <anchorfile>routing__table_8h.html</anchorfile>
+      <anchor>a170cc9f31ebf162f32e3536258976251</anchor>
+      <arglist>(header_t *header)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>load_routing_table</name>
+      <anchorfile>routing__table_8h.html</anchorfile>
+      <anchor>ab9c251df329e64d57c69eb63241ba6dd</anchor>
+      <arglist>(uint32_t app_id)</arglist>
+    </member>
+    <member kind="variable">
+      <type>table_t *</type>
+      <name>table</name>
+      <anchorfile>routing__table_8h.html</anchorfile>
+      <anchor>a8aa4114869bdb42b8ce3a3e9cfbe6714</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="file">
     <name>compressor.h</name>
@@ -2731,13 +2753,6 @@
       <anchorfile>pair__minimize_8h.html</anchorfile>
       <anchor>ac406e918228b7b1eaa33e04216d36970</anchor>
       <arglist>(void)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static bool</type>
-      <name>find_merge_optimised</name>
-      <anchorfile>pair__minimize_8h.html</anchorfile>
-      <anchor>a999843f3c4beac1aa2ace2f545f223c7</anchor>
-      <arglist>(int left, int index)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static bool</type>
@@ -3153,120 +3168,13 @@
     </member>
   </compound>
   <compound kind="file">
-    <name>rt_single.h</name>
-    <path>models/compressors/src/simple/</path>
-    <filename>rt__single_8h.html</filename>
-    <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
-    <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" import="no" module="no" objc="no">malloc_extras.h</includes>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">../common/routing_table.h</includes>
-    <class kind="struct">header_t</class>
-    <member kind="define">
-      <type>#define</type>
-      <name>RTR_MC_SET_FAILED</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>a72d10a02534aa3861e8c2006389f37dd</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DMA_COMPLETE</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>a228417d7ba21d90bc5bff7e3c8c17967</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DMA_CHECK_MASK</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>a9b993ee8696ad254b4a7576bb8dea86b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>routing_table_get_n_entries</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>ab5cce7b8b58c52b017ebbe6468b69aed</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>routing_table_remove_from_size</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>aef5869c5bae08df3bc4ef1c2e48e3061</anchor>
-      <arglist>(int size_to_remove)</arglist>
-    </member>
-    <member kind="function">
-      <type>entry_t *</type>
-      <name>routing_table_get_entry</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>adb2bcbe2159d55f3e4cc6fceeee791cf</anchor>
-      <arglist>(uint32_t entry_id_to_find)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>print_header</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>a25b8adca57d29ea8cfeefab69b682e03</anchor>
-      <arglist>(header_t *header)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>read_table</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>a170cc9f31ebf162f32e3536258976251</anchor>
-      <arglist>(header_t *header)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>load_routing_table</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>ab9c251df329e64d57c69eb63241ba6dd</anchor>
-      <arglist>(uint32_t app_id)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>routing_table_get_entries</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>a3fbd652e889e3257343cca2c23484e36</anchor>
-      <arglist>(uint32_t start_entry, uint32_t n_entries, entry_t *output)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static bool</type>
-      <name>dma_done</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>a06d7174c0a04a73e40d48121413c4961</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>routing_table_wait_for_last_transfer</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>ae33971749c691f83d107b2b8a831fb97</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="variable">
-      <type>table_t *</type>
-      <name>table</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>a8aa4114869bdb42b8ce3a3e9cfbe6714</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const uint32_t</type>
-      <name>DMA_READ_FLAGS</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>a255b14ab71c780779eb7e0a66551f686</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="file">
     <name>simple_compressor.c</name>
     <path>models/compressors/src/simple/</path>
     <filename>simple__compressor_8c.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" import="no" module="no" objc="no">debug.h</includes>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" import="no" module="no" objc="no">malloc_extras.h</includes>
     <includes id="compressor_8h" name="compressor.h" local="yes" import="no" module="no" objc="no">compressor_includes/compressor.h</includes>
-    <includes id="rt__single_8h" name="rt_single.h" local="yes" import="no" module="no" objc="no">rt_single.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="yes" import="no" module="no" objc="no">../common/routing_table.h</includes>
     <member kind="function">
       <type>void</type>
       <name>compress_start</name>
@@ -7918,33 +7826,33 @@
   </compound>
   <compound kind="struct">
     <name>header_t</name>
-    <filename>rt__single_8h.html</filename>
+    <filename>routing__table_8h.html</filename>
     <anchor>structheader__t</anchor>
     <member kind="variable">
       <type>uint32_t</type>
       <name>app_id</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchorfile>routing__table_8h.html</anchorfile>
       <anchor>a0110afd82ae5867cd4e14b58b72f8895</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>uint32_t</type>
       <name>compress_as_much_as_possible</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchorfile>routing__table_8h.html</anchorfile>
       <anchor>ab494e151fc522c4822286241cb19357e</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>uint32_t</type>
       <name>table_size</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchorfile>routing__table_8h.html</anchorfile>
       <anchor>a0486601a7890fbdadf9f6a6ba048d44b</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>entry_t</type>
       <name>entries</name>
-      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchorfile>routing__table_8h.html</anchorfile>
       <anchor>a31fa907ab8e42b0be0bda79f1f9ca9c8</anchor>
       <arglist>[]</arglist>
     </member>

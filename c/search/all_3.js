@@ -104,7 +104,7 @@ var searchData=
   ['comms_5frx_5fstatus_5ft_101',['comms_rx_status_t',['../spinn__extra_8h.html#structcomms__rx__status__t',1,'']]],
   ['comms_5fsource_5faddr_5ft_102',['comms_source_addr_t',['../spinn__extra_8h.html#structcomms__source__addr__t',1,'']]],
   ['comms_5ftx_5fcontrol_5ft_103',['comms_tx_control_t',['../spinn__extra_8h.html#structcomms__tx__control__t',1,'']]],
-  ['compress_5fas_5fmuch_5fas_5fpossible_104',['compress_as_much_as_possible',['../rt__single_8h.html#ab494e151fc522c4822286241cb19357e',1,'header_t']]],
+  ['compress_5fas_5fmuch_5fas_5fpossible_104',['compress_as_much_as_possible',['../routing__table_8h.html#ab494e151fc522c4822286241cb19357e',1,'header_t']]],
   ['compress_5fby_5froute_105',['compress_by_route',['../pair__minimize_8h.html#aab285dfe6ab184b3bd9ef74d1904f0ab',1,'pair_minimize.h']]],
   ['compress_5fstart_106',['compress_start',['../simple__compressor_8c.html#a19064972267b8da78c485a49d8787f13',1,'simple_compressor.c']]],
   ['compressor_2eh_107',['compressor.h',['../compressor_8h.html',1,'']]],

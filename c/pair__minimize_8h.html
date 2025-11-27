@@ -117,14 +117,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a1c915f60128891589ee02f38896399ea" id="r_a1c915f60128891589ee02f38896399ea"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="routing__table_8h.html#structentry__t">entry_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1c915f60128891589ee02f38896399ea">merge</a> (const <a class="el" href="routing__table_8h.html#structentry__t">entry_t</a> *entry1, const <a class="el" href="routing__table_8h.html#structentry__t">entry_t</a> *entry2)</td></tr>
 <tr class="memdesc:a1c915f60128891589ee02f38896399ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges a single pair of route entries.  <br /></td></tr>
 <tr class="separator:a1c915f60128891589ee02f38896399ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb1357d03b732d89e3a1dec12c8ab0cd" id="r_aeb1357d03b732d89e3a1dec12c8ab0cd"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeb1357d03b732d89e3a1dec12c8ab0cd">transfer_next</a> (int start_index, int n_items, uint32_t cache)</td></tr>
-<tr class="separator:aeb1357d03b732d89e3a1dec12c8ab0cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac406e918228b7b1eaa33e04216d36970" id="r_ac406e918228b7b1eaa33e04216d36970"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac406e918228b7b1eaa33e04216d36970">cancel_dmas</a> (void)</td></tr>
 <tr class="memdesc:ac406e918228b7b1eaa33e04216d36970"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cancel any outstanding DMA transfers.  <br /></td></tr>
 <tr class="separator:ac406e918228b7b1eaa33e04216d36970"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a999843f3c4beac1aa2ace2f545f223c7" id="r_a999843f3c4beac1aa2ace2f545f223c7"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999843f3c4beac1aa2ace2f545f223c7">find_merge_optimised</a> (int left, int index)</td></tr>
-<tr class="memdesc:a999843f3c4beac1aa2ace2f545f223c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds if two routes can be merged.  <br /></td></tr>
-<tr class="separator:a999843f3c4beac1aa2ace2f545f223c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a11ec55dc2c1cce5a726cc4c3e6e9f386" id="r_a11ec55dc2c1cce5a726cc4c3e6e9f386"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a11ec55dc2c1cce5a726cc4c3e6e9f386">find_merge</a> (int left, int index)</td></tr>
 <tr class="memdesc:a11ec55dc2c1cce5a726cc4c3e6e9f386"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds if two routes can be merged.  <br /></td></tr>
 <tr class="separator:a11ec55dc2c1cce5a726cc4c3e6e9f386"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -235,42 +230,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="aeb1357d03b732d89e3a1dec12c8ab0cd" name="aeb1357d03b732d89e3a1dec12c8ab0cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeb1357d03b732d89e3a1dec12c8ab0cd">&#9670;&#160;</a></span>transfer_next()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static int transfer_next </td>
-          <td>(</td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>start_index</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>n_items</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>cache</em></span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00079">79</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
-
-</div>
-</div>
 <a id="ac406e918228b7b1eaa33e04216d36970" name="ac406e918228b7b1eaa33e04216d36970"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac406e918228b7b1eaa33e04216d36970">&#9670;&#160;</a></span>cancel_dmas()</h2>
 
@@ -296,48 +255,7 @@ Variables</h2></td></tr>
 
 <p>Cancel any outstanding DMA transfers. </p>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00092">92</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
-
-</div>
-</div>
-<a id="a999843f3c4beac1aa2ace2f545f223c7" name="a999843f3c4beac1aa2ace2f545f223c7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a999843f3c4beac1aa2ace2f545f223c7">&#9670;&#160;</a></span>find_merge_optimised()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static bool find_merge_optimised </td>
-          <td>(</td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>left</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>index</em></span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Finds if two routes can be merged. </p>
-<p>If they are merged, the entry at the index of left is also replaced with the merged route. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">left</td><td>The index of the first route to consider. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>The index of the second route to consider. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the entries were merged </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00109">109</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00080">80</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -378,7 +296,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the entries were merged </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00182">182</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00097">97</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -418,7 +336,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00206">206</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00121">121</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -448,7 +366,7 @@ Variables</h2></td></tr>
 <p>Implementation of insertion sort for routes based on frequency. </p>
 <p>The routes must be non-overlapping pre-minimisation routes. </p>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00229">229</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00144">144</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -484,7 +402,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Whether the update succeeded </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00252">252</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00167">167</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -511,7 +429,7 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00275">275</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00190">190</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -538,7 +456,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00292">292</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00207">207</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -578,7 +496,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Whether minimisation succeeded </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00378">378</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00293">293</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
