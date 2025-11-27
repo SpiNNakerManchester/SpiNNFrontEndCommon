@@ -76,18 +76,6 @@ static inline void _entry(const entry_t* entry, int index) {
     e_ptr->source = entry->source;
 }
 
-static inline int transfer_next(int start_index, int n_items, uint32_t cache) {
-    if (n_items == 0) {
-        return 0;
-    }
-    uint32_t next_items = n_items;
-    if (n_items > MAX_NUM_ROUTES) {
-        next_items = MAX_NUM_ROUTES;
-    }
-    routing_table_get_entries(start_index, next_items, route_cache[cache]);
-    return next_items;
-}
-
 //! \brief Cancel any outstanding DMA transfers
 static inline void cancel_dmas(void) {
     dma[DMA_CTRL] = 0x3F;
@@ -98,79 +86,6 @@ static inline void cancel_dmas(void) {
     while (dma[DMA_CTRL] & 0xD) {
         continue;
     }
-}
-
-//! \brief Finds if two routes can be merged.
-//! \details If they are merged, the entry at the index of left is also
-//!     replaced with the merged route.
-//! \param[in] left: The index of the first route to consider.
-//! \param[in] index: The index of the second route to consider.
-//! \return True if the entries were merged
-static inline bool find_merge_optimised(int left, int index) {
-    log_debug("find merge %d %d", left, index);
-    cancel_dmas();
-    const entry_t *entry1 = routing_table_get_entry(left);
-    const entry_t *entry2 = routing_table_get_entry(index);
-    const entry_t merged = merge(entry1, entry2);
-
-     #if LOG_LEVEL >= LOG_DEBUG
-        for (int check = remaining_index; check < routing_table_get_n_entries(); check++) {
-            const entry_t *check_entry = routing_table_get_entry(check);
-            log_debug("%d %08x %08x %d", check, check_entry->key_mask.key,
-                      check_entry->key_mask.mask, check_entry->route);
-        }
-    #endif // LOG_LEVEL >= LOG_DEBUG
-
-    uint32_t size = routing_table_get_n_entries();
-    uint32_t items_to_go = size - remaining_index;
-    log_debug("size %d remaining_index %d items_to_go %d", size, remaining_index, items_to_go);
-    uint32_t next_n_items = transfer_next(remaining_index, items_to_go, 0);
-    uint32_t next_items_to_go = items_to_go - next_n_items;
-    uint32_t next_start = remaining_index + next_n_items;
-    bool dma_in_progress = true;
-    uint32_t read_cache = 0;
-    uint32_t write_cache = 1;
-    while (items_to_go > 0) {
-
-        // Finish any outstanding transfer
-        if (dma_in_progress) {
-            routing_table_wait_for_last_transfer();
-            dma_in_progress = false;
-        }
-
-        // Get the details of the last transfer done
-        uint32_t n_items = next_n_items;
-        uint32_t cache = read_cache;
-
-        // Start the next transfer if needed
-        if (next_items_to_go > 0) {
-            next_n_items = transfer_next(next_start, next_items_to_go, write_cache);
-            next_items_to_go -= next_n_items;
-            next_start += next_n_items;
-            dma_in_progress = true;
-            write_cache = (write_cache + 1) & 0x1;
-            read_cache = (read_cache + 1) & 0x1;
-        }
-
-        // Check the items now available
-        entry_t *entries = route_cache[cache];
-        log_debug("to check %d", n_items);
-        for (uint32_t i = 0; i < n_items; i++) {
-            log_debug("%d %08x %08x %d", i + remaining_index, entries[i].key_mask.key,
-                      entries[i].key_mask.mask,  entries[i].route);
-            if (key_mask_intersect(entries[i].key_mask, merged.key_mask)) {
-                if (dma_in_progress) {
-                    routing_table_wait_for_last_transfer();
-                }
-                log_debug("intersect");
-                return false;
-            }
-        }
-
-        items_to_go = next_items_to_go;
-    }
-    routing_table_put_entry(&merged, left);
-    return true;
 }
 
 //! \brief Finds if two routes can be merged.
