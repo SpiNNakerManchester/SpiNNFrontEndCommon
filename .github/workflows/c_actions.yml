@@ -60,9 +60,12 @@ jobs:
         CFLAGS: -fdiagnostics-color=always
         C_LOGS_DICT: ${{ github.workspace }}/spinn_front_end_common/common_model_binaries/logs.sqlite3
       run: |
-        make -C spinnaker_tools clean install
-        make -C spinn_common clean install
-        make -C c_common clean install
+        make -C spinnaker_tools clean
+        make -C spinn_common clean
+        make -C c_common clean
+        make -C spinnaker_tools install
+        make -C spinn_common install
+        make -C c_common
 
     - name: "Check: Build documentation"
       run: make doxysetup doxygen
