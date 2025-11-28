@@ -16,5 +16,6 @@ APP = extra_monitor_support
 SOURCES = extra_monitor_support.c
 
 LFLAGS += -Wl,--wrap=sark_int
+LIBS += -lsark
 
 include ../fec_models.mk
