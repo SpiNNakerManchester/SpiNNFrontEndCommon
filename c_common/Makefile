@@ -33,7 +33,6 @@ install: $(INSTALL_DIRS)
 
 clean: $(BUILD_DIRS)
 	@for d in $(BUILD_DIRS) $(INSTALL_DIRS); do $(MAKE) -C $$d clean || exit $$?; done
-	@for d in $(INSTALL_DIRS); do $(MAKE) -C $$d install-clean || exit $$?; done
 
 sllt.tag: .sllt_template.tag
 	cp .sllt_template.tag sllt.tag
