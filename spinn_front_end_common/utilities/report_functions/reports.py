@@ -358,18 +358,14 @@ def _write_one_chip_application_placement(f: TextIO, chip: Chip) -> None:
         pro_id = placement.p
         vertex = placement.vertex
         app_vertex = vertex.app_vertex
-        if app_vertex is not None:
-            vertex_label = app_vertex.label
-            vertex_model = app_vertex.__class__.__name__
-            vertex_atoms = app_vertex.n_atoms
-            f.write(f"  Processor {pro_id}: Vertex: '{vertex_label}', "
-                    f"pop size: {vertex_atoms}\n")
-            f.write(f"              Slice: {vertex.vertex_slice}")
-            f.write(f"  {vertex.label}\n")
-            f.write(f"              Model: {vertex_model}\n")
-        else:
-            f.write(f"  Processor {pro_id}: System Vertex: '{vertex.label}'\n")
-            f.write(f"              Model: {vertex.__class__.__name__}\n")
+        vertex_label = app_vertex.label
+        vertex_model = app_vertex.__class__.__name__
+        vertex_atoms = app_vertex.n_atoms
+        f.write(f"  Processor {pro_id}: Vertex: '{vertex_label}', "
+                f"pop size: {vertex_atoms}\n")
+        f.write(f"              Slice: {vertex.vertex_slice}")
+        f.write(f"  {vertex.label}\n")
+        f.write(f"              Model: {vertex_model}\n")
 
         sdram = vertex.sdram_required
         f.write(f"              {sdram.fixed}\n\n")

@@ -31,7 +31,7 @@
 #include <debug.h>
 #include <malloc_extras.h>
 #include "compressor_includes/compressor.h"
-#include "rt_single.h"
+#include "../common/routing_table.h"
 
 //! \brief The callback for setting off the router compressor
 //! \param[in] unused0: unused
