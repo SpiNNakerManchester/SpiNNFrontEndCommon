@@ -54,7 +54,7 @@ $(FEC_BUILD)/$(APP).a: $(BUILD_OBJS)
 	@$(RM) $@
 	$(AR) $@ $(BUILD_OBJS)
 
-APP_OUTPUT_DIR := $(abspath $(FEC_DIR)../../spinn_front_end_common/common_model_binaries/)
+APP_OUTPUT_DIR := $(FEC_DIR)../../spinn_front_end_common/common_model_binaries/
 # key for the database in this APP_OUTPUT_DIR
 DATABASE_KEY = C
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
@@ -76,7 +76,8 @@ install: $(FEC_BUILD)/$(APP).a
 clean:
 	$(RM) $(FEC_BUILD)/$(APP).a $(BUILD_OBJS)
 	rm -rf $(MODIFIED_DIR)
-	$(RM) $(APP_OUTPUT_DIR)/logs.sqlite3
+	$(RM) $(APP_OUTPUT_DIR)logs.sqlite3
+	$(RM) $(APP_OUTPUT_DIR)*.aplx
 
 .PRECIOUS: $(MODIFIED_DIR)%.c $(BUILD_DIR)%.nm $(BUILD_DIR)%.elf $(BUILD_DIR)%.bin
 
