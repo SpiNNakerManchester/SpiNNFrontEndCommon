@@ -13,11 +13,9 @@
 # limitations under the License.
 
 import os
-import tempfile
 from typing import Iterable, List, Optional, Tuple
 import unittest
 from spinn_utilities.config_holder import set_config
-from spinn_utilities.make_tools.log_sqllite_database import LogSqlLiteDatabase
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
