@@ -85,9 +85,6 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self) -> None:
         unittest_setup()
-        os.environ["C_LOGS_DICT"] = tempfile.mktemp()
-        # There needs to be a dict but it can be empty
-        LogSqlLiteDatabase(new_dict=True)
         writer = FecDataWriter.mock()
         writer.set_transceiver(_PretendTransceiver(
             [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
