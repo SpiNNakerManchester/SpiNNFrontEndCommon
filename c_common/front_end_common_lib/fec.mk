@@ -12,13 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# FEC_INSTALL_DIR must be set for this file to be found
-
-# We also need SPINN_COMMON_INSTALL_DIR for common library
-SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_COMMON_INSTALL_DIR), $(if $(SPINN_DIRS), $(SPINN_DIRS)/spinn_common_install, $(error SPINN_COMMON_INSTALL_DIR or SPINN_DIRS is not set.  Please define SPINN_COMMON_INSTALL_DIR or SPINN_DIRS))))
-
 # Find out where we are installed now (in the make subdirectory, so go up one)
-FEC_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../)
+FEC_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/)
 
 # APP_OUTPUT_DIR directory to save a and dict files to (none installed)
 # APP_OUTPUT_DIR must end with /
@@ -134,6 +129,11 @@ $(eval _OBJS := $(_OBJS:%.c=$(BUILD_DIR)%.o))
 $(foreach d, $(SOURCE_DIRS), \
     $(eval $(call add_source_dir, $(d))))
 OBJECTS += $(_OBJS)
+
+ifndef SPINN_COMMON_INSTALL_DIR:
+    # assume parallel clone
+    SPINN_COMMON_INSTALL_DIR := $(FEC_DIR)/../../../spinn_common
+endif
 
 # Bring in the common makefile
 include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk

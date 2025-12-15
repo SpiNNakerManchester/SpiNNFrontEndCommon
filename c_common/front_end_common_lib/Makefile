@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# If SPINN_COMMON_INSTALL_DIR is not defined, this is also an error!
-SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_COMMON_INSTALL_DIR), $(if $(SPINN_DIRS), $(SPINN_DIRS)/spinn_common_install, $(error SPINN_COMMON_INSTALL_DIR or SPINN_DIRS is not set.  Please define SPINN_COMMON_INSTALL_DIR or SPINN_DIRS))))
-
 FEC_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 FEC_BUILD = $(FEC_DIR)/build
 override LIB := 1
+
+ifndef SPINN_COMMON_INSTALL_DIR:
+    # assume parallel clone
+    SPINN_COMMON_INSTALL_DIR := $(FEC_DIR)../../../spinn_common
+endif
+
 include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk
 
 ifndef PRINT_DEBUG
