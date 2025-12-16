@@ -14,6 +14,7 @@
 
 FEC_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 FEC_BUILD = $(FEC_DIR)/build
+FEC_LIB = $(FEC_DIR)/lib
 override LIB := 1
 
 ifndef SPINN_COMMON_INSTALL_DIR:
@@ -49,11 +50,12 @@ INSTALL ?= install
 
 # Variables needed for file converter
 SRC_DIR = $(FEC_DIR)/src/
-MODIFIED_DIR = $(FEC_BUILD)/modified_src/
+MODIFIED_DIR = $(FEC_DIR)/modified_src/
 
 # Build rules (default)
-$(FEC_BUILD)/$(APP).a: $(BUILD_OBJS)
+$(FEC_LIB)/$(APP).a: $(BUILD_OBJS)
 	$(MKDIR) $(FEC_BUILD)
+	$(MKDIR) $(FEC_LIB)
 	@$(RM) $@
 	$(AR) $@ $(BUILD_OBJS)
 
@@ -64,7 +66,7 @@ $(FEC_BUILD)/%.o: $(MODIFIED_DIR)/%.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 # Installing rules
-install: $(FEC_BUILD)/$(APP).a
+install: $(FEC_LIB)/$(APP).a
 	$(eval FEC_INSTALL_DIR := $(strip $(if $(FEC_INSTALL_DIR), $(FEC_INSTALL_DIR), $(if $(SPINN_DIRS), $(SPINN_DIRS)/fec_install, $(error FEC_INSTALL_DIR or SPINN_DIRS is not set.  Please define FEC_INSTALL_DIR or SPINN_DIRS)))))
 	$(MKDIR) $(FEC_INSTALL_DIR)/lib
 	$(MKDIR) $(FEC_INSTALL_DIR)/include

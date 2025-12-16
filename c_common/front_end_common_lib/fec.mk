@@ -37,7 +37,7 @@ BUILD_DIR := $(abspath $(BUILD_DIR))/
 # directories where the raw c and h files are and the modified files are to be
 # placed
 ifndef SOURCE_DIRS
-    SOURCE_DIRS := src/:$(BUILD_DIR)/modified_src/
+    SOURCE_DIRS := src/:$(dir $(abspath $(src)))modified_src/
 endif
 
 # SOURCES one or more unmodified c files to build
