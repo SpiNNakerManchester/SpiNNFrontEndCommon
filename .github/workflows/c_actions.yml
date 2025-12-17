@@ -56,7 +56,6 @@ jobs:
 
     - name: Build C Code central install
       env:
-        SPINN_DIRS: ${{ github.workspace }}/spinn_dirs
         CFLAGS: -fdiagnostics-color=always
         C_LOGS_DICT: ${{ github.workspace }}/spinn_front_end_common/common_model_binaries/logs.sqlite3
       run: |
