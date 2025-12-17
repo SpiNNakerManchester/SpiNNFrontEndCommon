@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Find out where we are installed now (in the make subdirectory, so go up one)
-FEC_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/)
+FEC_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../)
 
 # APP_OUTPUT_DIR directory to save a and dict files to (none installed)
 # APP_OUTPUT_DIR must end with /
@@ -37,7 +37,7 @@ BUILD_DIR := $(abspath $(BUILD_DIR))/
 # directories where the raw c and h files are and the modified files are to be
 # placed
 ifndef SOURCE_DIRS
-    SOURCE_DIRS := src/:$(dir $(abspath $(src)))modified_src/
+    SOURCE_DIRS := src/:$(BUILD_DIR)/modified_src/
 endif
 
 # SOURCES one or more unmodified c files to build
@@ -132,7 +132,7 @@ OBJECTS += $(_OBJS)
 
 ifndef SPINN_COMMON_INSTALL_DIR:
     # assume parallel clone
-    SPINN_COMMON_INSTALL_DIR := $(FEC_DIR)/../../../spinn_common
+    SPINN_COMMON_INSTALL_DIR := $(abspath $(FEC_DIR)/../../../spinn_common)
 endif
 
 # Bring in the common makefile

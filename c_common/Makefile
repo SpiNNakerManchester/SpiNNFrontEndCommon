@@ -13,7 +13,7 @@
 # limitations under the License.
 
 INSTALL_DIRS = front_end_common_lib
-BUILD_DIRS = models
+BUILD_DIRS = front_end_common_lib models
 
 # Locations of tag files
 TAGFILES=sllt.tag common.tag
@@ -23,9 +23,9 @@ COMMON_TAG=https://spinnakermanchester.github.io/spinn_common/common.tag
 DOXYGEN ?= doxygen
 WGET ?= wget
 
-all: install build
+all: build
 	
-build: install $(BUILD_DIRS)
+build: $(BUILD_DIRS)
 	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done
 
 install: $(INSTALL_DIRS)

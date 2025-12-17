@@ -50,7 +50,7 @@ INSTALL ?= install
 
 # Variables needed for file converter
 SRC_DIR = $(FEC_DIR)/src/
-MODIFIED_DIR = $(FEC_DIR)/modified_src/
+MODIFIED_DIR =  $(FEC_BUILD)/modified_src/
 
 # Build rules (default)
 $(FEC_LIB)/$(APP).a: $(BUILD_OBJS)
@@ -76,7 +76,7 @@ install: $(FEC_LIB)/$(APP).a
 	$(INSTALL) -c -m644 $(FEC_DIR)/fec.mk $(FEC_INSTALL_DIR)/make
 
 clean:
-	$(RM) $(FEC_BUILD)/$(APP).a $(BUILD_OBJS)
+	$(RM) $(FEC_LIB)/$(APP).a $(BUILD_OBJS)
 	rm -rf $(MODIFIED_DIR)
 	$(RM) $(FEC_BUILD)/logs.sqlite3
 
