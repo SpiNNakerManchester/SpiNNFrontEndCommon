@@ -65,15 +65,19 @@ $(MODIFIED_DIR)%.c: $(RAW_DIR)
 $(FEC_BUILD)/%.o: $(MODIFIED_DIR)/%.c
 	$(CC) $(CFLAGS) -o $@ $<
 
+INSTALL_ERROR := c_common/front_end_common_lib install is only required if you are building in a temporary location.
+INSTALL_ERROR += In which case you must set the environment variable FEC_INSTALL_DIR to where the install should go.
+INSTALL_ERROR += This environment variable must also exist for all higher level makes.
+
 # Installing rules
 install: $(FEC_LIB)/$(APP).a
-	$(eval FEC_INSTALL_DIR := $(strip $(if $(FEC_INSTALL_DIR), $(FEC_INSTALL_DIR), $(if $(SPINN_DIRS), $(SPINN_DIRS)/fec_install, $(error FEC_INSTALL_DIR or SPINN_DIRS is not set.  Please define FEC_INSTALL_DIR or SPINN_DIRS)))))
+	$(eval FEC_INSTALL_DIR := $(strip $(if $(FEC_INSTALL_DIR), $(FEC_INSTALL_DIR), $(error $(INSTALL_ERROR)))))
 	$(MKDIR) $(FEC_INSTALL_DIR)/lib
 	$(MKDIR) $(FEC_INSTALL_DIR)/include
 	$(MKDIR) $(FEC_INSTALL_DIR)/make
 	$(INSTALL) -c -m644 $< $(FEC_INSTALL_DIR)/lib
 	$(INSTALL) -c -m644 $(HEADERS:%=$(FEC_DIR)/include/%) $(FEC_INSTALL_DIR)/include
-	$(INSTALL) -c -m644 $(FEC_DIR)/fec.mk $(FEC_INSTALL_DIR)/make
+	$(INSTALL) -c -m644 $(FEC_DIR)/make/fec.mk $(FEC_INSTALL_DIR)/make
 
 clean:
 	$(RM) $(FEC_LIB)/$(APP).a $(BUILD_OBJS)
