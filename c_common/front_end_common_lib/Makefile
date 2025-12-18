@@ -17,10 +17,7 @@ FEC_BUILD = $(FEC_DIR)/build
 FEC_LIB = $(FEC_DIR)/lib
 override LIB := 1
 
-ifndef SPINN_COMMON_INSTALL_DIR:
-    # assume parallel clone
-    SPINN_COMMON_INSTALL_DIR := $(FEC_DIR)../../../spinn_common
-endif
+SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_COMMON_INSTALL_DIR), $(abspath $(FEC_DIR)../../../spinn_common)))
 
 include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk
 

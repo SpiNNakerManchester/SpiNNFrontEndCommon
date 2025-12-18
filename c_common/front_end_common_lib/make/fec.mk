@@ -130,10 +130,7 @@ $(foreach d, $(SOURCE_DIRS), \
     $(eval $(call add_source_dir, $(d))))
 OBJECTS += $(_OBJS)
 
-ifndef SPINN_COMMON_INSTALL_DIR:
-    # assume parallel clone
-    SPINN_COMMON_INSTALL_DIR := $(abspath $(FEC_DIR)/../../../spinn_common)
-endif
+SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_COMMON_INSTALL_DIR), $(abspath $(FEC_DIR)/../../../spinn_common)))
 
 # Bring in the common makefile
 include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk
