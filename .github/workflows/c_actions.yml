@@ -54,15 +54,6 @@ jobs:
         make -C spinn_common install
         make -C c_common
 
-    - name: Build C Code logal
-      env:
-        CFLAGS: -fdiagnostics-color=always
-        C_LOGS_DICT: ${{ github.workspace }}/spinn_front_end_common/common_model_binaries/logs.sqlite3
-      run: |
-        make -C spinnaker_tools
-        make -C spinn_common
-        make -C c_common
-
     - name: "Check: Build documentation"
       run: make doxysetup doxygen
       working-directory: c_common
