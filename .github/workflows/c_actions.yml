@@ -42,7 +42,7 @@ jobs:
       with:
         base-dir: c_common/models
 
-    - name: Build C Code
+    - name: Build and insert C Code
       env:
         SPINN_INSTALL_DIR: ${{ github.workspace }}/spinnaker_tools_install
         SPINN_COMMON_INSTALL_DIR: ${{ github.workspace }}/spinn_common_install
@@ -54,13 +54,13 @@ jobs:
         make -C spinn_common install
         make -C c_common
 
-    - name: Build C Code central install
+    - name: Build C Code logal
       env:
         CFLAGS: -fdiagnostics-color=always
         C_LOGS_DICT: ${{ github.workspace }}/spinn_front_end_common/common_model_binaries/logs.sqlite3
       run: |
-        make -C spinnaker_tools install
-        make -C spinn_common install
+        make -C spinnaker_tools
+        make -C spinn_common
         make -C c_common
 
     - name: "Check: Build documentation"
