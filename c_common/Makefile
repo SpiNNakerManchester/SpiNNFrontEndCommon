@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-INSTALL_DIRS = front_end_common_lib
-BUILD_DIRS = front_end_common_lib models
+DIRS = front_end_common_lib models
 
 # Locations of tag files
 TAGFILES=sllt.tag common.tag
@@ -25,14 +24,14 @@ WGET ?= wget
 
 all: build
 	
-build: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done
+build: $(DIRS)
+	@for d in $(DIRS); do $(MAKE) -C $$d || exit $$?; done
 
-install: $(INSTALL_DIRS)
-	@for d in $(INSTALL_DIRS); do $(MAKE) -C $$d install || exit $$?; done
+install: $(DIRS)
+	@for d in $(DIRS); do $(MAKE) -C $$d install || exit $$?; done
 
-clean: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS) $(INSTALL_DIRS); do $(MAKE) -C $$d clean || exit $$?; done
+clean: $(DIRS)
+	@for d in $(DIRS); do $(MAKE) -C $$d clean || exit $$?; done
 
 sllt.tag: .sllt_template.tag
 	cp .sllt_template.tag sllt.tag
