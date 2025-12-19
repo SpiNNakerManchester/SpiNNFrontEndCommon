@@ -15,6 +15,8 @@
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CURRENT_DIR := $(dir $(MAKEFILE_PATH))
 APP_OUTPUT_DIR := $(abspath $(CURRENT_DIR)../../spinn_front_end_common/common_model_binaries/)/
+# key for the database in this APP_OUTPUT_DIR
+DATABASE_KEY = C
 
 FEC_MK = $(abspath $(CURRENT_DIR)../front_end_common_lib/make/fec.mk)
 include $(FEC_MK)

@@ -22,7 +22,13 @@ ifndef APP_OUTPUT_DIR
 endif
 APP_OUTPUT_DIR :=  $(abspath $(APP_OUTPUT_DIR))/
 
-# APP name for a and dict files
+ifndef DATABASE_KEY
+    # Makes in https://github.com/orgs/SpiNNakerManchester should user Upper case letters
+    # So each user APP_OUTPUT_DIR should have a unique lower case one to avoid clashes
+    $(error DATABASE_KEY is not set. Please set it to a unique lower case letter)
+endif
+
+# APP name for a files
 ifndef APP
     $(error APP is not set.  Please define APP)
 endif
@@ -64,12 +70,12 @@ get_path = $(abspath $(word $2, $(subst :, ,$1)))/
 # directory pair
 define add_source_dir#(src_dir)
 $(call get_path,$(1),2): $(wildcard $(call get_path,$(1),1)/**/*)
-	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2)
+	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
 
 $(call get_path,$(1), 2)%.c: $(call get_path,$(1), 1)%.c
-	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2)
+	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
 $(call get_path,$(1), 2)%.h: $(call get_path,$(1), 1)%.h
-	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2)
+	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
 
 # Build the o files from the modified sources
 $$(BUILD_DIR)%.o: $(call get_path,$(1),2)%.c
@@ -137,4 +143,5 @@ include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk
 
 # Tidy and cleaning dependencies
 clean:
-	$(RM) $(TEMP_FILES) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt $(ALL_TARGETS) $(BUILD_DIR)$(APP).nm $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).bin
+	$(RM) $(TEMP_FILES) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt $(ALL_TARGETS) $(BUILD_DIR)$(APP).nm $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).bin $(APP_CLEAN)
+	$(RM) -r $(ALL_MODIFIES_DIRS)
