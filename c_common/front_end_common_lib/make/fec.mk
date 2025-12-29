@@ -140,7 +140,3 @@ SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_CO
 
 # Bring in the common makefile
 include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk
-
-# Tidy and cleaning dependencies
-clean:
-	$(RM) $(TEMP_FILES) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt $(ALL_TARGETS) $(BUILD_DIR)$(APP).nm $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).bin $(APP_CLEAN)
