@@ -60,7 +60,7 @@ APP_OUTPUT_DIR := $(FEC_DIR)../../spinn_front_end_common/common_model_binaries/
 # key for the database in this APP_OUTPUT_DIR
 DATABASE_KEY = C
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
-	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(APP_OUTPUT_DIR)/logs.sqlite3 $(DATABASE_KEY)
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
 
 $(FEC_BUILD)/%.o: $(MODIFIED_DIR)/%.c
 	$(CC) $(CFLAGS) -o $@ $<
