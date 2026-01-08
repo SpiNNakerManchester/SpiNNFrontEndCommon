@@ -82,7 +82,7 @@ install: $(FEC_LIB)/$(APP).a
 clean:
 	$(RM) $(FEC_LIB)/$(APP).a $(BUILD_OBJS)
 	rm -rf $(MODIFIED_DIR)
-	$(RM) $(APP_OUTPUT_DIR)logs.sqlite3
+	$(RM) $(APP_OUTPUT_DIR)logs*.sqlite3
 	$(RM) $(APP_OUTPUT_DIR)*.aplx
 
 .PRECIOUS: $(MODIFIED_DIR)%.c $(BUILD_DIR)%.nm $(BUILD_DIR)%.elf $(BUILD_DIR)%.bin

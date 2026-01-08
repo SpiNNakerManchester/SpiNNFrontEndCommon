@@ -63,5 +63,5 @@ jobs:
         name: fec_binaries
         path: |
           spinn_front_end_common/common_model_binaries/*.aplx
-          spinn_front_end_common/common_model_binaries/logs.sqlite3
+          spinn_front_end_common/common_model_binaries/logs*.sqlite3
         retention-days: 5
