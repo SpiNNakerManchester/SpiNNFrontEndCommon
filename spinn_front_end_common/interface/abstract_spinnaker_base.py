@@ -2283,3 +2283,4 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Resets the graph elements that need to be reset
         """
+        pass
