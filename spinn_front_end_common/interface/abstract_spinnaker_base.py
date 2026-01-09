@@ -2280,7 +2280,5 @@ class AbstractSpinnakerBase(ConfigHandler):
         transceiver.send_signal(self._data_writer.get_app_id(), sync_signal)
 
     def _reset_graph_elements(self) -> None:
-        """
-        Resets the graph elements that need to be reset
-        """
+        # Stub for spynnaker call to reset Polulation Vertices
         pass
