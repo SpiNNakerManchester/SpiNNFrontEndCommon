@@ -25,7 +25,7 @@ import threading
 import types
 from threading import Condition
 from typing import (
-    Any, Dict, Iterable, Optional, Sequence, Tuple, Type,
+    Dict, Iterable, Optional, Sequence, Tuple, Type,
     TypeVar, Union, cast, final)
 from types import FrameType
 
