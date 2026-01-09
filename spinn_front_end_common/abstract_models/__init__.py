@@ -31,5 +31,5 @@ __all__ = ("AbstractGeneratesDataSpecification",
            "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
-           "AbstractVertexWithEdgeToDependentVertices"
+           "AbstractVertexWithEdgeToDependentVertices",
            "HasCustomAtomKeyMap", "LiveOutputDevice")
