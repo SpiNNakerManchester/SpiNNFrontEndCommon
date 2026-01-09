@@ -2281,5 +2281,5 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _reset_graph_elements(self) -> None:
         """
-        Resets the graph elemenst that need to be reset
+        Resets the graph elements that need to be reset
         """
