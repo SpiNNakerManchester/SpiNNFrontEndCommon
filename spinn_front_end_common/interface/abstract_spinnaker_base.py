@@ -2176,9 +2176,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # of the simulation again and clear buffered out
         if self._data_writer.has_buffer_manager():
             self._data_writer.get_buffer_manager().reset()
-
-        # Reset the graph off the machine, to set things to time 0
-        self._reset_graph_elements()
         FecTimer.end_category(TimerCategory.RESETTING)
 
     def __repr__(self) -> str:
