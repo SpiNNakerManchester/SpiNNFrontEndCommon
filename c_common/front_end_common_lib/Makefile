@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# If SPINN_COMMON_INSTALL_DIR is not defined, this is also an error!
-SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_COMMON_INSTALL_DIR), $(if $(SPINN_DIRS), $(SPINN_DIRS)/spinn_common_install, $(error SPINN_COMMON_INSTALL_DIR or SPINN_DIRS is not set.  Please define SPINN_COMMON_INSTALL_DIR or SPINN_DIRS))))
-
 FEC_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 FEC_BUILD = $(FEC_DIR)/build
+FEC_LIB = $(FEC_DIR)/lib
 override LIB := 1
+
+SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_COMMON_INSTALL_DIR), $(abspath $(FEC_DIR)../../../spinn_common)))
+
 include $(SPINN_COMMON_INSTALL_DIR)/make/spinn_common.mk
 
 ifndef PRINT_DEBUG
@@ -46,39 +47,47 @@ INSTALL ?= install
 
 # Variables needed for file converter
 SRC_DIR = $(FEC_DIR)/src/
-MODIFIED_DIR = $(FEC_BUILD)/modified_src/
+MODIFIED_DIR =  $(FEC_BUILD)/modified_src/
 
 # Build rules (default)
-$(FEC_BUILD)/$(APP).a: $(BUILD_OBJS)
+$(FEC_LIB)/$(APP).a: $(BUILD_OBJS)
 	$(MKDIR) $(FEC_BUILD)
+	$(MKDIR) $(FEC_LIB)
 	@$(RM) $@
 	$(AR) $@ $(BUILD_OBJS)
 
+APP_OUTPUT_DIR := $(FEC_DIR)../../spinn_front_end_common/common_model_binaries/
+# key for the database in this APP_OUTPUT_DIR
+DATABASE_KEY = C
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
-	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) True
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
 
 $(FEC_BUILD)/%.o: $(MODIFIED_DIR)/%.c
 	$(CC) $(CFLAGS) -o $@ $<
 
+INSTALL_ERROR := c_common/front_end_common_lib install is only required if you are building in a temporary location.
+INSTALL_ERROR += In which case you must set the environment variable FEC_INSTALL_DIR to where the install should go.
+INSTALL_ERROR += This environment variable must also exist for all higher level makes.
+
 # Installing rules
-install: $(FEC_BUILD)/$(APP).a
-	$(eval FEC_INSTALL_DIR := $(strip $(if $(FEC_INSTALL_DIR), $(FEC_INSTALL_DIR), $(if $(SPINN_DIRS), $(SPINN_DIRS)/fec_install, $(error FEC_INSTALL_DIR or SPINN_DIRS is not set.  Please define FEC_INSTALL_DIR or SPINN_DIRS)))))
+install: $(FEC_LIB)/$(APP).a
+	$(eval FEC_INSTALL_DIR := $(strip $(if $(FEC_INSTALL_DIR), $(FEC_INSTALL_DIR), $(error $(INSTALL_ERROR)))))
 	$(MKDIR) $(FEC_INSTALL_DIR)/lib
 	$(MKDIR) $(FEC_INSTALL_DIR)/include
 	$(MKDIR) $(FEC_INSTALL_DIR)/make
 	$(INSTALL) -c -m644 $< $(FEC_INSTALL_DIR)/lib
 	$(INSTALL) -c -m644 $(HEADERS:%=$(FEC_DIR)/include/%) $(FEC_INSTALL_DIR)/include
-	$(INSTALL) -c -m644 $(FEC_DIR)/fec.mk $(FEC_INSTALL_DIR)/make
+	$(INSTALL) -c -m644 $(FEC_DIR)/make/fec.mk $(FEC_INSTALL_DIR)/make
 
 clean:
-	$(RM) $(FEC_BUILD)/$(APP).a $(BUILD_OBJS)
+	$(RM) $(FEC_LIB)/$(APP).a $(BUILD_OBJS)
 	rm -rf $(MODIFIED_DIR)
-	$(RM) $(FEC_BUILD)/logs.sqlite3
+	$(RM) $(APP_OUTPUT_DIR)logs*.sqlite3
+	$(RM) $(APP_OUTPUT_DIR)*.aplx
 
 .PRECIOUS: $(MODIFIED_DIR)%.c $(BUILD_DIR)%.nm $(BUILD_DIR)%.elf $(BUILD_DIR)%.bin
 
 .PHONY: clean install
 
 test:
-	#$(APP_OUTPUT_DIR)$(APP).dict
 	#$(INSTALL_LIBS)

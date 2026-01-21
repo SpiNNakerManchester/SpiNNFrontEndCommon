@@ -19,6 +19,8 @@ BUILD_DIRS = compressors \
 	         reverse_iptag_multicast_source \
 	         system_models
 
+install: all
+
 all: $(BUILD_DIRS)
 	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done
 
