@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+CUR_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 APP = command_sender_multicast_source
 SOURCES = command_sender_multicast_source.c
 
 include ../fec_models.mk
+
+clean:
+	$(RM) -r $(CUR_DIR)/build

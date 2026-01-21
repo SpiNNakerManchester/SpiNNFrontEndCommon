@@ -18,5 +18,7 @@ APPS = simple_pair_compressor.mk \
 all: $(APPS)
 	for f in $(APPS); do $(MAKE) -f $$f || exit $$?; done
 
-clean: $(DIRS)
-	for f in $(APPS); do $(MAKE) -f $$f clean || exit $$?; done
+CUR_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+clean:
+	$(RM) -r $(CUR_DIR)/build
