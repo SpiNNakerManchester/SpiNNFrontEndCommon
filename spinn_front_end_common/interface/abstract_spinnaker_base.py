@@ -118,6 +118,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
+from spinn_front_end_common.utilities.database import DatabaseUpdater
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
     board_chip_report, EnergyReport,
@@ -523,44 +524,19 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.__run_verify()
         self.__run_control_c_handler_on()
         n_machine_time_steps, total_run_time = self._calc_run_time(run_time)
-        n_sync_steps = self.__timesteps(sync_time)
+
         self.__run_reset_sync_signal()
 
         # build the graphs to modify with system requirements
         if self._data_writer.get_requires_mapping():
-            self._do_mapping(total_run_time, n_machine_time_steps)
-
-        if not self._data_writer.is_ran_last():
-            self._do_write_metadata()
+            self._stage_mapping(total_run_time, n_machine_time_steps)
 
         # requires data_generation includes never run and requires_mapping
         if self._data_writer.get_requires_data_generation():
-            self._do_load()
+            self._stage_data_generation()
 
-        # Run for each of the given steps
-        if n_machine_time_steps is not None:
-            if get_config_bool("Buffers", "use_auto_pause_and_resume"):
-                steps = self._generate_steps(n_machine_time_steps)
-            else:
-                steps = [n_machine_time_steps]
-            logger.info("Running for {} steps for a total of {}ms",
-                        len(steps), run_time)
-            self._data_writer.set_n_run_steps(len(steps))
-            for step in steps:
-                run_step = self._data_writer.next_run_step()
-                logger.info(f"Run {run_step} of {len(steps)}")
-                self._do_run(step, n_sync_steps)
-            self._data_writer.clear_run_steps()
-        elif self._run_until_complete:
-            logger.info("Running until complete")
-            self._do_run(None, n_sync_steps)
-        else:
-            if self._data_writer.get_max_run_time_steps() < sys.maxsize:
-                logger.warning("Due to recording this simulation "
-                               "should not be run longer than {}ms",
-                               self._data_writer.get_max_run_time_steps())
-            logger.info("Running until stop is called by another thread")
-            self._do_run(None, n_sync_steps)
+        self._stage_run(n_machine_time_steps, run_time,  sync_time)
+
         self.__run_control_c_handler_off()
 
     @final
@@ -773,7 +749,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_extra_mapping_algorithms(self) -> None:
         """
-        Allows overriding classes to add algorithms.
+         Runs, times and logs an any extra Mapping algorithms
         """
 
     def _json_machine(self) -> None:
@@ -1136,8 +1112,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_uncompressed(
                 merged_routing_table_generator())
 
-        # TODO Nuke ZonedRoutingTableGenerator
-
     @final
     def _do_routing_table_generator(self) -> None:
         """
@@ -1267,8 +1241,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._data_writer.get_transceiver().control_sync(do_sync)
 
-    def _do_mapping(self, total_run_time: Optional[float],
-                    n_machine_time_steps: Optional[int]) -> None:
+    def _stage_mapping(self, total_run_time: Optional[float],
+                       n_machine_time_steps: Optional[int]) -> None:
         """
         Runs, times and logs all the algorithms in the mapping stage.
         """
@@ -1320,6 +1294,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_buffer_manager_creator()
 
         self._deduce_data_n_timesteps(n_machine_time_steps)
+        self._report_sdram_usage_per_chip()
+
+        self._execute_reset_routing()
+        self._execute_graph_binary_gatherer()
+
+        self._execute_create_database_interface()
+
         FecTimer.end_category(TimerCategory.MAPPING)
 
     # Overridden by spy which adds placement_order
@@ -1332,13 +1313,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Graph data specification writer", TimerWork.OTHER):
             self._data_writer.set_ds_database_path(
                 graph_data_specification_writer())
-
-    def _do_data_generation(self) -> None:
-        """
-        Runs, Times and logs the data generation.
-        """
-        self._execute_sdram_outgoing_partition_allocator()
-        self._execute_graph_data_specification_writer()
 
     def _execute_reset_routing(self) -> None:
         """
@@ -1637,7 +1611,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the Tags Loader if required.
         """
-        # TODO why: if graph_changed or data_changed:
         with FecTimer("Tags Loader", TimerWork.LOADING) as timer:
             if timer.skip_if_virtual_board():
                 return
@@ -1713,20 +1686,17 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_app_images()
 
-    def _do_load(self) -> None:
+    def _stage_data_generation(self) -> None:
         """
         Runs, times and logs the load algorithms.
         """
         FecTimer.start_category(TimerCategory.LOADING)
 
-        if self._data_writer.get_requires_mapping():
-            self._execute_reset_routing()
-            self._execute_graph_binary_gatherer()
-        # loading_algorithms
         self._execute_pre_compression()
         compressed = self._do_compression()
 
-        self._do_data_generation()
+        self._execute_sdram_outgoing_partition_allocator()
+        self._execute_graph_data_specification_writer()
 
         self._execute_control_sync(False)
         if self._data_writer.get_requires_mapping():
@@ -1737,21 +1707,26 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_load_application_data_specification()
 
         self._do_extra_load_algorithms()
-        self._execute_load_routing_tables(compressed)
 
-        # TODO Was master correct to run the report first?
-        self._execute_tags_from_machine_report()
+        # Need to reload routing tables to reset weights
+        self._execute_load_routing_tables(compressed)
         if self._data_writer.get_requires_mapping():
+            self._report_compressed(compressed)
+
+        self._execute_tags_from_machine_report()
+
+        if self._data_writer.get_requires_mapping():
+            # Can only be done after the data is loaded.
+            # But as the location do not change does not  need rerunning
             self._report_memory_on_host()
             self._report_memory_on_chip()
-            self._report_compressed(compressed)
+
         self._execute_application_load_executables()
         self._execute_router_provenance_gatherer("Load", TimerWork.LOADING)
 
         FecTimer.end_category(TimerCategory.LOADING)
 
     def _report_sdram_usage_per_chip(self) -> None:
-        # TODO why in do run
         with FecTimer("Sdram usage per chip report",
                       TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
@@ -1868,7 +1843,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_provenance_reports(self) -> None:
         """
-        Runs any reports based on provenance.
+         Runs, times and logs any reports based on provenance.
         """
 
     def _execute_clear_router_diagnostic_counters(self) -> None:
@@ -1891,7 +1866,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Clear IO buffer", TimerWork.CONTROL) as timer:
             if timer.skip_if_virtual_board():
                 return
-            # TODO Why check empty_graph is always false??
             if timer.skip_if_cfg_false("Reports", "clear_iobuf_during_run"):
                 return
             chip_io_buf_clearer()
@@ -1912,20 +1886,34 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 timer.skip("No Simulation Interface used")
 
-    def _execute_create_database_interface(
-            self, run_time: Optional[float]) -> None:
+    def _execute_create_database_interface(self) -> None:
         """
         Runs, times and logs Database Interface Creator.
 
         Sets the _database_file_path data object
-
-        :param run_time: the run duration in milliseconds.
         """
         with FecTimer("Create database interface", TimerWork.OTHER):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tables.
             self._data_writer.set_database_file_path(
-                database_interface(run_time))
+                database_interface())
+
+    def _execute_update_database_interface(
+            self, run_time: Optional[float]) -> None:
+        """
+        Runs, times and logs Database Interface Updater.
+
+        Sets the _database_file_path data object
+
+        :param run_time: the run duration in milliseconds.
+        """
+        with FecTimer("Update database interface", TimerWork.OTHER) as timer:
+            database_path = self._data_writer.get_database_file_path()
+            if database_path is None:
+                timer.skip("No database to update")
+                return
+            with DatabaseUpdater(database_path) as updater:
+                updater.update_system_params(run_time)
 
     def _execute_create_notifiaction_protocol(self) -> None:
         """
@@ -1999,42 +1987,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_energy()
         self._do_provenance_reports()
 
-    def __do_run(
-            self, n_machine_time_steps: Optional[int],
-            n_sync_steps: int) -> None:
-        """
-        Runs, times and logs the do run steps.
-
-        :param n_machine_time_steps: Number of timesteps run
-        :param n_sync_steps:
-            The number of timesteps between synchronisations
-        """
-        # TODO virtual board
-        FecTimer.start_category(TimerCategory.RUN_LOOP)
-        run_time = None
-        if n_machine_time_steps is not None:
-            run_time = (n_machine_time_steps *
-                        self._data_writer.get_simulation_time_step_ms())
-        self._data_writer.increment_current_run_timesteps(
-            n_machine_time_steps)
-
-        self._report_sdram_usage_per_chip()
-        self._report_drift(start=True)
-        if self._data_writer.get_requires_mapping():
-            self._execute_create_database_interface(run_time)
-        self._execute_create_notifiaction_protocol()
-        if (self._data_writer.is_ran_ever() and
-                not self._data_writer.get_requires_mapping() and
-                not self._data_writer.get_requires_data_generation()):
-            self._execute_dsg_region_reloader()
-        self._execute_runtime_update(n_sync_steps)
-        self._execute_runner(n_sync_steps, run_time)
-        self._do_extract_from_machine()
-        # reset at the end of each do_run cycle
-        self._report_drift(start=False)
-        self._execute_control_sync(True)
-        FecTimer.end_category(TimerCategory.RUN_LOOP)
-
     def _do_run(
             self, n_machine_time_steps: Optional[int],
             n_sync_steps: int) -> None:
@@ -2045,8 +1997,65 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param n_sync_steps:
             The number of timesteps between synchronisations
         """
+        # TODO virtual board
+        run_time = None
+        if n_machine_time_steps is not None:
+            run_time = (n_machine_time_steps *
+                        self._data_writer.get_simulation_time_step_ms())
+        self._data_writer.increment_current_run_timesteps(
+            n_machine_time_steps)
+
+        self._report_drift(start=True)
+        self._execute_update_database_interface(run_time)
+        self._execute_create_notifiaction_protocol()
+        self._execute_runtime_update(n_sync_steps)
+        self._execute_runner(n_sync_steps, run_time)
+        self._do_extract_from_machine()
+        # reset at the end of each do_run cycle
+        self._report_drift(start=False)
+        self._execute_control_sync(True)
+
+    def _stage_run(self, n_machine_time_steps: Optional[int],
+                   run_time: Optional[float], sync_time: float) -> None:
+        """
+        Runs, times and logs the do run steps.
+
+        """
+        FecTimer.start_category(TimerCategory.RUN_LOOP)
+        if (self._data_writer.is_ran_ever() and
+                not self._data_writer.get_requires_data_generation()):
+            self._execute_dsg_region_reloader()
+
+        if not self._data_writer.is_ran_last():
+            self._do_write_metadata()
+
         try:
-            self.__do_run(n_machine_time_steps, n_sync_steps)
+            n_sync_steps = self.__timesteps(sync_time)
+            # Run for each of the given steps
+            if n_machine_time_steps is not None:
+                if get_config_bool("Buffers", "use_auto_pause_and_resume"):
+                    steps = self._generate_steps(n_machine_time_steps)
+                else:
+                    steps = [n_machine_time_steps]
+                logger.info("Running for {} steps for a total of {}ms",
+                            len(steps), run_time)
+                self._data_writer.set_n_run_steps(len(steps))
+                for step in steps:
+                    run_step = self._data_writer.next_run_step()
+                    logger.info(f"Run {run_step} of {len(steps)}")
+                    self._do_run(step, n_sync_steps)
+                self._data_writer.clear_run_steps()
+            elif self._run_until_complete:
+                logger.info("Running until complete")
+                self._do_run(None, n_sync_steps)
+            else:
+                if self._data_writer.get_max_run_time_steps() < sys.maxsize:
+                    logger.warning("Due to recording this simulation "
+                                   "should not be run longer than {}ms",
+                                   self._data_writer.get_max_run_time_steps())
+                logger.info("Running until stop is called by another thread")
+                self._do_run(None, n_sync_steps)
+
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
             self._shutdown()
@@ -2056,6 +2065,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # re-raise exception
             raise run_e
+        finally:
+            FecTimer.end_category(TimerCategory.RUN_LOOP)
 
     def _recover_from_error(self, exception: Exception) -> None:
         try:

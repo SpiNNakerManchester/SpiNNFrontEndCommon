@@ -42,7 +42,8 @@ from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utility_models import LivePacketGather
-from spinn_front_end_common.utilities.database import DatabaseReader
+from spinn_front_end_common.utilities.database import (
+    DatabaseReader, DatabaseUpdater)
 
 
 class MockSplitter(AbstractSplitterCommon):
@@ -185,7 +186,7 @@ def test_database_interface() -> None:
     tags.add_ip_tag(tag, next(iter(lpg_vertex.machine_vertices)))
     writer.set_tags(tags)
 
-    db_path = database_interface(1000)
+    db_path = database_interface()
     assert db_path is not None
     print(db_path)
 
@@ -193,6 +194,8 @@ def test_database_interface() -> None:
     assert label1 is not None
     lpg_label = lpg_vertex.label
     assert lpg_label is not None
+    with DatabaseUpdater(db_path) as db:
+        db.update_system_params(1000)
     with DatabaseReader(db_path) as reader:
         assert (reader.get_ip_address(0, 0) ==
                 writer.get_chip_at(0, 0).ip_address)
