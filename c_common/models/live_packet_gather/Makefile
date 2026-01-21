@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+CUR_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 APP = live_packet_gather
 SOURCES = live_packet_gather.c
 
 include ../fec_models.mk
+
+clean:
+	$(RM) -r $(CUR_DIR)/build
