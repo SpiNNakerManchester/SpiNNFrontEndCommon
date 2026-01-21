@@ -25,7 +25,7 @@ import threading
 import types
 from threading import Condition
 from typing import (
-    Any, Dict, Iterable, Optional, Sequence, Tuple, Type,
+    Dict, Iterable, Optional, Sequence, Tuple, Type,
     TypeVar, Union, cast, final)
 from types import FrameType
 
@@ -84,8 +84,7 @@ from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
 from spinn_front_end_common import __version__ as fec_version
 from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
-    AbstractVertexWithEdgeToDependentVertices,
-    AbstractCanReset)
+    AbstractVertexWithEdgeToDependentVertices)
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.storage_objects \
@@ -2177,9 +2176,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # of the simulation again and clear buffered out
         if self._data_writer.has_buffer_manager():
             self._data_writer.get_buffer_manager().reset()
-
-        # Reset the graph off the machine, to set things to time 0
-        self.__reset_graph_elements()
         FecTimer.end_category(TimerCategory.RESETTING)
 
     def __repr__(self) -> str:
@@ -2279,17 +2275,3 @@ class AbstractSpinnakerBase(ConfigHandler):
         sync_signal = self._data_writer.get_next_sync_signal()
         transceiver = self._data_writer.get_transceiver()
         transceiver.send_signal(self._data_writer.get_app_id(), sync_signal)
-
-    @staticmethod
-    def __reset_object(obj: Any) -> None:
-        # Reset an object if appropriate
-        if isinstance(obj, AbstractCanReset):
-            obj.reset_to_first_timestep()
-
-    def __reset_graph_elements(self) -> None:
-        # Reset any object that can reset
-        for vertex in self._data_writer.iterate_vertices():
-            self.__reset_object(vertex)
-        for p in self._data_writer.iterate_partitions():
-            for edge in p.edges:
-                self.__reset_object(edge)
