@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .abstract_provides_local_provenance_data import (
-    AbstractProvidesLocalProvenanceData)
 from .abstract_provides_provenance_data_from_machine import (
     AbstractProvidesProvenanceDataFromMachine)
 from .fec_timer import FecTimer
@@ -26,8 +24,7 @@ from .provenance_writer import ProvenanceWriter
 from .timer_category import TimerCategory
 from .timer_work import TimerWork
 
-__all__ = ("AbstractProvidesLocalProvenanceData", "FecTimer",
-           "GlobalProvenance",
+__all__ = ("FecTimer", "GlobalProvenance",
            "AbstractProvidesProvenanceDataFromMachine", "LogStoreDB",
            "ProvenanceReader", "ProvenanceWriter",
            "ProvidesProvenanceDataFromMachineImpl",
