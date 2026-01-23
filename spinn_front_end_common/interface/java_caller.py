@@ -78,7 +78,7 @@ class JavaCaller(object):
     @classmethod
     def check_java(cls) -> str:
         """
-        Reads and checks the java call
+        Reads and checks the Java call
 
         :return: Java call from cfg
         :raises FileNotFoundError: If no java installed
