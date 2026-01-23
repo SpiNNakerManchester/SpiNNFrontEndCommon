@@ -75,21 +75,32 @@ class JavaCaller(object):
         # Properties flag to be passed to Java
         "_java_properties")
 
+    @classmethod
+    def check_java(cls) -> str:
+        """
+        Reads and checks the java call
+
+        :return: Java call from cfg
+        :raises FileNotFoundError: If no java installed
+        :raises ConfigurationException: If java -version failed
+        """
+        java_call = get_config_str("Java", "java_call")
+        result = subprocess.call([java_call, '-version'])
+        if result != 0:
+            raise ConfigurationException(
+                f" {java_call} -version failed. "
+                "Please set [Java] java_call to the absolute path "
+                "to start java. (in config file)")
+        return java_call
+
     def __init__(self) -> None:
         """
         Creates a Java caller and checks the user/configuration parameters.
 
         :raise ConfigurationException: if simple parameter checking fails.
         """
+        self._java_call = self.check_java()
         self._recording: Optional[bool] = None
-        java_call = get_config_str("Java", "java_call")
-        self._java_call = java_call
-        result = subprocess.call([self._java_call, '-version'])
-        if result != 0:
-            raise ConfigurationException(
-                f" {self._java_call} -version failed. "
-                "Please set [Java] java_call to the absolute path "
-                "to start java. (in config file)")
 
         self._find_java_jar()
 
