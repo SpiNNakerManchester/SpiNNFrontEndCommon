@@ -81,8 +81,8 @@ class JavaCaller(object):
         Reads and checks the Java call
 
         :return: Java call from cfg
-        :raises FileNotFoundError: If no java installed
-        :raises ConfigurationException: If java -version failed
+        :raises FileNotFoundError: If no Java installed
+        :raises ConfigurationException: If Java -version failed
         """
         java_call = get_config_str("Java", "java_call")
         result = subprocess.call([java_call, '-version'])
