@@ -99,8 +99,7 @@ from spinn_front_end_common.interface.interface_functions import (
     reload_dsg_regions, energy_provenance_reporter,
     load_application_data_specs, load_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
-    graph_provenance_gatherer, hbp_allocator,
-    insert_chip_power_monitors_to_graphs,
+    hbp_allocator, insert_chip_power_monitors_to_graphs,
     insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
     locate_executable_start_type,
@@ -1751,15 +1750,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             reload_dsg_regions()
 
-    def _execute_graph_provenance_gatherer(self) -> None:
+    def _execute_graph_provenance(self) -> None:
         """
-        Runs, times and log the GraphProvenanceGatherer if requested.
+        Runs, times and log and graph provenance if needed
         """
-        with FecTimer("Graph provenance gatherer", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false("Reports",
-                                       "read_graph_provenance_data"):
-                return
-            graph_provenance_gatherer()
+        # Will be overridden by sPyNNaker
 
     def _execute_placements_provenance_gatherer(self) -> None:
         """
@@ -1818,7 +1813,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and log the methods that gather provenance.
         """
-        self._execute_graph_provenance_gatherer()
+        self._execute_graph_provenance()
         self._execute_placements_provenance_gatherer()
         self._execute_profile_data_gatherer()
 
