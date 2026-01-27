@@ -508,7 +508,7 @@ def _write_vertex_virtual_keys(
             f"Routing Info: {key_and_mask}\n")
     for m_vertex in outgoing:
         try:
-            r_info = routing_infos.get_info_from(
+            rinfo = routing_infos.get_info_from(
                 m_vertex, part_id)
             key_and_mask = str(rinfo.key_and_mask)
         except KeyError:
