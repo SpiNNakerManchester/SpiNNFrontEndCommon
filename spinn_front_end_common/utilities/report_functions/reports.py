@@ -15,7 +15,7 @@
 import logging
 import os
 import time
-from typing import Iterable, Optional, TextIO, Tuple
+from typing import Iterable, Optional, TextIO, Tuple, Dict
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.ordered_set import OrderedSet
@@ -37,6 +37,8 @@ from pacman.utilities.algorithm_utilities.routes_format import format_route
 
 from spinn_front_end_common.data import FecDataView
 from .router_summary import RouterSummary
+from pacman.model.graphs.abstract_vertex import AbstractVertex
+from spinn_machine.routing_entry import RoutingEntry
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -724,3 +726,42 @@ def _locate_routing_entry(
             if entry.mask & key == entry.key:
                 return entry
     return None
+
+
+def router_report_from_partition_tables() -> None:
+    """
+    Report the uncompressed routing tables using source and target vertices
+    """
+    top_level_folder = get_report_path("path_uncompressed", is_dir=True)
+    routing_tables = FecDataView.get_routing_table_by_partition()
+    if not os.path.exists(top_level_folder):
+        os.mkdir(top_level_folder)
+    xys = routing_tables.get_routers()
+    progress = ProgressBar(routing_tables.n_routers,
+                           "Generating Router partition table report")
+    for x, y in progress.over(xys):
+        _generate_routing_table_by_partition(
+            x, y, routing_tables.get_entries_for_router(x, y),
+            os.path.join(top_level_folder,
+                         f"routing_table_partition_{x}_{y}.rpt"))
+
+
+def _generate_routing_table_by_partition(
+        x: int, y: int,
+        entries: Dict[Tuple[AbstractVertex, str], RoutingEntry],
+        path: str) -> None:
+    with open(path, "w") as outfile:
+        for source_vertex, partition_id in entries:
+            entry = entries[source_vertex, partition_id]
+            core = ""
+            if isinstance(source_vertex, MachineVertex):
+                pl = FecDataView.get_placement_of_vertex(source_vertex)
+                core = f"(core {pl.x},{pl.y},{pl.p})"
+            target_vertices = [
+                f"{FecDataView.get_placement_on_processor(x, y, p).vertex.label}({p})"
+                for p in entry.processor_ids]
+            target_links = [_LINK_LABELS[lid] for lid in entry.link_ids]
+            outfile.write(
+                f"{source_vertex.label}{core} "
+                f"via partition {partition_id} -> "
+                f"Links: {target_links} Cores: {target_vertices}\n")

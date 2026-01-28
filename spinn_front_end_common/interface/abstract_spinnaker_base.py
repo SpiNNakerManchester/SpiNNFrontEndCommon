@@ -136,7 +136,7 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     placer_reports_with_application_graph,
     router_compressed_summary_report, routing_info_report,
     router_report_from_compressed_router_tables,
-    router_report_from_paths,
+    router_report_from_paths, router_report_from_partition_tables,
     router_report_from_router_tables, router_summary_report,
     sdram_usage_report_per_chip,
     tag_allocator_report)
@@ -1535,6 +1535,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_uncompressed"):
                 return
             router_report_from_router_tables()
+            router_report_from_partition_tables()
 
     def _check_uncompressed_routing_table(self) -> None:
         """
