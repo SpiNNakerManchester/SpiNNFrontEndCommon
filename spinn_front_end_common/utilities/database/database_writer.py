@@ -136,7 +136,7 @@ class DatabaseWriter(SQLiteDB):
         for vertex in FecDataView.iterate_vertices():
             vertex_id = self.__insert(
                 "INSERT INTO Application_vertices(vertex_label) VALUES(?)",
-                vertex.label)
+                str(vertex.label))
             self.__vertex_to_id[vertex] = vertex_id
             for m_vertex in vertex.machine_vertices:
                 m_vertex_id = self.__add_machine_vertex(m_vertex)

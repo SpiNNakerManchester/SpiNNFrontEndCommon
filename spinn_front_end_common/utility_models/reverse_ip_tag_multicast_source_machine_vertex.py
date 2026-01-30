@@ -44,7 +44,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost)
+    AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import (
         get_n_bytes)
@@ -105,7 +105,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
         ProvidesProvenanceDataFromMachineImpl,
-        SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost):
+        AbstractSendsBuffersFromHost, AbstractReceiveBuffersToHost):
     """
     A model which allows events to be injected into SpiNNaker and
     converted in to multicast packets.
@@ -702,7 +702,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return locate_memory_region_for_placement(
             placement, self._Regions.RECORDING)
 
-    @property  # type: ignore[override]
+    @property
     def send_buffers(self) -> Dict[int, BufferedSendingRegion]:
         """
         Filled send buffers or an empty dict if there are no send buffers
@@ -712,18 +712,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._fill_send_buffer()
         return self._send_buffers
 
-    @send_buffers.setter
-    def send_buffers(self, value: Dict[int, BufferedSendingRegion]) -> None:
-        self._send_buffers = value
-
-    @overrides(SendsBuffersFromHostPreBufferedImpl.get_regions)
+    @overrides(AbstractSendsBuffersFromHost.get_regions)
     def get_regions(self) -> Collection[int]:
         # Avoid update_buffer as not needed and called during reset
         if self._send_buffers is None:
             return ()
         return self._send_buffers.keys()
 
-    @overrides(SendsBuffersFromHostPreBufferedImpl.rewind)
+    @overrides(AbstractSendsBuffersFromHost.rewind)
     def rewind(self, region: int) -> None:
         # reset theses so fill send buffer will run when send_buffers called
         self._first_machine_time_step = None
@@ -732,7 +728,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if self._send_buffers is not None:
             self._send_buffers[region].rewind()
 
-    @overrides(SendsBuffersFromHostPreBufferedImpl.buffering_input)
+    @overrides(AbstractSendsBuffersFromHost.buffering_input)
     def buffering_input(self) -> bool:
         return self._send_buffers is not None
 
@@ -744,6 +740,26 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if region == self._Regions.SEND_BUFFER:
             return self._send_buffer_size
         return 0
+
+    @overrides(AbstractSendsBuffersFromHost.is_next_timestamp)
+    def is_next_timestamp(self, region: int) -> bool:
+        return self.send_buffers[region].is_next_timestamp
+
+    @overrides(AbstractSendsBuffersFromHost.get_next_timestamp)
+    def get_next_timestamp(self, region: int) -> int:
+        return self.send_buffers[region].next_timestamp or 0
+
+    @overrides(AbstractSendsBuffersFromHost.is_next_key)
+    def is_next_key(self, region: int, timestamp: int) -> bool:
+        return self.send_buffers[region].is_next_key(timestamp)
+
+    @overrides(AbstractSendsBuffersFromHost.get_next_key)
+    def get_next_key(self, region: int) -> int:
+        return self.send_buffers[region].next_key()
+
+    @overrides(AbstractSendsBuffersFromHost.is_empty)
+    def is_empty(self, region: int) -> bool:
+        return len(self.send_buffers[region].timestamps) == 0
 
     @overrides(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)

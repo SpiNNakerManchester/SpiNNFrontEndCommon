@@ -28,7 +28,6 @@ from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import graph_binary_gatherer
 from .graph_data_specification_writer import (
     graph_data_specification_writer)
-from .graph_provenance_gatherer import graph_provenance_gatherer
 from .hbp_allocator import hbp_allocator
 from .load_data_specification import (
     load_application_data_specs, load_system_data_specs,
@@ -64,7 +63,6 @@ __all__ = (
     "load_system_data_specs", "load_using_advanced_monitors",
     "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
-    "graph_provenance_gatherer",
     "hbp_allocator",
     "insert_chip_power_monitors_to_graphs",
     "insert_extra_monitor_vertices_to_graphs",
