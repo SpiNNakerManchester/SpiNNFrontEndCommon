@@ -1302,7 +1302,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         FecTimer.end_category(TimerCategory.MAPPING)
 
-    # Overridden by spy which adds placement_order
     def _execute_graph_data_specification_writer(self) -> None:
         """
         Runs, times, and logs the GraphDataSpecificationWriter.
