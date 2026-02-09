@@ -135,6 +135,10 @@ BIT_FIELD_USABLE_SDRAM_TAG = 3
 BIT_FIELD_ADDRESSES_SDRAM_TAG = 4
 BIT_FIELD_ROUTING_TABLE_SDRAM_TAG = 5
 
+#: Base SDRAM tag used by SYSRAM edges when allocating
+# (allows up to 50 edges per chip)
+SYSRAM_EDGE_BASE_TAG = 50
+
 #: Base SDRAM tag used by SDRAM edges when allocating
 #: (allows up to 100 edges per chip)
 SDRAM_EDGE_BASE_TAG = 100
