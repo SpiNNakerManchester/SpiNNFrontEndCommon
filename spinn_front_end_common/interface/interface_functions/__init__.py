@@ -51,6 +51,8 @@ from .read_routing_tables_from_machine import read_routing_tables_from_machine
 from .sdram_outgoing_partition_allocator import (
     sdram_outgoing_partition_allocator)
 from .command_sender_adder import add_command_senders
+from .sysram_outgoing_partition_allocator import (
+    sysram_outgoing_partition_allocator)
 
 
 __all__ = (
@@ -75,4 +77,4 @@ __all__ = (
     "routing_table_loader", "sdram_outgoing_partition_allocator",
     "spalloc_allocate_job_old",
     "system_multicast_routing_generator", "tags_loader",
-    "add_command_senders")
+    "add_command_senders", "sysram_outgoing_partition_allocator")
