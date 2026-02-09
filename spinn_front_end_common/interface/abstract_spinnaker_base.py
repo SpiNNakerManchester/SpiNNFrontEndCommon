@@ -106,6 +106,7 @@ from spinn_front_end_common.interface.interface_functions import (
     placements_provenance_gatherer, profile_data_gatherer,
     read_routing_tables_from_machine, router_provenance_gatherer,
     routing_table_loader, sdram_outgoing_partition_allocator,
+    sysram_outgoing_partition_allocator,
     spalloc_allocate_job_old,
     system_multicast_routing_generator,
     tags_loader, add_command_senders)
@@ -1228,6 +1229,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer("SDRAM outgoing partition allocator", TimerWork.OTHER):
             sdram_outgoing_partition_allocator()
+
+    def _execute_sysram_outgoing_partition_allocator(self) -> None:
+        """
+        Runs, times and logs the SysRAMOutgoingPartitionAllocator.
+        """
+        with FecTimer("SysRAM outgoing partition allocator", TimerWork.OTHER):
+            sysram_outgoing_partition_allocator()
 
     def _execute_control_sync(self, do_sync: bool) -> None:
         """
