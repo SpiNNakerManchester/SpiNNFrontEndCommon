@@ -736,6 +736,7 @@ def _locate_routing_entry(
                 return entry
     return None
 
+
 def generate_binaries_report() -> None:
     """
     Creates a report of the binaries used.
