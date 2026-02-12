@@ -1703,7 +1703,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         compressed = self._do_compression()
 
         self._execute_sdram_outgoing_partition_allocator()
-        self._execute_syysram_outgoing_partition_allocator()
+        self._execute_sysram_outgoing_partition_allocator()
         self._execute_graph_data_specification_writer()
 
         self._execute_control_sync(False)
