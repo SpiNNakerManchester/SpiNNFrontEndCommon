@@ -742,23 +742,28 @@ def generate_binaries_report() -> None:
     Creates a report of the binaries used.
     """
     file_name = get_report_path("path_binaries_report")
-    targets = FecDataView.get_executable_targets()
-
-    aplxs = dict()
-    for binary in targets.binaries:
-        _, aplx = os.path.split(binary)
-        aplxs[aplx] = binary
 
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            f.write("Binaries used\n")
-            keys = list(aplxs.keys())
-            keys.sort(key=lambda s: s.lower())
-            for key in keys:
-                f.write(f"{key}\n")
-            f.write("\nFull paths\n")
-            for key in keys:
-                f.write(f"{key}: {aplxs[key]}\n")
+            try:
+                targets = FecDataView.get_executable_targets()
+
+                aplxs = dict()
+                for binary in targets.binaries:
+                    _, aplx = os.path.split(binary)
+                    aplxs[aplx] = binary
+
+                f.write("Binaries used\n")
+                keys = list(aplxs.keys())
+                keys.sort(key=lambda s: s.lower())
+                for key in keys:
+                    f.write(f"{key}\n")
+                f.write("\nFull paths\n")
+                for key in keys:
+                    f.write(f"{key}: {aplxs[key]}\n")
+            except Exception as ex:  # pylint: disable=broad-except
+                f.write(str(ex))
+                logger.exception(f"generate_binaries_report error: {ex}")
     except IOError:
         logger.exception("generate_binaries_report: Can't open file"
                          " {} for writing.", file_name)
