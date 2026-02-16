@@ -31,6 +31,9 @@ from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.routing_tables import MulticastRoutingTables
+from pacman.model.graphs.machine import MachineVertex
+from pacman.model.placements import Placement
+from spinn_front_end_common.utilities.lockid_tracker import LockIdTracker
 
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
@@ -90,6 +93,7 @@ class _FecDataModel(object):
         "_live_packet_recorder_params",
         "_live_output_vertices",
         "_live_output_devices",
+        "_lock_id_tracker",
         "_n_run_steps",
         "_next_sync_signal",
         "_next_ds_reference",
@@ -130,6 +134,7 @@ class _FecDataModel(object):
             LivePacketGather]] = None
         self._live_output_vertices: Set[Tuple[ApplicationVertex, str]] = set()
         self._live_output_devices: List[LiveOutputDevice] = list()
+        self._lock_id_tracker: Optional[LockIdTracker] = None
         self._java_caller: Optional[JavaCaller] = None
         self._none_labelled_edge_count = 0
         self._simulation_time_step_ms: Optional[float] = None
@@ -1048,3 +1053,21 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :returns: Iterator over live output devices.
         """
         return iter(cls.__fec_data._live_output_devices)
+
+    @classmethod
+    def get_lock_id_for(
+            cls, vertex: MachineVertex, placement: Placement,
+            lock_name: str) -> int:
+        """
+        Get the lock ID for a given vertex and lock name, allocating a new one
+        if needed.
+
+        :param vertex: The vertex to get the lock ID for
+        :param placement: The placement of the vertex to get the lock ID for
+        :param lock_name: The name of the lock to get the ID for
+        :return: The lock ID for the given vertex and lock name
+        """
+        if cls.__fec_data._lock_id_tracker is None:
+            cls.__fec_data._lock_id_tracker = LockIdTracker()
+        return cls.__fec_data._lock_id_tracker.get_id_for(
+            vertex, placement, lock_name)
