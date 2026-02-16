@@ -20,7 +20,7 @@ _MIN_LOCK_ID = 8
 _MAX_LOCK_ID = 31
 
 
-class LockIdTracker(object):
+class LockIdTracker():
     """
     A tracker of lock ids per chip to make it easier to allocate new IDs.
     """
@@ -30,8 +30,6 @@ class LockIdTracker(object):
     )
 
     def __init__(self):
-        """
-        """
         self.__next_lock_id: Dict[Tuple[int, int], int] = defaultdict(
             lambda: _MIN_LOCK_ID)
         self.__used_lock_id: Dict[Tuple[MachineVertex, str], int] = dict()
