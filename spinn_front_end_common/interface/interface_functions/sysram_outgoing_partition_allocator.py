@@ -17,9 +17,9 @@ from typing import Dict, Optional, cast, Tuple, List
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
 from spinnman.transceiver import Transceiver
-from pacman.model.graphs import AbstractSingleSourcePartition
-from pacman.model.graphs.machine import (
-    SourceSegmentedSysRAMMachinePartition, AbstractSysRAMPartition)
+from pacman.model.graphs import (
+    AbstractSingleSourcePartition, AbstractMultiplePartition)
+from pacman.model.graphs.machine import AbstractSysRAMPartition
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.constants import SYSRAM_EDGE_BASE_TAG
@@ -58,7 +58,7 @@ def sysram_outgoing_partition_allocator() -> None:
             # get placement, ones where the src is multiple,
             # you need to ask for the first pre vertex
             if isinstance(
-                    sysram_partition, SourceSegmentedSysRAMMachinePartition):
+                    sysram_partition, AbstractMultiplePartition):
                 placement = FecDataView.get_placement_of_vertex(
                     next(iter(sysram_partition.pre_vertices)))
             else:
