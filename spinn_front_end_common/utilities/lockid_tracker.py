@@ -29,7 +29,7 @@ class LockIdTracker():
         "__used_lock_id"
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__next_lock_id: Dict[Tuple[int, int], int] = defaultdict(
             lambda: _MIN_LOCK_ID)
         self.__used_lock_id: Dict[Tuple[MachineVertex, str], int] = dict()
