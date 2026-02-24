@@ -24,10 +24,8 @@
 
 //! \brief Describes a single filter, which is a wrapper for bit_field_t
 typedef struct filter_info_t {
-    //! Bit field master population key
-    uint32_t key;
-    //! Flag to indicate if the filter has been merged
-    uint32_t merged: 1;
+    //! Flag to indicate if the filter is valid (should match the pop table)
+    uint32_t valid: 1;
     //! Flag to indicate if the filter is redundant
     uint32_t all_ones: 1;
     //! Number of atoms (=valid bits) in the bitfield
@@ -65,16 +63,6 @@ static inline void next_core_atom(filter_info_t *filter, struct core_atom *core_
         core_atom->core++;
         core_atom->atom = 0;
     }
-}
-
-//! \brief Get the key for a given core-atom pair
-//! \param[in] filter The filter to get the key from
-//! \param[in] core_atom The core-atom pair to find the key of
-//! \return The key
-static inline uint32_t get_bf_key(filter_info_t *filter, struct core_atom *core_atom) {
-    // Note if n_atoms_per_core is 0, core will be 0, and atom will just be the
-    // global atom
-    return filter->key + (core_atom->core << filter->core_shift) + core_atom->atom;
 }
 
 //! \brief Get the global atom from the core-atom data
