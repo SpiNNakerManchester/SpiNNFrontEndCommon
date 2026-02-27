@@ -1034,7 +1034,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         name = get_config_str("Mapping", "info_allocator")
         if name == "GlobalZonedRoutingInfoAllocator":
-            logger.waning("GlobalZonedRoutingInfoAllocator is deprecated. "
+            logger.warning("GlobalZonedRoutingInfoAllocator is deprecated. "
                           "Please change cfg Mapping info_allocator to "
                           "ZonedRoutingInfoAllocator")
             name = "ZonedRoutingInfoAllocator"
