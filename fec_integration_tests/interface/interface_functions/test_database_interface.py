@@ -108,7 +108,7 @@ def _add_rinfo(
         routing_info: RoutingInfo, base_key: int, app_mask: int, mac_mask: int,
         m_vertex_shift: int) -> None:
     routing_info.add_routing_info(SpecificAppVertexRoutingInfo(
-        BaseKeyAndMask(base_key, app_mask), partition_id, app_vertex,
+        base_key, partition_id, app_vertex,
         mac_mask, 1))
     for i, m_vertex in enumerate(app_vertex.machine_vertices):
         routing_info.add_routing_info(SpecificMachineVertexRoutingInfo(
