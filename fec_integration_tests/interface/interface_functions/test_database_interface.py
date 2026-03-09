@@ -26,7 +26,8 @@ from pacman.model.graphs.machine import MachineVertex, SimpleMachineVertex
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_info import (
-    RoutingInfo, MachineVertexRoutingInfo, AppVertexRoutingInfo)
+    RoutingInfo,
+    SpecificAppVertexRoutingInfo, SpecificMachineVertexRoutingInfo)
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.tags.tags import Tags
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
@@ -106,11 +107,11 @@ def _add_rinfo(
         app_vertex: ApplicationVertex, partition_id: str,
         routing_info: RoutingInfo, base_key: int, app_mask: int, mac_mask: int,
         m_vertex_shift: int) -> None:
-    routing_info.add_routing_info(AppVertexRoutingInfo(
-        BaseKeyAndMask(base_key, app_mask), partition_id, app_vertex,
-        mac_mask, 1, 1))
+    routing_info.add_routing_info(SpecificAppVertexRoutingInfo(
+        base_key, partition_id, app_vertex,
+        mac_mask, 1))
     for i, m_vertex in enumerate(app_vertex.machine_vertices):
-        routing_info.add_routing_info(MachineVertexRoutingInfo(
+        routing_info.add_routing_info(SpecificMachineVertexRoutingInfo(
             BaseKeyAndMask(
                 base_key | i << m_vertex_shift, app_mask | mac_mask),
             partition_id, m_vertex, i))

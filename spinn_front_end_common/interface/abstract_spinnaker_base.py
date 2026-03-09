@@ -76,7 +76,7 @@ from pacman.operations.router_compressors import (
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import ordered_covering_compressor
 from pacman.operations.routing_info_allocator_algorithms.\
-    zoned_routing_info_allocator import (flexible_allocate, global_allocate)
+    zoned_routing_info_allocator import ZonedRoutingInfoAllocator
 from pacman.operations.routing_table_generators import (
     basic_routing_table_generator, merged_routing_table_generator)
 from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
@@ -1018,41 +1018,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             tag_allocator_report()
 
     @final
-    def _execute_global_allocate(
-            self, extra_allocations: Iterable[
-                Tuple[ApplicationVertex, str]]) -> None:
-        """
-        Runs, times and logs the Global Zoned Routing Info Allocator.
-
-        Sets "routing_info" is called
-
-        .. note::
-            Calling of this method is based on the configuration
-            info_allocator value
-        """
-        with FecTimer("Global allocate", TimerWork.OTHER):
-            self._data_writer.set_routing_infos(
-                global_allocate(extra_allocations))
-
-    @final
-    def _execute_flexible_allocate(
-            self, extra_allocations: Iterable[
-                Tuple[ApplicationVertex, str]]) -> None:
-        """
-        Runs, times and logs the Zoned Routing Info Allocator.
-
-        Sets "routing_info" is called
-
-        .. note::
-            Calling of this method is based on the configuration
-            info_allocator value
-        """
-        with FecTimer("Zoned routing info allocator", TimerWork.OTHER):
-            self._data_writer.set_routing_infos(
-                flexible_allocate(extra_allocations))
-
-    @final
-    def _do_info_allocator(self) -> None:
+    def _execute_info_allocator(self) -> None:
         """
         Runs, times and logs one of the info allocators.
 
@@ -1068,14 +1034,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         name = get_config_str("Mapping", "info_allocator")
         if name == "GlobalZonedRoutingInfoAllocator":
-            return self._execute_global_allocate([])
+            logger.warning("GlobalZonedRoutingInfoAllocator is deprecated. "
+                           "Please change cfg Mapping info_allocator to "
+                           "ZonedRoutingInfoAllocator")
+            name = "ZonedRoutingInfoAllocator"
         if name == "ZonedRoutingInfoAllocator":
-            return self._execute_flexible_allocate([])
-        if "," in name:
+            with FecTimer("Zoned routing info allocator", TimerWork.OTHER):
+                self._data_writer.set_routing_infos(
+                    ZonedRoutingInfoAllocator().allocate())
+        elif "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for info_allocator")
-        raise ConfigurationException(
-            f"Unexpected cfg setting info_allocator: {name}")
+        else:
+            raise ConfigurationException(
+                f"Unexpected cfg setting info_allocator: {name}")
 
     def _report_router_info(self) -> None:
         """
@@ -1281,7 +1253,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_basic_tag_allocator()
         self._report_tag_allocations()
 
-        self._do_info_allocator()
+        self._execute_info_allocator()
         self._report_router_info()
         self._do_routing_table_generator()
         self._report_uncompressed_routing_table()
