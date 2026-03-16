@@ -203,9 +203,12 @@ def _write_one_router_partition_report(
     routing_infos = FecDataView.get_routing_infos()
     for edge in partition.edges:
         for m_vertex in outgoing:
-            r_info = routing_infos.get_info_from(
-                m_vertex, partition.identifier)
-            path = _search_route(m_vertex, r_info.key_and_mask)
+            try:
+                r_info = routing_infos.get_info_from(
+                    m_vertex, partition.identifier)
+                path = _search_route(m_vertex, r_info.key_and_mask)
+            except KeyError:
+                path = "No routing info"
             f.write(
                 f"    Edge '{edge.label}', "
                 f"from vertex: '{edge.pre_vertex.label}' "
@@ -494,17 +497,25 @@ def _write_vertex_virtual_keys(
     outgoing = pre_vertex.splitter.get_out_going_vertices(part_id)
     if not outgoing:
         return
-    rinfo = routing_infos.get_info_from(
-        pre_vertex, part_id)
+    try:
+        rinfo = routing_infos.get_info_from(
+            pre_vertex, part_id)
+        key_and_mask = str(rinfo.key_and_mask)
+    except KeyError:
+        key_and_mask = "No routing info"
     f.write(f"Vertex: {pre_vertex}\n")
     f.write(f"    Partition: {part_id}, "
-            f"Routing Info: {rinfo.key_and_mask}\n")
+            f"Routing Info: {key_and_mask}\n")
     for m_vertex in outgoing:
-        r_info = routing_infos.get_info_from(
-            m_vertex, part_id)
+        try:
+            rinfo = routing_infos.get_info_from(
+                m_vertex, part_id)
+            key_and_mask = str(rinfo.key_and_mask)
+        except KeyError:
+            key_and_mask = "No routing info"
         f.write(f"    Machine Vertex: {m_vertex}, "
                 f"Slice: {m_vertex.vertex_slice}, "
-                f"Routing Info: {r_info.key_and_mask}\n")
+                f"Routing Info: {key_and_mask}\n")
 
 
 def router_report_from_router_tables() -> None:
@@ -724,3 +735,35 @@ def _locate_routing_entry(
             if entry.mask & key == entry.key:
                 return entry
     return None
+
+
+def generate_binaries_report() -> None:
+    """
+    Creates a report of the binaries used.
+    """
+    file_name = get_report_path("path_binaries_report")
+
+    try:
+        with open(file_name, "w", encoding="utf-8") as f:
+            try:
+                targets = FecDataView.get_executable_targets()
+
+                aplxs = dict()
+                for binary in targets.binaries:
+                    _, aplx = os.path.split(binary)
+                    aplxs[aplx] = binary
+
+                f.write("Binaries used\n")
+                keys = list(aplxs.keys())
+                keys.sort(key=lambda s: s.lower())
+                for key in keys:
+                    f.write(f"{key}\n")
+                f.write("\nFull paths\n")
+                for key in keys:
+                    f.write(f"{key}: {aplxs[key]}\n")
+            except Exception as ex:  # pylint: disable=broad-except
+                f.write(str(ex))
+                logger.exception(f"generate_binaries_report error: {ex}")
+    except IOError:
+        logger.exception("generate_binaries_report: Can't open file"
+                         " {} for writing.", file_name)

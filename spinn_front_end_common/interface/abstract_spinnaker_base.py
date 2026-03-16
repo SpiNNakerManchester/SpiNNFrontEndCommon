@@ -132,8 +132,8 @@ from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
-    generate_comparison_router_report, partitioner_report,
-    placer_reports_with_application_graph,
+    generate_binaries_report, generate_comparison_router_report,
+    partitioner_report, placer_reports_with_application_graph,
     router_compressed_summary_report, routing_info_report,
     router_report_from_compressed_router_tables,
     router_report_from_paths,
@@ -1305,12 +1305,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_reset_routing()
         self._execute_graph_binary_gatherer()
+        self._execute_binary_report()
 
         self._execute_create_database_interface()
 
         FecTimer.end_category(TimerCategory.MAPPING)
 
-    # Overridden by spy which adds placement_order
     def _execute_graph_data_specification_writer(self) -> None:
         """
         Runs, times, and logs the GraphDataSpecificationWriter.
@@ -1351,6 +1351,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                     timer.error("executable not found and virtual board")
                     return
                 raise
+
+    def _execute_binary_report(self) -> None:
+        with FecTimer("Binaries report", TimerWork.REPORT) as timer:
+            if timer.skip_if_cfg_false(
+                    "Reports", "write_binaries_report"):
+                return
+            generate_binaries_report()
 
     @final
     def _execute_ordered_covering_compressor(self) -> MulticastRoutingTables:

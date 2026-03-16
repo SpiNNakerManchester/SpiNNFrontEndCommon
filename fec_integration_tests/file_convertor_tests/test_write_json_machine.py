@@ -138,6 +138,7 @@ class TestWriteJson(unittest.TestCase):
         self.assertEqual(machine[1, 2].sdram, machine2[1, 2].sdram)
 
     def testSpin4(self) -> None:
+        set_config("Machine", "version", "5")
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
         try:
