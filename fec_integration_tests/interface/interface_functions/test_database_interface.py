@@ -112,8 +112,7 @@ def _add_rinfo(
         mac_mask, 1))
     for i, m_vertex in enumerate(app_vertex.machine_vertices):
         routing_info.add_routing_info(SpecificMachineVertexRoutingInfo(
-            BaseKeyAndMask(
-                base_key | i << m_vertex_shift, app_mask | mac_mask),
+            base_key | i << m_vertex_shift, app_mask | mac_mask,
             partition_id, m_vertex, i))
 
 
