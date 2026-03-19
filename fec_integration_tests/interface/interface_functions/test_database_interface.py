@@ -28,7 +28,6 @@ from pacman.model.placements import Placements, Placement
 from pacman.model.routing_info import (
     RoutingInfo,
     SpecificAppVertexRoutingInfo, SpecificMachineVertexRoutingInfo)
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.tags.tags import Tags
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.graphs.common.slice import Slice
