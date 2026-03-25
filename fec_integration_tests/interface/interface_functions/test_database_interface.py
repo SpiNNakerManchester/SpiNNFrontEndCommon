@@ -108,7 +108,8 @@ def _add_rinfo(
         m_vertex_shift: int) -> None:
     bkma = BaseKeyAndMask(base_key, app_mask)
     routing_info.add_routing_info(GlobalAppVertexRoutingInfo(
-        bkma, partition_id, app_vertex, len(app_vertex.machine_vertices), mac_mask))
+        bkma, partition_id, app_vertex, len(app_vertex.machine_vertices),
+        mac_mask))
     for i, m_vertex in enumerate(app_vertex.machine_vertices):
         m_key = base_key | i << m_vertex_shift
         bkmm = BaseKeyAndMask(m_key, app_mask | mac_mask)
