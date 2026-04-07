@@ -770,7 +770,8 @@ def generate_binaries_report() -> None:
                     as_str = ""
                     core_subset: CoreSubset
                     for core_subset in core_subsets:
-                        as_str += f"({core_subset.x}:{core_subset.y}:{list(core_subset.processor_ids)})"
+                        as_str += (f"({core_subset.x}:{core_subset.y}:"
+                                   f"{list(core_subset.processor_ids)})")
                     f.write(f"{key}: {as_str}\n")
 
             except Exception as ex:  # pylint: disable=broad-except
