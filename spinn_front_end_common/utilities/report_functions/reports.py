@@ -22,7 +22,7 @@ from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 
-from spinn_machine import Chip, MulticastRoutingEntry, Router
+from spinn_machine import Chip, MulticastRoutingEntry, Router, CoreSubset
 
 from pacman.model.graphs.application import (
     ApplicationEdgePartition, ApplicationVertex)
@@ -766,6 +766,7 @@ def generate_binaries_report() -> None:
                 for key in keys:
                     core_subsets = targets.get_cores_for_binary(aplxs[key])
                     as_str = ""
+                    core_subset: CoreSubset
                     for core_subset in core_subsets:
                         as_str += f"({core_subset.x}:{core_subset.y}:{list(core_subset.processor_ids)})"
                     f.write(f"{key}: {as_str}\n")
