@@ -446,11 +446,12 @@ def _sdram_usage_report_per_chip_with_timesteps(
             sdram_by_chip[key] = vertex_sdram
         else:
             sdram_by_chip[key] += vertex_sdram
-    chip: Chip
     for chip in progress.over(FecDataView.get_machine().chips, end_progress):
         try:
-            if chip in sdram_by_chip:
-                chip_sdram = sdram_by_chip[chip]
+            # convert to key as mypy was confused.
+            key = (chip.x, chip.y)
+            if key in sdram_by_chip:
+                chip_sdram = sdram_by_chip[key]
                 used_sdram = chip_sdram.get_total_sdram(timesteps)
                 f.write(
                     f"**** Chip: ({chip.x}, {chip.y}) has total memory usage "
