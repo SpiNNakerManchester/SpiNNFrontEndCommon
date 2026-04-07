@@ -446,6 +446,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
             sdram_by_chip[key] = vertex_sdram
         else:
             sdram_by_chip[key] += vertex_sdram
+    chip: Chip
     for chip in progress.over(FecDataView.get_machine().chips, end_progress):
         try:
             if chip in sdram_by_chip:
