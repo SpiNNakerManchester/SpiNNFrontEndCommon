@@ -26,6 +26,7 @@ class TimerCategory(Enum):
     RUN_OTHER = (auto(), "In run other")
     GET_MACHINE = (auto(), "Turning on Machine")
     LOADING = (auto(), "Loading Stage")
+    MACHINE_OFF = (auto(), "Turning off Machine")
     MAPPING = (auto(), "Mapping Stage")
     RUN_LOOP = (auto(), "Running Stage")
     RESETTING = (auto(), "Resetting")

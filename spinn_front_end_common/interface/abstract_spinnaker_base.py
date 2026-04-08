@@ -718,7 +718,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :returns: The Machine now stored in the DataView
         """
-        FecTimer.start_category(TimerCategory.GET_MACHINE, True)
         self._data_writer.set_user_accessed_machine()
         if self._data_writer.is_user_mode() and \
                 self._data_writer.is_soft_reset():
@@ -729,6 +728,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "therefore generate a new machine")
             self._hard_reset()
         machine = self._get_known_machine()
+        return machine
+
+    @overrides(ConfigHandler._get_known_machine)
+    def _get_known_machine(
+            self, total_run_time: Optional[float] = 0.0) -> Machine:
+        FecTimer.start_category(TimerCategory.GET_MACHINE, True)
+        machine = super()._get_known_machine()
         FecTimer.end_category(TimerCategory.GET_MACHINE)
         return machine
 
@@ -2224,6 +2230,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         if get_config_bool("Machine", "clear_routing_tables"):
             transceiver.clear_multicast_routes()
 
+    @overrides(ConfigHandler._close_allocation_controller)
+    def _close_allocation_controller(self) -> None:
+        FecTimer.start_category(TimerCategory.MACHINE_OFF, machine_on=False)
+        super()._close_allocation_controller()
+        FecTimer.end_category(TimerCategory.MACHINE_OFF)
+
     def stop(self) -> None:
         """
         End running of the simulation.
@@ -2240,6 +2252,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._do_stop_workflow()
             elif get_config_bool("Reports", "read_provenance_data_on_end"):
                 self._do_read_provenance()
+            self._close_allocation_controller()
             self._stop_remove_data()
 
         except Exception as e:
