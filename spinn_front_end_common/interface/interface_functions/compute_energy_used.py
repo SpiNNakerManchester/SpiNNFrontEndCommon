@@ -127,23 +127,25 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
                 n_active_cores += 1
     n_active_chips = len(active_cores)
 
-    # TODO confirm Power monitors are not included here
-    extra_monitors_per_chip = (version.n_scamp_cores
-                               + FecDataView.get_all_monitor_cores() - 1)
-    extra_monitors_per_board = (version.n_scamp_cores +
-                                FecDataView.get_ethernet_monitor_cores() - 1)
+    n_monitors_all = (version.n_scamp_cores
+                      + FecDataView.get_all_monitor_cores())
+    n_monitors_ethernet = (version.n_scamp_cores +
+                           FecDataView.get_ethernet_monitor_cores())
+
     if get_config_bool("Reports", "write_energy_report"):
+        # Don't count the cost of the EnergyMonitor cores
+        n_monitors_all -= - 1
+        n_monitors_ethernet -= 1
         run_chip_active_time = _extract_cores_active_time(
             checkpoint, active_cores, power_cores, version)
     else:
         run_chip_active_time = _assume_core_always_active(
             active_cores, execute_on_machine_ms)
     load_chip_active_time = _make_extra_monitor_core_use(
-        data_loading_ms, machine, extra_monitors_per_board,
-        extra_monitors_per_chip)
+        data_loading_ms, machine, n_monitors_all, n_monitors_ethernet)
     extraction_chip_active_time = _make_extra_monitor_core_use(
-        data_extraction_ms, machine, extra_monitors_per_board,
-        extra_monitors_per_chip)
+        data_extraction_ms, machine, n_monitors_all,
+        n_monitors_ethernet)
 
     run_router_packets = _extract_router_packets("Run", version)
     load_router_packets = _extract_router_packets("Load", version)
@@ -247,14 +249,15 @@ def _assume_core_always_active(
 
 
 def _make_extra_monitor_core_use(
-        time_ms: int, machine: Machine, extra_monitors_per_board: int,
-        extra_monitors_per_chip: int) -> ChipActiveTime:
+        time_ms: int, machine: Machine, n_monitors_all: int,
+        n_monitors_ethernet: int) -> ChipActiveTime:
     time_s = time_ms / _MS_PER_SECOND
     core_use = {}
     for chip in machine.chips:
-        n_monitors = extra_monitors_per_chip
-        if chip.ip_address is not None:
-            n_monitors += extra_monitors_per_board
+        if chip.ip_address is None:
+            n_monitors = n_monitors_all
+        else:
+            n_monitors = n_monitors_ethernet
         core_use[chip.x, chip.y] = (n_monitors * time_s, n_monitors)
     return core_use
 
