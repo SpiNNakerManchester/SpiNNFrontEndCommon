@@ -200,6 +200,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         super().__init__(n_boards_required, n_chips_required)
 
+        FecTimer.setup()
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SETTING_UP)
 
@@ -223,8 +224,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._create_version_provenance()
 
         self.__sys_excepthook = sys.excepthook
-
-        FecTimer.setup(self)
 
         self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
@@ -733,9 +732,9 @@ class AbstractSpinnakerBase(ConfigHandler):
     @overrides(ConfigHandler._get_known_machine)
     def _get_known_machine(
             self, total_run_time: Optional[float] = 0.0) -> Machine:
-        FecTimer.start_category(TimerCategory.GET_MACHINE, True)
+        FecTimer.start_category(TimerCategory.MACHINE_ON)
         machine = super()._get_known_machine()
-        FecTimer.end_category(TimerCategory.GET_MACHINE)
+        FecTimer.end_category(TimerCategory.MACHINE_ON)
         return machine
 
     def _create_version_provenance(self) -> None:
@@ -2232,7 +2231,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @overrides(ConfigHandler._close_allocation_controller)
     def _close_allocation_controller(self) -> None:
-        FecTimer.start_category(TimerCategory.MACHINE_OFF, machine_on=False)
+        FecTimer.start_category(TimerCategory.MACHINE_OFF)
         super()._close_allocation_controller()
         FecTimer.end_category(TimerCategory.MACHINE_OFF)
 

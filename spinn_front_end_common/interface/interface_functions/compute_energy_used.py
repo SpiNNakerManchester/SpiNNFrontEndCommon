@@ -62,7 +62,7 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
         setup_ms = db.get_timer_sum_by_category_and_reset(
             TimerCategory.SETTING_UP)
         get_machine_ms = db.get_timer_sum_by_category_and_reset(
-            TimerCategory.GET_MACHINE)
+            TimerCategory.MACHINE_ON)
 
         mapping_ms = db.get_timer_sum_by_category_and_reset(
             TimerCategory.MAPPING)

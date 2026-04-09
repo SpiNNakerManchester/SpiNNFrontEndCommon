@@ -115,22 +115,22 @@ class GlobalProvenance(SQLiteDB):
             [FecDataView.get_run_number(), FecDataView.get_reset_number()])
 
     def insert_category(
-            self, category: TimerCategory, machine_on: bool) -> int:
+            self, category: TimerCategory, n_machine: int) -> int:
         """
         Inserts category into the category_timer_provenance  returning id
 
         :param category: Name of Category starting
-        :param machine_on: If the machine was done during all
-            or some of the time
+        :param n_machine: number of times machine has been turned on
+            or zero if machine is off
         :returns: ID of the inserted category
         """
         self.cursor().execute(
             """
             INSERT INTO category_timer_provenance(
-                category, machine_on, n_run, n_loop)
+                category, n_machine, n_run, n_loop)
             VALUES(?, ?, ?, ?)
             """,
-            [category.category_name, machine_on,
+            [category.category_name, n_machine,
              FecDataView.get_run_number(),
              FecDataView.get_run_step()])
         return self.lastrowid
@@ -337,33 +337,6 @@ class GlobalProvenance(SQLiteDB):
             return info
         except IndexError:
             return 0
-
-    def get_category_timer_sums(
-            self, category: TimerCategory) -> Tuple[int, int]:
-        """
-        Get the runtime for one category of algorithms
-        split machine on, machine off
-
-        :param category:
-        :return: total on and off time of instances with this category
-        """
-        on = 0
-        off = 0
-        query = """
-             SELECT sum(time_taken), machine_on
-             FROM category_timer_provenance
-             WHERE category = ?
-             GROUP BY machine_on
-             """
-        try:
-            for data in self.run_query(query, [category.category_name]):
-                if data[1]:
-                    on = data[0]
-                else:
-                    off = data[0]
-        except IndexError:
-            pass
-        return on, off
 
     def get_timer_sum_by_category(self, category: TimerCategory) -> int:
         """

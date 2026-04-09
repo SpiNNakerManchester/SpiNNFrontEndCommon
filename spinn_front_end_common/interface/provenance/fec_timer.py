@@ -44,13 +44,15 @@ class FecTimer(object):
     Timer.
     """
 
-    _simulator: Optional[AbstractSpinnakerBase] = None
     _provenance_path: Optional[str] = None
     _print_timings: bool = False
     _category_id: Optional[int] = None
     _category: Optional[TimerCategory] = None
     _category_time: int = 0
-    _machine_on: bool = False
+    # machine on cycle to allocate time to
+    _n_machine: int = 0
+    # previous machine on cycle if any
+    _previous_n_machine: int = 0
     _previous: List[TimerCategory] = []
     __slots__ = (
         # The start time when the timer was set off
@@ -64,13 +66,13 @@ class FecTimer(object):
     APPLICATION_RUNNER = "Application runner"
 
     @classmethod
-    def setup(cls, simulator: AbstractSpinnakerBase) -> None:
+    def setup(cls) -> None:
         """
-        Checks and saves cfg values so they don't have to be read each time
+        Starts the Fec Timer and puts it into WAITING mode
 
-        :param simulator: Not actually used
+        Checks and saves cfg values so they don't have to be read each time
         """
-        cls._simulator = simulator
+        cls._category = None
         if get_config_bool("Reports", "write_algorithm_timings"):
             cls._provenance_path = get_timestamp_path(
                 "tpath_algorithm_timings")
@@ -346,15 +348,14 @@ class FecTimer(object):
         try:
             with GlobalProvenance() as db:
                 cls._category_id = db.insert_category(
-                    category, cls._machine_on)
+                    category, cls._n_machine)
         except DatabaseError as ex:
             logger.error(f"Timer data error {ex}")
         cls._category = category
         cls._category_time = time_now
 
     @classmethod
-    def start_category(cls, category: TimerCategory,
-                       machine_on: Optional[bool] = None) -> None:
+    def start_category(cls, category: TimerCategory) -> None:
         """
         This method should only be called via the View!
 
@@ -362,12 +363,17 @@ class FecTimer(object):
         :param machine_on: What to change machine on too.
             Or `None` to leave as is
         """
+        if cls._category == category:
+            raise ValueError(
+                f"Current category already {category}")
         if cls._category is not None:
             cls._previous.append(cls._category)
-        if machine_on is not None:
-            cls._machine_on = machine_on
-        if cls._category != category:
-            cls._change_category(category)
+        if category == TimerCategory.MACHINE_ON:
+            cls._n_machine = cls._previous_n_machine + 1
+        elif category == TimerCategory.MACHINE_OFF:
+            cls._previous_n_machine = cls._n_machine
+            cls._n_machine = 0
+        cls._change_category(category)
 
     @classmethod
     def end_category(cls, category: TimerCategory) -> None:
