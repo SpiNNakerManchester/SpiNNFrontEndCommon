@@ -23,12 +23,15 @@ class TimerCategory(Enum):
     # Category Constants
     WAITING = (auto(), "Waiting")
     SETTING_UP = (auto(), "In Setup")
-    RUN_OTHER = (auto(), "In run other")
-    LOADING = (auto(), "Loading Stage")
+    DATA_SPEC_OTHER = (auto(), "Data Spec Other")
+    DATA_SPEC_LOAD = (auto(), "Data Spec Load")
+    DATA_SPEC_SYNAPSE = (auto(), "Data Spec Synapse")
     MACHINE_ON = (auto(), "Turning on Machine")
     MACHINE_OFF = (auto(), "Turning off Machine")
     MAPPING = (auto(), "Mapping Stage")
+    RUN_OTHER = (auto(), "In run other")
     RUN_LOOP = (auto(), "Running Stage")
+    EXTRACT_DATA = (auto(), "Extracting Data")
     RESETTING = (auto(), "Resetting")
     SHUTTING_DOWN = (auto(), "Shutting down")
 

@@ -1600,7 +1600,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                       TimerWork.LOADING_DATA) as timer:
             if timer.skip_if_virtual_board():
                 return
-            return load_application_data_specs()
+            FecTimer.start_category(TimerCategory.DATA_SPEC_LOAD)
+            load_application_data_specs()
+            FecTimer.end_category(TimerCategory.DATA_SPEC_LOAD)
 
     def _execute_tags_from_machine_report(self) -> None:
         """
@@ -1698,7 +1700,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the load algorithms.
         """
-        FecTimer.start_category(TimerCategory.LOADING)
+        FecTimer.start_category(TimerCategory.DATA_SPEC_OTHER)
 
         self._execute_pre_compression()
         compressed = self._do_compression()
@@ -1732,7 +1734,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_application_load_executables()
         self._execute_router_provenance_gatherer("Load", TimerWork.LOADING)
 
-        FecTimer.end_category(TimerCategory.LOADING)
+        FecTimer.end_category(TimerCategory.DATA_SPEC_OTHER)
 
     def _report_sdram_usage_per_chip(self) -> None:
         with FecTimer("Sdram usage per chip report",
@@ -1973,7 +1975,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             bm = self._data_writer.get_buffer_manager()
+            FecTimer.start_category(TimerCategory.EXTRACT_DATA)
             bm.extract_data()
+            FecTimer.end_category(TimerCategory.EXTRACT_DATA)
 
     def _do_extract_from_machine(self) -> None:
         """

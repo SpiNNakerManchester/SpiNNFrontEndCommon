@@ -22,21 +22,21 @@ class PowerUsed(object):
     __slots__ = (
         "__n_chips", "__n_active_chips", "__n_cores", "__n_active_cores",
         "__n_boards", "__n_frames",
-        "__exec_time_s", "__mapping_time_s", "__loading_time_s",
+        "__exec_time_s", "__mapping_time_s", "__ds_time_s",
         "__saving_time_s", "__other_time_s",
         "__exec_energy_j", "__exec_energy_cores_j", "__exec_energy_boards_j",
-        "__mapping_energy_j", "__loading_energy_j", "__saving_energy_j",
+        "__mapping_energy_j", "__ds_energy_j", "__saving_energy_j",
         "__other_energy_j",
         )
 
     def __init__(
             self, n_chips: int, n_active_chips: int, n_cores: int,
             n_active_cores: int, n_boards: int, n_frames: int,
-            exec_time_s: float, mapping_time_s: float, loading_time_s: float,
+            exec_time_s: float, mapping_time_s: float, ds_time_s: float,
             saving_time_s: float, other_time_s: float,
             exec_energy_j: float, exec_energy_cores_j: float,
             exec_energy_boards_j: float, mapping_energy_j: float,
-            loading_energy_j: float, saving_energy_j: float,
+            ds_energy_j: float, saving_energy_j: float,
             other_energy_j: float) -> None:
         """
         :param n_chips: The number of chips used
@@ -47,7 +47,7 @@ class PowerUsed(object):
         :param n_frames: The number of frames used
         :param exec_time_s: The execution time in seconds
         :param mapping_time_s: The mapping time in seconds
-        :param loading_time_s: The loading time in seconds
+        :param ds_time_s: The data spec time in seconds
         :param saving_time_s: The saving time in seconds
         :param other_time_s: The other time in seconds
         :param exec_energy_j:
@@ -58,7 +58,7 @@ class PowerUsed(object):
             The execution energy of the whole system except the Frames
             in Joules
         :param mapping_energy_j: The mapping energy in Joules
-        :param loading_energy_j: The loading energy in Joules
+        :param ds_energy_j: The data spec energy in Joules
         :param saving_energy_j: The saving energy in Joules
         :param other_energy_j: The other energy in Joules
         """
@@ -71,7 +71,7 @@ class PowerUsed(object):
 
         self.__exec_time_s = exec_time_s
         self.__mapping_time_s = mapping_time_s
-        self.__loading_time_s = loading_time_s
+        self.__ds_time_s = ds_time_s
         self.__saving_time_s = saving_time_s
         self.__other_time_s = other_time_s
 
@@ -79,7 +79,7 @@ class PowerUsed(object):
         self.__exec_energy_cores_j = exec_energy_cores_j
         self.__exec_energy_boards_j = exec_energy_boards_j
         self.__mapping_energy_j = mapping_energy_j
-        self.__loading_energy_j = loading_energy_j
+        self.__ds_energy_j = ds_energy_j
         self.__saving_energy_j = saving_energy_j
         self.__other_energy_j = other_energy_j
 
@@ -132,10 +132,10 @@ class PowerUsed(object):
         return self.__mapping_time_s
 
     @property
-    def loading_time_s(self) -> float:
+    def ds_time_s(self) -> float:
         """ Get the loading time in seconds
         """
-        return self.__loading_time_s
+        return self.__ds_time_s
 
     @property
     def saving_time_s(self) -> float:
@@ -184,10 +184,10 @@ class PowerUsed(object):
         return self.__mapping_energy_j
 
     @property
-    def loading_energy_j(self) -> float:
+    def ds_energy_j(self) -> float:
         """ Get the loading energy in Joules
         """
-        return self.__loading_energy_j
+        return self.__ds_energy_j
 
     @property
     def saving_energy_j(self) -> float:
@@ -244,14 +244,14 @@ class PowerUsed(object):
             self.n_active_cores, self.n_boards, self.n_frames,
             self.exec_time_s - other.exec_time_s,
             self.mapping_time_s - other.mapping_time_s,
-            self.loading_time_s - other.loading_time_s,
+            self.ds_time_s - other.ds_time_s,
             self.saving_time_s - other.saving_time_s,
             self.other_time_s - other.other_time_s,
             self.exec_energy_j - other.exec_energy_j,
             self.exec_energy_cores_j - other.exec_energy_cores_j,
             self.exec_energy_boards_j - other.exec_energy_boards_j,
             self.mapping_energy_j - other.mapping_energy_j,
-            self.loading_energy_j - other.loading_energy_j,
+            self.ds_energy_j - other.ds_energy_j,
             self.saving_energy_j - other.saving_energy_j,
             self.other_energy_j - other.other_energy_j)
 
@@ -289,13 +289,13 @@ class PowerUsed(object):
             self.n_active_cores, self.n_boards, self.n_frames,
             self.exec_time_s + other.exec_time_s,
             self.mapping_time_s + other.mapping_time_s,
-            self.loading_time_s + other.loading_time_s,
+            self.ds_time_s + other.ds_time_s,
             self.saving_time_s + other.saving_time_s,
             self.other_time_s + other.other_time_s,
             self.exec_energy_j + other.exec_energy_j,
             self.exec_energy_cores_j + other.exec_energy_cores_j,
             self.exec_energy_boards_j + other.exec_energy_boards_j,
             self.mapping_energy_j + other.mapping_energy_j,
-            self.loading_energy_j + other.loading_energy_j,
+            self.ds_energy_j + other.ds_energy_j,
             self.saving_energy_j + other.saving_energy_j,
             self.other_energy_j + other.other_energy_j)

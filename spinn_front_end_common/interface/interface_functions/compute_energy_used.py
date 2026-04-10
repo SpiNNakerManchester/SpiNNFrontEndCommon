@@ -59,22 +59,22 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     # Get data from provenance
     with GlobalProvenance() as db:
         total_on_ms = db.get_machine_on_by_reset()
-        mapping_ms = db.get_timer_sum_by_category_and_reset(
+        mapping_ms = db.get_category_timer_sum_by_reset(
             TimerCategory.MAPPING)
-        loading_ms = db.get_timer_sum_by_category_and_reset(
-            TimerCategory.LOADING)
+        ds_other_ms = db.get_category_timer_sum_by_reset(
+            TimerCategory.DATA_SPEC_OTHER)
 
         # Separate out processes that are part of the others but that happen
         # on the machine, so we can account for active machine, not idle
-        data_loading_ms = db.get_timer_sum_by_work_and_reset(
-            TimerWork.LOADING_DATA)
+        data_loading_ms = db.get_category_timer_sum_by_reset(
+            TimerCategory.DATA_SPEC_LOAD)
         if get_config_bool("Machine", "enable_advanced_monitor_support"):
-            data_extraction_ms = db.get_timer_sum_by_work_and_reset(
-                TimerWork.EXTRACT_DATA)
+            data_extraction_ms = db.get_category_timer_sum_by_reset(
+                TimerCategory.EXTRACT_DATA)
         else:
             data_extraction_ms = 0
-        expansion_ms = db.get_timer_sum_by_work_and_reset(
-            TimerWork.SYNAPSE)
+        expansion_ms = db.get_category_timer_sum_by_reset(
+            TimerCategory.DATA_SPEC_SYNAPSE)
 
     if checkpoint is not None:
         execute_on_machine_ms = checkpoint
@@ -131,7 +131,7 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     extraction_router_packets = _extract_router_packets("Extract", version)
 
     return compute_energy_over_time(
-        total_on_ms, mapping_ms, loading_ms,
+        total_on_ms, mapping_ms, ds_other_ms,
         data_loading_ms, expansion_ms, data_extraction_ms,
         execute_on_machine_ms, version, n_active_chips,
         n_active_cores, sum_load_active_time, sum_extraction_active_time,
@@ -225,7 +225,7 @@ def _assume_core_always_active(
 
 
 def compute_energy_over_time(
-        total_on_ms: float, mapping_ms: float, loading_ms: float,
+        total_on_ms: float, mapping_ms: float, ds_other_ms: float,
         data_loading_ms: float, expansion_ms: float,
         data_extraction_ms: float, execute_on_machine_ms: float,
         version: AbstractVersion,
@@ -241,9 +241,9 @@ def compute_energy_over_time(
 
     :param total_on_ms: Total time the machine was on for thios reset
     :param mapping_ms: time spent mapping to the machine
-    :param loading_ms:
-        time spent loading the simulation onto the passive machine
-        Includes the data_loading_ms and expansion_ms
+    :param ds_other_ms:
+        time spent on dta specification not including
+        the data_loading_ms and expansion_ms
     :param data_loading_ms:
         time spent loading data onto the machine actively using the machine to
         load the data
@@ -279,7 +279,7 @@ def compute_energy_over_time(
     # Time and energy spent on the host machine, with the machine (at least
     # theoretically) running, doing general software tasks that we don't want
     # to put in other categories.
-    other_time_ms = (total_on_ms - mapping_ms - loading_ms -
+    other_time_ms = (total_on_ms - mapping_ms - ds_other_ms -
                      data_extraction_ms - execute_on_machine_ms)
     other_time_s = other_time_ms / _MS_PER_SECOND
     other_energy_j = version.get_idle_energy(
@@ -291,14 +291,14 @@ def compute_energy_over_time(
         mapping_time_s, n_frames, n_boards, n_chips)
 
     # Time and energy spent loading data onto the machine
-    loading_active_ms = data_loading_ms + expansion_ms
-    loading_active_s = loading_active_ms / _MS_PER_SECOND
-    loading_time_s = loading_ms / _MS_PER_SECOND
-    loading_idle_s = loading_time_s - loading_active_s
-    loading_energy_j = version.get_idle_energy(
-        loading_idle_s,  n_frames, n_boards, n_chips)
-    loading_energy_j += version.get_active_energy(
-        loading_active_s, n_frames, n_boards,
+    ds_active_ms = data_loading_ms + expansion_ms
+    ds_active_s = ds_active_ms / _MS_PER_SECOND
+    ds_idle_s = ds_other_ms / _MS_PER_SECOND
+    ds_time_s = ds_active_s + ds_idle_s
+    ds_energy_j = version.get_idle_energy(
+        ds_idle_s,  n_frames, n_boards, n_chips)
+    ds_energy_j += version.get_active_energy(
+        ds_active_s, n_frames, n_boards,
         n_chips, sum_load_active_time, load_router_packets)
 
     # Time and energy spent extracting data from the machine
@@ -321,6 +321,6 @@ def compute_energy_over_time(
 
     return PowerUsed(
         n_chips, n_active_chips, n_cores, n_active_cores, n_boards, n_frames,
-        exec_time_s, mapping_time_s, loading_time_s, saving_time_s,
+        exec_time_s, mapping_time_s, ds_time_s, saving_time_s,
         other_time_s, exec_energy_j, exec_energy_cores_j, exec_energy_boards_j,
-        mapping_energy_j, loading_energy_j, saving_energy_j, other_energy_j)
+        mapping_energy_j, ds_energy_j, saving_energy_j, other_energy_j)

@@ -86,7 +86,7 @@ class TestFecTimer(unittest.TestCase):
         with self.assertRaises(ValueError):
             FecTimer.start_category(TimerCategory.MAPPING)
         FecTimer.end_category(TimerCategory.MAPPING)
-        FecTimer.start_category(TimerCategory.LOADING)
+        FecTimer.start_category(TimerCategory.DATA_SPEC_OTHER)
         with self.assertRaises(ValueError):
             FecTimer.end_category(TimerCategory.RUN_OTHER)
 
