@@ -81,14 +81,16 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
 
         # Separate out processes that are part of the others but that happen
         # on the machine, so we can account for active machine, not idle
-        data_loading_ms = db.get_timer_sum_by_work(TimerWork.LOADING_DATA)
+        data_loading_ms = db.get_timer_sum_by_work_and_reset(
+            TimerWork.LOADING_DATA)
         loading_ms -= data_loading_ms
         data_extraction_ms = 0
         if get_config_bool("Machine", "enable_advanced_monitor_support"):
-            data_extraction_ms = db.get_timer_sum_by_work(
+            data_extraction_ms = db.get_timer_sum_by_work_and_reset(
                 TimerWork.EXTRACT_DATA)
             run_loop_ms -= data_extraction_ms
-        expansion_ms = db.get_timer_sum_by_work(TimerWork.SYNAPSE)
+        expansion_ms = db.get_timer_sum_by_work_and_reset(
+            TimerWork.SYNAPSE)
         loading_ms -= expansion_ms
 
     if checkpoint is not None:

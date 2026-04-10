@@ -404,6 +404,30 @@ class GlobalProvenance(SQLiteDB):
         except IndexError:
             return 0
 
+    def get_timer_sum_by_work_and_reset(
+            self, work: TimerWork, n_reset: Optional[int] = None) -> int:
+        """
+        Get the total runtime for one work type of algorithms
+
+        :param work:
+        :return: total off all run times with this category
+        """
+        if n_reset is None:
+            n_reset = FecDataView.get_reset_number()
+        query = """
+             SELECT sum(time_taken)
+             FROM full_timer_view
+             WHERE work = ? and n_reset = ?
+             """
+        data = self.run_query(query, [work.work_name, n_reset])
+        try:
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
+        except IndexError:
+            return 0
+
     def get_timer_sum_by_algorithm(self, algorithm: str) -> int:
         """
         Get the total runtime for one algorithm
