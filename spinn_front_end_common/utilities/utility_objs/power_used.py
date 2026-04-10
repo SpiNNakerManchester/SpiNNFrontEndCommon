@@ -133,7 +133,7 @@ class PowerUsed(object):
 
     @property
     def ds_time_s(self) -> float:
-        """ Get the loading time in seconds
+        """ Get the data specification time in seconds
         """
         return self.__ds_time_s
 
@@ -155,7 +155,7 @@ class PowerUsed(object):
         """
         return (
             self.__exec_time_s + self.__mapping_time_s +
-            self.__loading_time_s + self.__saving_time_s +
+            self.__ds_time_s + self.__saving_time_s +
             self.__other_time_s)
 
     @property
@@ -185,7 +185,7 @@ class PowerUsed(object):
 
     @property
     def ds_energy_j(self) -> float:
-        """ Get the loading energy in Joules
+        """ Get the data specification energy in Joules
         """
         return self.__ds_energy_j
 
@@ -207,7 +207,7 @@ class PowerUsed(object):
         """
         return (
             self.__exec_energy_j + self.__mapping_energy_j +
-            self.__loading_energy_j + self.__saving_energy_j +
+            self.__ds_energy_j + self.__saving_energy_j +
             self.__other_energy_j)
 
     def __sub__(self, other: Any) -> "PowerUsed":

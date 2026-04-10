@@ -48,7 +48,8 @@ _US_PER_MS: Final = 1000.0
 _US_PER_SECOND: Final = 1000000.0
 
 
-def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
+def compute_energy_used(checkpoint: Optional[int] = None,
+                        n_reset: Optional[int] = None) -> PowerUsed:
     """
     This algorithm does the actual work of computing energy used by a
     simulation (or other application) running on SpiNNaker.
@@ -59,22 +60,22 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     # Get data from provenance
     with GlobalProvenance() as db:
         total_on_ms = db.get_machine_on_by_reset()
-        mapping_ms = db.get_category_timer_sum_by_reset(
-            TimerCategory.MAPPING)
-        ds_other_ms = db.get_category_timer_sum_by_reset(
-            TimerCategory.DATA_SPEC_OTHER)
+        mapping_ms = db.get_category_timer_sum(
+            TimerCategory.MAPPING, n_reset)
+        ds_other_ms = db.get_category_timer_sum(
+            TimerCategory.DATA_SPEC_OTHER, n_reset)
 
         # Separate out processes that are part of the others but that happen
         # on the machine, so we can account for active machine, not idle
-        data_loading_ms = db.get_category_timer_sum_by_reset(
-            TimerCategory.DATA_SPEC_LOAD)
+        data_loading_ms = db.get_category_timer_sum(
+            TimerCategory.DATA_SPEC_LOAD, n_reset)
         if get_config_bool("Machine", "enable_advanced_monitor_support"):
-            data_extraction_ms = db.get_category_timer_sum_by_reset(
-                TimerCategory.EXTRACT_DATA)
+            data_extraction_ms = db.get_category_timer_sum(
+                TimerCategory.EXTRACT_DATA, n_reset)
         else:
             data_extraction_ms = 0
-        expansion_ms = db.get_category_timer_sum_by_reset(
-            TimerCategory.DATA_SPEC_SYNAPSE)
+        expansion_ms = db.get_category_timer_sum(
+            TimerCategory.DATA_SPEC_SYNAPSE, n_reset)
 
     if checkpoint is not None:
         execute_on_machine_ms = checkpoint

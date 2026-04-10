@@ -1838,7 +1838,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
 
-            power_used = compute_energy_used()
+            power_used = compute_energy_used(
+                self._data_writer.get_reset_number())
 
             energy_provenance_reporter(power_used)
 
