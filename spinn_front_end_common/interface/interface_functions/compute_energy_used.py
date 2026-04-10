@@ -23,7 +23,7 @@ from spinn_utilities.log import FormatAdapter
 
 from spinn_machine import Machine
 from spinn_machine.version.abstract_version import (
-    AbstractVersion, ChipActiveTime, RouterPackets)
+    AbstractVersion, RouterPackets)
 
 from spinnman.model.enums.executable_type import ExecutableType
 
@@ -129,23 +129,23 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
 
     n_monitors_all = (version.n_scamp_cores
                       + FecDataView.get_all_monitor_cores())
-    n_monitors_ethernet = (version.n_scamp_cores +
-                           FecDataView.get_ethernet_monitor_cores())
+    n_extra_monitors_ethernet = (FecDataView.get_ethernet_monitor_cores() -
+                                 FecDataView.get_all_monitor_cores())
 
     if get_config_bool("Reports", "write_energy_report"):
         # Don't count the cost of the EnergyMonitor cores
         n_monitors_all -= - 1
-        n_monitors_ethernet -= 1
-        run_chip_active_time = _extract_cores_active_time(
+        sum_run_active_time = _extract_cores_active_time(
             checkpoint, active_cores, power_cores, version)
     else:
-        run_chip_active_time = _assume_core_always_active(
+        sum_run_active_time = _assume_core_always_active(
             active_cores, execute_on_machine_ms)
-    load_chip_active_time = _make_extra_monitor_core_use(
-        data_loading_ms, machine, n_monitors_all, n_monitors_ethernet)
-    extraction_chip_active_time = _make_extra_monitor_core_use(
-        data_extraction_ms, machine, n_monitors_all,
-        n_monitors_ethernet)
+
+    total_monitors = (
+            machine.n_chips * n_monitors_all +
+            machine.n_ethernet_connected_chips * n_extra_monitors_ethernet)
+    sum_load_active_time = data_loading_ms / _MS_PER_SECOND * total_monitors
+    sum_extraction_active_time = data_extraction_ms / _MS_PER_SECOND * total_monitors
 
     run_router_packets = _extract_router_packets("Run", version)
     load_router_packets = _extract_router_packets("Load", version)
@@ -157,8 +157,8 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
         data_loading_ms, expansion_ms, data_extraction_ms, run_other_ms,
         run_loop_ms, execute_on_machine_ms, resetting_ms, shutting_down_ms,
         version, n_chips, n_active_chips, n_boards, n_frames, n_cores,
-        n_active_cores, load_chip_active_time, extraction_chip_active_time,
-        run_chip_active_time, load_router_packets, extraction_router_packets,
+        n_active_cores, sum_load_active_time, sum_extraction_active_time,
+        sum_run_active_time, load_router_packets, extraction_router_packets,
         run_router_packets)
 
 
@@ -197,10 +197,10 @@ def _extract_router_packets(
 def _extract_cores_active_time(
         checkpoint: Optional[int], active_cores: Dict[Tuple[int, int], int],
         power_cores: Dict[Tuple[int, int], int],
-        version: AbstractVersion) -> ChipActiveTime:
+        version: AbstractVersion) -> float:
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
 
-    chip_activity: ChipActiveTime = {}
+    sum_activity: float = 0
     with BufferDatabase() as buff_db:
         for (x, y), n_cores in active_cores.items():
             # Find the core that was used on this chip for power monitoring
@@ -225,13 +225,13 @@ def _extract_cores_active_time(
             # If checkpoint is specified, filter the times
             if checkpoint is not None:
                 activity_times = activity_times[record_times < checkpoint]
-            chip_activity[x, y] = (activity_times.sum(), n_cores)
-    return chip_activity
+            sum_activity += activity_times.sum()
+    return sum_activity
 
 
 def _assume_core_always_active(
         active_cores: Dict[Tuple[int, int], int],
-        execute_on_machine_ms: float) -> ChipActiveTime:
+        execute_on_machine_ms: float) -> float:
     """
     As there are no power monitors assume cores always active
 
@@ -241,25 +241,10 @@ def _assume_core_always_active(
         " active for whole run time.  To get a better energy estimate,"
         " set write_energy_report=True in the [Reports] section of the"
         " configuration file")
-    chip_activity: ChipActiveTime = {}
-    for (x, y), n_cores in active_cores.items():
-        chip_activity[x, y] = (
-            (execute_on_machine_ms * n_cores) / _MS_PER_SECOND, n_cores)
-    return chip_activity
-
-
-def _make_extra_monitor_core_use(
-        time_ms: int, machine: Machine, n_monitors_all: int,
-        n_monitors_ethernet: int) -> ChipActiveTime:
-    time_s = time_ms / _MS_PER_SECOND
-    core_use = {}
-    for chip in machine.chips:
-        if chip.ip_address is None:
-            n_monitors = n_monitors_all
-        else:
-            n_monitors = n_monitors_ethernet
-        core_use[chip.x, chip.y] = (n_monitors * time_s, n_monitors)
-    return core_use
+    sum_activity: float = 0
+    for n_cores in active_cores.values():
+        sum_activity += (execute_on_machine_ms * n_cores) / _MS_PER_SECOND
+    return sum_activity
 
 
 def compute_energy_over_time(
@@ -270,9 +255,9 @@ def compute_energy_over_time(
         resetting_ms: float, shutting_down_ms: float, version: AbstractVersion,
         n_chips: int, n_active_chips: int, n_boards: int, n_frames: int,
         n_cores: int, n_active_cores: int,
-        load_chip_active_time: ChipActiveTime,
-        extraction_chip_active_time: ChipActiveTime,
-        run_chip_active_time: ChipActiveTime,
+        sum_load_active_time: float,
+        sum_extraction_active_time: float,
+        sum_run_active_time: float,
         load_router_packets: RouterPackets,
         extraction_router_packets: RouterPackets,
         run_router_packets: RouterPackets) -> PowerUsed:
@@ -309,12 +294,12 @@ def compute_energy_over_time(
     :param n_frames: number of frames that make up the machine
     :param n_cores: number of cores that are used by the simulation
     :param n_active_cores: number of cores actively used by the simulation
-    :param load_chip_active_time:
-        time that each core was active during loading
-    :param extraction_chip_active_time:
-        time that each core was active during extraction
-    :param run_chip_active_time:
-        time that each core was active during running
+    :param sum_load_active_time:
+        sum of times that cores where active during loading
+    :param sum_extraction_chip_active_time:
+        sum of time that cores where active during extraction
+    :param sum_run_active_time:
+        sum of times that cores where active during running
     :param load_router_packets:
         packets sent by the machine during loading
     :param extraction_router_packets:
@@ -345,24 +330,24 @@ def compute_energy_over_time(
         loading_ms / _MS_PER_SECOND, n_frames, n_boards, n_chips)
     loading_energy_j += version.get_active_energy(
         (data_loading_ms + expansion_ms) / _MS_PER_SECOND, n_frames, n_boards,
-        n_chips, load_chip_active_time, load_router_packets)
+        n_chips, sum_load_active_time, load_router_packets)
 
     # Time and energy spent extracting data from the machine
     saving_time_s = data_extraction_ms / _MS_PER_SECOND
     saving_energy_j = version.get_active_energy(
         saving_time_s, n_frames, n_boards, n_chips,
-        extraction_chip_active_time, extraction_router_packets)
+        sum_extraction_active_time, extraction_router_packets)
 
     # Time and energy spent running the simulation on the machine
     exec_time_s = execute_on_machine_ms / _MS_PER_SECOND
     exec_energy_j = version.get_active_energy(
         exec_time_s, n_frames, n_boards, n_chips,
-        run_chip_active_time, run_router_packets)
+        sum_run_active_time, run_router_packets)
     exec_energy_cores_j = version.get_active_energy(
-        exec_time_s, 0, 0, n_active_chips, run_chip_active_time,
+        exec_time_s, 0, 0, n_active_chips, sum_run_active_time,
         run_router_packets)
     exec_energy_boards_j = version.get_active_energy(
-        exec_time_s, 0, n_boards, n_chips, run_chip_active_time,
+        exec_time_s, 0, n_boards, n_chips, sum_run_active_time,
         run_router_packets)
 
     return PowerUsed(
