@@ -874,7 +874,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         machine = self._get_known_machine()
         # get cores of machine
         cores = machine.total_available_user_cores
-        ethernets = len(machine.ethernet_connected_chips)
+        ethernets = machine.n_ethernet_connected_chips
         cores -= ((machine.n_chips - ethernets) *
                   self._data_writer.get_all_monitor_cores())
         cores -= ethernets * self._data_writer.get_ethernet_monitor_cores()

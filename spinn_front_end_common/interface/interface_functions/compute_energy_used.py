@@ -106,7 +106,7 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
 
     machine = FecDataView.get_machine()
     version = FecDataView.get_machine_version()
-    n_boards = len(machine.ethernet_connected_chips)
+    n_boards = machine.n_ethernet_connected_chips
     n_chips = machine.n_chips
     n_cores = FecDataView.get_n_placements()
     n_frames = _calculate_n_frames(machine)
