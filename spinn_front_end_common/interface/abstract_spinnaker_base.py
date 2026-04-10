@@ -1990,7 +1990,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Extract", TimerWork.EXTRACTING)
 
         self._do_read_provenance()
-        self._report_energy()
         self._do_provenance_reports()
 
     def _do_run(
@@ -2179,6 +2178,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 logger.error("Ignoring the repeated reset call")
             return
 
+        self._report_energy()
         logger.info("Resetting")
 
         if self._data_writer.get_user_accessed_machine():
@@ -2242,6 +2242,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
         # If we have run forever, stop the binaries
 
+        self._report_energy()
         try:
             if (self._data_writer.is_ran_ever()
                     and self._data_writer.get_current_run_timesteps() is None
