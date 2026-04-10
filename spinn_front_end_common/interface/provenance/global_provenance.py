@@ -102,35 +102,24 @@ class GlobalProvenance(SQLiteDB):
             VALUES(?, ?)
             """, [description, the_value])
 
-    def insert_run_reset_mapping(self) -> None:
-        """
-        Inserts a mapping between rest number and run number
-        """
-        self.cursor().execute(
-            """
-            INSERT INTO run_reset_mapping(
-                n_run, n_reset)
-            VALUES(?, ?)
-            """,
-            [FecDataView.get_run_number(), FecDataView.get_reset_number()])
-
     def insert_category(
-            self, category: TimerCategory, n_machine: int) -> int:
+            self, category: TimerCategory, machine_on: bool) -> int:
         """
         Inserts category into the category_timer_provenance  returning id
 
         :param category: Name of Category starting
-        :param n_machine: number of times machine has been turned on
-            or zero if machine is off
+        :param machine_on: If the machine was done during all
+            or some of the time
         :returns: ID of the inserted category
         """
         self.cursor().execute(
             """
             INSERT INTO category_timer_provenance(
-                category, n_machine, n_run, n_loop)
-            VALUES(?, ?, ?, ?)
+                category, machine_on, n_reset, n_run, n_loop)
+            VALUES(?, ?, ?, ?, ?)
             """,
-            [category.category_name, n_machine,
+            [category.category_name, machine_on,
+             FecDataView.get_reset_number(),
              FecDataView.get_run_number(),
              FecDataView.get_run_step()])
         return self.lastrowid
@@ -264,26 +253,6 @@ class GlobalProvenance(SQLiteDB):
             f"{row[0]}: {row[1]}"
             for row in self.run_query(query, [algorithm]))
 
-    def get_run_times(self) -> str:
-        """
-        Gets the algorithm running times from the last run. If an algorithm is
-        invoked multiple times in the run, its times are summed.
-
-        :return:
-            A possibly multi line string with for each row which matches the
-            like a line ``description_name: time``. The times are in seconds.
-        """
-        # We know the database actually stores microseconds for durations
-        query = """
-            SELECT description, SUM(time_taken) / 1000000.0
-            FROM timer_provenance
-            GROUP BY description
-            ORDER BY the_value
-            """
-        return "\n".join(
-            f"{row[0].replace('_', ' ')}: {row[1]} s"
-            for row in self.run_query(query))
-
     def get_run_time_of_buffer_extractor(self) -> str:
         """
         Gets the buffer extractor provenance item(s) from the last run
@@ -293,6 +262,29 @@ class GlobalProvenance(SQLiteDB):
             ``LIKE %BufferExtractor``
         """
         return self.get_timer_provenance("%BufferExtractor")
+
+    def get_machine_on_by_reset(self, n_reset: Optional[int] = None) -> int:
+        """
+        Get the total time the machione was on for this reset
+
+        :param n_reset:
+        :return:
+        """
+        if n_reset is None:
+            n_reset = FecDataView.get_reset_number()
+        query = """
+             SELECT sum(time_taken)
+             FROM category_timer_provenance
+             WHERE machine_on = TRUE
+             """
+        data = self.run_query(query)
+        try:
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
+        except IndexError:
+            return 0
 
     def get_category_timer_sum(self, category: TimerCategory) -> int:
         """
@@ -326,7 +318,7 @@ class GlobalProvenance(SQLiteDB):
             n_reset = FecDataView.get_reset_number()
         query = """
              SELECT sum(time_taken)
-             FROM category_timer_view
+             FROM category_timer_provenance
              WHERE category = ? AND n_reset = ?
              """
         data = self.run_query(query, [category.category_name, n_reset])

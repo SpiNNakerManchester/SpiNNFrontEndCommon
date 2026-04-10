@@ -58,40 +58,23 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     """
     # Get data from provenance
     with GlobalProvenance() as db:
-        waiting_ms = db.get_category_timer_sum_by_reset(TimerCategory.WAITING)
-        setup_ms = db.get_timer_sum_by_category_and_reset(
-            TimerCategory.SETTING_UP)
-        get_machine_ms = db.get_timer_sum_by_category_and_reset(
-            TimerCategory.MACHINE_ON)
-
+        total_on_ms = db.get_machine_on_by_reset()
         mapping_ms = db.get_timer_sum_by_category_and_reset(
             TimerCategory.MAPPING)
         loading_ms = db.get_timer_sum_by_category_and_reset(
             TimerCategory.LOADING)
 
-        run_other_ms = db.get_timer_sum_by_category_and_reset(
-            TimerCategory.RUN_OTHER)
-        run_loop_ms = db.get_timer_sum_by_category_and_reset(
-            TimerCategory.RUN_LOOP)
-        resetting_ms = db.get_timer_sum_by_category_and_reset(
-            TimerCategory.RESETTING)
-
-        shutting_down_ms = db.get_timer_sum_by_category_and_reset(
-            TimerCategory.SHUTTING_DOWN)
-
         # Separate out processes that are part of the others but that happen
         # on the machine, so we can account for active machine, not idle
         data_loading_ms = db.get_timer_sum_by_work_and_reset(
             TimerWork.LOADING_DATA)
-        loading_ms -= data_loading_ms
-        data_extraction_ms = 0
         if get_config_bool("Machine", "enable_advanced_monitor_support"):
             data_extraction_ms = db.get_timer_sum_by_work_and_reset(
                 TimerWork.EXTRACT_DATA)
-            run_loop_ms -= data_extraction_ms
+        else:
+            data_extraction_ms = 0
         expansion_ms = db.get_timer_sum_by_work_and_reset(
             TimerWork.SYNAPSE)
-        loading_ms -= expansion_ms
 
     if checkpoint is not None:
         execute_on_machine_ms = checkpoint
@@ -104,14 +87,8 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
         timestep = FecDataView.get_simulation_time_step_ms()
         execute_on_machine_ms = int(round(timesteps * ts_factor) * timestep)
 
-    run_loop_ms -= execute_on_machine_ms
-
     machine = FecDataView.get_machine()
     version = FecDataView.get_machine_version()
-    n_boards = machine.n_ethernet_connected_chips
-    n_chips = machine.n_chips
-    n_cores = FecDataView.get_n_placements()
-    n_frames = _calculate_n_frames(machine)
 
     active_cores: Dict[Tuple[int, int], int] = defaultdict(int)
     power_cores: Dict[Tuple[int, int], int] = {}
@@ -153,12 +130,10 @@ def compute_energy_used(checkpoint: Optional[int] = None) -> PowerUsed:
     load_router_packets = _extract_router_packets("Load", version)
     extraction_router_packets = _extract_router_packets("Extract", version)
 
-    # TODO get_machine not include here
     return compute_energy_over_time(
-        waiting_ms, setup_ms, get_machine_ms, mapping_ms, loading_ms,
-        data_loading_ms, expansion_ms, data_extraction_ms, run_other_ms,
-        run_loop_ms, execute_on_machine_ms, resetting_ms, shutting_down_ms,
-        version, n_chips, n_active_chips, n_boards, n_frames, n_cores,
+        total_on_ms, mapping_ms, loading_ms,
+        data_loading_ms, expansion_ms, data_extraction_ms,
+        execute_on_machine_ms, version, n_active_chips,
         n_active_cores, sum_load_active_time, sum_extraction_active_time,
         sum_run_active_time, load_router_packets, extraction_router_packets,
         run_router_packets)
@@ -250,13 +225,11 @@ def _assume_core_always_active(
 
 
 def compute_energy_over_time(
-        waiting_ms: float, setup_ms: float, get_machine_ms: float,
-        mapping_ms: float, loading_ms: float, data_loading_ms: float,
-        expansion_ms: float, data_extraction_ms: float, run_other_ms: float,
-        run_loop_ms: float, execute_on_machine_ms: float,
-        resetting_ms: float, shutting_down_ms: float, version: AbstractVersion,
-        n_chips: int, n_active_chips: int, n_boards: int, n_frames: int,
-        n_cores: int, n_active_cores: int,
+        total_on_ms: float, mapping_ms: float, loading_ms: float,
+        data_loading_ms: float, expansion_ms: float,
+        data_extraction_ms: float, execute_on_machine_ms: float,
+        version: AbstractVersion,
+        n_active_chips: int, n_active_cores: int,
         sum_load_active_time: float,
         sum_extraction_active_time: float,
         sum_run_active_time: float,
@@ -266,12 +239,11 @@ def compute_energy_over_time(
     """
     Compute the energy used by a simulation running on SpiNNaker.
 
-    :param waiting_ms: time spent waiting for things to happen in general
-    :param setup_ms: time spent setting up the simulation
-    :param get_machine_ms: time spent getting the machine
+    :param total_on_ms: Total time the machine was on for thios reset
     :param mapping_ms: time spent mapping to the machine
     :param loading_ms:
         time spent loading the simulation onto the passive machine
+        Includes the data_loading_ms and expansion_ms
     :param data_loading_ms:
         time spent loading data onto the machine actively using the machine to
         load the data
@@ -279,22 +251,10 @@ def compute_energy_over_time(
     :param data_extraction_ms:
         time spent extracting data from the machine actively using the machine
         to extract the data
-    :param run_other_ms:
-        time spent in running but not the active machine time, just in between
-        calls to other things
-    :param run_loop_ms:
-        time spent in running but not the active machine time, just in the
-        run loop itself
     :param execute_on_machine_ms:
         time spent executing the simulation on the machine actively using it
-    :param resetting_ms: time spent resetting the simulation
-    :param shutting_down_ms: time spent shutting down the simulation
     :param version: the version of the machine
-    :param n_chips: number of chips that make up the machine
     :param n_active_chips: number of chips active in simulation
-    :param n_boards: number of boards that make up the machine
-    :param n_frames: number of frames that make up the machine
-    :param n_cores: number of cores that are used by the simulation
     :param n_active_cores: number of cores actively used by the simulation
     :param sum_load_active_time:
         sum of times that cores where active during loading
@@ -310,13 +270,18 @@ def compute_energy_over_time(
         packets sent by the machine during running
     :returns: Summary object of power used
     """
+    machine = FecDataView.get_machine()
+    n_boards = machine.n_ethernet_connected_chips
+    n_chips = machine.n_chips
+    n_cores = FecDataView.get_n_placements()
+    n_frames = _calculate_n_frames(machine)
 
     # Time and energy spent on the host machine, with the machine (at least
     # theoretically) running, doing general software tasks that we don't want
     # to put in other categories.
-    other_time_s = (
-        waiting_ms + setup_ms + get_machine_ms + shutting_down_ms +
-        run_other_ms + run_loop_ms + resetting_ms) / _MS_PER_SECOND
+    other_time_ms = (total_on_ms - mapping_ms - loading_ms -
+                     data_extraction_ms - execute_on_machine_ms)
+    other_time_s = other_time_ms / _MS_PER_SECOND
     other_energy_j = version.get_idle_energy(
         other_time_s, n_frames, n_boards, n_chips)
 
@@ -326,12 +291,14 @@ def compute_energy_over_time(
         mapping_time_s, n_frames, n_boards, n_chips)
 
     # Time and energy spent loading data onto the machine
-    loading_time_s = (
-        loading_ms + data_loading_ms + expansion_ms) / _MS_PER_SECOND
+    loading_active_ms = data_loading_ms + expansion_ms
+    loading_active_s = loading_active_ms / _MS_PER_SECOND
+    loading_time_s = loading_ms / _MS_PER_SECOND
+    loading_idle_s = loading_time_s - loading_active_s
     loading_energy_j = version.get_idle_energy(
-        loading_ms / _MS_PER_SECOND, n_frames, n_boards, n_chips)
+        loading_idle_s,  n_frames, n_boards, n_chips)
     loading_energy_j += version.get_active_energy(
-        (data_loading_ms + expansion_ms) / _MS_PER_SECOND, n_frames, n_boards,
+        loading_active_s, n_frames, n_boards,
         n_chips, sum_load_active_time, load_router_packets)
 
     # Time and energy spent extracting data from the machine

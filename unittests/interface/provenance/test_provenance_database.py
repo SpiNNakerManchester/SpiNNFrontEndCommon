@@ -60,7 +60,6 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_timings(self) -> None:
         with GlobalProvenance() as db:
-            db.insert_run_reset_mapping()
             mapping_id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_timing(
                 mapping_id, "compressor", TimerWork.OTHER,
