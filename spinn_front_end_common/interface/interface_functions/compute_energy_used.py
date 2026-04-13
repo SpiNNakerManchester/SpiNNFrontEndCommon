@@ -242,10 +242,10 @@ def compute_energy_over_time(
     """
     Compute the energy used by a simulation running on SpiNNaker.
 
-    :param total_on_ms: Total time the machine was on for thios reset
+    :param total_on_ms: Total time the machine was on for this reset
     :param mapping_ms: time spent mapping to the machine
     :param ds_other_ms:
-        time spent on dta specification not including
+        time spent on data specification not including
         the data_loading_ms and expansion_ms
     :param data_loading_ms:
         time spent loading data onto the machine actively using the machine to

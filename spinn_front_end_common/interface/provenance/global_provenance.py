@@ -265,7 +265,7 @@ class GlobalProvenance(SQLiteDB):
 
     def get_machine_on_by_reset(self, n_reset: Optional[int] = None) -> int:
         """
-        Get the total time the machione was on for this reset
+        Get the total time the machine was on for this reset
 
         :param n_reset:
         :return:
@@ -292,7 +292,7 @@ class GlobalProvenance(SQLiteDB):
         Get the total runtime for one category of algorithms
 
         :param category: What to get the sum of
-        :param n_reset: Which reet to sum or None for all
+        :param n_reset: Which reset to sum or None for all
         :return: total off all run times with this category
         """
         if n_reset is None:

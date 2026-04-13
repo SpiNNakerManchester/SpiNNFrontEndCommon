@@ -64,7 +64,7 @@ class FecTimer(object):
     @classmethod
     def setup(cls) -> None:
         """
-        Starts the Fec Timer and puts it into WAITING mode
+        Starts the Timer and puts it into WAITING mode
 
         Checks and saves cfg values so they don't have to be read each time
         """
