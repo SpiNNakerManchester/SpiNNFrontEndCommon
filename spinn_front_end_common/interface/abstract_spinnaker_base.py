@@ -2254,7 +2254,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._do_stop_workflow()
             elif get_config_bool("Reports", "read_provenance_data_on_end"):
                 self._do_read_provenance()
-            self._close_allocation_controller()
             self._stop_remove_data()
 
         except Exception as e:
