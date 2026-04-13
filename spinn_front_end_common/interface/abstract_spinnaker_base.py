@@ -1839,7 +1839,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
 
             power_used = compute_energy_used(
-                self._data_writer.get_reset_number())
+                n_reset=self._data_writer.get_reset_number())
 
             energy_provenance_reporter(power_used)
 

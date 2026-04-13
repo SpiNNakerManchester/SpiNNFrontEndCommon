@@ -58,13 +58,13 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not get_config_bool("Reports", "write_provenance"):
             return
-        run = FecDataView.get_run_number()
+        reset = FecDataView.get_reset_number()
         self.cursor().execute(
             """
             INSERT INTO power_provenance(
-                run, description, the_value)
+                reset, description, the_value)
             VALUES(?, ?, ?)
-            """, [run, description, the_value])
+            """, [reset, description, the_value])
 
     def insert_gatherer(
             self, x: int, y: int, address: int, bytes_read: int, run: int,
