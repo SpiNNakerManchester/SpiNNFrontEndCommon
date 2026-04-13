@@ -22,10 +22,6 @@ CREATE TABLE IF NOT EXISTS version_provenance(
     description STRING NOT NULL,
     the_value STRING NOT NULL);
 
-CREATE TABLE IF NOT EXISTS run_reset_mapping(
-    n_run INTEGER NOT NULL PRIMARY KEY,
-    n_reset INTEGER NOT NULL);
-
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for algorithm timings
 CREATE TABLE IF NOT EXISTS timer_provenance(
