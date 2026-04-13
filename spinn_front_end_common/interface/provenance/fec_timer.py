@@ -29,8 +29,6 @@ from spinn_front_end_common.data import FecDataView
 from .global_provenance import GlobalProvenance
 from .timer_category import TimerCategory
 if TYPE_CHECKING:
-    from spinn_front_end_common.interface.abstract_spinnaker_base import (
-        AbstractSpinnakerBase)
     from spinn_front_end_common.interface.provenance import TimerWork
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -50,9 +48,7 @@ class FecTimer(object):
     _category: Optional[TimerCategory] = None
     _category_time: int = 0
     # machine on cycle to allocate time to
-    _n_machine: int = 0
-    # previous machine on cycle if any
-    _previous_n_machine: int = 0
+    _machine_on: bool = False
     _previous: List[TimerCategory] = []
     __slots__ = (
         # The start time when the timer was set off
@@ -348,7 +344,7 @@ class FecTimer(object):
         try:
             with GlobalProvenance() as db:
                 cls._category_id = db.insert_category(
-                    category, cls._n_machine)
+                    category, cls._machine_on)
         except DatabaseError as ex:
             logger.error(f"Timer data error {ex}")
         cls._category = category
@@ -369,10 +365,9 @@ class FecTimer(object):
         if cls._category is not None:
             cls._previous.append(cls._category)
         if category == TimerCategory.MACHINE_ON:
-            cls._n_machine = cls._previous_n_machine + 1
+            cls._machine_on = True
         elif category == TimerCategory.MACHINE_OFF:
-            cls._previous_n_machine = cls._n_machine
-            cls._n_machine = 0
+            cls._machine_on = False
         cls._change_category(category)
 
     @classmethod
