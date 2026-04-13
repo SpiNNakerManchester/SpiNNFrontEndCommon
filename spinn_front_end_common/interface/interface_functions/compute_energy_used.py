@@ -182,7 +182,7 @@ def _extract_cores_active_time(
 
     sum_activity: float = 0
     with BufferDatabase() as buff_db:
-        for (x, y), n_cores in active_cores.items():
+        for (x, y) in active_cores:
             # Find the core that was used on this chip for power monitoring
             p = power_cores[(x, y)]
             # Get time per sample in seconds (frequency in microseconds)
