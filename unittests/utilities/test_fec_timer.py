@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import tempfile
 import unittest
 from testfixtures import LogCapture  # type: ignore[import]
 
@@ -63,6 +62,7 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.end_category(TimerCategory.RUN_OTHER)
         with GlobalProvenance() as db:
             total = db.get_category_timer_sum(TimerCategory.RUN_OTHER)
+            self.assertGreater(total, 0)
 
     def test_repeat_stopped(self) -> None:
         FecTimer.start_category(TimerCategory.WAITING)

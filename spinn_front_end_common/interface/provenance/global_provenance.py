@@ -17,7 +17,7 @@ import logging
 import os
 import re
 from sqlite3 import Row
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Union
 
 from spinn_utilities.config_holder import get_timestamp_path
 from spinn_utilities.log import FormatAdapter

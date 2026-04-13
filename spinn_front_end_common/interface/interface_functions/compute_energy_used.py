@@ -29,7 +29,7 @@ from spinnman.model.enums.executable_type import ExecutableType
 
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    GlobalProvenance, ProvenanceReader, TimerCategory, TimerWork)
+    GlobalProvenance, ProvenanceReader, TimerCategory)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
@@ -125,7 +125,8 @@ def compute_energy_used(checkpoint: Optional[int] = None,
             machine.n_chips * n_monitors_all +
             machine.n_ethernet_connected_chips * n_extra_monitors_ethernet)
     sum_load_active_time = data_loading_ms / _MS_PER_SECOND * total_monitors
-    sum_extraction_active_time = data_extraction_ms / _MS_PER_SECOND * total_monitors
+    sum_extraction_active_time = (
+            data_extraction_ms / _MS_PER_SECOND * total_monitors)
 
     run_router_packets = _extract_router_packets("Run", version)
     load_router_packets = _extract_router_packets("Load", version)
