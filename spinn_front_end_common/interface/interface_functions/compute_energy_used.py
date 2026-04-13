@@ -55,6 +55,7 @@ def compute_energy_used(checkpoint: Optional[int] = None,
     simulation (or other application) running on SpiNNaker.
 
     :param checkpoint: the time at which to compute execution energy up to
+    :param n_reset: The reset number if global data is not wanted.
     :returns: Summary object of power used
     """
     # Get data from provenance
@@ -260,7 +261,7 @@ def compute_energy_over_time(
     :param n_active_cores: number of cores actively used by the simulation
     :param sum_load_active_time:
         sum of times that cores where active during loading
-    :param sum_extraction_chip_active_time:
+    :param sum_extraction_active_time:
         sum of time that cores where active during extraction
     :param sum_run_active_time:
         sum of times that cores where active during running

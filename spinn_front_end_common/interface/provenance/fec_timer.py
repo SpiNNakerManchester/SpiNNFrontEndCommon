@@ -356,8 +356,6 @@ class FecTimer(object):
         This method should only be called via the View!
 
         :param category: category to switch to
-        :param machine_on: What to change machine on too.
-            Or `None` to leave as is
         """
         if cls._category == category:
             raise ValueError(
