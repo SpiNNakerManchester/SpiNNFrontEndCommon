@@ -1606,7 +1606,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
-                    "Reports", "write_memory_map_report"):
+                    "Reports", "write_memory_map_report_summary"):
                 return
             memory_map_on_host_report()
 
@@ -1618,7 +1618,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
-                    "Reports", "write_memory_map_report"):
+                    "Reports", "write_memory_map_report_detailed"):
                 return
             memory_map_on_host_chip_report()
 

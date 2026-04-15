@@ -143,6 +143,9 @@ class ConfigHandler(AbstractSpiNNManSimulation):
                            "run_compression_checker")
         self._replaced_cfg("Reports", "report_enabled",
                            "[Mode]mode = Production to turn off most reports")
+        self._replaced_cfg("Reports", "write_memory_map_report",
+                           "write_memory_map_report_summary and"
+                           " write_memory_map_report_detailed")
 
     def _error_on_previous(self, option: str) -> None:
         try:
