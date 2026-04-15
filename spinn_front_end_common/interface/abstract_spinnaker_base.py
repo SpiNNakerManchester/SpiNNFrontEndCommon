@@ -722,7 +722,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.set_user_accessed_machine()
         if self._data_writer.is_user_mode() and \
                 self._data_writer.is_soft_reset():
-            self._data_writer.clear_machine()
             # Make the reset hard
             logger.warning(
                 "Calling Get machine after a reset force a hard reset and "
