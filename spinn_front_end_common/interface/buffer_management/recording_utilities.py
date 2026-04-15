@@ -27,8 +27,8 @@ def get_recording_header_size(n_recording_regions: int) -> int:
     This is the data that sets up how recording will be done, and indicates the
     sizes of the regions to be stored.
 
-    :param int n_recording_regions: The number of regions that can be recorded
-    :rtype: int
+    :param n_recording_regions: The number of regions that can be recorded
+    :returns: size of the list returned by get_recording_header_array
     """
     # See recording.h/recording_initialise for data included in the header
     return BYTES_PER_WORD + (n_recording_regions * _PER_REGION_HEADER_SIZE)
@@ -40,8 +40,8 @@ def get_recording_data_constant_size(n_recording_regions: int) -> int:
     allocated during recording_initialise, and so do not need to be
     reserved with DSG (but need to be accounted for in SDRAM calculations).
 
-    :param int n_recording_regions: The number of regions that can be recorded
-    :rtype: int
+    :param n_recording_regions: The number of regions that can be recorded
+    :returns: size of the recoding headers stored in the SDRAM space
     """
     return (n_recording_regions * SARK_PER_MALLOC_SDRAM_USAGE)
 
@@ -51,10 +51,11 @@ def get_recording_header_array(
     """
     Get data to be written for the recording header.
 
-    :param list(int) recorded_region_sizes:
+    :param recorded_region_sizes:
         A list of sizes of each region to be recorded.
         A size of 0 is acceptable.
-    :rtype: list(int)
+    :returns: List of int being the number of regions
+       and then for each region its size then two zeros
     """
     # See recording.h/recording_initialise for data included in the header
     data = [len(recorded_region_sizes)]

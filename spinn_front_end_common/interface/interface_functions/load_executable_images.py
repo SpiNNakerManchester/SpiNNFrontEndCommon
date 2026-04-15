@@ -94,8 +94,10 @@ def filter_targets(
         filter_predicate: Callable[[ExecutableType], bool]
         ) -> ExecutableTargets:
     """
-    :param callable(ExecutableType,bool) filter_predicate:
-    :rtype: ~spinnman.model.ExecutableTargets
+    Creates a subset of all executable targets that pass the filter.
+
+    :param filter_predicate: method to use as the filter
+    :returns:Executable target with only those that pass the filter check
     """
     cores = ExecutableTargets()
     targets = FecDataView.get_executable_targets()
@@ -109,9 +111,8 @@ def filter_targets(
 
 def _start_simulation(cores: ExecutableTargets, app_id: int) -> None:
     """
-    :param ~.ExecutableTargets cores:
-        Possible subset of all ExecutableTargets to start
-    :param int app_id:
+    :param cores: Possible subset of all ExecutableTargets to start
+    :param app_id:
     """
     txrx = FecDataView.get_transceiver()
     txrx.wait_for_cores_to_be_in_state(

@@ -53,12 +53,11 @@ class BufferDatabase(BaseDatabase):
         .. note::
             This method *loses information!*
 
-        :param int x: x coordinate of the chip
-        :param int y: y coordinate of the chip
-        :param int p: Core within the specified chip
-        :param int region: Region containing the data to be cleared
+        :param x: x coordinate of the chip
+        :param y: y coordinate of the chip
+        :param p: Core within the specified chip
+        :param region: Region containing the data to be cleared
         :return: True if any region was changed
-        :rtype: bool
         """
         for row in self.cursor().execute(
                 """
@@ -93,8 +92,7 @@ class BufferDatabase(BaseDatabase):
         """
         Read a recording region
 
-        :param int region_id:
-        :rtype: memoryview
+        :param region_id:
         """
         content, _ = self._read_recording_with_missing(region_id)
         return content
@@ -104,8 +102,7 @@ class BufferDatabase(BaseDatabase):
         """
         Get the contents from a recording region
 
-        :param int region_id:
-        :rtype: memoryview, bool
+        :param region_id:
         """
         for row in self.cursor().execute(
                 """
@@ -128,8 +125,7 @@ class BufferDatabase(BaseDatabase):
         """
         Reads the content for a single block for this recording region
 
-        :param int region_id:
-        :rtype: memoryview
+        :param region_id:
         """
         for row in self.cursor().execute(
                 """
@@ -150,9 +146,6 @@ class BufferDatabase(BaseDatabase):
             extraction_id: int) -> Tuple[memoryview, bool]:
         """
         Reads the content for a single block for this region
-
-        :param int region_id:
-        :rtype: memoryview
         """
         if extraction_id < 0:
             last_extraction_id = self.get_last_extraction_id()
@@ -175,9 +168,6 @@ class BufferDatabase(BaseDatabase):
             extraction_id: int) -> Tuple[memoryview, bool]:
         """
         Reads the content for a single block for this region
-
-        :param int region_id:
-        :rtype: memoryview
         """
         if extraction_id < 0:
             last_extraction_id = self.get_last_extraction_id()
@@ -201,9 +191,8 @@ class BufferDatabase(BaseDatabase):
         """
         Reads the contents of all blocks for this regions.
 
-        :param int region_id:
-        :param int total_content_length: total size of content for this region
-        :rtype: memoryview
+        :param region_id:
+        :param total_content_length: total size of content for this region
         """
         c_buffer = bytearray(total_content_length)
         missing_data = False
@@ -265,13 +254,6 @@ class BufferDatabase(BaseDatabase):
 
     def _get_recording_region_id(
             self, x: int, y: int, p: int, region: int) -> int:
-        """
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int region:
-        :param is_recording: Flag to say if this is a recording regions.
-        """
         region_info = self._find_existing_recording_region_id(x, y, p, region)
         if region_info is not None:
             return region_info
@@ -289,13 +271,6 @@ class BufferDatabase(BaseDatabase):
 
     def _get_download_region_id(
             self, x: int, y: int, p: int, region: int) -> int:
-        """
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int region:
-        :param is_recording: Flag to say if this is a recording regions.
-        """
         region_info = self._find_existing_download_region_id(x, y, p, region)
         if region_info is not None:
             return region_info
@@ -314,7 +289,6 @@ class BufferDatabase(BaseDatabase):
     def store_setup_data(self) -> None:
         """
         Stores data passed into simulator setup
-
         """
         for _ in self.cursor().execute(
                 """
@@ -336,6 +310,7 @@ class BufferDatabase(BaseDatabase):
         """
         Stores the metadata for the extractions about to occur
 
+        :returns: Id for this extraction
         """
         run_timesteps = FecDataView.get_current_run_timesteps() or 0
         self.cursor().execute(
@@ -351,8 +326,7 @@ class BufferDatabase(BaseDatabase):
 
     def get_last_extraction_id(self) -> int:
         """
-        Get the id of the current/ last extraction
-
+        :returns: The id of the current/ last extraction
         """
         for row in self.cursor().execute(
                 """
@@ -369,18 +343,16 @@ class BufferDatabase(BaseDatabase):
         Store some information in the corresponding buffer for a
         specific chip, core and recording region.
 
-        :param int x: x coordinate of the chip
-        :param int y: y coordinate of the chip
-        :param int p: Core within the specified chip
-        :param int region: Region containing the data to be stored
-        :param bool missing: Whether any data is missing
-        :param bytearray data: data to be stored
+        :param x: x coordinate of the chip
+        :param y: y coordinate of the chip
+        :param p: Core within the specified chip
+        :param region: Region containing the data to be stored
+        :param missing: Whether any data is missing
+        :param data: data to be stored
 
         .. note::
                     Must be shorter than 1GB
         """
-        # pylint: disable=too-many-arguments, unused-argument
-        # TODO: Use missing
         datablob = Binary(data)
         region_id = self._get_recording_region_id(x, y, p, region)
         extraction_id = self.get_last_extraction_id()
@@ -401,19 +373,16 @@ class BufferDatabase(BaseDatabase):
         Store some information in the corresponding buffer for a
         specific chip, core and recording region.
 
-        :param int x: x coordinate of the chip
-        :param int y: y coordinate of the chip
-        :param int p: Core within the specified chip
-        :param int region: Region containing the data to be stored
-        :param bool missing: Whether any data is missing
-        :param bytearray data: data to be stored
-        :param is_recording: Flag to say if this is a recording regions.
+        :param x: x coordinate of the chip
+        :param y: y coordinate of the chip
+        :param p: Core within the specified chip
+        :param region: Region containing the data to be stored
+        :param missing: Whether any data is missing
+        :param data: data to be stored
 
             .. note::
                     Must be shorter than 1GB
         """
-        # pylint: disable=too-many-arguments, unused-argument
-        # TODO: Use missing
         datablob = Binary(data)
         download_region_id = self._get_download_region_id(x, y, p, region)
         extraction_id = self.get_last_extraction_id()
@@ -436,10 +405,10 @@ class BufferDatabase(BaseDatabase):
 
         For none recording regions only the last data extracted is returned.
 
-        :param int x: x coordinate of the chip
-        :param int y: y coordinate of the chip
-        :param int p: Core within the specified chip
-        :param int region: Region containing the data
+        :param x: x coordinate of the chip
+        :param y: y coordinate of the chip
+        :param p: Core within the specified chip
+        :param region: Region containing the data
         :return:
             A buffer containing all the data received during the
             simulation, and a flag indicating if any data was missing.
@@ -448,7 +417,6 @@ class BufferDatabase(BaseDatabase):
                 Implementations should not assume that the total buffer is
                 necessarily shorter than 1GB.
 
-        :rtype: tuple(memoryview, bool)
         :raises LookupErrror: If no data is available nor marked missing.
         """
         region_id = self._get_existing_recording_region_id(
@@ -461,11 +429,11 @@ class BufferDatabase(BaseDatabase):
         """
         Get the data stored for a given region of a given core.
 
-        :param int x: x coordinate of the chip
-        :param int y: y coordinate of the chip
-        :param int p: Core within the specified chip
-        :param int region: Region containing the data
-        :param int extraction_id: ID of the extraction top get data for.
+        :param x: x coordinate of the chip
+        :param y: y coordinate of the chip
+        :param p: Core within the specified chip
+        :param region: Region containing the data
+        :param extraction_id: ID of the extraction top get data for.
            Negative values will be counted from the end.
         :return:
             A buffer containing all the data received during the
@@ -474,8 +442,6 @@ class BufferDatabase(BaseDatabase):
             .. note::
                 Implementations should not assume that the total buffer is
                 necessarily shorter than 1GB.
-
-        :rtype: tuple(memoryview, bool)
         """
         try:
             region_id = self._get_existing_recording_region_id(
@@ -491,11 +457,11 @@ class BufferDatabase(BaseDatabase):
         """
         Get the data stored for a given region of a given core.
 
-        :param int x: x coordinate of the chip
-        :param int y: y coordinate of the chip
-        :param int p: Core within the specified chip
-        :param int region: Region containing the data
-        :param int extraction_id: ID of the extraction top get data for.
+        :param x: x coordinate of the chip
+        :param y: y coordinate of the chip
+        :param p: Core within the specified chip
+        :param region: Region containing the data
+        :param extraction_id: ID of the extraction top get data for.
            Negative values will be counted from the end.
         :return:
             A buffer containing all the data received during the
@@ -504,8 +470,6 @@ class BufferDatabase(BaseDatabase):
             .. note::
                 Implementations should not assume that the total buffer is
                 necessarily shorter than 1GB.
-
-        :rtype: tuple(memoryview, bool)
         """
         region_id = self._get_existing_download_region_id(x, y, p, region)
         return self._read_download_by_extraction_id(
@@ -526,12 +490,6 @@ class BufferDatabase(BaseDatabase):
 
     def _set_core_name(
             self, x: int, y: int, p: int, core_name: Optional[str]) -> None:
-        """
-        :param int x:
-        :param int y:
-        :param int p:
-        :param core_name:
-        """
         try:
             self.cursor().execute(
                 """
@@ -563,10 +521,10 @@ class BufferDatabase(BaseDatabase):
 
         Returns None if the core at x, y, p is not known.
 
-        :param int x: core x
-        :param int y: core y
-        :param int p: core p
-        :rtype: str or None
+        :param x: core x
+        :param y: core y
+        :param p: core p
+        :returns: label for (vertex on) this core or None
         """
         for row in self.cursor().execute(
                 """
@@ -579,9 +537,8 @@ class BufferDatabase(BaseDatabase):
 
     def get_power_monitor_core(self, x: int, y: int) -> int:
         """
-        Gets the power monitor core for chip x, y
-
-       """
+        :returns: The power monitor core for chip x, y
+        """
         for row in self.cursor().execute(
                 """
                 SELECT the_value

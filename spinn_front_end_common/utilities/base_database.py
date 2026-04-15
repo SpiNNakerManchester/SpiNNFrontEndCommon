@@ -17,7 +17,9 @@ import sqlite3
 import time
 from typing import Optional, Union
 from typing_extensions import TypeAlias
-from spinn_front_end_common.data import FecDataView
+
+from spinn_utilities.config_holder import get_report_path
+
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__),
@@ -53,7 +55,7 @@ class BaseDatabase(SQLiteDB):
                  row_factory: Optional[type] = sqlite3.Row,
                  text_factory: Optional[type] = memoryview):
         """
-        :param str database_file:
+        :param database_file:
             The name of a file that contains (or will contain) an SQLite
             database holding the data.
             If omitted the default location will be used.
@@ -71,20 +73,19 @@ class BaseDatabase(SQLiteDB):
         """
         The path to the stand place the data.sqlite3 file will be stored
 
-        :rtype: str
+        This will be based on the cfg setting path_data_database
+        and the report directory for the current run.
+
+        There is no guarantee that the database has already been created.
+
+        :returns: The path to the database file
         """
-        return os.path.join(FecDataView.get_run_dir_path(),
-                            f"data{FecDataView.get_reset_str()}.sqlite3")
+        return get_report_path("path_data_database")
 
     def _get_core_id(
             self, x: int, y: int, p: int) -> int:
         """
         Get the ID for a core.
-
-        :param int x:
-        :param int y:
-        :param int p:
-        :rtype: int
         """
         for row in self.cursor().execute(
                 """

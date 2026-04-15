@@ -17,14 +17,19 @@ import logging
 import os
 from typing import (
     cast, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union)
+
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
+
 from spinn_machine import Machine
+
 from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from pacman.utilities.utility_calls import get_keys
 from pacman.model.graphs.abstract_edge_partition import AbstractEdgePartition
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
@@ -36,7 +41,6 @@ if TYPE_CHECKING:
         _LPGSplitter)
 
 logger = FormatAdapter(logging.getLogger(__name__))
-DB_NAME = "input_output_database.sqlite3"
 INIT_SQL = "db.sql"
 
 
@@ -56,8 +60,7 @@ class DatabaseWriter(SQLiteDB):
         "__machine_to_id", "__vertex_to_id")
 
     def __init__(self) -> None:
-        self._database_path = os.path.join(FecDataView.get_run_dir_path(),
-                                           DB_NAME)
+        self._database_path = get_report_path("path_input_output_database")
         init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
 
         # delete any old database
@@ -77,7 +80,6 @@ class DatabaseWriter(SQLiteDB):
         Auto detects if there is a need to activate the database system.
 
         :return: whether the database is needed for the application
-        :rtype: bool
         """
         if FecDataView.get_vertices_by_type(LivePacketGather):
             return True
@@ -90,15 +92,11 @@ class DatabaseWriter(SQLiteDB):
     @property
     def database_path(self) -> str:
         """
-        :rtype: str
+        The location of this database
         """
         return self._database_path
 
     def __insert(self, sql: str, *args: Union[str, int, None]) -> int:
-        """
-        :param str sql:
-        :rtype: int
-        """
         try:
             self.cursor().execute(sql, args)
             return self.lastrowid
@@ -138,7 +136,7 @@ class DatabaseWriter(SQLiteDB):
         for vertex in FecDataView.iterate_vertices():
             vertex_id = self.__insert(
                 "INSERT INTO Application_vertices(vertex_label) VALUES(?)",
-                vertex.label)
+                str(vertex.label))
             self.__vertex_to_id[vertex] = vertex_id
             for m_vertex in vertex.machine_vertices:
                 m_vertex_id = self.__add_machine_vertex(m_vertex)
@@ -157,31 +155,10 @@ class DatabaseWriter(SQLiteDB):
         self.__vertex_to_id[m_vertex] = m_vertex_id
         return m_vertex_id
 
-    def add_system_params(self, runtime: Optional[float]) -> None:
-        """
-        Write system parameters into the database.
-
-        :param int runtime: the amount of time the application is to run for
-        """
-        self.cursor().executemany(
-            """
-            INSERT INTO configuration_parameters (
-                parameter_id, value)
-            VALUES (?, ?)
-            """, [
-                ("machine_time_step",
-                 FecDataView.get_simulation_time_step_us()),
-                ("time_scale_factor",
-                 FecDataView.get_time_scale_factor()),
-                ("infinite_run", str(runtime is None)),
-                ("runtime", -1 if runtime is None else runtime),
-                ("app_id", FecDataView.get_app_id())])
-
     def add_proxy_configuration(self) -> None:
         """
         Store the proxy configuration.
         """
-        # pylint: disable=protected-access
         job = FecDataView.get_spalloc_job()
         if job is not None:
             config = job.get_session_credentials_for_db()
@@ -230,9 +207,9 @@ class DatabaseWriter(SQLiteDB):
             self, machine_vertices: Optional[
                 Iterable[Tuple[MachineVertex, str]]]) -> None:
         """
+        Creates atom keys and stores them in the database.
+
         :param machine_vertices:
-        :type machine_vertices:
-            list(tuple(~pacman.model.graphs.machine.MachineVertex,str))
         """
         routing_infos = FecDataView.get_routing_infos()
         # This could happen if there are no LPGs
@@ -312,7 +289,6 @@ class DatabaseWriter(SQLiteDB):
         Add mapping from machine vertex to LPG machine vertex.
 
         :return: A list of (source vertex, partition id)
-        :rtype: list(~pacman.model.graphs.machine.MachineVertex, str)
         """
         targets: List[Tuple[MachineVertex, str, MachineVertex]] = [
             (m_vertex, part_id, lpg_m_vertex)

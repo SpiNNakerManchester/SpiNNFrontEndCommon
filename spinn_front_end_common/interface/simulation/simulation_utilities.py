@@ -23,9 +23,8 @@ def get_simulation_header_array(binary_file_name: str) -> List[int]:
     """
     Get data to be written to the simulation header.
 
-    :param str binary_file_name: The name of the binary of the application
+    :param binary_file_name: The name of the binary of the application
     :return: An array of values to be written as the simulation header
-    :rtype: list(int)
     """
     # Get first 32-bits of the md5 hash of the application name
     application_name_hash = md5(os.path.splitext(binary_file_name)[0])[:8]
@@ -44,9 +43,8 @@ def get_simulation_header_array_no_timestep(
     Get data to be written to the simulation header.
     Use for binaries that do not want to know the system timestep.
 
-    :param str binary_file_name: The name of the binary of the application
+    :param binary_file_name: The name of the binary of the application
     :return: An array of values to be written as the simulation header
-    :rtype: list(int)
     """
     # Get first 32-bits of the md5 hash of the application name
     application_name_hash = md5(os.path.splitext(binary_file_name)[0])[:8]

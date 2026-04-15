@@ -36,12 +36,11 @@ class HasCustomAtomKeyMap(object, metaclass=AbstractBase):
         Get the mapping between atoms and keys for the given partition id,
         and for the given machine pre-vertex.
 
-        :param ~pacman.model.graphs.machine.MachineVertex pre_vertex:
+        :param pre_vertex:
             The machine vertex to get the map for
-        :param str partition_id: The partition to get the map for
-        :param ~pacman.model.routing_info.RoutingInfo routing_info:
+        :param partition_id: The partition to get the map for
+        :param routing_info:
             Routing information
         :return: A list of (atom_id, key)
-        :rtype: list(tuple(int,int))
         """
         raise NotImplementedError

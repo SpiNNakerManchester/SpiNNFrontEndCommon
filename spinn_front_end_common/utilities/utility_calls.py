@@ -23,8 +23,8 @@ from typing import (Optional, Union, TextIO, Tuple, TypeVar)
 
 from urllib.parse import urlparse
 
-from spinn_utilities.config_holder import get_config_bool
-from spinn_utilities.config_holder import get_config_str
+from spinn_utilities.config_holder import (
+    get_config_bool, get_config_str, get_report_path)
 
 from spinn_machine import Chip
 
@@ -52,7 +52,7 @@ def _mkdir(directory: str) -> None:
     .. note::
         This code is not intended to be secure against malicious third parties
 
-    :param str directory: The directory to create
+    :param directory: The directory to create
     """
     # Guarded to stop us from hitting things twice internally; it's not
     # perfect since other processes could also happen along.
@@ -68,10 +68,9 @@ def _mkdir(directory: str) -> None:
 def get_region_base_address_offset(
         app_data_base_address: int, region: int) -> int:
     """
-    Find the address of the of a given region for the DSG.
-
-    :param int app_data_base_address: base address for the core
-    :param int region: the region ID we're looking for
+    :param app_data_base_address: base address for the core
+    :param region: the region ID we're looking for
+    :returns: The address of the of a given region for the DSG.
     """
     return (app_data_base_address +
             APP_PTR_TABLE_HEADER_BYTE_SIZE +
@@ -80,7 +79,6 @@ def get_region_base_address_offset(
 
 _DAT_TMPL = "dataSpec_{}_{}_{}.dat"
 _RPT_TMPL = "dataSpec_{}_{}_{}.txt"
-_RPT_DIR = "data_spec_text_files"
 
 
 def get_report_writer(
@@ -90,23 +88,20 @@ def get_report_writer(
     Check if text reports are needed, and if so initialise the report
     writer to send down to DSG.
 
-    :param int processor_chip_x: X coordinate of the chip
-    :param int processor_chip_y: Y coordinate of the chip
-    :param int processor_id: The processor ID
-    :param bool use_run_number:
+    :param processor_chip_x: X coordinate of the chip
+    :param processor_chip_y: Y coordinate of the chip
+    :param processor_id: The processor ID
+    :param use_run_number:
         If set the directory will include the run number
     :return: the report_writer_object, or `None` if not reporting
-    :rtype: ~io.FileIO or None
     """
     # check if text reports are needed at all
     if not get_config_bool("Reports", "write_text_specs"):
         return None
     # initialise the report writer to send down to DSG
-    dir_name = _RPT_DIR
+    new_report_directory = get_report_path("path_text_specs", is_dir=True)
     if use_run_number:
-        dir_name += str(FecDataView.get_run_number())
-    new_report_directory = os.path.join(
-        FecDataView.get_run_dir_path(), dir_name)
+        new_report_directory += str(FecDataView.get_run_number())
     _mkdir(new_report_directory)
     name = os.path.join(new_report_directory, _RPT_TMPL.format(
         processor_chip_x, processor_chip_y, processor_id))
@@ -128,11 +123,10 @@ def parse_old_spalloc(
     A bare hostname can be used instead. If that's the case (i.e., there's no
     ``spalloc://`` prefix) then the port and user are definitely used.
 
-    :param str spalloc_server: Hostname or URL
-    :param int spalloc_port: Default port
-    :param str spalloc_user: Default user
+    :param spalloc_server: Hostname or URL
+    :param spalloc_port: Default port
+    :param spalloc_user: Default user
     :return: hostname, port, username
-    :rtype: tuple(str,int,str)
     """
     if spalloc_port is None or spalloc_port == "":
         spalloc_port = 22244
@@ -153,20 +147,18 @@ def retarget_tag(
     Make a tag deliver to the given connection.
 
     :param connection: The connection to deliver to.
-    :type connection:
-        ~spinnman.connections.udp_packet_connections.UDPConnection
-    :param int x:
+    :param x:
         The X coordinate of the Ethernet-enabled chip we are sending the
         message to.
-    :param int y:
+    :param y:
         The Y coordinate of the Ethernet-enabled chip we are sending the
         message to.
-    :param int tag:
+    :param tag:
         The ID of the tag to retarget.
-    :param str ip_address:
+    :param ip_address:
         What IP address to send the message to. If ``None``, the connection is
         assumed to be connected to a specific board already.
-    :param bool strip:
+    :param strip:
         Whether the tag should strip the SDP header before sending to the
         connection.
     """
@@ -181,40 +173,15 @@ def retarget_tag(
         reprogram_tag(connection, tag, strip)
 
 
-def open_scp_connection(
-        chip_x: int, chip_y: int, chip_ip_address: str) -> SCAMPConnection:
-    """
-    Create an SCP connection to the given Ethernet-enabled chip. SpiNNaker will
-    not be configured to map that connection to a tag; that is the
-    caller's responsibility.
-
-    :param int chip_x:
-        X coordinate of the Ethernet-enabled chip to connect to.
-    :param int chip_y:
-        Y coordinate of the Ethernet-enabled chip to connect to.
-    :param str chip_ip_address:
-        IP address of the Ethernet-enabled chip to connect to.
-    :rtype: ~spinnman.connections.udp_packet_connections.SCAMPConnection
-    """
-    if FecDataView.has_allocation_controller():
-        # See if the allocation controller wants to do it
-        conn = FecDataView.get_allocation_controller().open_sdp_connection(
-            chip_x, chip_y)
-        if conn:
-            return conn
-    return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
-
-
 def pick_core_for_system_placement(
         system_placements: Placements, chip: Chip) -> int:
     """
     Get a core number for use putting a system placement on a chip.
 
-    :param ~pacman.model.placements.Placements system_placements:
+    :param system_placements:
         Already-made system placements
-    :param ~spinn_machine.Chip chip: Chip of interest
+    :param chip: Chip of interest
     :return: a core that a system placement could be put on
-    :rtype: int
     """
     cores = chip.placable_processors_ids
     return cores[system_placements.n_placements_on_chip(chip)]

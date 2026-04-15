@@ -35,9 +35,8 @@ _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
 
 def get_n_bytes(n_keys: int) -> int:
     """
-    Get the number of bytes used by a given number of keys.
-
-    :param int n_keys: The number of keys
+    :returns: The number of bytes used by a given number of keys.
+    :param n_keys: The number of keys
     """
     # Get the total number of messages
     n_messages = int(math.ceil(float(n_keys) / _N_KEYS_PER_MESSAGE))
@@ -76,8 +75,8 @@ class BufferedSendingRegion(object):
         """
         Add a key to be sent at a given time.
 
-        :param int timestamp: The time at which the key is to be sent
-        :param int key: The key to send
+        :param timestamp: The time at which the key is to be sent
+        :param key: The key to send
         """
         if timestamp not in self._buffer:
             bisect.insort(self._timestamps, timestamp)
@@ -88,8 +87,8 @@ class BufferedSendingRegion(object):
         """
         Add a set of keys to be sent at the given time.
 
-        :param int timestamp: The time at which the keys are to be sent
-        :param iterable(int) keys: The keys to send
+        :param timestamp: The time at which the keys are to be sent
+        :param keys: The keys to send
         """
         for key in keys:
             self.add_key(timestamp, key)
@@ -98,8 +97,6 @@ class BufferedSendingRegion(object):
     def n_timestamps(self) -> int:
         """
         The number of timestamps available.
-
-        :rtype: int
         """
         return len(self._timestamps)
 
@@ -107,15 +104,12 @@ class BufferedSendingRegion(object):
     def timestamps(self) -> Sequence[int]:
         """
         The timestamps for which there are keys.
-
-        :rtype: iterable(int)
         """
         return self._timestamps
 
     def get_n_keys(self, timestamp: int) -> int:
         """
-        Get the number of keys for a given timestamp.
-
+        :returns: The number of keys for a given timestamp.
         :param timestamp:
             the time stamp to check if there's still keys to transmit
         """
@@ -128,17 +122,15 @@ class BufferedSendingRegion(object):
         """
         Whether the region is empty.
 
-        :return: True if the region is empty, false otherwise.
-        :rtype: bool
+        True if the region is empty, false otherwise.
         """
         return self._current_timestamp_pos < len(self._timestamps)
 
     @property
     def next_timestamp(self) -> Optional[int]:
         """
-        The next timestamp of the data to be sent, or `None` if no more data.
-
-        :rtype: int or None
+        The next timestamp of the data to be sent,
+            or `None` if no more data.
         """
         if self.is_next_timestamp:
             return self._timestamps[self._current_timestamp_pos]
@@ -148,8 +140,10 @@ class BufferedSendingRegion(object):
         """
         Determine if there is another key for the given timestamp.
 
-        :param int timestamp:
+        :param timestamp:
             the time stamp to check if there's still keys to transmit
+        :returns:
+            True if there is at least on key still to send for this timestamp.
         """
         if timestamp in self._buffer:
             return bool(self._buffer[timestamp])
@@ -160,7 +154,7 @@ class BufferedSendingRegion(object):
         The next key to be sent.
         Only call if :py:meth:`is_next_key` returns True.
 
-        :rtype: int
+        :returns: The next key
         """
         next_timestamp = self.next_timestamp
         assert next_timestamp is not None
@@ -175,8 +169,6 @@ class BufferedSendingRegion(object):
     def current_timestamp(self) -> int:
         """
         The current timestamp in the iterator.
-
-        :rtype: int
         """
         return self._current_timestamp_pos
 

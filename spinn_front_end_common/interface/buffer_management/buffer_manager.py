@@ -136,14 +136,13 @@ class BufferManager(object):
         """
         Uses the extra monitor cores for data extraction.
 
-        :param int placement_x:
+        :param placement_x:
             the placement X coordinate where data is to be extracted from
-        :param int placement_y:
+        :param placement_y:
             the placement Y coordinate where data is to be extracted from
-        :param int address: the memory address to start at
-        :param int length: the number of bytes to extract
+        :param address: the memory address to start at
+        :param length: the number of bytes to extract
         :return: data as a byte array
-        :rtype: bytearray
         """
         if not self.__enable_monitors:
             return FecDataView.read_memory(
@@ -241,10 +240,10 @@ class BufferManager(object):
         """
         Removes the recorded data stored in memory.
 
-        :param int x: placement X coordinate
-        :param int y: placement Y coordinate
-        :param int p: placement processor ID
-        :param int recording_region_id: the recording region ID
+        :param x: placement X coordinate
+        :param y: placement Y coordinate
+        :param p: placement processor ID
+        :param recording_region_id: the recording region ID
         """
         with BufferDatabase() as db:
             db.clear_recording_region(x, y, p, recording_region_id)
@@ -255,12 +254,10 @@ class BufferManager(object):
         """
         Creates a single message to send with the given boundaries.
 
-        :param int size: The number of bytes available for the whole packet
-        :param AbstractSendsBuffersFromHost vertex:
-            The vertex to get the keys from
-        :param int region: The region of the vertex to get keys from
+        :param size: The number of bytes available for the whole packet
+        :param vertex: The vertex to get the keys from
+        :param region: The region of the vertex to get keys from
         :return: A new message, or `None` if no keys can be added
-        :rtype: None or ~spinnman.messages.eieio.data_messages.EIEIODataMessage
         """
         # If there are no more messages to send, return None
         if not vertex.is_next_timestamp(region):
@@ -291,9 +288,8 @@ class BufferManager(object):
         """
         Send the initial set of messages.
 
-        :param AbstractSendsBuffersFromHost vertex:
-            The vertex to get the keys from
-        :param int region: The region to get the keys from
+        :param vertex: The vertex to get the keys from
+        :param region: The region to get the keys from
         """
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
@@ -382,8 +378,7 @@ class BufferManager(object):
     def __python_extract_with_monitors(
             self, recording_placements: List[Placement]) -> None:
         """
-        :param list(~pacman.model.placements.Placement) recording_placements:
-            Where to get the data from.
+        :param recording_placements: Where to get the data from.
         """
         # locate receivers
         receivers = OrderedSet(
@@ -401,8 +396,7 @@ class BufferManager(object):
     def __python_extract_no_monitors(
             self, recording_placements: List[Placement]) -> None:
         """
-        :param list(~pacman.model.placements.Placement) recording_placements:
-            Where to get the data from.
+        :param recording_placements: Where to get the data from.
         """
         # get data
         progress = ProgressBar(
@@ -445,12 +439,10 @@ class BufferManager(object):
 
         Data for all extractions is combined.
 
-        :param ~pacman.model.placements.Placement placement:
-            the placement to get the data from
-        :param int recording_region_id: desired recording data region
+        :param placement: The placement to get the data from
+        :param recording_region_id: desired recording data region
         :return: an array contained all the data received during the
             simulation, and a flag indicating if any data was missing
-        :rtype: tuple(bytearray, bool)
         :raises BufferedRegionNotPresent:
             If no data is available nor marked missing.
         :raises NotImplementedError:
@@ -472,12 +464,10 @@ class BufferManager(object):
 
         Only the last data extracted is returned.
 
-        :param ~pacman.model.placements.Placement placement:
-            the placement to get the data from
-        :param int recording_region_id: desired recording data region
+        :param placement: the placement to get the data from
+        :param recording_region_id: desired recording data region
         :return: an array contained all the data received during the
             simulation, and a flag indicating if any data was missing
-        :rtype: tuple(bytearray, bool)
         :raises BufferedRegionNotPresent:
             If no data is available nor marked missing.
         :raises NotImplementedError:
@@ -531,8 +521,7 @@ class BufferManager(object):
         """
         Retrieve the data for a vertex; must be locked first.
 
-        :param ~pacman.model.placements.Placement placement:
-            the placement to get the data from
+        :param placement: the placement to get the data from
         """
         if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
             vertex = cast(AbstractReceiveBuffersToHost, placement.vertex)
@@ -582,7 +571,5 @@ class BufferManager(object):
     def sender_vertices(self) -> Iterable[AbstractSendsBuffersFromHost]:
         """
         The vertices which are buffered.
-
-        :rtype: iterable(AbstractSendsBuffersFromHost)
         """
         return self._sender_vertices

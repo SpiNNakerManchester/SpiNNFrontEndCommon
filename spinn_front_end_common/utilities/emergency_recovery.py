@@ -72,7 +72,6 @@ def _emergency_iobuf_extract(
     """
     :param executable_targets:
         The specific targets to extract, or `None` for all
-    :type executable_targets: ExecutableTargets or None
     """
     extractor = IOBufExtractor(
         executable_targets,
@@ -86,9 +85,9 @@ def emergency_recover_state_from_failure(
     Used to get at least *some* information out of a core when something
     goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
-    :param AbstractHasAssociatedBinary vertex:
+    :param vertex:
         The vertex to retrieve the IOBUF from if it is suspected as being dead
-    :param ~pacman.model.placements.Placement placement:
+    :param placement:
         Where the vertex is located.
     """
     _emergency_state_check()

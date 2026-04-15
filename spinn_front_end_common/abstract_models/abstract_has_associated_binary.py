@@ -30,17 +30,13 @@ class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
     @abstractmethod
     def get_binary_file_name(self) -> str:
         """
-        Get the binary name to be run for this vertex.
-
-        :rtype: str
+        :returns: The binary name to be run for this vertex.
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_binary_start_type(self) -> ExecutableType:
         """
-        Get the start type of the binary to be run.
-
-        :rtype: ~spinnman.model.enum.ExecutableType
+        :returns: The start type of the binary to be run.
         """
         raise NotImplementedError

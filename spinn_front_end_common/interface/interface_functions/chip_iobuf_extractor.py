@@ -22,6 +22,5 @@ def chip_io_buf_extractor() -> Tuple[Sequence[str], Sequence[str]]:
     lines based on their prefix.
 
     :return: error_entries, warn_entries
-    :rtype: tuple(list(str),list(str))
     """
     return IOBufExtractor().extract_iobuf()

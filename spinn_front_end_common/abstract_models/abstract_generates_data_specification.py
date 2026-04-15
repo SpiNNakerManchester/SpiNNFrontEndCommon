@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.overrides import overrides
 from spinn_utilities.require_subclass import require_subclass
@@ -39,16 +39,31 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
         """
         Generate a data specification.
 
-        :param ~data_specification.DataSpecificationGenerator spec:
+        :param spec:
             The data specification to write to
-        :param ~pacman.model.placements.Placement placement:
+        :param placement:
             The placement the vertex is located at
         """
         raise NotImplementedError
 
     @property
-    @overrides(MachineVertex.sdram_required)
     @abstractmethod
+    @overrides(MachineVertex.sdram_required)
     def sdram_required(self) -> AbstractSDRAM:
-        # pylint: disable=missing-function-docstring
+        """
+        See MachineVertex.sdram_required
+
+        Defined here too so can be called on object known to be this type
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    @overrides(MachineVertex.label)
+    def label(self) -> Optional[str]:
+        """
+        See MachineVertex.label
+
+        Defined here too so can be called on object known to be this type
+        """
         raise NotImplementedError

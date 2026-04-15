@@ -54,8 +54,6 @@ class LivePacketGatherParameters(object):
         :raises ConfigurationException:
             If the parameters passed are known to be an invalid combination.
         """
-        # pylint: disable=too-many-arguments
-
         # Sanity checks
         if (message_type in _HAS_PAYLOAD and use_payload_prefix and
                 payload_as_time_stamps):
@@ -98,8 +96,6 @@ class LivePacketGatherParameters(object):
         """
         Where to send data from SpiNNaker:
         the port of the listening UDP socket.
-
-        :rtype: int
         """
         return self._port
 
@@ -108,8 +104,6 @@ class LivePacketGatherParameters(object):
         """
         Where to send data from SpiNNaker: the host name of the listening UDP
         socket.
-
-        :rtype: str
         """
         return self._hostname
 
@@ -117,8 +111,6 @@ class LivePacketGatherParameters(object):
     def tag(self) -> Optional[int]:
         """
         A fixed tag ID to assign, or `None` if any tag is OK
-
-        :rtype: int or None
         """
         return self._tag
 
@@ -126,8 +118,6 @@ class LivePacketGatherParameters(object):
     def strip_sdp(self) -> bool:
         """
         Whether to remove SDP headers from the messages before sending.
-
-        :rtype: bool
         """
         return self._strip_sdp
 
@@ -135,8 +125,6 @@ class LivePacketGatherParameters(object):
     def use_prefix(self) -> bool:
         """
         Whether to use EIEIO prefix compaction on keys.
-
-        :rtype: bool
         """
         return self._use_prefix
 
@@ -151,8 +139,6 @@ class LivePacketGatherParameters(object):
     def prefix_type(self) -> Optional[EIEIOPrefix]:
         """
         The type of prefix.
-
-        :rtype: ~spinnman.messages.eieio.EIEIOPrefix
         """
         return self._prefix_type
 
@@ -160,8 +146,6 @@ class LivePacketGatherParameters(object):
     def message_type(self) -> EIEIOType:
         """
         The type of messages to send.
-
-        :rtype: ~spinnman.messages.eieio.EIEIOType
         """
         return self._message_type
 
@@ -169,8 +153,6 @@ class LivePacketGatherParameters(object):
     def right_shift(self) -> int:
         """
         Shift to apply to keys.
-
-        :rtype: int
         """
         return self._right_shift
 
@@ -178,8 +160,6 @@ class LivePacketGatherParameters(object):
     def payload_as_time_stamps(self) -> bool:
         """
         Whether the payloads are timestamps.
-
-        :rtype: bool
         """
         return self._payload_as_time_stamps
 
@@ -187,8 +167,6 @@ class LivePacketGatherParameters(object):
     def use_payload_prefix(self) -> bool:
         """
         Whether to use prefix compaction for payloads.
-
-        :rtype: bool
         """
         return self._use_payload_prefix
 
@@ -203,8 +181,6 @@ class LivePacketGatherParameters(object):
     def payload_right_shift(self) -> int:
         """
         Shift to apply to payloads.
-
-        :rtype: int
         """
         return self._payload_right_shift
 
@@ -212,8 +188,6 @@ class LivePacketGatherParameters(object):
     def number_of_packets_sent_per_time_step(self) -> int:
         """
         The maximum number of packets to send in a timestep.
-
-        :rtype: int
         """
         return self._n_packets_per_time_step
 
@@ -228,8 +202,6 @@ class LivePacketGatherParameters(object):
     def received_key_mask(self) -> int:
         """
         A mask to select which keys are dispatched.
-
-        :rtype: int
         """
         return self._received_key_mask
 
@@ -237,8 +209,6 @@ class LivePacketGatherParameters(object):
     def translate_keys(self) -> bool:
         """
         Whether to apply translation to keys.
-
-        :rtype: bool
         """
         return self._translate_keys
 
@@ -246,17 +216,13 @@ class LivePacketGatherParameters(object):
     def translated_key_right_shift(self) -> int:
         """
         Shift to apply in key translation.
-
-        :rtype: int
         """
         return self._translated_key_right_shift
 
     def get_iptag_resource(self) -> IPtagResource:
         """
-        Get a description of the :py:class:`~spinn_machine.tags.IPTag`
-        that the LPG for these parameters will require.
-
-        :rtype: ~pacman.model.resources.IPtagResource
+        :returns: A description of the :py:class:`~spinn_machine.tags.IPTag`
+           that the LPG for these parameters will require.
         """
         return IPtagResource(
             ip_address=self.hostname, port=self.port,

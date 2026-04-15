@@ -14,14 +14,16 @@
 from __future__ import annotations
 from collections.abc import Sized
 import logging
-import os
 import time
 from datetime import timedelta
 from typing import List, Optional, Tuple, Type, Union, TYPE_CHECKING
 from types import TracebackType
+from sqlite3 import DatabaseError
 
 from typing_extensions import Literal, Self
-from spinn_utilities.config_holder import (get_config_bool)
+
+from spinn_utilities.config_holder import (
+    get_config_bool, get_timestamp_path)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from .global_provenance import GlobalProvenance
@@ -66,20 +68,23 @@ class FecTimer(object):
         """
         Checks and saves cfg values so they don't have to be read each time
 
-        :param AbstractSpinnakerBase simulator: Not actually used
+        :param simulator: Not actually used
         """
-        # pylint: disable=global-statement, protected-access
         cls._simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
-            cls._provenance_path = os.path.join(
-                FecDataView.get_run_dir_path(),
-                "algorithm_timings.rpt")
+            cls._provenance_path = get_timestamp_path(
+                "tpath_algorithm_timings")
         else:
             cls._provenance_path = None
         cls._print_timings = get_config_bool(
             "Reports", "display_algorithm_timings") or False
 
     def __init__(self, algorithm: str, work: TimerWork):
+        """
+
+        :param algorithm: Name of algorithm being timed
+        :param work: Type of work being timed
+        """
         self._start_time: Optional[int] = None
         self._algorithm = algorithm
         self._work = work
@@ -98,16 +103,19 @@ class FecTimer(object):
     def _insert_timing(
             self, time_taken: timedelta, skip_reason: Optional[str]) -> None:
         if self._category_id is not None:
-            with GlobalProvenance() as db:
-                db.insert_timing(
-                    self._category_id, self._algorithm, self._work,
-                    time_taken, skip_reason)
+            try:
+                with GlobalProvenance() as db:
+                    db.insert_timing(
+                        self._category_id, self._algorithm, self._work,
+                        time_taken, skip_reason)
+            except DatabaseError as ex:
+                logger.error(f"Timer data error {ex}")
 
     def skip(self, reason: str) -> None:
         """
         Records that the algorithms is being skipped and ends the timer.
 
-        :param str reason: Why the algorithm is being skipped
+        :param reason: Why the algorithm is being skipped
         """
         message = f"{self._algorithm} skipped as {reason}"
         time_taken = self._stop_timer()
@@ -127,7 +135,7 @@ class FecTimer(object):
         Currently not used as a better check is skip_if_empty on the data
         needed for the algorithm.
 
-        :rtype: bool
+        :returns: True if skip has been called
         """
         if FecDataView.is_ran_ever():
             return False
@@ -147,7 +155,7 @@ class FecTimer(object):
 
         Typically called for algorithms that require a real board to run.
 
-        :rtype: bool
+        :returns: True if skip has been called
         """
         if get_config_bool("Machine", "virtual_board"):
             self.skip("virtual_board")
@@ -167,8 +175,8 @@ class FecTimer(object):
         ends the timing and returns True (it skipped).
 
         :param value: Value to check if True
-        :param str name: Name to record for that value if skipping
-        :rtype: bool
+        :param name: Name to record for that value if skipping
+        :returns: True if skip has been called
         """
         if value:
             return False
@@ -193,10 +201,9 @@ class FecTimer(object):
         Typically called if the algorithm should run if the cfg value
         is set True.
 
-        :param str section: Section level to be applied to both options
-        :param str option1: One of the options to check
-        :param str option2: The other option to check
-        :rtype: bool
+        :param section: Section level to be applied to both options
+        :param option: The option to check
+        :returns: True if skip has been called
         """
         if get_config_bool(section, option):
             return False
@@ -218,10 +225,10 @@ class FecTimer(object):
         Typically called if the algorithm should run if either cfg values
         is set True.
 
-        :param str section: Section level to be applied to both options
-        :param str option1: One of the options to check
-        :param str option2: The other option to check
-        :rtype: bool
+        :param section: Section level to be applied to both options
+        :param option1: One of the options to check
+        :param option2: The other option to check
+        :returns: True if skip has been called
         """
         if get_config_bool(section, option1):
             return False
@@ -234,7 +241,7 @@ class FecTimer(object):
     def skip_all_cfgs_false(
             self, pairs: List[Tuple[str, str]], reason: str) -> bool:
         """
-        Skips if two Boolean cfg values are both False.
+        Skips if all Boolean cfg values are False.
 
         If either cfg value is True this methods keep the timer running and
         returns False (did not skip).
@@ -245,10 +252,9 @@ class FecTimer(object):
         Typically called if the algorithm should run if either cfg values
         is set True.
 
-        :param str section: Section level to be applied to both options
-        :param list((str, str) pairs: section, options pairs to check
-        :param str reason: Reason to record for the skip
-        :rtype: bool
+        :param pairs: section, options pairs to check
+        :param reason: Reason to record for the skip
+        :returns: True if skip has been called
         """
         for section, option in pairs:
             if get_config_bool(section, option):
@@ -260,7 +266,7 @@ class FecTimer(object):
         """
          Ends an algorithm timing and records that it failed.
 
-        :param str reason: What caused the error
+        :param reason: What caused the error
         """
         time_taken = self._stop_timer()
         message = f"{self._algorithm} failed after {time_taken} as {reason}"
@@ -271,8 +277,6 @@ class FecTimer(object):
         """
         Describes how long has elapsed since the instance that the
         :py:meth:`start_timing` method was last called.
-
-        :rtype: datetime.timedelta
         """
         time_now = time.perf_counter_ns()
         assert self._start_time is not None
@@ -322,10 +326,13 @@ class FecTimer(object):
         """
         time_now = time.perf_counter_ns()
         if cls._category_id:
-            with GlobalProvenance() as db:
-                diff = cls.__convert_to_timedelta(
-                    time_now - cls._category_time)
-                db.insert_category_timing(cls._category_id, diff)
+            try:
+                with GlobalProvenance() as db:
+                    diff = cls.__convert_to_timedelta(
+                        time_now - cls._category_time)
+                    db.insert_category_timing(cls._category_id, diff)
+            except DatabaseError as ex:
+                logger.error(f"Timer data error {ex}")
         return time_now
 
     @classmethod
@@ -333,11 +340,15 @@ class FecTimer(object):
         """
         This method should only be called via the View!
 
-        :param TimerCategory category: Category to switch to
+        :param category: Category to switch to
         """
         time_now = cls.__stop_category()
-        with GlobalProvenance() as db:
-            cls._category_id = db.insert_category(category, cls._machine_on)
+        try:
+            with GlobalProvenance() as db:
+                cls._category_id = db.insert_category(
+                    category, cls._machine_on)
+        except DatabaseError as ex:
+            logger.error(f"Timer data error {ex}")
         cls._category = category
         cls._category_time = time_now
 
@@ -347,10 +358,9 @@ class FecTimer(object):
         """
         This method should only be called via the View!
 
-        :param TimerCategory category: category to switch to
+        :param category: category to switch to
         :param machine_on: What to change machine on too.
             Or `None` to leave as is
-        :type machine_on: None or bool
         """
         if cls._category is not None:
             cls._previous.append(cls._category)
@@ -365,7 +375,7 @@ class FecTimer(object):
         This method should only be
         called via the View!
 
-        :param TimerCategory category: Stage to end
+        :param category: Stage to end
         """
         if cls._category != category:
             raise ValueError(

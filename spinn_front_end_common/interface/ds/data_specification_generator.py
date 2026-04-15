@@ -37,19 +37,14 @@ class DataSpecificationGenerator(DataSpecificationBase):
                 AbstractRewritesDataSpecification],
             ds_db: DsSqlliteDatabase, report_writer: Optional[TextIO] = None):
         """
-        :param int x:
-        :param int y:
-        :param int p:
+        :param x:
+        :param y:
+        :param p:
         :param vertex:
             The vertex being written.
-        :type vertex:
-            ~spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification
-        :type ds_db:
-            ~spinn_front_end_common.interface.ds.DsSqlliteDatabase
         :param report_writer:
             Determines if a text version of the specification is to be
             written and, if so, where. No report is written if this is `None`.
-        :type report_writer: ~io.TextIOBase or None
         :raises DsDatabaseException: If this core is not known
             and no vertex supplied (during reload)
         :raises AttributeError:

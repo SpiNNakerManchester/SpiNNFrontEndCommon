@@ -15,7 +15,7 @@
 import logging
 import os
 import sqlite3
-from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
+from typing import Dict, Iterable, List, Optional, Tuple, cast
 
 import numpy
 
@@ -23,6 +23,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.coords import XYP
 
 from spinnman.model.enums import ExecutableType
+from spinnman.spalloc.spalloc_allocator import SpallocJobController
 from spinnman.spalloc.spalloc_job import SpallocJob
 
 from spinn_front_end_common.data import FecDataView
@@ -32,17 +33,13 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
-if TYPE_CHECKING:
-    from spinn_front_end_common.interface.interface_functions.\
-        spalloc_allocator import SpallocJobController  # @UnusedImport
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
 
 # Stop large numbers being written as blobs
-# pylint: disable=unnecessary-lambda
-sqlite3.register_adapter(numpy.int64, lambda val: int(val))
-sqlite3.register_adapter(numpy.int32, lambda val: int(val))
+sqlite3.register_adapter(numpy.int64, int)
+sqlite3.register_adapter(numpy.int32, int)
 
 
 class DsSqlliteDatabase(SQLiteDB):
@@ -53,9 +50,10 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def __init__(self, database_file:  Optional[str] = None):
         """
-        :param bool init_file:
-            Whether to initialise the DB from our DDL file. If not specified,
-            this is guessed from whether we can read the file.
+        :param database_file:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data.
+            If omitted the default location is used.
         """
         if database_file is None:
             database_file = FecDataView.get_ds_database_path()
@@ -92,14 +90,11 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Creates a database record for the core with this x,y,z
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
         :param vertex: Vertex to check if it is a system vertex.
             if missing this method will not create a new record
-        :type vertex:
-            ~spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary
-        :rtype: int
         :raises AttributeError:
             If the vertex is not an AbstractHasAssociatedBinary
         :raises KeyError:
@@ -125,12 +120,11 @@ class DsSqlliteDatabase(SQLiteDB):
         Gets a list of id, x, y, p, ethernet_x, ethernet_y for all cores
         according to is_system
 
-        :param bool is_system: if True returns system cores
+        :param is_system: if True returns system cores
             otherwise application cores
         :return:
             (x, y, p, ethernet_x, ethernet_y)
             for each system or app core
-        :rtype: list(int, int, int, int, int, int)
         """
         core_infos: List[Tuple[int, int, int, int, int]] = []
         for row in self.cursor().execute(
@@ -146,10 +140,6 @@ class DsSqlliteDatabase(SQLiteDB):
         return core_infos
 
     def _set_chip(self, x: int, y: int) -> None:
-        """
-        :param int x:
-        :param int y:
-        """
         # skip if it already exists
         for _ in self.cursor().execute(
                 """
@@ -173,15 +163,13 @@ class DsSqlliteDatabase(SQLiteDB):
 
         Typically called after a DS.reserve_memory_region call
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core t
-        :param int region_num: The number of the region to reserve
-        :param int size: The size to reserve for the region, in bytes
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core t
+        :param region_num: The number of the region to reserve
+        :param size: The size to reserve for the region, in bytes
         :param label: An optional label for the region
-        :type label: str or None
         :param reference: A globally unique reference for this region
-        :type reference: int or None
         :return:
         """
         self.cursor().execute(
@@ -196,12 +184,11 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Gets the size for a region with this x, y, p and region
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
-        :param int region_num: The region number
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
+        :param region_num: The region number
         :return: The size of the region, in bytes
-        :rtype: int
         """
         for row in self.cursor().execute(
                 """
@@ -218,13 +205,12 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Writes a outgoing region_reference into the database
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
-        :param int region_num: The region number
-        :param int reference: The number of the reference on this core
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
+        :param region_num: The region number
+        :param reference: The number of the reference on this core
         :param ref_label: label for the referencing region
-        :type ref_label: str or None
         """
         self.cursor().execute(
             """
@@ -244,11 +230,10 @@ class DsSqlliteDatabase(SQLiteDB):
         .. note::
             Do not use the database for anything else while iterating.
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
         :return: Yields the referencing vertex region number and the pointer
-        :rtype: iterable(tuple(int,int))
         """
         for row in self.cursor().execute(
                 """
@@ -269,7 +254,6 @@ class DsSqlliteDatabase(SQLiteDB):
             Do not use the database for anything else while iterating.
 
         :return: x, y, p, region, reference, label for all unlinked references
-        :rtype: iterable(tuple(int, int, int, int, int, str))
         """
         for row in self.cursor().execute(
                 """
@@ -292,7 +276,6 @@ class DsSqlliteDatabase(SQLiteDB):
             Do not use the database for anything else while iterating.
 
         :return: x, y, p, region
-        :rtype: iterable(tuple(int, int, int, int))
         """
         for row in self.cursor().execute(
                 """
@@ -309,13 +292,12 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Sets the content for this region
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
-        :param int region_num: The region number
-        :param bytes content: content to write
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
+        :param region_num: The region number
+        :param content: content to write
         :param content_debug: debug text
-        :type content_debug: str or None
         :raises DsDatabaseException: If the region already has content
         """
         # check for previous content
@@ -349,12 +331,11 @@ class DsSqlliteDatabase(SQLiteDB):
         returns None if the region is known but for some reason the pointer
         was not set
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
-        :param int region_num: The Data Specification region number
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
+        :param region_num: The Data Specification region number
         :return: The pointer set during the original load
-        :rtype: int or None
         :raises DsDatabaseException: if the region is not known
         """
         for row in self.cursor().execute(
@@ -374,11 +355,10 @@ class DsSqlliteDatabase(SQLiteDB):
         The returned dict will be empty if there are no regions reserved
         or if the core is not known.
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
         :return: dict of region_num to size but only for regions with a size
-        :rtype: dict(int, int)
         """
         regions: Dict[int, int] = dict()
         for row in self.cursor().execute(
@@ -399,12 +379,11 @@ class DsSqlliteDatabase(SQLiteDB):
 
         Returns 0 even if the core is not known
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
         :return: The size of the regions
             or 0 if there are no regions for this core
-        :rtype: int
         """
         for row in self.cursor().execute(
                 """
@@ -421,10 +400,10 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Sets the base address for a core and calculates pointers
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
-        :param int start_address: The base address for the whole core
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
+        :param start_address: The base address for the whole core
         :raises DsDatabaseException: if the region is not known
         """
         self.cursor().execute(
@@ -441,11 +420,10 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Gets the start_address for this core
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
         :return: The base address for the whole core
-        :rtype: int
         """
         for row in self.cursor().execute(
                 """
@@ -462,11 +440,11 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Sets the pointer to the start of the address for this x, y, p region.
 
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int region_num:
-        :param int pointer:  start address
+        :param x:
+        :param y:
+        :param p:
+        :param region_num:
+        :param pointer:  start address
         """
         self.cursor().execute(
             """
@@ -489,11 +467,10 @@ class DsSqlliteDatabase(SQLiteDB):
         Will yield nothing if there are no regions reserved or if the core is
         not known
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
         :return: number, pointer and (content or None)
-        :rtype: iterable(tuple(int, int, bytearray or None))
         """
         for row in self.cursor().execute(
                 """
@@ -518,11 +495,10 @@ class DsSqlliteDatabase(SQLiteDB):
         Will yield nothing if there are no regions with content
         or if the core the is not known
 
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
+        :param x: X coordinate of the core
+        :param y: Y coordinate of the core
+        :param p: Processor ID of the core
         :return: number, pointer and (content or None)
-        :rtype: iterable(tuple(int, int, bytearray or None))
         """
         for row in self.cursor().execute(
                 """
@@ -535,12 +511,9 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_max_content_size(self, is_system: bool) -> int:
         """
-        Returns the size of the largest content.
-
-        :param bool is_system: if True returns system cores
+        :param is_system: if True returns system cores
             otherwise application cores
-
-        :rtype: int
+        :returns: The size of the largest content.
         :raises DsDatabaseException:
         """
         for row in self.cursor().execute(
@@ -562,10 +535,9 @@ class DsSqlliteDatabase(SQLiteDB):
 
         Will return an empty list if there is no none Null content
 
-        :param bool is_system: if True returns system cores
+        :param is_system: if True returns system cores
             otherwise application cores
-
-        :rtype: list(tuple(int, int))
+        :returns: The sizes of the content and the count of each size
         """
         sizes: List[Tuple[int, int]] = []
         for row in self.cursor().execute(
@@ -591,7 +563,6 @@ class DsSqlliteDatabase(SQLiteDB):
             Do not use the database for anything else while iterating.
 
         :return: Yields the (x, y, p)
-        :rtype: iterable(tuple(int,int,int))
         """
         for row in self.cursor().execute(
                 """
@@ -605,8 +576,8 @@ class DsSqlliteDatabase(SQLiteDB):
 
         Includes cores where DataSpecs started even if no regions reserved
 
-        :rtype: int
         :raises DsDatabaseException:
+        :returns: The number for cores with a data specification.
         """
         for row in self.cursor().execute(
                 """
@@ -620,11 +591,10 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Gets the expected number of bytes to be written
 
-        :param int x: core X coordinate
-        :param int y: core Y coordinate
-        :param int p: core processor ID
+        :param x: core X coordinate
+        :param y: core Y coordinate
+        :param p: core processor ID
         :return: expected memory_written in bytes
-        :rtype: int
         """
         to_malloc = APP_PTR_TABLE_BYTE_SIZE
         # try the fast way using regions
@@ -642,11 +612,10 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Gets the expected number of bytes to be written
 
-        :param int x: core X coordinate
-        :param int y: core Y coordinate
-        :param int p: core processor ID
+        :param x: core X coordinate
+        :param y: core Y coordinate
+        :param p: core processor ID
         :return: expected memory_written in bytes
-        :rtype: int
         """
         to_write = APP_PTR_TABLE_BYTE_SIZE
         # try the fast way using regions
@@ -674,7 +643,6 @@ class DsSqlliteDatabase(SQLiteDB):
 
         :return: Yields the (x, y, p), start_address, memory_used
             and memory_written
-        :rtype: iterable(tuple(tuple(int, int, int), int, int, int))
         """
         for row in self.cursor().execute(
                 """
@@ -688,14 +656,13 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Write Spalloc session credentials to the database, if in use.
         """
-        # pylint: disable=protected-access
         if not FecDataView.has_allocation_controller():
             return
         mac = FecDataView.get_allocation_controller()
         if mac.proxying:
             # This is now assumed to be a SpallocJobController;
             # can't check that because of import circularity.
-            job = cast('SpallocJobController', mac)._job
+            job = cast(SpallocJobController, mac).job
             if isinstance(job, SpallocJob):
                 config = job.get_session_credentials_for_db()
                 self.cursor().executemany(
@@ -704,15 +671,16 @@ class DsSqlliteDatabase(SQLiteDB):
                     VALUES(?, ?, ?)
                     """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
-    def set_app_id(self) -> None:
+    def set_info(self) -> None:
         """
-        Sets the app id
+        Sets the general information
         """
         # check for previous content
+        machine = FecDataView().get_machine()
         self.cursor().execute(
             """
-            INSERT INTO app_id(app_id)
-            VALUES(?)
-            """, (FecDataView.get_app_id(), ))
+            INSERT INTO info(app_id, width, height)
+            VALUES(?, ?, ?)
+            """, (FecDataView.get_app_id(), machine.width, machine.height))
         if self.rowcount == 0:
-            raise DsDatabaseException("Unable to set app id")
+            raise DsDatabaseException("Unable to set info")

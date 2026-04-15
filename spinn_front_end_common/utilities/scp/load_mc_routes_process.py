@@ -30,8 +30,7 @@ class LoadMCRoutesProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
         """
         Load the saved application multicast routes.
 
-        :param ~spinn_machine.CoreSubsets core_subsets:
-            sets of cores to send command to
+        :param core_subsets: sets of cores to send command to
         """
         with self._collect_responses():
             for core_subset in core_subsets.core_subsets:
@@ -43,8 +42,7 @@ class LoadMCRoutesProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
         """
         Load the saved system multicast routes.
 
-        :param ~spinn_machine.CoreSubsets core_subsets:
-            sets of cores to send command to
+        :param core_subsets: sets of cores to send command to
         """
         with self._collect_responses():
             for core_subset in core_subsets.core_subsets:

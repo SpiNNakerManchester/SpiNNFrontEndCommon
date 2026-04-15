@@ -52,7 +52,7 @@ class ProfileData(object):
 
     def __init__(self, tag_labels: Mapping[int, str]):
         """
-        :param list(str) tag_labels: A list of labels indexed by tag ID
+        :param tag_labels: A list of labels indexed by tag ID
         """
         self._tag_labels = tag_labels
         self._tags: Dict[str, Tuple[numpy.ndarray, numpy.ndarray]] = dict()
@@ -62,8 +62,7 @@ class ProfileData(object):
         """
         Add profiling data read from the profile section.
 
-        :param bytearray data:
-            Data read from the profile section on the machine
+        :param data: Data read from the profile section on the machine
         """
         samples = numpy.asarray(data, dtype="uint8").view(dtype="<u4")
 
@@ -99,14 +98,6 @@ class ProfileData(object):
     def _add_tag_data(self, entry_tags: numpy.ndarray,
                       entry_times: numpy.ndarray, exit_tags: numpy.ndarray,
                       exit_times: numpy.ndarray, tag: int) -> None:
-        """
-        :param ~numpy.ndarray entry_tags:
-        :param ~numpy.ndarray entry_times:
-        :param ~numpy.ndarray exit_tags:
-        :param ~numpy.ndarray exit_times:
-        :param int tag:
-        """
-        # pylint: disable=too-many-arguments
         tag_label = self._tag_labels.get(tag, None)
         if tag_label is None:
             logger.warning("Unknown tag {} in profile data", tag)
@@ -145,36 +136,29 @@ class ProfileData(object):
     def tags(self) -> Iterable[str]:
         """
         The tags recorded as labels.
-
-        :rtype: list(str)
         """
         return self._tags.keys()
 
     def get_mean_ms(self, tag: str) -> float:
         """
-        Get the mean time in milliseconds spent on operations with the
-        given tag.
-
-        :param str tag: The tag to get the mean time for
-        :rtype: float
+        :param tag: The tag to get the mean time for
+        :returns: The mean time in milliseconds spent on operations with the
+            given tag.
         """
         return numpy.average(self._tags[tag][_DURATION])
 
     def get_n_calls(self, tag: str) -> int:
         """
-        Get the number of times the given tag was recorded.
-
-        :param str tag: The tag to get the number of calls of
-        :rtype: int
+        :param tag: The tag to get the number of calls of
+        :returns: The number of times the given tag was recorded.
         """
         return self._tags[tag][_DURATION].size
 
     def get_mean_n_calls_per_ts(self, tag: str) -> float:
         """
-        Get the mean number of times the given tag was recorded per timestep.
-
-        :param str tag: The tag to get the data for
-        :rtype: float
+        :param tag: The tag to get the data for
+        :returns: The mean number of times the given tag
+           was recorded per timestep.
         """
         time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(self._max_time / time_step_ms)
@@ -185,11 +169,9 @@ class ProfileData(object):
 
     def get_mean_ms_per_ts(self, tag: str) -> float:
         """
-        Get the mean time in milliseconds spent on operations with the
-        given tag per timestep.
-
-        :param str tag: The tag to get the data for
-        :rtype: float
+        :param tag: The tag to get the data for
+        :return: The mean time in milliseconds spent on operations with the
+           given tag per timestep.
         """
         time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(self._max_time / time_step_ms)

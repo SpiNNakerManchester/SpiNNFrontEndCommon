@@ -34,7 +34,7 @@ def energy_provenance_reporter(power_used: PowerUsed) -> None:
     """
     Converts the power usage information into provenance data.
 
-    :param PowerUsed power_used:
+    :param power_used:
         The computed basic power consumption information
     """
     with ProvenanceWriter() as db:

@@ -26,7 +26,7 @@ def sample_chip_power_monitor() -> ChipPowerMonitorMachineVertex:
 
     This vertex should only be used for size estimates.
 
-    :rtype: ChipPowerMonitorMachineVertex
+    :returns: An unused power monitor vertex.
     """
     return ChipPowerMonitorMachineVertex(
         "Sample ChipPowerMonitorMachineVertex")
@@ -36,7 +36,7 @@ def insert_chip_power_monitors_to_graphs(placements: Placements) -> None:
     """
     Adds chip power monitors into a given graph.
 
-    :param ~pacman.model.placements.Placements placements:
+    :param placements:
     """
     machine = FecDataView.get_machine()
     # create progress bar

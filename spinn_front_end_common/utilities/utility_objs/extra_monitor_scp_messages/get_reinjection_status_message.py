@@ -34,10 +34,9 @@ class GetReinjectionStatusMessage(
 
     def __init__(self, x: int, y: int, p: int) -> None:
         """
-        :param int x: The x-coordinate of a chip, between 0 and 255
-        :param int y: The y-coordinate of a chip, between 0 and 255
-        :param int p:
-            The processor running the extra monitor vertex, between 0 and 17
+        :param x: The x-coordinate of a chip
+        :param y: The y-coordinate of a chip
+        :param p: The processor running the extra monitor vertex
         """
         super().__init__(
             SDPHeader(
@@ -61,6 +60,9 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
     __slots__ = ("_reinjection_status", "_command_code")
 
     def __init__(self, command_code: ReinjectorSCPCommands):
+        """
+        :param command_code: Text for error message
+        """
         super().__init__()
         self._reinjection_status: Optional[ReInjectionStatus] = None
         self._command_code = command_code
@@ -79,7 +81,6 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
         """
         Gets the reinjection functionality status
 
-        :rtype: ReInjectionStatus
         :raises AssertError: If not yet read
         """
         assert self._reinjection_status is not None, "response not yet read"

@@ -62,7 +62,7 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_simulation_time_step_us()
-        writer.set_up_timings(1000, 1)
+        writer.set_up_timings(1, 1)
         FecDataView.get_simulation_time_step_us()
 
     def test_mock(self) -> None:
@@ -145,7 +145,7 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_current_run_time_ms()
-        writer.set_up_timings(500, 4)
+        writer.set_up_timings(0.5, 4)
         self.assertEqual(0, FecDataView.get_current_run_time_ms())
         writer.increment_current_run_timesteps(88)
         self.assertEqual(44, FecDataView.get_current_run_time_ms())
@@ -188,7 +188,7 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_hardware_time_step_us()
         self.assertFalse(FecDataView.has_time_step())
 
-        writer.set_up_timings(500, 4)
+        writer.set_up_timings(0.5, 4)
         self.assertEqual(500, FecDataView.get_simulation_time_step_us())
         self.assertEqual(0.5, FecDataView.get_simulation_time_step_ms())
         self.assertEqual(2, FecDataView.get_simulation_time_step_per_ms())
@@ -239,24 +239,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(run_dir))
         self.assertIn(timestramp_dir, run_dir)
 
-        dir = FecDataView.get_json_dir_path()
-        self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir)
-
-        dir = FecDataView.get_provenance_dir_path()
-        self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir)
-
-        dir2 = FecDataView.get_app_provenance_dir_path()
-        self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir2)
-        self.assertIn(dir, dir2)
-
-        dir2 = FecDataView.get_system_provenance_dir_path()
-        self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir2)
-        self.assertIn(dir, dir2)
-
     def test_directories_reset(self) -> None:
         writer = FecDataWriter.setup()
         run_dir = FecDataView.get_run_dir_path()
@@ -293,8 +275,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_timestamp_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
-        self.assertTrue(os.path.exists(FecDataView.get_json_dir_path()))
-        self.assertTrue(os.path.exists(FecDataView.get_provenance_dir_path()))
         self.assertTrue(os.path.exists(
             FecDataView.get_app_provenance_dir_path()))
         self.assertTrue(os.path.exists(
@@ -312,10 +292,6 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_timestamp_dir_path()
         with self.assertRaises(NotSetupException):
             FecDataView.get_run_dir_path()
-        with self.assertRaises(NotSetupException):
-            FecDataView.get_json_dir_path()
-        with self.assertRaises(NotSetupException):
-            FecDataView.get_provenance_dir_path()
         with self.assertRaises(NotSetupException):
             FecDataView.get_app_provenance_dir_path()
         with self.assertRaises(NotSetupException):
@@ -391,23 +367,6 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_data_in_multicast_routing_tables()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_system_multicast_router_timeout_keys()
-
-    def test_ipaddress(self) -> None:
-        writer = FecDataWriter.setup()
-        self.assertFalse(FecDataView.has_ipaddress())
-        with self.assertRaises(DataNotYetAvialable):
-            FecDataView.get_ipaddress()
-        writer.set_ipaddress("127.0.0.0")
-        self.assertEqual("127.0.0.0", FecDataView.get_ipaddress())
-        self.assertTrue(FecDataView.has_ipaddress())
-        writer.start_run()
-        writer.finish_run()
-        writer.hard_reset()
-        self.assertFalse(FecDataView.has_ipaddress())
-        with self.assertRaises(DataNotYetAvialable):
-            FecDataView.get_ipaddress()
-        with self.assertRaises(TypeError):
-            writer.set_ipaddress(127)  # type: ignore[arg-type]
 
     def test_fixed_routes(self) -> None:
         writer = FecDataWriter.setup()

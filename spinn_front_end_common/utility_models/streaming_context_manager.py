@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-# pylint: disable=no-name-in-module
 from types import TracebackType
 from typing import ContextManager, Iterable, Optional, Type, TYPE_CHECKING
 from typing_extensions import Literal
@@ -31,7 +30,7 @@ class StreamingContextManager(ContextManager[None]):
     def __init__(
             self, gatherers: Iterable[DataSpeedUpPacketGatherMachineVertex]):
         """
-        :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
+        :param gatherers:
         """
         self._gatherers = list(gatherers)
 

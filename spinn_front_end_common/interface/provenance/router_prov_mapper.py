@@ -14,7 +14,6 @@
 
 import argparse
 import os
-# pylint: disable=no-name-in-module
 import sqlite3
 from types import ModuleType, TracebackType
 from typing import (
@@ -63,6 +62,12 @@ class Plotter(ContextManager[SQLiteDB]):
     __seaborn: Optional[ModuleType] = None
 
     def __init__(self, db_filename: str, verbose: bool = False):
+        """
+        :param db_filename:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data.
+        :param verbose: Flag to trigger print messages
+        """
         self._db = SQLiteDB(db_filename, read_only=True, text_factory=str)
         self.__have_insertion_order = True
         self.__verbose = verbose
@@ -104,9 +109,7 @@ class Plotter(ContextManager[SQLiteDB]):
 
     def get_per_chip_prov_types(self) -> FrozenSet[str]:
         """
-        Get a set of the descriptions available at chip level
-
-        :rtype: set(str)
+        :returns: A set of the descriptions available at chip level
         """
         query = """
             SELECT DISTINCT description_name AS "description"
@@ -121,10 +124,9 @@ class Plotter(ContextManager[SQLiteDB]):
         """
         Gets the provenance of a per chip basis
 
-        :param str info:
+        :param info:
             The name of the metadata to sum
         :return: name, max x, max y and data
-        :rtype: tuple(str, int, int, numpy.ndarray)
         """
         data = []
         xs = []
@@ -182,9 +184,7 @@ class Plotter(ContextManager[SQLiteDB]):
 
     def get_per_core_prov_types(self) -> FrozenSet[str]:
         """
-        Get a set of the descriptions available at core level
-
-        :rtype: set(str)
+        :returns: A set of the descriptions available at core level
         """
         query = """
             SELECT DISTINCT description_name AS "description"
@@ -201,10 +201,9 @@ class Plotter(ContextManager[SQLiteDB]):
         """
         Gets the sum of the provenance
 
-        :param str info:
+        :param info:
             The name of the metadata to sum
         :return: name, max x, max y and data
-        :rtype: tuple(str, int, int, numpy.ndarray)
         """
         data: List[Tuple[int, int, Any]] = []
         xs: List[int] = []
@@ -242,9 +241,9 @@ class Plotter(ContextManager[SQLiteDB]):
         """
         Plots the metadata for this key/term to the file at a core level
 
-        :param str key:
+        :param key:
             The name of the metadata to plot, or a unique fragment of it
-        :param str output_filename:
+        :param output_filename:
         """
         plot, seaborn = self.__plotter_apis()
         if self.__verbose:
@@ -255,7 +254,7 @@ class Plotter(ContextManager[SQLiteDB]):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.axis("off")
-        labels = data.astype(int)
+        labels = data.astype(numpy.uint32)
         seaborn.heatmap(
             data, annot=labels, fmt="", square=True,
             cmap=self.cmap).invert_yaxis()
@@ -266,9 +265,9 @@ class Plotter(ContextManager[SQLiteDB]):
         """
         Plots the metadata for this key/term to the file at a chip level
 
-        :param str key:
+        :param key:
             The name of the metadata to plot, or a unique fragment of it
-        :param str output_filename:
+        :param output_filename:
         """
         plot, seaborn = self.__plotter_apis()
         if self.__verbose:
@@ -279,7 +278,7 @@ class Plotter(ContextManager[SQLiteDB]):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.axis("off")
-        labels = data.astype(int)
+        labels = data.astype(numpy.uint32)
         seaborn.heatmap(
             data, annot=labels, fmt="", square=True,
             cmap=self.cmap).invert_yaxis()

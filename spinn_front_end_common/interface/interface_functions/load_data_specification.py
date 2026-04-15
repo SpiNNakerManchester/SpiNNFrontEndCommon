@@ -41,7 +41,12 @@ MONITOR_CUTOFF = 12800  # 50 packets of 256 bytes
 
 def load_using_advanced_monitors() -> bool:
     """
-    Detects if advanced monitors should be used for data specs
+    Check varies config settings and the size to decided to use monitors.
+
+    As it takes time to setup and take down the system of advanced monitors,
+    tests show it does not make sense unless there large context
+
+    :returns: True if advanced monitors should be used for data specs
     """
     if not get_config_bool(
             "Machine", "enable_advanced_monitor_support"):
@@ -100,11 +105,7 @@ class _LoadDataSpecification(object):
             # reset router tables
             receiver.load_application_routing_tables()
 
-    # pylint: disable=unused-private-member
     def __java_app(self, use_monitors: bool) -> None:
-        """
-        :param bool use_monitors:
-        """
         # create a progress bar for end users
         progress = ProgressBar(
             2,
@@ -214,33 +215,29 @@ class _LoadDataSpecification(object):
         written = 0
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
-        try:
-            for region_num, pointer, content in \
-                    ds_database.get_region_pointers_and_content(x, y, p):
-                pointer_table[region_num]["pointer"] = pointer
 
-                if content is None:
-                    continue
-
-                n_bytes = len(content)
-                if n_bytes < MONITOR_CUTOFF:
-                    direct_writer(x, y, pointer, content)
-                else:
-                    monitor_writer(x, y, pointer, content)
-                written += n_bytes
-                if n_bytes % BYTES_PER_WORD != 0:
-                    n_bytes += BYTES_PER_WORD - n_bytes % BYTES_PER_WORD
-                pointer_table[region_num]["n_words"] = n_bytes / BYTES_PER_WORD
-                n_data = numpy.array(content, dtype="uint8")
-                pointer_table[region_num]["checksum"] = \
-                    int(numpy.sum(n_data.view("uint32"))) & 0xFFFFFFFF
-
-        except TypeError:
-            # pylint: disable=raise-missing-from, undefined-loop-variable
+        for region_num, pointer, content in \
+                ds_database.get_region_pointers_and_content(x, y, p):
             if pointer is None:
                 raise DataSpecException(
                     f"{x=} {y=} {p=} {region_num=} has a unsatisfied pointer")
-            raise
+            pointer_table[region_num]["pointer"] = pointer
+
+            if content is None:
+                continue
+
+            n_bytes = len(content)
+            if n_bytes < MONITOR_CUTOFF:
+                direct_writer(x, y, pointer, content)
+            else:
+                monitor_writer(x, y, pointer, content)
+            written += n_bytes
+            if n_bytes % BYTES_PER_WORD != 0:
+                n_bytes += BYTES_PER_WORD - n_bytes % BYTES_PER_WORD
+            pointer_table[region_num]["n_words"] = n_bytes / BYTES_PER_WORD
+            n_data = numpy.array(content, dtype="uint8")
+            pointer_table[region_num]["checksum"] = \
+                int(numpy.sum(n_data.view("uint32"))) & 0xFFFFFFFF
 
         base_address = ds_database.get_start_address(x, y, p)
         header = numpy.array([APPDATA_MAGIC_NUM, DSE_VERSION], dtype="<u4")
@@ -262,14 +259,13 @@ class _LoadDataSpecification(object):
         Allocates the storage for all DSG regions on the core and tells
         the core and our caller where that storage is.
 
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int size:
+        :param x:
+        :param y:
+        :param p:
+        :param size:
             The total size of all storage for regions on that core, including
             for the header metadata.
         :return: address of region header table (not yet filled)
-        :rtype: int
         """
         txrx = FecDataView.get_transceiver()
 

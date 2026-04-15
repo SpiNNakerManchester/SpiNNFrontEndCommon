@@ -31,9 +31,7 @@ class AbstractVertexWithEdgeToDependentVertices(
     @abstractmethod
     def dependent_vertices(self) -> Iterable[ApplicationVertex]:
         """
-        Return the vertices which this vertex depends upon.
-
-        :rtype: iterable(~pacman.model.graphs.application.ApplicationVertex)
+        :returns: The vertices which this vertex depends upon.
         """
         raise NotImplementedError
 
@@ -41,10 +39,8 @@ class AbstractVertexWithEdgeToDependentVertices(
     def edge_partition_identifiers_for_dependent_vertex(
             self, vertex: ApplicationVertex) -> Iterable[str]:
         """
-        Return the dependent edge identifiers for a particular dependent
-        vertex.
-
-        :param ~pacman.model.graphs.application.ApplicationVertex vertex:
-        :rtype: iterable(str)
+        :param vertex:
+        :returns:
+           The dependent edge identifiers for a particular dependent  vertex.
         """
         raise NotImplementedError

@@ -24,7 +24,9 @@ from spinn_front_end_common.utilities.utility_calls import (
 
 def sample_speedup_vertex() -> DataSpeedUpPacketGatherMachineVertex:
     """
-    Vertex to be added to every Ethernet chip
+    Vertex to be added to every Ethernet chip Used for cost models
+
+    :return: An unplaced Vertex
     """
     return DataSpeedUpPacketGatherMachineVertex(
         x=-1, y=-1, ip_address="sample")
@@ -32,7 +34,9 @@ def sample_speedup_vertex() -> DataSpeedUpPacketGatherMachineVertex:
 
 def sample_monitor_vertex() -> ExtraMonitorSupportMachineVertex:
     """
-    Vertex to be added to every Chip
+    Vertex to be added to every Chip for cost models
+
+    :return: An unplaced Vertex
     """
     return ExtraMonitorSupportMachineVertex()
 
@@ -44,12 +48,9 @@ def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
     Inserts the extra monitor vertices into the graph that correspond to
     the extra monitor cores required.
 
-    :param ~pacman.model.placements.Placements placements:
+    :param placements:
     :return: mapping from *Ethernet-enabled* chip locations to their gatherer,
         mapping from *all* chip locations to their extra monitor
-    :rtype: tuple(
-        dict(Chip,DataSpeedUpPacketGatherMachineVertex),
-        dict(Chip,ExtraMonitorSupportMachineVertex))
     """
     chip_to_gatherer_map = dict()
     chip_to_monitor_map = dict()

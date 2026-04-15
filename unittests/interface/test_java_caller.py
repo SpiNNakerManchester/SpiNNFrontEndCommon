@@ -33,6 +33,10 @@ class TestJavaCaller(unittest.TestCase):
 
     def setUp(self) -> None:
         unittest_setup()
+        try:
+            JavaCaller.check_java()
+        except (ConfigurationException, FileNotFoundError):
+            raise unittest.SkipTest("Java not available")
 
     def test_creation_with_jar_path(self) -> None:
         set_config("Java", "java_spinnaker_path", "missing")

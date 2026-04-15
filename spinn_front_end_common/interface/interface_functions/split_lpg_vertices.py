@@ -23,8 +23,7 @@ def split_lpg_vertices(system_placements: Placements) -> None:
     """
     Split any LPG vertices found.
 
-    :param ~pacman.model.placements.Placements system_placements:
-        existing placements to be added to
+    :param system_placements: existing placements to be added to
     """
     for vertex in FecDataView.get_vertices_by_type(LivePacketGather):
         cast(_LPGSplitter, vertex.splitter).create_sys_vertices(

@@ -15,7 +15,6 @@ from __future__ import annotations
 from enum import Enum, IntEnum
 import logging
 import struct
-# pylint: disable=no-name-in-module
 from typing import Dict, Iterable, Optional, ContextManager, Type
 from types import TracebackType
 
@@ -143,11 +142,11 @@ class ExtraMonitorSupportMachineVertex(
             reinject_nearest_neighbour: bool = False,
             reinject_fixed_route: bool = False):
         """
-        :param bool reinject_point_to_point:
+        :param reinject_point_to_point:
             if we reinject point-to-point packets
-        :param bool reinject_nearest_neighbour:
+        :param reinject_nearest_neighbour:
             if we reinject nearest-neighbour packets
-        :param bool reinject_fixed_route: if we reinject fixed route packets
+        :param reinject_fixed_route: if we reinject fixed route packets
         """
         super().__init__("SYSTEM:ExtraMonitor")
 
@@ -165,7 +164,7 @@ class ExtraMonitorSupportMachineVertex(
     @property
     def reinject_multicast(self) -> bool:
         """
-        :rtype: bool
+        The enable_reinjection value from the configs
         """
         return self._reinject_multicast
 
@@ -173,8 +172,6 @@ class ExtraMonitorSupportMachineVertex(
     def transaction_id(self) -> int:
         """
         The current transaction id.
-
-        :rtype: int
         """
         return self._transaction_id
 
@@ -196,21 +193,21 @@ class ExtraMonitorSupportMachineVertex(
     @property
     def reinject_point_to_point(self) -> bool:
         """
-        :rtype: bool
+        if we reinject point to point packets
         """
         return self._reinject_point_to_point
 
     @property
     def reinject_nearest_neighbour(self) -> bool:
         """
-        :rtype: bool
+        if we reinject nearest neighbour packets
         """
         return self._reinject_nearest_neighbour
 
     @property
     def reinject_fixed_route(self) -> bool:
         """
-        :rtype: bool
+        if we reinject fixed route packets
         """
         return self._reinject_fixed_route
 
@@ -232,7 +229,9 @@ class ExtraMonitorSupportMachineVertex(
     @property
     def placement(self) -> Placement:
         """
-        :rtype: ~pacman.model.placements.Placement
+        The Placement set by generate_data_specifications
+
+        :raises AssertionError: If the placement has not yet been set
         """
         assert self.__placement is not None, "vertex not placed!"
         return self.__placement
@@ -246,7 +245,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         The type of the binary implementing this vertex.
 
-        :rtype: ExecutableType
+        :returns: The System type as this is a System vertex
         """
         return ExecutableType.SYSTEM
 
@@ -259,7 +258,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         The name of the binary implementing this vertex.
 
-        :rtype: str
+        :return: Name of the aplx files for this vertex
         """
         return "extra_monitor_support.aplx"
 
@@ -281,9 +280,6 @@ class ExtraMonitorSupportMachineVertex(
 
     def _generate_data_speed_up_out_config(
             self, spec: DataSpecificationGenerator) -> None:
-        """
-        :param ~.DataSpecificationGenerator spec: spec file
-        """
         spec.reserve_memory_region(
             region=_DsgRegions.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
@@ -297,10 +293,6 @@ class ExtraMonitorSupportMachineVertex(
 
     def _generate_reinjection_config(
             self, spec: DataSpecificationGenerator, chip: Chip) -> None:
-        """
-        :param ~.DataSpecificationGenerator spec: spec file
-        :param ~.Chip chip:
-        """
         spec.reserve_memory_region(
             region=_DsgRegions.REINJECT_CONFIG,
             size=_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES,
@@ -318,16 +310,11 @@ class ExtraMonitorSupportMachineVertex(
         router_timeout_keys = \
             FecDataView.get_system_multicast_router_timeout_keys()
         # Write the base key for multicast communication
-        # pylint: disable=unsubscriptable-object
         spec.write_value(router_timeout_keys[
             chip.nearest_ethernet_x, chip.nearest_ethernet_y])
 
     def _generate_data_speed_up_in_config(
             self, spec: DataSpecificationGenerator, chip: Chip) -> None:
-        """
-        :param ~.DataSpecificationGenerator spec: spec file
-        :param ~.Chip chip: the chip where this monitor will run
-        """
         spec.reserve_memory_region(
             region=_DsgRegions.DATA_IN_CONFIG,
             size=(_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
@@ -338,7 +325,6 @@ class ExtraMonitorSupportMachineVertex(
         # write address key and data key
         mc_data_chips_to_keys = \
             FecDataView.get_data_in_multicast_key_to_chip_map()
-        # pylint: disable=unsubscriptable-object
         base_key = mc_data_chips_to_keys[chip.x, chip.y]
         spec.write_value(base_key + _KeyOffsets.ADDRESS_KEY_OFFSET)
         spec.write_value(base_key + _KeyOffsets.DATA_KEY_OFFSET)
@@ -357,10 +343,6 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(self.__encode_route(entry))
 
     def __encode_route(self, entry: MulticastRoutingEntry) -> int:
-        """
-        :param ~spinn_machine.MulticastRoutingEntry entry:
-        :rtype: int
-        """
         assert self._app_id is not None
         route = self._app_id << _BIT_SHIFT_TO_MOVE_APP_ID
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
@@ -368,18 +350,11 @@ class ExtraMonitorSupportMachineVertex(
 
     def _generate_provenance_area(
             self, spec: DataSpecificationGenerator) -> None:
-        """
-        :param ~.DataSpecificationGenerator spec: spec file
-        """
         spec.reserve_memory_region(
             region=_DsgRegions.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
             label="provenance collection region")
 
     def __provenance_address(self, place: Placement) -> int:
-        """
-        :param ~pacman.model.placements.Placement place:
-        :rtype: int
-        """
         if self.__prov_region is not None:
             return self.__prov_region
 
@@ -421,12 +396,8 @@ class ExtraMonitorSupportMachineVertex(
         """
         Resets the counters for reinjection.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
         :param extra_monitor_cores_to_set:
             which monitors control the routers to reset the counters of
-        :type extra_monitor_cores_to_set:
-            iterable(ExtraMonitorSupportMachineVertex)
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set)
@@ -440,7 +411,6 @@ class ExtraMonitorSupportMachineVertex(
         Get the reinjection status from this extra monitor vertex.
 
         :return: the reinjection status for this vertex
-        :rtype: ReInjectionStatus
         """
         process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
@@ -453,7 +423,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         Get the reinjection status from a set of extra monitor cores.
 
-        :rtype: dict(~spinn_machine.Chip, ReInjectionStatus)
+        :returns: Mapping of the Chips to their reinjection status.
         """
         core_subsets = convert_vertices_to_core_subset(
             FecDataView.iterate_monitors())
@@ -467,18 +437,16 @@ class ExtraMonitorSupportMachineVertex(
             nearest_neighbour: Optional[bool] = None,
             fixed_route: Optional[bool] = None) -> None:
         """
+        Sends the reinjection packets for this vertex
+
         :param point_to_point:
             If point to point should be set, or `None` if left as before
-        :type point_to_point: bool or None
         :param multicast:
             If multicast should be set, or `None` if left as before
-        :type multicast: bool or None
         :param nearest_neighbour:
             If nearest neighbour should be set, or `None` if left as before
-        :type nearest_neighbour: bool or None
         :param fixed_route:
             If fixed route should be set, or `None` if left as before.
-        :type fixed_route: bool or None
         """
         if multicast is not None:
             self._reinject_multicast = multicast
@@ -527,7 +495,6 @@ class ExtraMonitorSupportMachineVertex(
         Convert vertices into the subset of cores where they've been placed.
 
         :return: where the vertices have been placed
-        :rtype: ~.CoreSubsets
         """
         core_subsets = CoreSubsets()
         for vertex in FecDataView.iterate_monitors():
@@ -541,9 +508,16 @@ class _Recoverer:
     Helper class that will run the emergency state recovery system if its
     context body throws.
     """
-    def __init__(self, vtx: ExtraMonitorSupportMachineVertex,
+    def __init__(self, vertex: ExtraMonitorSupportMachineVertex,
                  placement: Placement):
-        self.__vtx = vtx
+        """
+        :param vertex:
+            The vertex to retrieve the IOBUF from
+            if it is suspected as being dead
+        :param placement:
+            Where the vertex is located.
+        """
+        self.__vtx = vertex
         self.__placement = placement
 
     def __enter__(self) -> Placement:

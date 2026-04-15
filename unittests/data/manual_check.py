@@ -39,5 +39,5 @@ try:
     raise NotImplementedError("OOPS")
 except DataNotYetAvialable:
     pass
-writer.set_up_timings(1000, 1)
+writer.set_up_timings(1, 1)
 print(FecDataView.get_simulation_time_step_us())

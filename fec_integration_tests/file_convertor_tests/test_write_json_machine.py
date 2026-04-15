@@ -18,29 +18,27 @@ import os
 import sys
 import unittest
 
-from spinn_utilities.config_holder import set_config
+from spinn_utilities.config_holder import get_report_path, set_config
 from spinn_utilities.ping import Ping
 from spinn_utilities.typing.json import JsonArray
 
-from spalloc_client.job import JobDestroyedError
-
-from spinnman.exceptions import SpinnmanIOException
+from spinn_machine.json_machine import machine_from_json
+from spinn_machine.virtual_machine import virtual_machine
+from spinnman.exceptions import (
+    SpallocBoardUnavailableException, SpinnmanIOException)
 from spinnman.transceiver import create_transceiver_from_hostname
 
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.interface.spinnaker import SpiNNaker
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
-    import (write_json_machine, MACHINE_FILENAME)
-from spinn_front_end_common.interface.interface_functions import (
-    spalloc_allocator)
+    import (write_json_machine)
 
 
 class TestWriteJson(unittest.TestCase):
 
     spin4Host = "spinn-4.cs.man.ac.uk"
     spalloc = "spinnaker.cs.man.ac.uk"
-    spin2Port = 22245
-    mainPort = 22244
 
     def setUp(self) -> None:
         unittest_setup()
@@ -113,15 +111,34 @@ class TestWriteJson(unittest.TestCase):
                         "Values differ for {} found {} {}".format(
                             key, json1[key], json2[key]))
 
-    def _remove_old_json(self, folder: str) -> None:
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        else:
-            json_file = os.path.join(folder, MACHINE_FILENAME)
-            if os.path.exists(json_file):
-                os.remove(json_file)
+    def test_virtual(self) -> None:
+        set_config("Machine", "version", "5")
+        machine = virtual_machine(8, 8, False)
+        FecDataWriter.mock().set_machine(machine)
+        filename = write_json_machine(True)
+        self.json_compare(filename, "virtual.json")
+
+        # Create a machine with Exception
+        chip = machine[1, 1]
+        chip._sdram = chip._sdram - 100
+        chip._router._n_available_multicast_entries -= 10
+        chip = machine[1, 2]
+        chip._sdram = chip._sdram - 101
+
+        json_file = get_report_path("path_json_machine")
+        if os.path.exists(json_file):
+            os.remove(json_file)
+        filename = write_json_machine(True)
+        self.json_compare(filename, "virtual_fiddle.json")
+
+        machine2 = machine_from_json(filename)
+        self.assertEqual(machine[1, 1].sdram, machine2[1, 1].sdram)
+        self.assertEqual(machine[1, 1].router.n_available_multicast_entries,
+                         machine2[1, 1].router.n_available_multicast_entries)
+        self.assertEqual(machine[1, 2].sdram, machine2[1, 2].sdram)
 
     def testSpin4(self) -> None:
+        set_config("Machine", "version", "5")
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
         try:
@@ -131,10 +148,9 @@ class TestWriteJson(unittest.TestCase):
 
         machine = trans.get_machine_details()
         FecDataWriter.mock().set_machine(machine)
+        trans.close()
 
-        folder = "spinn4"
-        self._remove_old_json(folder)
-        filename = write_json_machine(folder, True)
+        filename = write_json_machine(True)
 
         self.json_compare(filename, "spinn4.json")
 
@@ -145,37 +161,23 @@ class TestWriteJson(unittest.TestCase):
         chip = machine[1, 2]
         chip._sdram = chip._sdram - 101
 
-        folder = "spinn4_fiddle"
-        self._remove_old_json(folder)
-        filename = write_json_machine(folder, True)
+        json_file = get_report_path("path_json_machine")
+        if os.path.exists(json_file):
+            os.remove(json_file)
+        filename = write_json_machine(True)
 
         self.json_compare(filename, "spinn4_fiddle.json")
-        trans.close()
 
-    def testSpin2(self) -> None:
-        if not Ping.host_is_reachable(self.spalloc):
-            raise unittest.SkipTest(self.spalloc + " appears to be down")
-        set_config(
-            "Machine", "spalloc_user", "Integration testing OK to kill")
-        set_config("Machine", "spalloc_server", self.spalloc)
-        set_config("Machine", "spalloc_port", str(self.spin2Port))
-
-        writer = FecDataWriter.mock()
-        writer.set_n_chips_in_graph(20)
+    def test_test48(self) -> None:
         try:
-            (hostname, version, _, _, _, _, m_allocation_controller) = \
-                spalloc_allocator()
-        except (JobDestroyedError, ConnectionRefusedError):
-            self.skipTest("Skipping as getting Job failed")
+            simulator = SpiNNaker()
+            simulator._data_writer.set_n_required(1, None)
+            machine1 = simulator.get_machine()
+            simulator.stop()
+            print(machine1)
 
-        trans = create_transceiver_from_hostname(hostname)
-        writer.set_machine(trans.get_machine_details())
+            filename = write_json_machine(False)
 
-        m_allocation_controller.close()
-
-        folder = "spinn2"
-        self._remove_old_json(folder)
-        filename = write_json_machine(folder, False)
-
-        self.json_compare(filename, "spinn2.json")
-        trans.close()
+            self.json_compare(filename, "test48.json")
+        except SpallocBoardUnavailableException as ex:
+            raise unittest.SkipTest(str(ex))

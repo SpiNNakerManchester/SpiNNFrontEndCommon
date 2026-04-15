@@ -37,9 +37,6 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
     def start_resume_commands(self) -> Iterable[MultiCastCommand]:
         """
         The commands needed when starting or resuming simulation.
-
-        :rtype:
-            iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
         raise NotImplementedError
 
@@ -48,9 +45,6 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
     def pause_stop_commands(self) -> Iterable[MultiCastCommand]:
         """
         The commands needed when pausing or stopping simulation.
-
-        :rtype:
-            iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
         raise NotImplementedError
 
@@ -59,7 +53,5 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
     def timed_commands(self) -> List[MultiCastCommand]:
         """
         The commands to be sent at given times in the simulation.
-
-        :rtype: list(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
         raise NotImplementedError

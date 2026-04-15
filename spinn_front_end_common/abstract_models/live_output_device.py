@@ -33,6 +33,6 @@ class LiveOutputDevice(object, metaclass=AbstractBase):
         by the device to be output.  Note that the device may change the keys
         as they pass through it, and this needs to be recognised here.
 
-        :rtype: Dict[MachineVertex, List[Tuple[int, int]]]
+        :returns: Mapping of machine vertex to list of (atom_id, key)
         """
         raise NotImplementedError

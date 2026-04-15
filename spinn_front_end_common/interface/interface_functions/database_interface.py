@@ -27,11 +27,11 @@ from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface(runtime: Optional[float]) -> Optional[str]:
+def database_interface() -> Optional[str]:
     """
-    :param int runtime:
+    Creates and loads a DataWriter database
+
     :return: where the database is located, if one is made
-    :rtype: str or None
     """
     needs_db = DatabaseWriter.auto_detect_database()
     user_create_database = get_config_bool_or_none(
@@ -48,17 +48,12 @@ def database_interface(runtime: Optional[float]) -> Optional[str]:
     with DatabaseWriter() as writer:
         logger.info("Creating live event connection database in {}",
                     writer.database_path)
-        _write_to_db(writer, runtime)
+        _write_to_db(writer)
         return writer.database_path
 
 
-def _write_to_db(w: DatabaseWriter, runtime: Optional[float]) -> None:
-    """
-    :param DatabaseWriter w:
-    :param int runtime:
-    """
+def _write_to_db(w: DatabaseWriter) -> None:
     with ProgressBar(6, "Creating graph description database") as p:
-        w.add_system_params(runtime)
         w.add_proxy_configuration()
         p.update()
         w.add_machine_objects()

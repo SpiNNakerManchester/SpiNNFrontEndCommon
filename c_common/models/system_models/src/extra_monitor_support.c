@@ -744,6 +744,27 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
     vic_interrupt_done();
 }
 
+static inline void extract_dropped_packet_details(
+        router_dump_outputs_t rtr_dump_outputs) {
+    if (rtr_dump_outputs.processor > 0) {
+        // add to the count the number of active bits from this dumped
+        // packet, as this indicates how many processors this packet
+        // was meant to go to.
+        reinject_n_processor_dumped_packets +=
+                __builtin_popcount(rtr_dump_outputs.processor);
+        reinject_link_proc_bits |= rtr_dump_outputs.processor << 6;
+    }
+
+    if (rtr_dump_outputs.link > 0) {
+        // add to the count the number of active bits from this dumped
+        // packet, as this indicates how many links this packet was
+        // meant to go to.
+        reinject_n_link_dumped_packets +=
+                __builtin_popcount(rtr_dump_outputs.link);
+        reinject_link_proc_bits |= rtr_dump_outputs.link & 0x3F;
+    }
+}
+
 //! \brief the callback plugin for handling dropped packets
 static INT_HANDLER reinjection_dropped_packet_callback(void) {
     // get packet from router,
@@ -756,7 +777,6 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
     router_dump_status_t rtr_dstat = router_control->dump.status;
 
     // only reinject if configured
-
     uint packet_type = ((spinnaker_packet_control_byte_t) hdr.control).type;
     if (((packet_type == SPINNAKER_PACKET_TYPE_MC) && reinject_mc) ||
             ((packet_type == SPINNAKER_PACKET_TYPE_P2P) && reinject_pp) ||
@@ -770,24 +790,7 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
             // Note that the processor_dump and link_dump flags are sticky
             // so you can only really count these if you *haven't* missed a
             // dropped packet - hence this being split out
-
-            if (rtr_dump_outputs.processor > 0) {
-                // add to the count the number of active bits from this dumped
-                // packet, as this indicates how many processors this packet
-                // was meant to go to.
-                reinject_n_processor_dumped_packets +=
-                        __builtin_popcount(rtr_dump_outputs.processor);
-                reinject_link_proc_bits |= rtr_dump_outputs.processor << 6;
-            }
-
-            if (rtr_dump_outputs.link > 0) {
-                // add to the count the number of active bits from this dumped
-                // packet, as this indicates how many links this packet was
-                // meant to go to.
-                reinject_n_link_dumped_packets +=
-                        __builtin_popcount(rtr_dump_outputs.link);
-                reinject_link_proc_bits |= rtr_dump_outputs.link & 0x3F;
-            }
+            extract_dropped_packet_details(rtr_dump_outputs);
         }
 
         // Only update this counter if this is a packet to reinject
@@ -815,6 +818,9 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
 
         // restore FIQ after queue access,
         cpu_int_restore(cpsr);
+    } else {
+        // Even if not re-injecting, we can still get this level of detail
+        extract_dropped_packet_details(rtr_dump_outputs);
     }
 }
 

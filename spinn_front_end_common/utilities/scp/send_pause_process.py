@@ -27,11 +27,10 @@ from spinnman.model.enums import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
 class _SendPauseRequest(AbstractSCPRequest[CheckOKResponse]):
     def __init__(self, x: int, y: int, p: int):
         """
-        :param int x:
-        :param int y:
-        :param int p:
+        :param x:
+        :param y:
+        :param p:
         """
-        # pylint: disable=too-many-arguments
         sdp_flags = SDPFlag.REPLY_EXPECTED
 
         super().__init__(
@@ -64,8 +63,10 @@ class SendPauseProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
 
     def send_pause(self, core_subsets: CoreSubsets, n_cores: int) -> None:
         """
-        :param ~spinn_machine.CoreSubsets core_subsets:
-        :param int n_cores: Number of cores being updated
+        Sends the pause request to all cores in the subset.
+
+        :param core_subsets: Where to send the pause
+        :param n_cores: Number of cores being updated
         """
         with ProgressBar(n_cores, "Sending pause request") as progress, \
                 self._collect_responses():

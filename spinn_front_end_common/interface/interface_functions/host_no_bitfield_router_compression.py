@@ -88,10 +88,9 @@ class Compression(object):
             self, binary_path: str, progress_text: str,
             result_register: UserRegister):
         """
-        :param str binary_path: What binary to run
-        :param ~spinn_machine.Machine machine: The machine model
-        :param str progress_text: Text to use in progress bar
-        :param int result_register:
+        :param binary_path: What binary to run
+        :param progress_text: Text to use in progress bar
+        :param result_register:
             number of the user register to check for the result code
         """
         self._binary_path = binary_path
@@ -142,8 +141,7 @@ class Compression(object):
     def _load_routing_table(
             self, table: AbstractMulticastRoutingTable) -> None:
         """
-        :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
-            the router table to load
+        :param table: the router table to load
         """
         transceiver = FecDataView.get_transceiver()
         data = self._build_data(table)
@@ -162,7 +160,7 @@ class Compression(object):
         Goes through the cores checking for cores that have failed to compress
         the routing tables to the level where they fit into the router.
 
-        :param ~spinnman.model.ExecutableTargets executable_targets:
+        :param executable_targets:
         """
         transceiver = FecDataView.get_transceiver()
         for core_subset in executable_targets.all_core_subsets:
@@ -182,7 +180,6 @@ class Compression(object):
         :return:
             the executable targets that represent all cores/chips which have
             active routing tables
-        :rtype: ~spinnman.model.ExecutableTargets
         """
         # build core subsets
         core_subsets = CoreSubsets()
@@ -205,9 +202,7 @@ class Compression(object):
         compressor C code.
 
         :param table: the PACMAN router table instance
-        :type table: ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :return: The byte array of data
-        :rtype: bytearray
         """
         # write header data of the app ID to load the data, if to store
         # results in SDRAM and the router table entries

@@ -28,7 +28,6 @@ from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import graph_binary_gatherer
 from .graph_data_specification_writer import (
     graph_data_specification_writer)
-from .graph_provenance_gatherer import graph_provenance_gatherer
 from .hbp_allocator import hbp_allocator
 from .load_data_specification import (
     load_application_data_specs, load_system_data_specs,
@@ -41,16 +40,13 @@ from .split_lpg_vertices import split_lpg_vertices
 from .load_executable_images import load_app_images, load_sys_images
 from .load_fixed_routes import load_fixed_routes
 from .locate_executable_start_type import locate_executable_start_type
-from .machine_generator import machine_generator
 from .create_notification_protocol import create_notification_protocol
 from .placements_provenance_gatherer import placements_provenance_gatherer
 from .profile_data_gatherer import profile_data_gatherer
 from .router_provenance_gatherer import router_provenance_gatherer
-from .routing_setup import routing_setup
 from .routing_table_loader import routing_table_loader
-from .spalloc_allocator import spalloc_allocator
+from .spalloc_allocator_old import spalloc_allocate_job_old
 from .tags_loader import tags_loader
-from .virtual_machine_generator import virtual_machine_generator
 from .read_routing_tables_from_machine import read_routing_tables_from_machine
 from .sdram_outgoing_partition_allocator import (
     sdram_outgoing_partition_allocator)
@@ -67,18 +63,16 @@ __all__ = (
     "load_system_data_specs", "load_using_advanced_monitors",
     "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
-    "graph_provenance_gatherer",
     "hbp_allocator",
     "insert_chip_power_monitors_to_graphs",
     "insert_extra_monitor_vertices_to_graphs",
     "split_lpg_vertices",
     "load_app_images", "load_fixed_routes", "load_sys_images",
     "locate_executable_start_type",
-    "machine_generator", "placements_provenance_gatherer",
+    "placements_provenance_gatherer",
     "profile_data_gatherer",
     "read_routing_tables_from_machine", "router_provenance_gatherer",
-    "routing_setup",
     "routing_table_loader", "sdram_outgoing_partition_allocator",
-    "spalloc_allocator",
+    "spalloc_allocate_job_old",
     "system_multicast_routing_generator", "tags_loader",
-    "virtual_machine_generator", "add_command_senders")
+    "add_command_senders")

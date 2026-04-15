@@ -17,12 +17,14 @@ import logging
 import os
 import shutil
 import traceback
-from typing import List, Optional, Type
+from typing import cast, List, Optional
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.configs.camel_case_config_parser import FALSES
 from spinn_utilities.config_holder import (
-    config_options, has_config_option, load_config, get_config_bool,
-    get_config_int, get_config_str, get_config_str_list, set_config)
+    config_options, has_config_option, get_config_bool, get_config_int,
+    get_config_str, get_config_str_list, get_timestamp_path, set_config)
+from spinnman.spinnman_simulation import AbstractSpiNNManSimulation
 from spinn_front_end_common.interface.interface_functions.\
     insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
 from spinn_front_end_common.interface.interface_functions.\
@@ -34,10 +36,6 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-APP_DIRNAME = 'application_generated_data_files'
-STACK_TRACE_FILENAME = "stack_trace"
-WARNING_LOGS_FILENAME = "warning_logs.txt"
-
 # options names are all lower without _ inside config
 _DEBUG_ENABLE_OPTS = frozenset([
     "cleariobufduringrun", "extractiobuf"])
@@ -45,27 +43,25 @@ _DEBUG_MAPPING_OPTS = frozenset([
     "routertablecompressasfaraspossible", "runcompressionchecker"])
 
 
-class ConfigHandler(object):
+# pylint: disable=abstract-method
+class ConfigHandler(AbstractSpiNNManSimulation):
     """
     Superclass of AbstractSpinnakerBase that handles function only
     dependent of the configuration and the order its methods are called.
     """
 
-    __slots__ = (
-        # The writer and therefore view of the global data
-        "_data_writer", )
+    __slots__ = ()
 
-    def __init__(self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
+    def __init__(self, n_boards_required: Optional[int] = None,
+                 n_chips_required: Optional[int] = None):
         """
-        :param FecDataWriter data_writer:
-            The Global data writer object
+        :param n_boards_required:
+            `None` or the number of boards requested by the user
+        :param n_chips_required:
+            `None` or the number of chips requested by the user
         """
-        load_config()
+        super().__init__(n_boards_required, n_chips_required)
 
-        if data_writer_cls:
-            self._data_writer = data_writer_cls.setup()
-        else:
-            self._data_writer = FecDataWriter.setup()
         logger.set_log_store(LogStoreDB())
 
         # set up machine targeted data
@@ -73,6 +69,10 @@ class ConfigHandler(object):
         self._previous_handler()
         self._reserve_system_vertices()
         self._ensure_provenance_for_energy_report()
+
+    @property
+    def _data_writer(self) -> FecDataWriter:
+        return cast(FecDataWriter, self._untyped_data_writer)
 
     def __toggle_config(self, section: str, option: str, to_false: List[str],
                         to_true: List[str]) -> None:
@@ -235,13 +235,9 @@ class ConfigHandler(object):
                 get_config_bool("Reports", "remove_errored_folders"))
 
         # store timestamp in latest/time_stamp for provenance reasons
-        timestamp_dir_path = self._data_writer.get_timestamp_dir_path()
-        time_of_run_file_name = os.path.join(
-            timestamp_dir_path, STACK_TRACE_FILENAME)
-        _, timestamp = os.path.split(timestamp_dir_path)
+        time_of_run_file_name = get_timestamp_path(
+            "tpath_stack_trace")
         with open(time_of_run_file_name, "w", encoding="utf-8") as f:
-            f.writelines(timestamp)
-            f.write("\n")
             f.write("Traceback of setup call:\n")
             traceback.print_stack(file=f)
 

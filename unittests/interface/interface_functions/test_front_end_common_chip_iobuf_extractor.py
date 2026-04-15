@@ -13,11 +13,9 @@
 # limitations under the License.
 
 import os
-import tempfile
 from typing import Iterable, List, Optional, Tuple
 import unittest
 from spinn_utilities.config_holder import set_config
-from spinn_utilities.make_tools.log_sqllite_database import LogSqlLiteDatabase
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
@@ -85,9 +83,6 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self) -> None:
         unittest_setup()
-        os.environ["C_LOGS_DICT"] = tempfile.mktemp()
-        # There needs to be a dict but it can be empty
-        LogSqlLiteDatabase(new_dict=True)
         writer = FecDataWriter.mock()
         writer.set_transceiver(_PretendTransceiver(
             [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),

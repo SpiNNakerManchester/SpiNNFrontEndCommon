@@ -14,14 +14,17 @@
 
 from collections import defaultdict
 import datetime
+from io import BufferedReader
 import json
 import logging
 import os
 import subprocess
+import selectors
+import sys
 from typing import Dict, Iterable, List, Optional, cast
 
 from spinn_utilities.config_holder import (
-    get_config_str, get_config_str_or_none)
+    get_config_str, get_config_str_or_none, get_report_path)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_machine import Chip
@@ -72,21 +75,32 @@ class JavaCaller(object):
         # Properties flag to be passed to Java
         "_java_properties")
 
+    @classmethod
+    def check_java(cls) -> str:
+        """
+        Reads and checks the Java call
+
+        :return: Java call from cfg
+        :raises FileNotFoundError: If no Java installed
+        :raises ConfigurationException: If Java -version failed
+        """
+        java_call = get_config_str("Java", "java_call")
+        result = subprocess.call([java_call, '-version'])
+        if result != 0:
+            raise ConfigurationException(
+                f" {java_call} -version failed. "
+                "Please set [Java] java_call to the absolute path "
+                "to start java. (in config file)")
+        return java_call
+
     def __init__(self) -> None:
         """
         Creates a Java caller and checks the user/configuration parameters.
 
         :raise ConfigurationException: if simple parameter checking fails.
         """
+        self._java_call = self.check_java()
         self._recording: Optional[bool] = None
-        java_call = get_config_str("Java", "java_call")
-        self._java_call = java_call
-        result = subprocess.call([self._java_call, '-version'])
-        if result != 0:
-            raise ConfigurationException(
-                f" {self._java_call} -version failed. "
-                "Please set [Java] java_call to the absolute path "
-                "to start java. (in config file)")
 
         self._find_java_jar()
 
@@ -99,7 +113,6 @@ class JavaCaller(object):
         self._chip_by_ethernet: Optional[Dict[Chip, List[Chip]]] = None
         if java_properties is not None:
             self._java_properties = java_properties.split()
-            # pylint: disable=not-an-iterable
             for _property in self._java_properties:
                 if _property[:2] != "-D":
                     raise ConfigurationException(
@@ -173,7 +186,7 @@ class JavaCaller(object):
         self._chip_by_ethernet = defaultdict(list)
         machine = FecDataView.get_machine()
         for chip in machine.chips:
-            ethernet = machine[  # pylint: disable=unsubscriptable-object
+            ethernet = machine[
                 chip.nearest_ethernet_x, chip.nearest_ethernet_y]
             self._chip_by_ethernet[ethernet].append(chip)
 
@@ -199,11 +212,11 @@ class JavaCaller(object):
         Currently this method uses JSON but that may well change to using the
         database.
 
-        :param ~pacman.model.placements.Placements used_placements:
+        :param used_placements:
             Placements that are recording. May not be all placements
         """
-        path = os.path.join(
-            FecDataView.get_json_dir_path(), "java_placements.json")
+        path = get_report_path(
+            section="Java", option="path_json_java_placements")
         self._recording = False
         if self._gatherer_iptags is None:
             self.__placement_json = self._write_placements(
@@ -219,10 +232,6 @@ class JavaCaller(object):
         return self.__placement_json
 
     def _json_placement(self, placement: Placement) -> JsonObject:
-        """
-        :param ~pacman.model.placements.Placement placement:
-        :rtype: dict
-        """
         vertex = placement.vertex
         json_placement: JsonObject = {
             "x": placement.x,
@@ -256,10 +265,6 @@ class JavaCaller(object):
         return json_placement
 
     def _json_iptag(self, iptag: IPTag) -> JsonObject:
-        """
-        :param ~pacman.model.tags.IPTag iptag:
-        :rtype: dict
-        """
         return {
             "x": iptag.destination_x,
             "y": iptag.destination_y,
@@ -273,10 +278,6 @@ class JavaCaller(object):
     def _placements_grouped(
             self, recording_placements: Iterable[Placement]) -> Dict[
                 Chip, Dict[Chip, List[Placement]]]:
-        """
-        :param ~pacman.model.placements.Placements recording_placementss:
-        :rtype: dict(Chip,dict(Chip,~pacman.model.placements.Placement))
-        """
         by_ethernet: Dict[Chip, Dict[Chip, List[Placement]]] = defaultdict(
             lambda: defaultdict(list))
         machine = FecDataView.get_machine()
@@ -292,10 +293,9 @@ class JavaCaller(object):
     def _write_gather(
             self, used_placements: Iterable[Placement], path: str) -> str:
         """
-        :param ~pacman.model.placements.Placements used_placements:
+        :param used_placements:
             placements that are being used. May not be all placements
-        :param str path:
-        :rtype: str
+        :param path:
         """
         assert self._chip_by_ethernet is not None
         assert self._gatherer_cores is not None
@@ -336,10 +336,9 @@ class JavaCaller(object):
     def _write_placements(
             self, used_placements: Iterable[Placement], path: str) -> str:
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param used_placements:
             Placements that are being used. May not be all placements
-        :param str path:
-        :rtype: str
+        :param path:
         """
         # Read back the regions
         json_obj: JsonArray = list()
@@ -359,9 +358,6 @@ class JavaCaller(object):
         """
         Does the actual running of `JavaSpiNNaker`. Arguments are those that
         will be processed by the `main` method on the Java side.
-
-        :type list(str) args:
-        :rtype: int
         """
         if self._java_properties is None:
             params = [self._java_call, '-jar', self._jar_file]
@@ -369,22 +365,41 @@ class JavaCaller(object):
             params = [self._java_call] + self._java_properties \
                      + ['-jar', self._jar_file]
         params.extend(args)
-        try:
-            subprocess.check_output(params, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            logger.error("Java Call resulted in an error")
-            updated = datetime.datetime.fromtimestamp(
-                os.path.getmtime(self._jar_file))
-            updated_str = (
-                f"{updated.year:04}-{updated.month:02}-{updated.day:02}"
-                f"-{updated.hour:02}-{updated.minute:02}")
-            logger.error(f"Jar {self._jar_file} was updated {updated_str}")
-            logger.error(f"Call was {params}")
-            logger.error(f"Output was {exc.output}")
-            log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
-            logger.error(f"Logging to: {log_file}")
-            raise
+        logger.info("Calling Java with: {}", " ".join(params))
+
+        with subprocess.Popen(params, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE) as process:
+            sel = selectors.DefaultSelector()
+            sel.register(cast(int, process.stdout), selectors.EVENT_READ)
+            sel.register(cast(int, process.stderr), selectors.EVENT_READ)
+
+            all_output = ""
+            while process.poll() is None:
+                for key, _ in sel.select():
+                    data = cast(BufferedReader, key.fileobj).read1().decode()
+                    if not data:
+                        break
+                    if key.fileobj is process.stdout:
+                        all_output += data
+                        print(data, end="")
+                    else:
+                        all_output += data
+                        print(data, end="", file=sys.stderr)
+            if process.returncode != 0:
+                logger.error("Java Call resulted in an error")
+                updated = datetime.datetime.fromtimestamp(
+                    os.path.getmtime(self._jar_file))
+                updated_str = (
+                    f"{updated.year:04}-{updated.month:02}-{updated.day:02}"
+                    f"-{updated.hour:02}-{updated.minute:02}")
+                logger.error(f"Jar {self._jar_file} was updated {updated_str}")
+                logger.error(f"Call was {params}")
+                logger.error("Output was:")
+                logger.error(all_output)
+                log_file = get_report_path("path_java_log")
+                logger.error(f"Logging to: {log_file}")
+                raise subprocess.CalledProcessError(
+                    process.returncode, params, output=all_output)
 
     def extract_all_data(self) -> None:
         """
@@ -401,12 +416,12 @@ class JavaCaller(object):
             self._run_java(
                 'download', self._placement_json, self._machine_json(),
                 BufferDatabase.default_database_file(),
-                FecDataView.get_run_dir_path())
+                get_report_path("path_java_log"))
         else:
             self._run_java(
                 'gather', self._placement_json, self._machine_json(),
                 BufferDatabase.default_database_file(),
-                FecDataView.get_run_dir_path())
+                get_report_path("path_java_log"))
 
     def load_system_data_specification(self) -> None:
         """
@@ -419,7 +434,7 @@ class JavaCaller(object):
         self._run_java(
             'dse_sys', self._machine_json(),
             FecDataView.get_ds_database_path(),
-            FecDataView.get_run_dir_path())
+            get_report_path("path_java_log"))
 
     def load_app_data_specification(self, use_monitors: bool) -> None:
         """
@@ -430,7 +445,7 @@ class JavaCaller(object):
             May assume that system cores are already loaded and running if
             `use_monitors` is set to `True`.
 
-        :param bool use_monitors:
+        :param use_monitors:
         :raises subprocess.CalledProcessError:
             On failure of the Java code.
         """
@@ -438,9 +453,9 @@ class JavaCaller(object):
             self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
                 FecDataView.get_ds_database_path(),
-                FecDataView.get_run_dir_path())
+                get_report_path("path_java_log"))
         else:
             self._run_java(
                 'dse_app', self._machine_json(),
                 FecDataView.get_ds_database_path(),
-                FecDataView.get_run_dir_path())
+                get_report_path("path_java_log"))

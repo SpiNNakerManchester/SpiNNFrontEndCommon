@@ -12,21 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from typing import Iterable
+from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
-
-
-REPORT_NAME = "fixed_route_routers"
 
 
 def fixed_route_from_machine_report() -> None:
     """
     Writes the fixed routes from the machine.
     """
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), REPORT_NAME)
+    file_name = get_report_path("path_fixed_routes_report")
     transceiver = FecDataView.get_transceiver()
     machine = FecDataView.get_machine()
 
@@ -38,13 +34,11 @@ def fixed_route_from_machine_report() -> None:
         for chip in progress.over(machine.chips):
             fixed_route = transceiver.read_fixed_route(
                 chip.x, chip.y, app_id)
-            # pylint: disable=consider-using-f-string
-            f.write("{: <3s}:{: <3s} contains route {: <10s} {}\n".format(
-                str(chip.x), str(chip.y),
-                _reduce_route_value(
-                    fixed_route.processor_ids, fixed_route.link_ids),
-                _expand_route_value(
-                    fixed_route.processor_ids, fixed_route.link_ids)))
+            rd = _reduce_route_value(fixed_route.processor_ids,
+                                     fixed_route.link_ids)
+            ep = _expand_route_value(fixed_route.processor_ids,
+                                     fixed_route.link_ids)
+            f.write(f"{chip.x:<3}:{chip.y:<3} contains route {rd:<10} {ep}\n")
 
 
 def _reduce_route_value(

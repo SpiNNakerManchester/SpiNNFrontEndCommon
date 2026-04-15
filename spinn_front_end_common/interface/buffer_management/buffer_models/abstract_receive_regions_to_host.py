@@ -36,6 +36,5 @@ class AbstractReceiveRegionsToHost(object, metaclass=AbstractBase):
 
         :return: The region number, address and size of the regions to be
                  downloaded
-        :rtype: iterable(tuple(int, int, int))
         """
         raise NotImplementedError

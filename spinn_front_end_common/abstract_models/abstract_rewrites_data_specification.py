@@ -38,19 +38,15 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
         Regenerate the data specification, only generating regions that
         have changed and need to be reloaded.
 
-        :param ~data_specification.DataSpecificationGenerator spec:
-            Where to write the regenerated spec
-        :param ~pacman.model.placements.Placement placement:
-            Where are we regenerating for?
+        :param spec: Where to write the regenerated spec
+        :param placement: Where are we regenerating for?
         """
         raise NotImplementedError
 
     @abstractmethod
     def reload_required(self) -> bool:
         """
-        Return true if any data region needs to be reloaded.
-
-        :rtype: bool
+        :returns: True if any data region needs to be reloaded.
         """
         raise NotImplementedError
 
