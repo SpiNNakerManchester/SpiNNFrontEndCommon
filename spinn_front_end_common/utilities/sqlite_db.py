@@ -21,15 +21,16 @@ import sqlite3
 import struct
 from types import TracebackType
 from typing import Literal, Optional, Type, Union
-
 from typing_extensions import Self
+
+from spinn_utilities.log import FormatAdapter
 
 from pacman.exceptions import PacmanValueError
 
 from spinn_front_end_common.utilities.utility_calls import check_file_exists
 from spinn_front_end_common.utilities.exceptions import DatabaseException
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class SQLiteDB(object):
