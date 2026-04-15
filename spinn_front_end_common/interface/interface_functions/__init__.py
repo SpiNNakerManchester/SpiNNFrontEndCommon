@@ -24,7 +24,6 @@ from .system_multicast_routing_generator import (
     system_multicast_routing_generator)
 from .dsg_region_reloader import reload_dsg_regions
 from .energy_provenance_reporter import energy_provenance_reporter
-from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import graph_binary_gatherer
 from .graph_data_specification_writer import (
     graph_data_specification_writer)
@@ -61,7 +60,6 @@ __all__ = (
     "reload_dsg_regions",
     "energy_provenance_reporter", "load_application_data_specs",
     "load_system_data_specs", "load_using_advanced_monitors",
-    "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
     "hbp_allocator",
     "insert_chip_power_monitors_to_graphs",
