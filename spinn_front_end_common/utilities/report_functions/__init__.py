@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .bit_field_compressor_report import bitfield_compressor_report
-from .bit_field_summary import BitFieldSummary
 from .board_chip_report import board_chip_report
 from .energy_report import EnergyReport
 from .fixed_route_from_machine_report import fixed_route_from_machine_report
@@ -29,8 +27,6 @@ from .write_json_routing_tables import write_json_routing_tables
 from .drift_report import drift_report
 
 __all__ = (
-    "bitfield_compressor_report",
-    "BitFieldSummary",
     "board_chip_report",
     "EnergyReport",
     "fixed_route_from_machine_report",

@@ -26,8 +26,8 @@ from pacman.model.graphs.machine import MachineVertex, SimpleMachineVertex
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_info import (
-    RoutingInfo, MachineVertexRoutingInfo, AppVertexRoutingInfo)
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
+    RoutingInfo,
+    GlobalAppVertexRoutingInfo, GlobalMachineVertexRoutingInfo, BaseKeyAndMask)
 from pacman.model.tags.tags import Tags
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.graphs.common.slice import Slice
@@ -42,7 +42,8 @@ from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utility_models import LivePacketGather
-from spinn_front_end_common.utilities.database import DatabaseReader
+from spinn_front_end_common.utilities.database import (
+    DatabaseReader, DatabaseUpdater)
 
 
 class MockSplitter(AbstractSplitterCommon):
@@ -105,14 +106,15 @@ def _add_rinfo(
         app_vertex: ApplicationVertex, partition_id: str,
         routing_info: RoutingInfo, base_key: int, app_mask: int, mac_mask: int,
         m_vertex_shift: int) -> None:
-    routing_info.add_routing_info(AppVertexRoutingInfo(
-        BaseKeyAndMask(base_key, app_mask), partition_id, app_vertex,
-        mac_mask, 1, 1))
+    bkma = BaseKeyAndMask(base_key, app_mask)
+    routing_info.add_routing_info(GlobalAppVertexRoutingInfo(
+        bkma, partition_id, app_vertex, len(app_vertex.machine_vertices),
+        mac_mask))
     for i, m_vertex in enumerate(app_vertex.machine_vertices):
-        routing_info.add_routing_info(MachineVertexRoutingInfo(
-            BaseKeyAndMask(
-                base_key | i << m_vertex_shift, app_mask | mac_mask),
-            partition_id, m_vertex, i))
+        m_key = base_key | i << m_vertex_shift
+        bkmm = BaseKeyAndMask(m_key, app_mask | mac_mask)
+        routing_info.add_routing_info(GlobalMachineVertexRoutingInfo(
+            bkmm, partition_id, m_vertex, i, app_mask))
 
 
 def _place_vertices(app_vertexes: List[ApplicationVertex],
@@ -185,7 +187,7 @@ def test_database_interface() -> None:
     tags.add_ip_tag(tag, next(iter(lpg_vertex.machine_vertices)))
     writer.set_tags(tags)
 
-    db_path = database_interface(1000)
+    db_path = database_interface()
     assert db_path is not None
     print(db_path)
 
@@ -193,6 +195,8 @@ def test_database_interface() -> None:
     assert label1 is not None
     lpg_label = lpg_vertex.label
     assert lpg_label is not None
+    with DatabaseUpdater(db_path) as db:
+        db.update_system_params(1000)
     with DatabaseReader(db_path) as reader:
         assert (reader.get_ip_address(0, 0) ==
                 writer.get_chip_at(0, 0).ip_address)

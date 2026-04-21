@@ -195,7 +195,6 @@ class CommandSenderMachineVertex(
             placement: Placement) -> None:
         routing_infos = FecDataView.get_routing_infos()
         av = self.app_vertex
-        assert av is not None
         for mc_key in self._keys_to_partition_id:
             allocated_key = routing_infos.get_key_from(
                 av, self._keys_to_partition_id[mc_key])
