@@ -130,7 +130,7 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
     :param total_run_time: The total run time to request
     :return: IP address, BMP details (if any), allocation controller
     :raises ~pacman.exceptions.PacmanConfigurationException:
-        If neither `n_chips` or `n_boards` provided or if version is incorrect
+        If neither `n_chips` or `n_boards` provided
     """
 
     url = get_config_str("Machine", "remote_spinnaker_url")
