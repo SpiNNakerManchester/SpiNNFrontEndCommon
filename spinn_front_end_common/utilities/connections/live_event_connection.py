@@ -105,7 +105,6 @@ class LiveEventConnection(DatabaseConnection):
         "__send_labels",
         "__sender_connection",
         "__start_resume_callbacks",
-        "__simulator",
         "__spalloc_job",
         "__receiver_details",
         "__is_running",
