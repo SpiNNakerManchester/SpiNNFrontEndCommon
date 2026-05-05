@@ -32,8 +32,8 @@ from .hbp_allocator import hbp_allocator
 from .load_data_specification import (
     load_application_data_specs, load_system_data_specs,
     load_using_advanced_monitors)
-from .insert_chip_power_monitors_to_graphs import (
-    insert_chip_power_monitors_to_graphs)
+from .insert_chip_power_monitors import (
+    insert_chip_power_monitors)
 from .insert_extra_monitor_vertices_to_graphs import (
     insert_extra_monitor_vertices_to_graphs)
 from .split_lpg_vertices import split_lpg_vertices
@@ -64,7 +64,7 @@ __all__ = (
     "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
     "hbp_allocator",
-    "insert_chip_power_monitors_to_graphs",
+    "insert_chip_power_monitors",
     "insert_extra_monitor_vertices_to_graphs",
     "split_lpg_vertices",
     "load_app_images", "load_fixed_routes", "load_sys_images",

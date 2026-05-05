@@ -32,7 +32,7 @@ def sample_chip_power_monitor() -> ChipPowerMonitorMachineVertex:
         "Sample ChipPowerMonitorMachineVertex")
 
 
-def insert_chip_power_monitors_to_graphs(placements: Placements) -> None:
+def insert_chip_power_monitors(placements: Placements) -> None:
     """
     Adds chip power monitors into a given graph.
 
@@ -41,7 +41,7 @@ def insert_chip_power_monitors_to_graphs(placements: Placements) -> None:
     machine = FecDataView.get_machine()
     # create progress bar
     progress = ProgressBar(
-        machine.n_chips, "Adding Chip power monitors to Graph")
+        machine.n_chips, "Adding Chip power monitors")
 
     for chip in progress.over(machine.chips):
         vertex = ChipPowerMonitorMachineVertex(

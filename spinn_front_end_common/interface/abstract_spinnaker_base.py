@@ -99,7 +99,7 @@ from spinn_front_end_common.interface.interface_functions import (
     reload_dsg_regions, energy_provenance_reporter,
     load_application_data_specs, load_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
-    hbp_allocator, insert_chip_power_monitors_to_graphs,
+    hbp_allocator, insert_chip_power_monitors,
     insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
     locate_executable_start_type,
@@ -831,7 +831,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            insert_chip_power_monitors_to_graphs(system_placements)
+            insert_chip_power_monitors(system_placements)
 
     @final
     def _execute_insert_extra_monitor_vertices(
