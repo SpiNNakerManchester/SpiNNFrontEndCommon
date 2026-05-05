@@ -154,7 +154,7 @@ class LiveEventConnection(DatabaseConnection):
             int, int, int, str]] = dict()
         # Also used by SpynnakerPoissonControlConnection
         self._atom_id_to_key: Dict[str, Dict[int, int]] = dict()
-        self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = dict()
+        self.__key_to_atom_id_and_label: Dict[int, Tuple[int, str]] = dict()
         self.__no_time_event_callbacks: Dict[str,
             List[Tuple[_RcvCallback, bool]]] = defaultdict(list)
         self.__time_event_callbacks: Dict[str,
@@ -380,7 +380,7 @@ class LiveEventConnection(DatabaseConnection):
         receivers = set()
         if self.__receive_labels is None:
             raise ConfigurationException("no receive labels defined")
-        for label_id, label in enumerate(self.__receive_labels):
+        for label in self.__receive_labels:
             _, port, board_address, tag, x, y = self.__get_live_output_details(
                 database, label)
 
@@ -397,7 +397,7 @@ class LiveEventConnection(DatabaseConnection):
 
             key_to_atom_id = database.get_key_to_atom_id_mapping(label)
             for key, atom_id in key_to_atom_id.items():
-                self.__key_to_atom_id_and_label[key] = (atom_id, label_id)
+                self.__key_to_atom_id_and_label[key] = (atom_id, label)
             vertex_sizes[label] = len(key_to_atom_id)
 
         # Last of all, set up the listener for packets
@@ -554,7 +554,7 @@ class LiveEventConnection(DatabaseConnection):
     def __handle_time_packet(self, packet: EIEIODataMessage) -> None:
         key_times_labels: Dict[int, Dict[int, List[int]]] = defaultdict(
             lambda: defaultdict(list))
-        atoms_times_labels: Dict[int, Dict[int, List[int]]] = defaultdict(
+        atoms_times_labels: Dict[int, Dict[str, List[int]]] = defaultdict(
             lambda: defaultdict(list))
 
         while packet.is_next_element:
@@ -564,15 +564,14 @@ class LiveEventConnection(DatabaseConnection):
             time = element.payload
             key = element.key
             if key in self.__key_to_atom_id_and_label:
-                atom_id, label_id = self.__key_to_atom_id_and_label[key]
-                key_times_labels[time][label_id].append(key)
-                atoms_times_labels[time][label_id].append(atom_id)
+                atom_id, label = self.__key_to_atom_id_and_label[key]
+                key_times_labels[time][label].append(key)
+                atoms_times_labels[time][label].append(atom_id)
             else:
                 self.__handle_unknown_key(key)
 
         for time in key_times_labels:
-            for label_id in key_times_labels[time]:
-                label = self.__rcv_label(label_id)
+            for label in key_times_labels[time]:
                 if label not in self.__time_event_callbacks:
                     msg = f"LiveEventConnection received a packet " \
                           f"with time for {label} but has no callback. " \
@@ -581,9 +580,9 @@ class LiveEventConnection(DatabaseConnection):
                     return
                 for c_back, use_atom in self.__time_event_callbacks[label]:
                     if use_atom:
-                        c_back(label, time, atoms_times_labels[time][label_id])
+                        c_back(label, time, atoms_times_labels[time][label])
                     else:
-                        c_back(label, time, key_times_labels[time][label_id])
+                        c_back(label, time, key_times_labels[time][label])
 
 
     def __handle_no_time_packet(self, packet: EIEIODataMessage) -> None:
@@ -594,8 +593,7 @@ class LiveEventConnection(DatabaseConnection):
                 continue
             key = element.key
             if key in self.__key_to_atom_id_and_label:
-                atom_id, label_id = self.__key_to_atom_id_and_label[key]
-                label = self.__rcv_label(label_id)
+                atom_id, label = self.__key_to_atom_id_and_label[key]
                 if label not in self.__no_time_event_callbacks:
                     msg = f"LiveEventConnection received a packet " \
                           f"without time for {label} but has no callback." \
