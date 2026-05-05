@@ -157,8 +157,8 @@ class LiveEventConnection(DatabaseConnection):
         self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = dict()
         self.__no_time_event_callbacks: List[
             List[Tuple[_RcvCallback, bool]]] = list()
-        self.__time_event_callbacks: List[
-            List[Tuple[Union[_RcvTimeCallback], bool]]] = list()
+        self.__time_event_callbacks: Dict[str,
+            List[Tuple[Union[_RcvTimeCallback], bool]]] = defaultdict(list)
         self.__start_resume_callbacks: Dict[str, List[_Callback]] = dict()
         self.__pause_stop_callbacks: Dict[str, List[_Callback]] = dict()
         self.__init_callbacks: Dict[str, List[_InitCallback]] = dict()
@@ -166,7 +166,6 @@ class LiveEventConnection(DatabaseConnection):
         if receive_labels is not None:
             for label in receive_labels:
                 self.__no_time_event_callbacks.append(list())
-                self.__time_event_callbacks.append(list())
                 self.__start_resume_callbacks[label] = list()
                 self.__pause_stop_callbacks[label] = list()
                 self.__init_callbacks[label] = list()
@@ -215,7 +214,6 @@ class LiveEventConnection(DatabaseConnection):
         if label not in self.__receive_labels:
             self.__receive_labels.append(label)
             self.__no_time_event_callbacks.append(list())
-            self.__time_event_callbacks.append(list())
         if label not in self.__start_resume_callbacks:
             self.__start_resume_callbacks[label] = list()
             self.__pause_stop_callbacks[label] = list()
@@ -263,10 +261,9 @@ class LiveEventConnection(DatabaseConnection):
         """
         if self.__receive_labels is None:
             raise ConfigurationException("no receive labels defined")
-        label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
-        self.__time_event_callbacks[label_id].append(
+        self.__time_event_callbacks[label].append(
             (live_event_callback, translate_key))
 
     def add_receive_no_time_callback(
@@ -579,17 +576,18 @@ class LiveEventConnection(DatabaseConnection):
         for time in key_times_labels:
             for label_id in key_times_labels[time]:
                 label = self.__rcv_label(label_id)
-                callbacks = self.__time_event_callbacks[label_id]
-                if len(callbacks) == 0:
+                if label not in self.__time_event_callbacks:
                     msg = f"LiveEventConnection received a packet " \
                           f"with time for {label} but has no callback. " \
                           f"Use add_receive_callback to register one."
                     warn_once(logger, msg)
-                for c_back, use_atom in callbacks:
+                    return
+                for c_back, use_atom in self.__time_event_callbacks[label]:
                     if use_atom:
                         c_back(label, time, atoms_times_labels[time][label_id])
                     else:
                         c_back(label, time, key_times_labels[time][label_id])
+
 
     def __handle_no_time_packet(self, packet: EIEIODataMessage) -> None:
         while packet.is_next_element:
