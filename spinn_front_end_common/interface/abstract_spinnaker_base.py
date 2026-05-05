@@ -1055,7 +1055,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Router info report", TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false("Reports", "write_router_info_report"):
                 return
-            routing_info_report([])
+            routing_info_report()
 
     @final
     def _execute_basic_routing_table_generator(self) -> None:

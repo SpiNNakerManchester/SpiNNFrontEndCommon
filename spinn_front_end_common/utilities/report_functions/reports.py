@@ -466,14 +466,10 @@ def _sdram_usage_report_per_chip_with_timesteps(
             pass
 
 
-def routing_info_report(extra_allocations: Iterable[
-        Tuple[ApplicationVertex, str]] = ()) -> None:
+def routing_info_report() -> None:
     """
     Generates a report which says which keys is being allocated to each
     vertex.
-
-    :param extra_allocations:
-        Extra vertex/partition ID pairs to report on.
     """
     file_name = get_report_path("path_router_info_report")
     routing_infos = FecDataView.get_routing_infos()
@@ -482,7 +478,6 @@ def routing_info_report(extra_allocations: Iterable[
             vertex_partitions = OrderedSet(
                 (p.pre_vertex, p.identifier)
                 for p in get_app_partitions())
-            vertex_partitions.update(extra_allocations)
             progress = ProgressBar(len(vertex_partitions),
                                    "Generating Routing info report")
             for pre_vert, part_id in progress.over(vertex_partitions):
