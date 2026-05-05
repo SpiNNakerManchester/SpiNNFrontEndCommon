@@ -846,7 +846,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "enable_reinjection"):
                 return
             # inserter checks for None app graph not an empty one
-        gather_map, monitor_map = insert_extra_monitor_vertices_to_graphs(
+        gather_map, monitor_map = insert_extra_monitor_vertices(
             system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
