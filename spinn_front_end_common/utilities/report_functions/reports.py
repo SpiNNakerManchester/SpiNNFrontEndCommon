@@ -15,7 +15,7 @@
 import logging
 import os
 import time
-from typing import Iterable, Optional, TextIO, Tuple
+from typing import Optional, TextIO
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.ordered_set import OrderedSet
