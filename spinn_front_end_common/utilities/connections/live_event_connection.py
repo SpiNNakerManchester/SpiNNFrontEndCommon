@@ -155,8 +155,8 @@ class LiveEventConnection(DatabaseConnection):
         # Also used by SpynnakerPoissonControlConnection
         self._atom_id_to_key: Dict[str, Dict[int, int]] = dict()
         self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = dict()
-        self.__no_time_event_callbacks: List[
-            List[Tuple[_RcvCallback, bool]]] = list()
+        self.__no_time_event_callbacks: Dict[str,
+            List[Tuple[_RcvCallback, bool]]] = defaultdict(list)
         self.__time_event_callbacks: Dict[str,
             List[Tuple[Union[_RcvTimeCallback], bool]]] = defaultdict(list)
         self.__start_resume_callbacks: Dict[str, List[_Callback]] = dict()
@@ -165,7 +165,6 @@ class LiveEventConnection(DatabaseConnection):
         self.__receiver_details: List[Tuple[int, int, int, str]] = list()
         if receive_labels is not None:
             for label in receive_labels:
-                self.__no_time_event_callbacks.append(list())
                 self.__start_resume_callbacks[label] = list()
                 self.__pause_stop_callbacks[label] = list()
                 self.__init_callbacks[label] = list()
@@ -213,7 +212,6 @@ class LiveEventConnection(DatabaseConnection):
             self.__receive_labels = list()
         if label not in self.__receive_labels:
             self.__receive_labels.append(label)
-            self.__no_time_event_callbacks.append(list())
         if label not in self.__start_resume_callbacks:
             self.__start_resume_callbacks[label] = list()
             self.__pause_stop_callbacks[label] = list()
@@ -282,10 +280,9 @@ class LiveEventConnection(DatabaseConnection):
         """
         if self.__receive_labels is None:
             raise ConfigurationException("no receive labels defined")
-        label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
-        self.__no_time_event_callbacks[label_id].append(
+        self.__no_time_event_callbacks[label].append(
             (live_event_callback, translate_key))
 
     def add_start_callback(
@@ -599,13 +596,14 @@ class LiveEventConnection(DatabaseConnection):
             if key in self.__key_to_atom_id_and_label:
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
                 label = self.__rcv_label(label_id)
-                callbacks = self.__no_time_event_callbacks[label_id]
-                if len(callbacks) == 0:
+                if label not in self.__no_time_event_callbacks:
                     msg = f"LiveEventConnection received a packet " \
                           f"without time for {label} but has no callback." \
                           f" Use add_receive_no_time_callback to register one"
                     warn_once(logger, msg)
-                for live_event_callback, translate_key in callbacks:
+                    return
+                for live_event_callback, translate_key in (
+                        self.__no_time_event_callbacks)[label]:
                     if isinstance(element, KeyPayloadDataElement):
                         if translate_key:
                             live_event_callback(
