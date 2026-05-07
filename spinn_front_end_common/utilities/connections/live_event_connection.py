@@ -148,7 +148,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__receive_labels = (
             list(receive_labels) if receive_labels is not None else list())
         self.__send_labels = (
-            list(send_labels) if send_labels is not None else None)
+            list(send_labels) if send_labels is not None else list())
         self.__sender_connection: Optional[EIEIOConnection] = None
         self.__send_address_details: Dict[str, Tuple[
             int, int, int, str]] = dict()
@@ -189,8 +189,6 @@ class LiveEventConnection(DatabaseConnection):
 
         :param label:
         """
-        if self.__send_labels is None:
-            self.__send_labels = list()
         if label not in self.__send_labels:
             self.__send_labels.append(label)
         if label not in self.__start_resume_callbacks:
@@ -338,7 +336,7 @@ class LiveEventConnection(DatabaseConnection):
         assert run_time_ms is not None
         assert machine_timestep is not None
 
-        if self.__send_labels is not None:
+        if self.__send_labels:
             self.__init_sender(db_reader, vertex_sizes)
 
         if self.__receive_labels:
@@ -357,8 +355,6 @@ class LiveEventConnection(DatabaseConnection):
                 self.__sender_connection = job.open_eieio_listener_connection()
             else:
                 self.__sender_connection = EIEIOConnection()
-        if self.__send_labels is None:
-            raise ConfigurationException("no send labels defined")
         for label in self.__send_labels:
             self.__send_address_details[label] = self.__get_live_input_details(
                 database, label)
