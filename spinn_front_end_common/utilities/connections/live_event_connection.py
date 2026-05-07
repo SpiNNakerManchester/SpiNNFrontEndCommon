@@ -146,7 +146,7 @@ class LiveEventConnection(DatabaseConnection):
                 receive_labels is not None):
             raise ConfigurationException("may only specify ")
         self.__receive_labels = (
-            list(receive_labels) if receive_labels is not None else None)
+            list(receive_labels) if receive_labels is not None else list())
         self.__send_labels = (
             list(send_labels) if send_labels is not None else None)
         self.__sender_connection: Optional[EIEIOConnection] = None
@@ -208,8 +208,6 @@ class LiveEventConnection(DatabaseConnection):
             raise ConfigurationException(
                 "no live packet gather label given; "
                 "receive labels not supported")
-        if self.__receive_labels is None:
-            self.__receive_labels = list()
         if label not in self.__receive_labels:
             self.__receive_labels.append(label)
         if label not in self.__start_resume_callbacks:
@@ -257,8 +255,8 @@ class LiveEventConnection(DatabaseConnection):
             True if the key is to be converted to an atom ID, False if the
             key should stay a key
         """
-        if self.__receive_labels is None:
-            raise ConfigurationException("no receive labels defined")
+        if label not in self.__receive_labels:
+            raise ConfigurationException(f"{label} not known")
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
         self.__time_event_callbacks[label].append(
@@ -278,8 +276,8 @@ class LiveEventConnection(DatabaseConnection):
         :param translate_key: If True the key will be converted to an atom id
             before calling live_event_callback
         """
-        if self.__receive_labels is None:
-            raise ConfigurationException("no receive labels defined")
+        if label not in self.__receive_labels:
+            raise ConfigurationException(f"{label} not known")
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
         self.__no_time_event_callbacks[label].append(
@@ -343,7 +341,7 @@ class LiveEventConnection(DatabaseConnection):
         if self.__send_labels is not None:
             self.__init_sender(db_reader, vertex_sizes)
 
-        if self.__receive_labels is not None:
+        if self.__receive_labels:
             self.__init_receivers(db_reader, vertex_sizes)
 
         for label, vertex_size in vertex_sizes.items():
@@ -378,8 +376,6 @@ class LiveEventConnection(DatabaseConnection):
             else:
                 self.__receiver_connection = UDPConnection()
         receivers = set()
-        if self.__receive_labels is None:
-            raise ConfigurationException("no receive labels defined")
         for label in self.__receive_labels:
             _, port, board_address, tag, x, y = self.__get_live_output_details(
                 database, label)
@@ -545,11 +541,6 @@ class LiveEventConnection(DatabaseConnection):
         # pylint: disable=broad-except
         except Exception:
             logger.warning("problem handling received packet", exc_info=True)
-
-    def __rcv_label(self, label_id: int) -> str:
-        if self.__receive_labels is None:
-            raise ConfigurationException("no receive labels defined")
-        return self.__receive_labels[label_id]
 
     def __handle_time_packet(self, packet: EIEIODataMessage) -> None:
         key_times_labels: Dict[int, Dict[int, List[int]]] = defaultdict(
