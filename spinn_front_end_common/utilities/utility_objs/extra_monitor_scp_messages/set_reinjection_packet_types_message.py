@@ -53,7 +53,7 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest[CheckOKResponse]):
             argument_1=int(bool(multicast)),
             argument_2=int(bool(point_to_point)),
             argument_3=int(bool(fixed_route)),
-            data=bytearray(struct.pack("<B", nearest_neighbour)))
+            data=bytes(struct.pack("<B", nearest_neighbour)))
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self) -> CheckOKResponse:
