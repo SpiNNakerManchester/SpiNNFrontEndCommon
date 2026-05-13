@@ -994,7 +994,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def get_data(
             self, extra_monitor: ExtraMonitorSupportMachineVertex,
             placement: Placement, memory_address: int,
-            length_in_bytes: int) -> bytes:
+            length_in_bytes: int) -> bytearray:
         """
         Gets data from a given core and memory address.
 

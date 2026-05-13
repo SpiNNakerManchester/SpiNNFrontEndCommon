@@ -132,7 +132,7 @@ class BufferManager(object):
 
     def _request_data(
             self, placement_x: int, placement_y: int, address: int,
-            length: int) -> bytes:
+            length: int) ->  bytearray:
         """
         Uses the extra monitor cores for data extraction.
 
