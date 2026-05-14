@@ -1243,7 +1243,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # build SDP message and send it to the core
             connection.send_sdp_message(self.__make_data_out_message(
-                placement, data))
+                placement, bytes(data)))
 
             # sleep for ensuring core doesn't lose packets
             time.sleep(self._TIMEOUT_FOR_SENDING_IN_SECONDS)
