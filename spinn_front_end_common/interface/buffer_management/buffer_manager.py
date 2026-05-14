@@ -19,6 +19,8 @@ import difflib
 import logging
 from typing import (
     Dict, Iterable, List, Optional, Set, Tuple, cast, TYPE_CHECKING)
+from typing_extensions import Never
+
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
@@ -176,7 +178,7 @@ class BufferManager(object):
             return extra_mon_data
 
     @staticmethod
-    def _verify_data(extra_mon_data: memoryview, txrx_data: memoryview) -> None:
+    def _verify_data(extra_mon_data: bytearray, txrx_data: bytearray) -> None:
         sm = difflib.SequenceMatcher(a=extra_mon_data, b=txrx_data)
         failed_index = -1
         for (tag, i1, i2, j1, j2) in sm.get_opcodes():
@@ -407,7 +409,7 @@ class BufferManager(object):
             self._retreive_by_placement(placement)
 
     def get_data_by_placement(self, placement: Placement,
-                              recording_region_id: int) -> Tuple[bytes, bool]:
+                              recording_region_id: int) -> Tuple[memoryview, bool]:
         """
         Deprecated use get_recording or get_download
 
@@ -432,7 +434,7 @@ class BufferManager(object):
                 f"Unable to get data for vertex {placement.vertex}")
 
     def get_recording(self, placement: Placement,
-                      recording_region_id: int) -> Tuple[memoryview, bool]:
+                      recording_region_id: int) -> Tuple[bytes, bool]:
         """
         Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
@@ -479,11 +481,11 @@ class BufferManager(object):
                     placement.x, placement.y, placement.p,
                     recording_region_id, -1)
         except LookupError as lookup_error:
-            return self._raise_error(
+            self._raise_error(
                 placement, recording_region_id, lookup_error)
 
     def _raise_error(self, placement: Placement, recording_region_id: int,
-                     lookup_error: LookupError) -> Tuple[bytes, bool]:
+                     lookup_error: LookupError) -> Never:
         """
         Raises the correct exception-
         """
