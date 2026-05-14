@@ -489,7 +489,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def send_data_into_spinnaker(
             self, x: int, y: int, base_address: int,
-            data: Union[BinaryIO, bytes, str, int], *,
+            data: BinaryIO | bytearray | bytes | str | int], *,
             n_bytes: Optional[int] = None, offset: int = 0) -> None:
         """
         Sends a block of data into SpiNNaker to a given chip.

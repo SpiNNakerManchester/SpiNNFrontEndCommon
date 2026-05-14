@@ -434,7 +434,7 @@ class BufferManager(object):
                 f"Unable to get data for vertex {placement.vertex}")
 
     def get_recording(self, placement: Placement,
-                      recording_region_id: int) -> Tuple[bytes, bool]:
+                      recording_region_id: int) -> Tuple[memoryview, bool]:
         """
         Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
