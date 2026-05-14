@@ -606,7 +606,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _send_data_via_extra_monitors(
             self, destination_chip: Chip, start_address: int,
-            data_to_write: bytes) -> None:
+            data_to_write: bytearray | bytes) -> None:
         """
         Sends data using the extra monitor cores.
 
@@ -739,7 +739,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return seen_last, seen_all
 
     def _outgoing_retransmit_missing_seq_nums(
-            self, data_to_write: bytes, missing: Set[int],
+            self, data_to_write: bytearray | bytes, missing: Set[int],
             connection: SCAMPConnection) -> None:
         """
         Transmits back into SpiNNaker the missing data based off missing
@@ -772,7 +772,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return BYTES_IN_FULL_PACKET_WITH_KEY * seq_num
 
     def __make_data_in_stream_message(
-            self, data_to_write: bytes, seq_num: int,
+            self, data_to_write: bytearray | bytes, seq_num: int,
             position: Optional[int]) -> Tuple[SDPMessage, int]:
         """
         Determine the data needed to be sent to the SpiNNaker machine
@@ -833,7 +833,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 _DataInCommands.SEND_TELL, self._transaction_id)))
 
     def _send_all_data_based_packets(
-            self, data_to_write: bytes, start_address: int,
+            self, data_to_write: bytearray | bytes, start_address: int,
             connection: SCAMPConnection) -> None:
         """
         Send all the data as one block.
