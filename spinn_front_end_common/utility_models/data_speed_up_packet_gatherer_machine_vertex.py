@@ -572,7 +572,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def __make_data_out_message(
-            placement: Placement, payload: bytes) -> SDPMessage:
+            placement: Placement, payload: bytearray | bytes) -> SDPMessage:
         return SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=placement.x,

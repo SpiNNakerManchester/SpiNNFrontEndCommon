@@ -176,7 +176,7 @@ class BufferManager(object):
             return extra_mon_data
 
     @staticmethod
-    def _verify_data(extra_mon_data: bytes, txrx_data: bytes) -> None:
+    def _verify_data(extra_mon_data: memoryview, txrx_data: memoryview) -> None:
         sm = difflib.SequenceMatcher(a=extra_mon_data, b=txrx_data)
         failed_index = -1
         for (tag, i1, i2, j1, j2) in sm.get_opcodes():
@@ -432,7 +432,7 @@ class BufferManager(object):
                 f"Unable to get data for vertex {placement.vertex}")
 
     def get_recording(self, placement: Placement,
-                      recording_region_id: int) -> Tuple[bytes, bool]:
+                      recording_region_id: int) -> Tuple[memoryview, bool]:
         """
         Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
@@ -457,7 +457,7 @@ class BufferManager(object):
                 placement, recording_region_id, lookup_error)
 
     def get_download(self, placement: Placement,
-                     recording_region_id: int) -> Tuple[bytes, bool]:
+                     recording_region_id: int) -> Tuple[memoryview, bool]:
         """
         Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
