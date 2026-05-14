@@ -19,8 +19,7 @@ import time
 import struct
 from enum import Enum, IntEnum
 from typing import (
-    Any, BinaryIO, Iterable, List, Optional, Set, Tuple, Union,
-    TYPE_CHECKING)
+    Any, BinaryIO, Iterable, List, Optional, Set, Tuple, TYPE_CHECKING)
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path
 from spinn_utilities.overrides import overrides

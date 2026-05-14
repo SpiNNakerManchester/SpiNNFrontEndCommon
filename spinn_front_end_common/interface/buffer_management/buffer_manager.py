@@ -134,7 +134,7 @@ class BufferManager(object):
 
     def _request_data(
             self, placement_x: int, placement_y: int, address: int,
-            length: int) ->  bytearray:
+            length: int) -> bytearray:
         """
         Uses the extra monitor cores for data extraction.
 
@@ -408,8 +408,9 @@ class BufferManager(object):
         for placement in progress.over(recording_placements):
             self._retreive_by_placement(placement)
 
-    def get_data_by_placement(self, placement: Placement,
-                              recording_region_id: int) -> Tuple[memoryview, bool]:
+    def get_data_by_placement(
+            self, placement: Placement,
+            recording_region_id: int) -> Tuple[memoryview, bool]:
         """
         Deprecated use get_recording or get_download
 

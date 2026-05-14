@@ -485,8 +485,8 @@ class DsSqlliteDatabase(SQLiteDB):
                 content = None
             yield row["region_num"], row["pointer"], content
 
-    def get_regions_content(
-            self, x: int, y: int, p: int) -> Iterable[Tuple[int, int, bytearray]]:
+    def get_regions_content(self, x: int, y: int,
+                            p: int) -> Iterable[Tuple[int, int, bytearray]]:
         """
         Yields the number, pointers and content for each region
 
