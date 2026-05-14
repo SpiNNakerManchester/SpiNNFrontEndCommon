@@ -572,7 +572,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def __make_data_out_message(
-            placement: Placement, payload: bytearray | bytes) -> SDPMessage:
+            placement: Placement, payload: bytes) -> SDPMessage:
         return SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=placement.x,
@@ -1200,7 +1200,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     len(missing_seq_nums) - seq_num_offset)
 
                 # build data holder accordingly
-                data = bytearray(
+                data = bytes(
                     (size_of_data_left_to_transmit +
                      WORDS_FOR_COMMAND_N_MISSING_TRANSACTION) * BYTES_PER_WORD)
 
@@ -1223,7 +1223,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     len(missing_seq_nums) - seq_num_offset)
 
                 # build data holder accordingly
-                data = bytearray(
+                data = bytes(
                     (size_of_data_left_to_transmit +
                      WORDS_FOR_COMMAND_TRANSACTION) * BYTES_PER_WORD)
 
