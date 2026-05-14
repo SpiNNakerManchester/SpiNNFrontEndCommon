@@ -228,4 +228,4 @@ class Compression(object):
                 entry.key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
                 get_defaultable_source_id(entry))
-        return bytearray(data)
+        return data
