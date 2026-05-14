@@ -489,7 +489,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def send_data_into_spinnaker(
             self, x: int, y: int, base_address: int,
-            data: BinaryIO | bytearray | bytes | str | int], *,
+            data: BinaryIO | bytearray | bytes | str | int, *,
             n_bytes: Optional[int] = None, offset: int = 0) -> None:
         """
         Sends a block of data into SpiNNaker to a given chip.
@@ -1200,7 +1200,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     len(missing_seq_nums) - seq_num_offset)
 
                 # build data holder accordingly
-                data = bytes(
+                data = bytearray(
                     (size_of_data_left_to_transmit +
                      WORDS_FOR_COMMAND_N_MISSING_TRANSACTION) * BYTES_PER_WORD)
 
@@ -1223,7 +1223,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     len(missing_seq_nums) - seq_num_offset)
 
                 # build data holder accordingly
-                data = bytes(
+                data = bytearray(
                     (size_of_data_left_to_transmit +
                      WORDS_FOR_COMMAND_TRANSACTION) * BYTES_PER_WORD)
 
