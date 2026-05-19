@@ -19,8 +19,7 @@ import time
 import struct
 from enum import Enum, IntEnum
 from typing import (
-    Any, BinaryIO, Iterable, List, Optional, Set, Tuple, Union,
-    TYPE_CHECKING)
+    Any, BinaryIO, Iterable, List, Optional, Set, Tuple, TYPE_CHECKING)
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path
 from spinn_utilities.overrides import overrides
@@ -489,7 +488,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def send_data_into_spinnaker(
             self, x: int, y: int, base_address: int,
-            data: Union[BinaryIO, bytes, str, int], *,
+            data: BinaryIO | bytearray | bytes | str | int, *,
             n_bytes: Optional[int] = None, offset: int = 0) -> None:
         """
         Sends a block of data into SpiNNaker to a given chip.
@@ -606,7 +605,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _send_data_via_extra_monitors(
             self, destination_chip: Chip, start_address: int,
-            data_to_write: bytes) -> None:
+            data_to_write: bytearray | bytes) -> None:
         """
         Sends data using the extra monitor cores.
 
@@ -739,7 +738,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return seen_last, seen_all
 
     def _outgoing_retransmit_missing_seq_nums(
-            self, data_to_write: bytes, missing: Set[int],
+            self, data_to_write: bytearray | bytes, missing: Set[int],
             connection: SCAMPConnection) -> None:
         """
         Transmits back into SpiNNaker the missing data based off missing
@@ -772,7 +771,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return BYTES_IN_FULL_PACKET_WITH_KEY * seq_num
 
     def __make_data_in_stream_message(
-            self, data_to_write: bytes, seq_num: int,
+            self, data_to_write: bytearray | bytes, seq_num: int,
             position: Optional[int]) -> Tuple[SDPMessage, int]:
         """
         Determine the data needed to be sent to the SpiNNaker machine
@@ -833,7 +832,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 _DataInCommands.SEND_TELL, self._transaction_id)))
 
     def _send_all_data_based_packets(
-            self, data_to_write: bytes, start_address: int,
+            self, data_to_write: bytearray | bytes, start_address: int,
             connection: SCAMPConnection) -> None:
         """
         Send all the data as one block.
@@ -994,7 +993,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def get_data(
             self, extra_monitor: ExtraMonitorSupportMachineVertex,
             placement: Placement, memory_address: int,
-            length_in_bytes: int) -> bytes:
+            length_in_bytes: int) -> bytearray:
         """
         Gets data from a given core and memory address.
 
@@ -1243,7 +1242,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # build SDP message and send it to the core
             connection.send_sdp_message(self.__make_data_out_message(
-                placement, data))
+                placement, bytes(data)))
 
             # sleep for ensuring core doesn't lose packets
             time.sleep(self._TIMEOUT_FOR_SENDING_IN_SECONDS)
