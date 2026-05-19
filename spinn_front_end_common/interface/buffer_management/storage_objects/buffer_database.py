@@ -338,7 +338,7 @@ class BufferDatabase(BaseDatabase):
         raise LookupError("No Extraction id found")
 
     def store_recording(self, x: int, y: int, p: int, region: int,
-                        missing: bool, data: bytes) -> None:
+                        missing: bool, data: bytearray | bytes) -> None:
         """
         Store some information in the corresponding buffer for a
         specific chip, core and recording region.
@@ -368,7 +368,7 @@ class BufferDatabase(BaseDatabase):
 
     def store_download(
             self, x: int, y: int, p: int, region: int, missing: bool,
-            data: bytes) -> None:
+            data: bytearray | bytes) -> None:
         """
         Store some information in the corresponding buffer for a
         specific chip, core and recording region.
