@@ -26,9 +26,9 @@ from spinn_utilities.config_holder import (
     get_config_str, get_config_str_list, get_timestamp_path, set_config)
 from spinnman.spinnman_simulation import AbstractSpiNNManSimulation
 from spinn_front_end_common.interface.interface_functions.\
-    insert_chip_power_monitors_to_graphs import sample_chip_power_monitor
+    insert_chip_power_monitors import sample_chip_power_monitor
 from spinn_front_end_common.interface.interface_functions.\
-    insert_extra_monitor_vertices_to_graphs import (
+    insert_extra_monitor_vertices import (
         sample_monitor_vertex, sample_speedup_vertex)
 from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter

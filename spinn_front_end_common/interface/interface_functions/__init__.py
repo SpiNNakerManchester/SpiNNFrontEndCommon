@@ -31,10 +31,10 @@ from .hbp_allocator import hbp_allocator
 from .load_data_specification import (
     load_application_data_specs, load_system_data_specs,
     load_using_advanced_monitors)
-from .insert_chip_power_monitors_to_graphs import (
-    insert_chip_power_monitors_to_graphs)
-from .insert_extra_monitor_vertices_to_graphs import (
-    insert_extra_monitor_vertices_to_graphs)
+from .insert_chip_power_monitors import (
+    insert_chip_power_monitors)
+from .insert_extra_monitor_vertices import (
+    insert_extra_monitor_vertices)
 from .split_lpg_vertices import split_lpg_vertices
 from .load_executable_images import load_app_images, load_sys_images
 from .load_fixed_routes import load_fixed_routes
@@ -62,8 +62,8 @@ __all__ = (
     "load_system_data_specs", "load_using_advanced_monitors",
     "graph_binary_gatherer", "graph_data_specification_writer",
     "hbp_allocator",
-    "insert_chip_power_monitors_to_graphs",
-    "insert_extra_monitor_vertices_to_graphs",
+    "insert_chip_power_monitors",
+    "insert_extra_monitor_vertices",
     "split_lpg_vertices",
     "load_app_images", "load_fixed_routes", "load_sys_images",
     "locate_executable_start_type",
