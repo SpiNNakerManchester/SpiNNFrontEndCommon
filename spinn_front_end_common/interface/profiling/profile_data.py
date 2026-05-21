@@ -58,7 +58,7 @@ class ProfileData(object):
         self._tags: Dict[str, Tuple[numpy.ndarray, numpy.ndarray]] = dict()
         self._max_time: float = 0.0
 
-    def add_data(self, data: bytes) -> None:
+    def add_data(self, data: bytearray) -> None:
         """
         Add profiling data read from the profile section.
 
