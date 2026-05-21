@@ -200,6 +200,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         super().__init__(n_boards_required, n_chips_required)
 
+        FecTimer.setup()
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SETTING_UP)
 
@@ -223,8 +224,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._create_version_provenance()
 
         self.__sys_excepthook = sys.excepthook
-
-        FecTimer.setup(self)
 
         self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
@@ -444,8 +443,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _run(self, run_time: Optional[float], sync_time: float) -> None:
         self._data_writer.start_run()
-        with GlobalProvenance() as db:
-            db.insert_run_reset_mapping()
         try:
             self.__run(run_time, sync_time)
             self._data_writer.finish_run()
@@ -718,7 +715,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :returns: The Machine now stored in the DataView
         """
-        FecTimer.start_category(TimerCategory.GET_MACHINE, True)
         self._data_writer.set_user_accessed_machine()
         if self._data_writer.is_user_mode() and \
                 self._data_writer.is_soft_reset():
@@ -728,7 +724,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "therefore generate a new machine")
             self._hard_reset()
         machine = self._get_known_machine()
-        FecTimer.end_category(TimerCategory.GET_MACHINE)
+        return machine
+
+    @overrides(ConfigHandler._get_known_machine)
+    def _get_known_machine(
+            self, total_run_time: Optional[float] = 0.0) -> Machine:
+        FecTimer.start_category(TimerCategory.MACHINE_ON)
+        machine = super()._get_known_machine()
+        FecTimer.end_category(TimerCategory.MACHINE_ON)
         return machine
 
     def _create_version_provenance(self) -> None:
@@ -869,7 +872,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         machine = self._get_known_machine()
         # get cores of machine
         cores = machine.total_available_user_cores
-        ethernets = len(machine.ethernet_connected_chips)
+        ethernets = machine.n_ethernet_connected_chips
         cores -= ((machine.n_chips - ethernets) *
                   self._data_writer.get_all_monitor_cores())
         cores -= ethernets * self._data_writer.get_ethernet_monitor_cores()
@@ -1569,7 +1572,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                       TimerWork.LOADING_DATA) as timer:
             if timer.skip_if_virtual_board():
                 return
-            return load_application_data_specs()
+            FecTimer.start_category(TimerCategory.DATA_SPEC_LOAD)
+            load_application_data_specs()
+            FecTimer.end_category(TimerCategory.DATA_SPEC_LOAD)
 
     def _execute_tags_from_machine_report(self) -> None:
         """
@@ -1667,7 +1672,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the load algorithms.
         """
-        FecTimer.start_category(TimerCategory.LOADING)
+        FecTimer.start_category(TimerCategory.DATA_SPEC_OTHER)
 
         self._execute_pre_compression()
         compressed = self._do_compression()
@@ -1701,7 +1706,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_application_load_executables()
         self._execute_router_provenance_gatherer("Load", TimerWork.LOADING)
 
-        FecTimer.end_category(TimerCategory.LOADING)
+        FecTimer.end_category(TimerCategory.DATA_SPEC_OTHER)
 
     def _report_sdram_usage_per_chip(self) -> None:
         with FecTimer("Sdram usage per chip report",
@@ -1805,7 +1810,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
 
-            power_used = compute_energy_used()
+            power_used = compute_energy_used(
+                n_reset=self._data_writer.get_reset_number())
 
             energy_provenance_reporter(power_used)
 
@@ -1942,7 +1948,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             bm = self._data_writer.get_buffer_manager()
+            FecTimer.start_category(TimerCategory.EXTRACT_DATA)
             bm.extract_data()
+            FecTimer.end_category(TimerCategory.EXTRACT_DATA)
 
     def _do_extract_from_machine(self) -> None:
         """
@@ -1957,7 +1965,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Extract", TimerWork.EXTRACTING)
 
         self._do_read_provenance()
-        self._report_energy()
         self._do_provenance_reports()
 
     def _do_run(
@@ -2146,6 +2153,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 logger.error("Ignoring the repeated reset call")
             return
 
+        self._report_energy()
         logger.info("Resetting")
 
         if self._data_writer.get_user_accessed_machine():
@@ -2195,6 +2203,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         if get_config_bool("Machine", "clear_routing_tables"):
             transceiver.clear_multicast_routes()
 
+    @overrides(ConfigHandler._close_allocation_controller)
+    def _close_allocation_controller(self) -> None:
+        FecTimer.start_category(TimerCategory.MACHINE_OFF)
+        super()._close_allocation_controller()
+        FecTimer.end_category(TimerCategory.MACHINE_OFF)
+
     def stop(self) -> None:
         """
         End running of the simulation.
@@ -2203,6 +2217,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
         # If we have run forever, stop the binaries
 
+        self._report_energy()
         try:
             if (self._data_writer.is_ran_ever()
                     and self._data_writer.get_current_run_timesteps() is None
