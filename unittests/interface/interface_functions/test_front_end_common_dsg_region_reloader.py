@@ -13,13 +13,15 @@
 # limitations under the License.
 
 import unittest
-import numpy
 from typing import BinaryIO, Optional, List, Tuple, Union
+
+import numpy
+from parameterized import parameterized
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
-from spinn_machine.version.version_strings import VersionStrings
+from spinn_machine.version import ALL_BOARD_TYPES
 
 from spinnman.model.enums import ExecutableType
 
@@ -122,12 +124,17 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
     def setUp(self) -> None:
         unittest_setup()
-        set_config("Machine", "versions", VersionStrings.ANY.text)
         set_config("Reports", "write_text_specs", "True")
 
-    def test_with_good_sizes(self) -> None:
+    @parameterized.expand(ALL_BOARD_TYPES)
+    def test_with_good_sizes(self, _: str, version: str) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
+        # reset the count as test called multiple times
+        global regenerate_call_count
+        regenerate_call_count = 0
+        #set_config("Machine", "version", version)
+        set_config("Machine", "version", version)
         writer = FecDataWriter.mock()
 
         m_vertex_1 = _TestMachineVertex()
@@ -182,9 +189,11 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                 pos += 1
                 address += size
 
-    def test_with_size_changed(self) -> None:
+    @parameterized.expand(ALL_BOARD_TYPES)
+    def test_with_size_changed(self, _: str, version: str) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
+        set_config("Machine", "version", version)
         writer = FecDataWriter.mock()
 
         m_vertex_1 = _TestMachineVertex()

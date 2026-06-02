@@ -13,9 +13,14 @@
 # limitations under the License.
 
 import unittest
+
+from parameterized import parameterized
+
 from spinn_utilities.config_holder import set_config
-from spinn_machine.version.version_strings import VersionStrings
+
+from spinn_machine.version import BIG_BOARD_TYPES
 from spinn_machine.virtual_machine import virtual_machine_by_boards
+
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placements
@@ -38,14 +43,13 @@ class TestVertex(ApplicationVertex):
 
 
 class TestInsertLPGs(unittest.TestCase):
-    """ tests the LPG insert functions
+    """ tests the LPG insert functions """
 
-    """
-    def setUp(self) -> None:
+    @parameterized.expand(BIG_BOARD_TYPES)
+    def test_that_3_lpgs_are_generated_on_3_board_app_graph(
+            self, _: str, version: str) -> None:
         unittest_setup()
-        set_config("Machine", "versions", VersionStrings.BIG.text)
-
-    def test_that_3_lpgs_are_generated_on_3_board_app_graph(self) -> None:
+        set_config("Machine", "version", version)
         writer = FecDataWriter.mock()
         writer.set_machine(virtual_machine_by_boards(3))
 

@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import os
 from typing import Sequence, Tuple
+import unittest
+
+from parameterized import parameterized
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
-from spinn_machine.version.version_strings import VersionStrings
+from spinn_machine.version import ALL_BOARD_TYPES
 
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placement, Placements
@@ -61,8 +63,9 @@ class TestBufferedDatabase(unittest.TestCase):
     def setUp(self) -> None:
         unittest_setup()
 
-    def test_recording(self) -> None:
-        set_config("Machine", "versions", VersionStrings.ANY.text)
+    @parameterized.expand(ALL_BOARD_TYPES)
+    def test_recording(self, _: str, version: str) -> None:
+        set_config("Machine", "version", version)
         writer = FecDataWriter.mock()
         f = BufferDatabase.default_database_file()
         self.assertFalse(os.path.isfile(f), "no existing DB at first")
@@ -142,8 +145,9 @@ class TestBufferedDatabase(unittest.TestCase):
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
 
-    def test_download(self) -> None:
-        set_config("Machine", "versions", VersionStrings.ANY.text)
+    @parameterized.expand(ALL_BOARD_TYPES)
+    def test_download(self, _: str, version: str) -> None:
+        set_config("Machine", "version", version)
         writer = FecDataWriter.mock()
 
         info = Placements([])
@@ -194,8 +198,9 @@ class TestBufferedDatabase(unittest.TestCase):
         self.assertTrue(missing, "data should be 'missing'")
         self.assertEqual(bytes(data), b"gh")
 
-    def test_clear(self) -> None:
-        set_config("Machine", "versions", VersionStrings.ANY.text)
+    @parameterized.expand(ALL_BOARD_TYPES)
+    def test_clear(self, _: str, version: str) -> None:
+        set_config("Machine", "version", version)
         writer = FecDataWriter.mock()
 
         info = Placements([])

@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlite3 import IntegrityError
-import struct
 from typing import BinaryIO, List, Optional, Tuple, Union
 import unittest
+
+from parameterized import parameterized
+from sqlite3 import IntegrityError
+import struct
+
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides

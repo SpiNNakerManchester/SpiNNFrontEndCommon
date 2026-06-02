@@ -13,6 +13,8 @@
 # limitations under the License.
 import unittest
 
+from parameterized import parameterized
+
 from spinn_utilities.config_holder import set_config
 
 from spinn_machine.version.version_strings import VersionStrings
