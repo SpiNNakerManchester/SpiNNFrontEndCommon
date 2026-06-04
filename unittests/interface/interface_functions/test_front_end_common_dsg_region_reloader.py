@@ -155,7 +155,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                     placement.x, placement.y, placement.p, vertex)
                 base = placement.p * 1000
                 regions = reload_region_data[placement.p]
-                for (reg_num, size, _) in regions:
+                for (reg_num, size, __) in regions:
                     ds.set_memory_region(
                         placement.x, placement.y, placement.p, reg_num, size,
                         None, None)
@@ -181,7 +181,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         for placement in placements:
             regions = reload_region_data[placement.p]
             address = placement.p * 1000
-            for (_, size, data) in regions:
+            for (__, size, data) in regions:
                 data_ba = bytearray(
                     numpy.array(data, dtype="uint32").tobytes())
                 # Check that the base address and data written is correct
@@ -214,7 +214,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                     placement.x, placement.y, placement.p, vertex)
                 base = placement.p * 1000
                 regions = reload_region_data[placement.p]
-                for (reg_num, size, _) in regions:
+                for (reg_num, size, __) in regions:
                     ds.set_memory_region(
                         placement.x, placement.y, placement.p, reg_num, size-1,
                         None, None)

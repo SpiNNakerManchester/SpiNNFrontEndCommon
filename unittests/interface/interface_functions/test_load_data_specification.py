@@ -172,7 +172,7 @@ class TestLoadDataSpecification(unittest.TestCase):
 
         with DsSqlliteDatabase() as db:
             pc = list(db.get_info_for_cores())
-            _, _, memory_used, memory_written = pc[0]
+            __, __, memory_used, memory_written = pc[0]
             # We reserved 3 regions at 100 each
             self.assertEqual(memory_used, header_and_table_size + 300)
             self.assertEqual(header_and_table_size + 300,
