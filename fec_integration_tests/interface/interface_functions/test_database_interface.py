@@ -143,9 +143,9 @@ def _place_vertices(app_vertexes: List[ApplicationVertex],
 
 
 @parameterized.expand(ALL_BOARD_TYPES)
-def test_database_interface(_: str, version: str) -> None:
+def test_database_interface(_: str, ver_num: str) -> None:
     unittest_setup()
-    set_config("Machine", "version", version)
+    set_config("Machine", "version", ver_num)
     set_config("Database", "create_database", "True")
     set_config("Database", "create_routing_info_to_neuron_id_mapping", "True")
 

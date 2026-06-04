@@ -473,9 +473,9 @@ class TestSimulatorData(unittest.TestCase):
             writer.set_executable_targets([])  # type: ignore[arg-type]
 
     @parameterized.expand(FOUR_PLUS_BOARD_TYPES)
-    def test_gatherer_map(self, _: str, version: str) -> None:
+    def test_gatherer_map(self, _: str, ver_num: str) -> None:
         writer = FecDataWriter.mock()
-        set_config("Machine", "version", version)
+        set_config("Machine", "version", ver_num)
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_gatherer_by_xy(0, 0)
         with self.assertRaises(DataNotYetAvialable):
@@ -523,9 +523,9 @@ class TestSimulatorData(unittest.TestCase):
             writer.set_gatherer_map(map4)  # type: ignore[arg-type]
 
     @parameterized.expand(FOUR_PLUS_BOARD_TYPES)
-    def test_monitor_map(self, _: str, version: str) -> None:
+    def test_monitor_map(self, _: str, ver_num: str) -> None:
         writer = FecDataWriter.mock()
-        set_config("Machine", "version", version)
+        set_config("Machine", "version", ver_num)
         self.assertFalse(FecDataView.has_monitors())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_monitor_by_xy(0, 0)

@@ -47,9 +47,9 @@ class TestInsertLPGs(unittest.TestCase):
 
     @parameterized.expand(BIG_BOARD_TYPES)
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(
-            self, _: str, version: str) -> None:
+            self, _: str, ver_num: str) -> None:
         unittest_setup()
-        set_config("Machine", "version", version)
+        set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
         writer.set_machine(virtual_machine_by_boards(3))
 

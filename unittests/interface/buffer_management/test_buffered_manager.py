@@ -64,8 +64,8 @@ class TestBufferedDatabase(unittest.TestCase):
         unittest_setup()
 
     @parameterized.expand(ALL_BOARD_TYPES)
-    def test_recording(self, _: str, version: str) -> None:
-        set_config("Machine", "version", version)
+    def test_recording(self, _: str, ver_num: str) -> None:
+        set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
         f = BufferDatabase.default_database_file()
         self.assertFalse(os.path.isfile(f), "no existing DB at first")
@@ -146,8 +146,8 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertTrue(os.path.isfile(f), "DB still exists")
 
     @parameterized.expand(ALL_BOARD_TYPES)
-    def test_download(self, _: str, version: str) -> None:
-        set_config("Machine", "version", version)
+    def test_download(self, _: str, ver_num: str) -> None:
+        set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
 
         info = Placements([])
@@ -199,8 +199,8 @@ class TestBufferedDatabase(unittest.TestCase):
         self.assertEqual(bytes(data), b"gh")
 
     @parameterized.expand(ALL_BOARD_TYPES)
-    def test_clear(self, _: str, version: str) -> None:
-        set_config("Machine", "version", version)
+    def test_clear(self, _: str, ver_num: str) -> None:
+        set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
 
         info = Placements([])

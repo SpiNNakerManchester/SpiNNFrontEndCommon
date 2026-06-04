@@ -127,14 +127,14 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         set_config("Reports", "write_text_specs", "True")
 
     @parameterized.expand(ALL_BOARD_TYPES)
-    def test_with_good_sizes(self, _: str, version: str) -> None:
+    def test_with_good_sizes(self, _: str, ver_num: str) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
         # reset the count as test called multiple times
         global regenerate_call_count
         regenerate_call_count = 0
-        #set_config("Machine", "version", version)
-        set_config("Machine", "version", version)
+        #set_config("Machine", "version", ver_num)
+        set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
 
         m_vertex_1 = _TestMachineVertex()
@@ -190,10 +190,10 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                 address += size
 
     @parameterized.expand(ALL_BOARD_TYPES)
-    def test_with_size_changed(self, _: str, version: str) -> None:
+    def test_with_size_changed(self, _: str, ver_num: str) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
-        set_config("Machine", "version", version)
+        set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
 
         m_vertex_1 = _TestMachineVertex()
