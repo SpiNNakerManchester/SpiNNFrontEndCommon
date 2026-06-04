@@ -22,7 +22,7 @@ from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 
-from spinn_machine import Chip, MulticastRoutingEntry, Router
+from spinn_machine import Chip, MulticastRoutingEntry, Router, CoreSubset
 
 from pacman.model.graphs.application import (
     ApplicationEdgePartition, ApplicationVertex)
@@ -448,8 +448,10 @@ def _sdram_usage_report_per_chip_with_timesteps(
             sdram_by_chip[key] += vertex_sdram
     for chip in progress.over(FecDataView.get_machine().chips, end_progress):
         try:
-            if chip in sdram_by_chip:
-                chip_sdram = sdram_by_chip[chip]
+            # convert to key as mypy was confused.
+            key = (chip.x, chip.y)
+            if key in sdram_by_chip:
+                chip_sdram = sdram_by_chip[key]
                 used_sdram = chip_sdram.get_total_sdram(timesteps)
                 f.write(
                     f"**** Chip: ({chip.x}, {chip.y}) has total memory usage "
@@ -761,6 +763,17 @@ def generate_binaries_report() -> None:
                 f.write("\nFull paths\n")
                 for key in keys:
                     f.write(f"{key}: {aplxs[key]}\n")
+
+                f.write("\nCores\n")
+                for key in keys:
+                    core_subsets = targets.get_cores_for_binary(aplxs[key])
+                    as_str = ""
+                    core_subset: CoreSubset
+                    for core_subset in core_subsets:
+                        as_str += (f"({core_subset.x}:{core_subset.y}:"
+                                   f"{list(core_subset.processor_ids)})")
+                    f.write(f"{key}: {as_str}\n")
+
             except Exception as ex:  # pylint: disable=broad-except
                 f.write(str(ex))
                 logger.exception(f"generate_binaries_report error: {ex}")

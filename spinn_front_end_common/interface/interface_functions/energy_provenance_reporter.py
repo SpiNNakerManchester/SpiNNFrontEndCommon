@@ -21,10 +21,10 @@ _BASIC_PROPERTIES = (
     # Counts
     "n_chips", "n_cores", "n_boards", "n_frames",
     # Times (in seconds)
-    "exec_time_s", "mapping_time_s", "loading_time_s",
+    "exec_time_s", "mapping_time_s", "ds_time_s",
     "saving_time_s", "other_time_s",
     # Energies (in Joules)
-    "exec_energy_j", "mapping_energy_j", "loading_energy_j",
+    "exec_energy_j", "mapping_energy_j", "ds_energy_j",
     "saving_energy_j", "other_energy_j")
 #: The main provenance key we use
 _PROV_KEY = "power_provenance"

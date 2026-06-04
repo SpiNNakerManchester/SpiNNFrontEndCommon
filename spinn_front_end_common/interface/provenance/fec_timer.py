@@ -29,8 +29,6 @@ from spinn_front_end_common.data import FecDataView
 from .global_provenance import GlobalProvenance
 from .timer_category import TimerCategory
 if TYPE_CHECKING:
-    from spinn_front_end_common.interface.abstract_spinnaker_base import (
-        AbstractSpinnakerBase)
     from spinn_front_end_common.interface.provenance import TimerWork
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -44,12 +42,12 @@ class FecTimer(object):
     Timer.
     """
 
-    _simulator: Optional[AbstractSpinnakerBase] = None
     _provenance_path: Optional[str] = None
     _print_timings: bool = False
     _category_id: Optional[int] = None
     _category: Optional[TimerCategory] = None
     _category_time: int = 0
+    # machine on cycle to allocate time to
     _machine_on: bool = False
     _previous: List[TimerCategory] = []
     __slots__ = (
@@ -64,13 +62,13 @@ class FecTimer(object):
     APPLICATION_RUNNER = "Application runner"
 
     @classmethod
-    def setup(cls, simulator: AbstractSpinnakerBase) -> None:
+    def setup(cls) -> None:
         """
-        Checks and saves cfg values so they don't have to be read each time
+        Starts the Timer and puts it into WAITING mode
 
-        :param simulator: Not actually used
+        Checks and saves cfg values so they don't have to be read each time
         """
-        cls._simulator = simulator
+        cls._category = None
         if get_config_bool("Reports", "write_algorithm_timings"):
             cls._provenance_path = get_timestamp_path(
                 "tpath_algorithm_timings")
@@ -353,21 +351,22 @@ class FecTimer(object):
         cls._category_time = time_now
 
     @classmethod
-    def start_category(cls, category: TimerCategory,
-                       machine_on: Optional[bool] = None) -> None:
+    def start_category(cls, category: TimerCategory) -> None:
         """
         This method should only be called via the View!
 
         :param category: category to switch to
-        :param machine_on: What to change machine on too.
-            Or `None` to leave as is
         """
+        if cls._category == category:
+            raise ValueError(
+                f"Current category already {category}")
         if cls._category is not None:
             cls._previous.append(cls._category)
-        if cls._category != category:
-            cls._change_category(category)
-        if machine_on is not None:
-            cls._machine_on = machine_on
+        if category == TimerCategory.MACHINE_ON:
+            cls._machine_on = True
+        elif category == TimerCategory.MACHINE_OFF:
+            cls._machine_on = False
+        cls._change_category(category)
 
     @classmethod
     def end_category(cls, category: TimerCategory) -> None:

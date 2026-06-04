@@ -41,7 +41,7 @@ def sample_monitor_vertex() -> ExtraMonitorSupportMachineVertex:
     return ExtraMonitorSupportMachineVertex()
 
 
-def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
+def insert_extra_monitor_vertices(placements: Placements) -> Tuple[
         Dict[Chip, DataSpeedUpPacketGatherMachineVertex],
         Dict[Chip, ExtraMonitorSupportMachineVertex]]:
     """
@@ -57,7 +57,7 @@ def insert_extra_monitor_vertices_to_graphs(placements: Placements) -> Tuple[
     machine = FecDataView.get_machine()
     ethernet_chips = machine.ethernet_connected_chips
     progress = ProgressBar(
-        len(ethernet_chips), "Inserting extra monitors into graphs")
+        len(ethernet_chips), "Inserting extra monitors")
 
     for eth in progress.over(ethernet_chips):
         assert eth.ip_address is not None

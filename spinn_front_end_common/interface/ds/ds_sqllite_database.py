@@ -287,7 +287,7 @@ class DsSqlliteDatabase(SQLiteDB):
             yield (row["x"], row["y"], row["p"], row["region_num"])
 
     def set_region_content(
-            self, x: int, y: int, p: int, region_num: int, content: bytes,
+            self, x: int, y: int, p: int, region_num: int, content: bytearray,
             content_debug: Optional[str]) -> None:
         """
         Sets the content for this region
@@ -458,7 +458,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_region_pointers_and_content(
             self, x: int, y: int, p: int) -> Iterable[Tuple[
-                int, int, Optional[bytes]]]:
+                int, int, Optional[bytearray]]]:
         """
         Yields the number, pointers and content for each reserved region
 
@@ -485,8 +485,8 @@ class DsSqlliteDatabase(SQLiteDB):
                 content = None
             yield row["region_num"], row["pointer"], content
 
-    def get_regions_content(
-            self, x: int, y: int, p: int) -> Iterable[Tuple[int, int, bytes]]:
+    def get_regions_content(self, x: int, y: int,
+                            p: int) -> Iterable[Tuple[int, int, bytearray]]:
         """
         Yields the number, pointers and content for each region
 
