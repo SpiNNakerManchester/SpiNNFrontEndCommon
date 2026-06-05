@@ -258,7 +258,8 @@ class TestLoadDataSpecification(unittest.TestCase):
         self.assertEqual(header_data[2][2 * 3], header_data[1][2 * 3])
 
     @parameterized.expand(ALL_BOARD_TYPES)
-    def test_multispec_with_reference_error(self, _: str, ver_num: str) -> None:
+    def test_multispec_with_reference_error(
+            self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
@@ -287,7 +288,8 @@ class TestLoadDataSpecification(unittest.TestCase):
             load_application_data_specs()
 
     @parameterized.expand(ALL_BOARD_TYPES)
-    def test_multispec_with_double_reference(self, _: str, ver_num: str) -> None:
+    def test_multispec_with_double_reference(
+            self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
@@ -302,7 +304,8 @@ class TestLoadDataSpecification(unittest.TestCase):
                 spec.reserve_memory_region(1, 12, reference=1)
 
     @parameterized.expand(FOUR_PLUS_BOARD_TYPES)
-    def test_multispec_with_wrong_chip_reference(self, _: str, ver_num: str) -> None:
+    def test_multispec_with_wrong_chip_reference(
+            self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver()
