@@ -181,7 +181,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         for placement in placements:
             regions = reload_region_data[placement.p]
             address = placement.p * 1000
-            for (__, size, data) in regions:
+            for (___, size, data) in regions:
                 data_ba = bytearray(
                     numpy.array(data, dtype="uint32").tobytes())
                 # Check that the base address and data written is correct
