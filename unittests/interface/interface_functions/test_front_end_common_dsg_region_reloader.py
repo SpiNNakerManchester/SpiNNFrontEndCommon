@@ -133,7 +133,6 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         # reset the count as test called multiple times
         global regenerate_call_count
         regenerate_call_count = 0
-        #set_config("Machine", "version", ver_num)
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
 
