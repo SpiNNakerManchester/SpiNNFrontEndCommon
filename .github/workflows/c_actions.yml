@@ -58,7 +58,7 @@ jobs:
       working-directory: c_common
 
     - name: Upload binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: fec_binaries
         path: |
