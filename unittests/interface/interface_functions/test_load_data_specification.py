@@ -23,7 +23,7 @@ import struct
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
-from spinn_machine.version import ALL_BOARD_TYPES, FOUR_PLUS_BOARD_TYPES
+from spinn_machine.version import FOUR_PLUS_BOARD_TYPES, MANY_BOARD_TYPES
 
 from spinnman.transceiver.version5transceiver import Version5Transceiver
 from spinnman.model.enums import ExecutableType
@@ -114,7 +114,7 @@ class TestLoadDataSpecification(unittest.TestCase):
         unittest_setup()
         set_config("Machine", "enable_advanced_monitor_support", "False")
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_call(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
@@ -182,7 +182,7 @@ class TestLoadDataSpecification(unittest.TestCase):
             self.assertEqual(db.get_memory_to_write(0, 0, 0),
                              header_and_table_size + 16)
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_multi_spec_with_references(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
@@ -257,7 +257,7 @@ class TestLoadDataSpecification(unittest.TestCase):
         self.assertEqual(header_data[0][2 * 3], header_data[1][2 * 3])
         self.assertEqual(header_data[2][2 * 3], header_data[1][2 * 3])
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_multispec_with_reference_error(
             self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
@@ -287,7 +287,7 @@ class TestLoadDataSpecification(unittest.TestCase):
         with self.assertRaises(DataSpecException):
             load_application_data_specs()
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_multispec_with_double_reference(
             self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)

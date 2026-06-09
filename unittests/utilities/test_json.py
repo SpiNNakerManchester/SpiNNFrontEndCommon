@@ -17,7 +17,7 @@ from parameterized import parameterized
 
 from spinn_utilities.config_holder import set_config
 
-from spinn_machine.version import ALL_BOARD_TYPES
+from spinn_machine.version import MANY_BOARD_TYPES
 
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placement, Placements
@@ -51,7 +51,7 @@ class TestJson(unittest.TestCase):
         # write and validate
         write_json_placements()
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_machine(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         # write and validate

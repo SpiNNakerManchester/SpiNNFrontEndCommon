@@ -22,7 +22,7 @@ from spinn_utilities.overrides import overrides
 
 from spinn_machine import Chip, Router
 from spinn_machine.version import (
-    ALL_BOARD_TYPES, BIG_BOARD_TYPES, FOUR_PLUS_BOARD_TYPES)
+    BIG_BOARD_TYPES, FOUR_PLUS_BOARD_TYPES, MANY_BOARD_TYPES)
 from spinn_machine.virtual_machine import virtual_machine_by_min_size
 from spinnman.model.enums import ExecutableType
 
@@ -136,7 +136,7 @@ class TestDataSpecification(unittest.TestCase):
             app_infos = [(0, 0, 3, 0, 0), (0, 0, 4, 0, 0)]
             self.assertEqual(app_infos, db.get_core_infos(False))
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_bad_ethernet(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         router = Router([], 123)
@@ -220,7 +220,7 @@ class TestDataSpecification(unittest.TestCase):
             self.assertEqual(12, db.get_max_content_size(True))
             self.assertEqual([(12, 1), (4, 1)], db.get_content_sizes(True))
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_switch_write_focus(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         vertex = _TestVertexWithBinary(

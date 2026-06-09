@@ -21,7 +21,7 @@ from parameterized import parameterized
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
-from spinn_machine.version import ALL_BOARD_TYPES
+from spinn_machine.version import MANY_BOARD_TYPES
 
 from spinnman.model.enums import ExecutableType
 
@@ -126,7 +126,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         unittest_setup()
         set_config("Reports", "write_text_specs", "True")
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_with_good_sizes(self, _: str, ver_num: str) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
@@ -188,7 +188,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                 pos += 1
                 address += size
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_with_size_changed(self, _: str, ver_num: str) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """

@@ -21,7 +21,7 @@ from parameterized import parameterized
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
-from spinn_machine.version import ALL_BOARD_TYPES
+from spinn_machine.version import MANY_BOARD_TYPES
 
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placement, Placements
@@ -63,7 +63,7 @@ class TestBufferedDatabase(unittest.TestCase):
     def setUp(self) -> None:
         unittest_setup()
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_recording(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
@@ -145,7 +145,7 @@ class TestBufferedDatabase(unittest.TestCase):
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_download(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
@@ -198,7 +198,7 @@ class TestBufferedDatabase(unittest.TestCase):
         self.assertTrue(missing, "data should be 'missing'")
         self.assertEqual(bytes(data), b"gh")
 
-    @parameterized.expand(ALL_BOARD_TYPES)
+    @parameterized.expand(MANY_BOARD_TYPES)
     def test_clear(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
