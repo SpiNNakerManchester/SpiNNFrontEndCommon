@@ -45,7 +45,7 @@ class TestVertex(ApplicationVertex):
 class TestInsertLPGs(unittest.TestCase):
     """ tests the LPG insert functions """
 
-    @parameterized.expand(BIG_BOARD_TYPES)
+    @parameterized.expand(BIG_BOARD_TYPES)   # Needs multiple boards
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(
             self, _: str, ver_num: str) -> None:
         unittest_setup()

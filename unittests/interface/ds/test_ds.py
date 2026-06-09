@@ -111,7 +111,7 @@ class TestDataSpecification(unittest.TestCase):
             with self.assertRaises(IntegrityError):
                 DataSpecificationGenerator(0, 1, 2, vertex2, db)
 
-    @parameterized.expand(BIG_BOARD_TYPES)
+    @parameterized.expand(BIG_BOARD_TYPES)  # Needs multiple boards
     def test_core_infos(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
