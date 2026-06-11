@@ -669,7 +669,8 @@ def _search_route(
         y = slink.connected_chip_y
         text = f"        Virtual SpiNNaker Link {x}:{y} -> "
     elif isinstance(source_vertex, MachineFPGAVertex):
-        flink = machine.get_fpga_link_with_id(
+        fpga_links = FecDataView.get_fpga_links()
+        flink = fpga_links.get_fpga_link_with_id(
             source_vertex.fpga_id, source_vertex.fpga_link_id)
         x = flink.connected_chip_x
         y = flink.connected_chip_y
