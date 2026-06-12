@@ -663,7 +663,8 @@ def _search_route(
     text = ""
     # If the destination is virtual, replace with the real destination chip
     if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
-        slink = machine.get_spinnaker_link_with_id(
+        slinks = FecDataView.get_spinnaker_links()
+        slink = slinks.get_spinnaker_link_with_id(
             source_vertex.spinnaker_link_id)
         x = slink.connected_chip_x
         y = slink.connected_chip_y
