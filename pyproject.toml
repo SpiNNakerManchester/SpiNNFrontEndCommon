@@ -17,5 +17,5 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [[tool.mypy.overrides]]
-module = ["scipy"]
+module = ["parameterized", "scipy"]
 ignore_missing_imports = true
