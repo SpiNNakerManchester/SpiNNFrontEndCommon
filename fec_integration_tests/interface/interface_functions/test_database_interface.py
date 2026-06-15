@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from typing import Iterable, List,  Sequence
 
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    _LPGSplitter
+from parameterized import parameterized
+
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
-from spinn_machine.version.version_strings import VersionStrings
+from spinn_machine.version import ALL_BOARD_TYPES
 from spinn_machine.tags.iptag import IPTag
 
 from pacman.model.graphs.application import ApplicationVertex, ApplicationEdge
@@ -37,7 +38,8 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     database_interface)
-
+from spinn_front_end_common.utility_models.live_packet_gather import \
+    _LPGSplitter
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -140,9 +142,10 @@ def _place_vertices(app_vertexes: List[ApplicationVertex],
     return placements
 
 
-def test_database_interface() -> None:
+@parameterized.expand(ALL_BOARD_TYPES)
+def test_database_interface(_: str, ver_num: str) -> None:
     unittest_setup()
-    set_config("Machine", "versions", VersionStrings.ANY.text)
+    set_config("Machine", "version", ver_num)
     set_config("Database", "create_database", "True")
     set_config("Database", "create_routing_info_to_neuron_id_mapping", "True")
 

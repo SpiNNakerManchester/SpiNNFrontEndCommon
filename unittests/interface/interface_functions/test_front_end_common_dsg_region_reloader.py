@@ -13,13 +13,15 @@
 # limitations under the License.
 
 import unittest
-import numpy
 from typing import BinaryIO, Optional, List, Tuple, Union
+
+import numpy
+from parameterized import parameterized
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
-from spinn_machine.version.version_strings import VersionStrings
+from spinn_machine.version import MANY_BOARD_TYPES
 
 from spinnman.model.enums import ExecutableType
 
@@ -122,12 +124,16 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
     def setUp(self) -> None:
         unittest_setup()
-        set_config("Machine", "versions", VersionStrings.ANY.text)
         set_config("Reports", "write_text_specs", "True")
 
-    def test_with_good_sizes(self) -> None:
+    @parameterized.expand(MANY_BOARD_TYPES)
+    def test_with_good_sizes(self, _: str, ver_num: str) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
+        # reset the count as test called multiple times
+        global regenerate_call_count
+        regenerate_call_count = 0
+        set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
 
         m_vertex_1 = _TestMachineVertex()
@@ -148,7 +154,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                     placement.x, placement.y, placement.p, vertex)
                 base = placement.p * 1000
                 regions = reload_region_data[placement.p]
-                for (reg_num, size, _) in regions:
+                for (reg_num, size, __) in regions:
                     ds.set_memory_region(
                         placement.x, placement.y, placement.p, reg_num, size,
                         None, None)
@@ -174,7 +180,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         for placement in placements:
             regions = reload_region_data[placement.p]
             address = placement.p * 1000
-            for (_, size, data) in regions:
+            for (___, size, data) in regions:
                 data_ba = bytearray(
                     numpy.array(data, dtype="uint32").tobytes())
                 # Check that the base address and data written is correct
@@ -182,9 +188,11 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                 pos += 1
                 address += size
 
-    def test_with_size_changed(self) -> None:
+    @parameterized.expand(MANY_BOARD_TYPES)
+    def test_with_size_changed(self, _: str, ver_num: str) -> None:
         """ Test that an application vertex's data is rewritten correctly
         """
+        set_config("Machine", "version", ver_num)
         writer = FecDataWriter.mock()
 
         m_vertex_1 = _TestMachineVertex()
@@ -205,7 +213,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                     placement.x, placement.y, placement.p, vertex)
                 base = placement.p * 1000
                 regions = reload_region_data[placement.p]
-                for (reg_num, size, _) in regions:
+                for (reg_num, size, __) in regions:
                     ds.set_memory_region(
                         placement.x, placement.y, placement.p, reg_num, size-1,
                         None, None)

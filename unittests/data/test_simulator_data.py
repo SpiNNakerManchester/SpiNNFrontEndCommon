@@ -17,6 +17,8 @@ import sys
 from typing import Dict, Tuple
 import unittest
 
+from parameterized import parameterized
+
 from spinn_utilities.config_holder import set_config
 # hack do not copy
 from spinn_utilities.data.data_status import DataStatus
@@ -27,7 +29,7 @@ from spinn_utilities.exceptions import (
 from spinn_utilities.typing.coords import XY
 
 from spinn_machine import Chip, CoreSubsets, RoutingEntry
-from spinn_machine.version.version_strings import VersionStrings
+from spinn_machine.version import FOUR_PLUS_BOARD_TYPES
 
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model.enums import ExecutableType
@@ -470,9 +472,10 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_executable_targets([])  # type: ignore[arg-type]
 
-    def test_gatherer_map(self) -> None:
+    @parameterized.expand(FOUR_PLUS_BOARD_TYPES)
+    def test_gatherer_map(self, _: str, ver_num: str) -> None:
         writer = FecDataWriter.mock()
-        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
+        set_config("Machine", "version", ver_num)
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_gatherer_by_xy(0, 0)
         with self.assertRaises(DataNotYetAvialable):
@@ -519,9 +522,10 @@ class TestSimulatorData(unittest.TestCase):
             map4[(0, "bacon")] = vertex
             writer.set_gatherer_map(map4)  # type: ignore[arg-type]
 
-    def test_monitor_map(self) -> None:
+    @parameterized.expand(FOUR_PLUS_BOARD_TYPES)
+    def test_monitor_map(self, _: str, ver_num: str) -> None:
         writer = FecDataWriter.mock()
-        set_config("Machine", "versions", VersionStrings.FOUR_PLUS.text)
+        set_config("Machine", "version", ver_num)
         self.assertFalse(FecDataView.has_monitors())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_monitor_by_xy(0, 0)
