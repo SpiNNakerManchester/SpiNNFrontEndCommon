@@ -65,12 +65,11 @@ class CommandSenderAdder(object):
         progress = ProgressBar(FecDataView.get_n_vertices(), "Adding commands")
         for vertex in progress.over(FecDataView.iterate_vertices()):
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
-                machine = FecDataView.get_machine()
                 link_data = None
 
                 # See if we need a specific placement for a device
                 if isinstance(vertex, ApplicationVirtualVertex):
-                    link_data = vertex.get_outgoing_link_data(machine)
+                    link_data = vertex.get_outgoing_link_data()
 
                 # allow the command sender to create key to partition map
                 self.__get_command_sender(link_data).add_commands(
