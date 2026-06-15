@@ -136,6 +136,8 @@ $(foreach d, $(SOURCE_DIRS), \
     $(eval $(call add_source_dir, $(d))))
 OBJECTS += $(_OBJS)
 
+.SECONDARY: $(OBJECTS)
+
 SPINN_COMMON_INSTALL_DIR := $(strip $(if $(SPINN_COMMON_INSTALL_DIR), $(SPINN_COMMON_INSTALL_DIR), $(abspath $(FEC_DIR)/../../../spinn_common)))
 
 # Bring in the common makefile
