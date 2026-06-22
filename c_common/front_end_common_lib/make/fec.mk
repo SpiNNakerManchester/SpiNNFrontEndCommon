@@ -70,12 +70,12 @@ get_path = $(abspath $(word $2, $(subst :, ,$1)))/
 # directory pair
 define add_source_dir#(src_dir)
 $(call get_path,$(1),2): $(wildcard $(call get_path,$(1),1)/**/*)
-	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
+	python3 -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
 
 $(call get_path,$(1), 2)%.c: $(call get_path,$(1), 1)%.c
-	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
+	python3 -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
 $(call get_path,$(1), 2)%.h: $(call get_path,$(1), 1)%.h
-	python -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
+	python3 -m spinn_utilities.make_tools.converter $(call get_path,$(1),1) $(call get_path,$(1),2) $(APP_OUTPUT_DIR) $(DATABASE_KEY)
 
 # Build the o files from the modified sources
 $$(BUILD_DIR)%.o: $(call get_path,$(1),2)%.c
