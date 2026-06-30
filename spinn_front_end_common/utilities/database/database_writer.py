@@ -102,7 +102,7 @@ class DatabaseWriter(SQLiteDB):
             return self.lastrowid
         except Exception:
             logger.exception("problem with insertion; argument types are {}",
-                             str(map(type, args)))
+                             str(list(map(type, args))))
             raise
 
     def add_machine_objects(self) -> None:

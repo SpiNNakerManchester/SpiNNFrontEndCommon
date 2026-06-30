@@ -71,8 +71,8 @@ class EnergyReport(object):
         f.write(f"Mapping time: {power_used.mapping_time_s} seconds\n")
         f.write(f"Mapping energy: {power_used.mapping_energy_j} Joules\n\n")
 
-        f.write(f"Loading time: {power_used.loading_time_s} seconds\n")
-        f.write(f"Loading energy: {power_used.loading_energy_j} Joules\n\n")
+        f.write(f"Data Spec time: {power_used.ds_time_s} seconds\n")
+        f.write(f"Data Spec energy: {power_used.ds_energy_j} Joules\n\n")
 
         f.write(f"Saving time: {power_used.saving_time_s} seconds\n")
         f.write(f"Saving energy: {power_used.saving_energy_j} Joules\n\n")

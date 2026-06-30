@@ -17,7 +17,7 @@ import logging
 import os
 import re
 from sqlite3 import Row
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Union
 
 from spinn_utilities.config_holder import get_timestamp_path
 from spinn_utilities.log import FormatAdapter
@@ -102,18 +102,6 @@ class GlobalProvenance(SQLiteDB):
             VALUES(?, ?)
             """, [description, the_value])
 
-    def insert_run_reset_mapping(self) -> None:
-        """
-        Inserts a mapping between rest number and run number
-        """
-        self.cursor().execute(
-            """
-            INSERT INTO run_reset_mapping(
-                n_run, n_reset)
-            VALUES(?, ?)
-            """,
-            [FecDataView.get_run_number(), FecDataView.get_reset_number()])
-
     def insert_category(
             self, category: TimerCategory, machine_on: bool) -> int:
         """
@@ -127,10 +115,11 @@ class GlobalProvenance(SQLiteDB):
         self.cursor().execute(
             """
             INSERT INTO category_timer_provenance(
-                category, machine_on, n_run, n_loop)
-            VALUES(?, ?, ?, ?)
+                category, machine_on, n_reset, n_run, n_loop)
+            VALUES(?, ?, ?, ?, ?)
             """,
             [category.category_name, machine_on,
+             FecDataView.get_reset_number(),
              FecDataView.get_run_number(),
              FecDataView.get_run_step()])
         return self.lastrowid
@@ -264,26 +253,6 @@ class GlobalProvenance(SQLiteDB):
             f"{row[0]}: {row[1]}"
             for row in self.run_query(query, [algorithm]))
 
-    def get_run_times(self) -> str:
-        """
-        Gets the algorithm running times from the last run. If an algorithm is
-        invoked multiple times in the run, its times are summed.
-
-        :return:
-            A possibly multi line string with for each row which matches the
-            like a line ``description_name: time``. The times are in seconds.
-        """
-        # We know the database actually stores microseconds for durations
-        query = """
-            SELECT description, SUM(time_taken) / 1000000.0
-            FROM timer_provenance
-            GROUP BY description
-            ORDER BY the_value
-            """
-        return "\n".join(
-            f"{row[0].replace('_', ' ')}: {row[1]} s"
-            for row in self.run_query(query))
-
     def get_run_time_of_buffer_extractor(self) -> str:
         """
         Gets the buffer extractor provenance item(s) from the last run
@@ -294,42 +263,21 @@ class GlobalProvenance(SQLiteDB):
         """
         return self.get_timer_provenance("%BufferExtractor")
 
-    def get_category_timer_sum(self, category: TimerCategory) -> int:
+    def get_machine_on_by_reset(self, n_reset: Optional[int] = None) -> int:
         """
-        Get the total runtime for one category of algorithms
+        Get the total time the machine was on for this reset
 
-        :param category:
-        :return: total off all run times with this category
-        """
-        query = """
-             SELECT sum(time_taken)
-             FROM category_timer_provenance
-             WHERE category = ?
-             """
-        data = self.run_query(query, [category.category_name])
-        try:
-            info = data[0][0]
-            if info is None:
-                return 0
-            return info
-        except IndexError:
-            return 0
-
-    def get_category_timer_sum_by_reset(self, category: TimerCategory,
-                                        n_reset: Optional[int] = None) -> int:
-        """
-        Get the total runtime for one category of algorithms
-
-        :return: total off all run times with this category
+        :param n_reset:
+        :return:
         """
         if n_reset is None:
             n_reset = FecDataView.get_reset_number()
         query = """
              SELECT sum(time_taken)
-             FROM category_timer_view
-             WHERE category = ? AND n_reset = ?
+             FROM category_timer_provenance
+             WHERE machine_on = TRUE
              """
-        data = self.run_query(query, [category.category_name, n_reset])
+        data = self.run_query(query)
         try:
             info = data[0][0]
             if info is None:
@@ -338,32 +286,36 @@ class GlobalProvenance(SQLiteDB):
         except IndexError:
             return 0
 
-    def get_category_timer_sums(
-            self, category: TimerCategory) -> Tuple[int, int]:
+    def get_category_timer_sum(self, category: TimerCategory,
+                               n_reset: Optional[int] = None) -> int:
         """
-        Get the runtime for one category of algorithms
-        split machine on, machine off
+        Get the total runtime for one category of algorithms
 
-        :param category:
-        :return: total on and off time of instances with this category
+        :param category: What to get the sum of
+        :param n_reset: Which reset to sum or None for all
+        :return: total off all run times with this category
         """
-        on = 0
-        off = 0
-        query = """
-             SELECT sum(time_taken), machine_on
-             FROM category_timer_provenance
-             WHERE category = ?
-             GROUP BY machine_on
-             """
+        if n_reset is None:
+            query = """
+                 SELECT sum(time_taken)
+                 FROM category_timer_provenance
+                 WHERE category = ?
+                 """
+            data = self.run_query(query, [category.category_name])
+        else:
+            query = """
+                 SELECT sum(time_taken)
+                 FROM category_timer_provenance
+                 WHERE category = ? AND n_reset = ?
+                 """
+            data = self.run_query(query, [category.category_name, n_reset])
         try:
-            for data in self.run_query(query, [category.category_name]):
-                if data[1]:
-                    on = data[0]
-                else:
-                    off = data[0]
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
         except IndexError:
-            pass
-        return on, off
+            return 0
 
     def get_timer_sum_by_category(self, category: TimerCategory) -> int:
         """
