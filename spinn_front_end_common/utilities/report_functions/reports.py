@@ -22,7 +22,7 @@ from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 
-from spinn_machine import Chip, MulticastRoutingEntry, Router
+from spinn_machine import Chip, MulticastRoutingEntry, Router, CoreSubset
 
 from pacman.model.graphs.application import (
     ApplicationEdgePartition, ApplicationVertex)
@@ -663,13 +663,15 @@ def _search_route(
     text = ""
     # If the destination is virtual, replace with the real destination chip
     if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
-        slink = machine.get_spinnaker_link_with_id(
+        slinks = FecDataView.get_spinnaker_links()
+        slink = slinks.get_spinnaker_link_with_id(
             source_vertex.spinnaker_link_id)
         x = slink.connected_chip_x
         y = slink.connected_chip_y
         text = f"        Virtual SpiNNaker Link {x}:{y} -> "
     elif isinstance(source_vertex, MachineFPGAVertex):
-        flink = machine.get_fpga_link_with_id(
+        fpga_links = FecDataView.get_fpga_links()
+        flink = fpga_links.get_fpga_link_with_id(
             source_vertex.fpga_id, source_vertex.fpga_link_id)
         x = flink.connected_chip_x
         y = flink.connected_chip_y
@@ -763,6 +765,17 @@ def generate_binaries_report() -> None:
                 f.write("\nFull paths\n")
                 for key in keys:
                     f.write(f"{key}: {aplxs[key]}\n")
+
+                f.write("\nCores\n")
+                for key in keys:
+                    core_subsets = targets.get_cores_for_binary(aplxs[key])
+                    as_str = ""
+                    core_subset: CoreSubset
+                    for core_subset in core_subsets:
+                        as_str += (f"({core_subset.x}:{core_subset.y}:"
+                                   f"{list(core_subset.processor_ids)})")
+                    f.write(f"{key}: {as_str}\n")
+
             except Exception as ex:  # pylint: disable=broad-except
                 f.write(str(ex))
                 logger.exception(f"generate_binaries_report error: {ex}")
