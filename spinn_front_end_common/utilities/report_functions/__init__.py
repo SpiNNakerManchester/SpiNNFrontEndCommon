@@ -25,6 +25,8 @@ from .write_json_machine import write_json_machine
 from .write_json_placements import write_json_placements
 from .write_json_routing_tables import write_json_routing_tables
 from .drift_report import drift_report
+from .sample_profile_report import write_sample_profile_report
+
 
 __all__ = (
     "board_chip_report",
@@ -38,4 +40,5 @@ __all__ = (
     "write_json_machine",
     "write_json_placements",
     "write_json_routing_tables",
-    "drift_report")
+    "drift_report",
+    "write_sample_profile_report")
