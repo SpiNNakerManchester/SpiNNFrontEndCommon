@@ -128,8 +128,8 @@ def extract_core_activity(
     :param version: the machine version
     :return: a dictionary mapping (x, y) coordinates to a numpy array of shape
                 (n_samples, n_cores) where n_samples is the number of samples
-                recorded by the power monitor core, and n_cores is the number of
-                cores on the chip.
+                recorded by the power monitor core, and n_cores is the number
+                of cores on the chip.
                 Each entry in the array is the count of times that core was
                 active when sampled.
     """
