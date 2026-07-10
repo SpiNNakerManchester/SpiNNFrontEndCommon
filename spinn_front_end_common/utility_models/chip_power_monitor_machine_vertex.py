@@ -108,23 +108,23 @@ class ChipPowerMonitorMachineVertex(
                 "EnergyMonitor", "n_samples_per_recording_entry")
         elif sample_report and not energy_report:
             self.__sampling_frequency = get_config_int(
-                "SampleMonitor", "sampling_frequency")
+                "SampleMonitor", "profile_sampling_frequency")
             self.__n_samples_per_recording = _get_config_int_or_timestep(
-                "SampleMonitor", "n_samples_per_recording_entry",
+                "SampleMonitor", "profile_n_samples_per_recording_entry",
                 self.__sampling_frequency)
         else:
             # Sampling "frequency" is in microseconds, so the lower value is
             # the higher frequency
             self.__sampling_frequency = min(
                 get_config_int("EnergyMonitor", "sampling_frequency"),
-                get_config_int("SampleMonitor", "sampling_frequency"))
+                get_config_int("SampleMonitor", "profile_sampling_frequency"))
             # The number of samples per recording entry is the lower value,
             # so as to ensure detail is not missed when required
             self.__n_samples_per_recording = min(
                 get_config_int("EnergyMonitor",
                                "n_samples_per_recording_entry"),
                 get_config_int("SampleMonitor",
-                               "n_samples_per_recording_entry"))
+                               "profile_n_samples_per_recording_entry"))
 
     @property
     def sampling_frequency(self) -> int:
