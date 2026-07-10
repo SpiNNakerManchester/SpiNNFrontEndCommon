@@ -15,24 +15,26 @@
 from collections import defaultdict
 from typing import Dict, Tuple, cast, Any
 import numpy
+import json
 
 from spinn_utilities.config_holder import get_report_path
-
 from spinn_machine.version.abstract_version import AbstractVersion
-
+from spinnman.model.enums.executable_type import ExecutableType
 from spinn_front_end_common.data.fec_data_view import FecDataView
-
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.buffer_management\
     .storage_objects import BufferDatabase
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
         RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinnman.model.enums.executable_type import ExecutableType
-import json
 
 
 def write_sample_profile_report() -> None:
+    """ Write a report of the profile data collected using the chip power
+        monitor to measure active time.  The report is then, per core,
+        the minimum, maximum and mean number of times the core was active when
+        sampled.
+    """
 
     report_path = get_report_path("path_sample_profile_report")
     version = FecDataView.get_machine_version()
@@ -82,7 +84,7 @@ def write_sample_profile_report() -> None:
                 "mean_percent_active": float(mean_percent[p_id])
             }
 
-    with open(report_path, "w") as report_file:
+    with open(report_path, "w", encoding="utf8") as report_file:
         json.dump(json_report_data, report_file, indent=4)
 
 
@@ -116,7 +118,21 @@ def get_power_cores() -> Dict[
 def extract_core_activity(
         power_cores: Dict[Tuple[int, int], Tuple[int, list[int]]],
         version: AbstractVersion) -> Dict[Tuple[int, int], numpy.ndarray]:
+    """ Extract the core activity data from the buffer database for each chip
+        that has a power monitor core.
 
+    :param power_cores: a dictionary mapping (x, y) coordinates to a tuple of:
+            - the core ID of the power monitor core on that chip
+            - the list of cores that were active on that chip
+             (excluding the power monitor core)
+    :param version: the machine version
+    :return: a dictionary mapping (x, y) coordinates to a numpy array of shape
+                (n_samples, n_cores) where n_samples is the number of samples
+                recorded by the power monitor core, and n_cores is the number of
+                cores on the chip.
+                Each entry in the array is the count of times that core was
+                active when sampled.
+    """
     chip_activity: Dict[Tuple[int, int], numpy.ndarray] = {}
     with BufferDatabase() as buff_db:
         for (x, y) in power_cores:
