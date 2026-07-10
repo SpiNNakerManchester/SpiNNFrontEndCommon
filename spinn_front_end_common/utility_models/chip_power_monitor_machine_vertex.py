@@ -129,16 +129,12 @@ class ChipPowerMonitorMachineVertex(
     @property
     def sampling_frequency(self) -> int:
         """ The frequency at which samples are taken, in microseconds.
-
-        :return: the sampling frequency
         """
         return self.__sampling_frequency
 
     @property
     def n_samples_per_recording(self) -> int:
         """ The number of samples per recording entry.
-
-        :return: the number of samples per recording entry
         """
         return self.__n_samples_per_recording
 
