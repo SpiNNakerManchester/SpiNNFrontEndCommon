@@ -17,8 +17,8 @@ import logging
 from enum import IntEnum
 from typing import List
 
-from spinn_utilities.config_holder import get_config_int, get_config_bool,\
-    get_config_str
+from spinn_utilities.config_holder import (
+    get_config_int, get_config_bool, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 
@@ -125,7 +125,6 @@ class ChipPowerMonitorMachineVertex(
                                "n_samples_per_recording_entry"),
                 get_config_int("SampleMonitor",
                                "n_samples_per_recording_entry"))
-
 
     @property
     def sampling_frequency(self) -> int:

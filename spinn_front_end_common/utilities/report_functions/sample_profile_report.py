@@ -25,8 +25,8 @@ from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management\
     .storage_objects import BufferDatabase
 from spinn_front_end_common.utility_models\
-    .chip_power_monitor_machine_vertex import RECORDING_CHANNEL,\
-    ChipPowerMonitorMachineVertex
+    .chip_power_monitor_machine_vertex import (
+        RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinnman.model.enums.executable_type import ExecutableType
 import json
@@ -110,7 +110,7 @@ def get_power_cores() -> Dict[
                 active_cores[(pl.x, pl.y)].append(pl.p)
 
     return {xy: (power_cores[xy], active_cores[xy])
-             for xy in power_cores if xy in active_cores}
+            for xy in power_cores if xy in active_cores}
 
 
 def extract_core_activity(
