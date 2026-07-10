@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from collections import defaultdict
+import json
 from typing import Dict, Tuple, cast, Any
 import numpy
-import json
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_machine.version.abstract_version import AbstractVersion
