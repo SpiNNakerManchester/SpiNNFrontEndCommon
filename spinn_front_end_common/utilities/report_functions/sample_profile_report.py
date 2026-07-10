@@ -71,7 +71,8 @@ def write_sample_profile_report() -> None:
             core_vertex = placement.vertex
             p_id = FecDataView.get_physical_core_id((x, y), v_id)
             json_report_chip[f"core_{v_id}"] = {
-                "vertex": type(core_vertex),
+                "vertex": core_vertex.app_vertex.__class__.__name__,
+                "vertex_slice": str(core_vertex.vertex_slice),
                 "vertex_label": core_vertex.label,
                 "min_count_active": min_active[p_id],
                 "max_count_active": max_active[p_id],
@@ -82,7 +83,7 @@ def write_sample_profile_report() -> None:
             }
 
     with open(report_path, "w") as report_file:
-        json.dump(json_report_data, report_file)
+        json.dump(json_report_data, report_file, indent=4)
 
 
 def get_power_cores() -> Dict[
@@ -121,11 +122,12 @@ def extract_core_activity(
         for (x, y) in power_cores:
             # Find the core that was used on this chip for power monitoring
             p, _active_cores = power_cores[(x, y)]
-            # Get time per sample in seconds (frequency in microseconds)
+            # Get data from the power monitor core on this chip
             data, _missing = buff_db.get_recording(x, y, p, RECORDING_CHANNEL)
             results = numpy.frombuffer(data, dtype=numpy.uint32).reshape(
                 -1, version.max_cores_per_chip + 1)
-            # The remaining columns are the counts of active / inactive at
+            # The first column is the time stamp of the recording,
+            # the remaining columns are the counts of active / inactive at
             # each sample point
             activity = results[:, 1:].astype(numpy.float64)
             chip_activity[(x, y)] = activity
