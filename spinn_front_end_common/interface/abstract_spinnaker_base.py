@@ -230,6 +230,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.set_up_timings(timestep, time_scale_factor)
 
+        self._reserve_system_vertices()
+
         external_binaries = get_config_str_or_none(
             "Mapping", "external_binaries")
         if external_binaries is not None:
