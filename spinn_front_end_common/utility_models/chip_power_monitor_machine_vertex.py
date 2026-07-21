@@ -52,18 +52,17 @@ DEFAULT_MALLOCS_USED = 3
 CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 
-def _get_config_int_or_timestep(
-        config_section: str, config_key: str, sample_frequency: int) -> int:
-    """ Get a configuration integer value, unless the value is @timestep,
-        at which point the number of samples per hardware timestep is returned
-        instead.
+def _get_samples_per_recording_entry(sample_frequency: int) -> int:
+    """ Get the number of samples per recording entry
 
-    :param config_section: the section of the configuration file to read from
-    :param config_key: the key of the configuration value to read
+        If the value is @timestep, the number of samples per hardware timestep
+        is returned.
+
     :param sample_frequency: the sampling frequency to use in the calculation
     :return: the configuration value, or the number of samples per timestep
     """
-    value = get_config_str(config_section, config_key)
+    value = get_config_str(
+        "SampleMonitor", "profile_n_samples_per_recording_entry")
     if value == "@timestep":
         return max(1, int(math.ceil(
             FecDataView.get_hardware_time_step_us() / sample_frequency)))
@@ -109,8 +108,7 @@ class ChipPowerMonitorMachineVertex(
         elif sample_report and not energy_report:
             self.__sampling_frequency = get_config_int(
                 "SampleMonitor", "profile_sampling_frequency")
-            self.__n_samples_per_recording = _get_config_int_or_timestep(
-                "SampleMonitor", "profile_n_samples_per_recording_entry",
+            self.__n_samples_per_recording = _get_samples_per_recording_entry(
                 self.__sampling_frequency)
         else:
             # Sampling "frequency" is in microseconds, so the lower value is
@@ -123,9 +121,7 @@ class ChipPowerMonitorMachineVertex(
             self.__n_samples_per_recording = min(
                 get_config_int(
                     "EnergyMonitor", "n_samples_per_recording_entry"),
-                _get_config_int_or_timestep(
-                    "SampleMonitor", "profile_n_samples_per_recording_entry",
-                    self.__sampling_frequency))
+                _get_samples_per_recording_entry(self.__sampling_frequency))
 
     @property
     def sampling_frequency(self) -> int:
