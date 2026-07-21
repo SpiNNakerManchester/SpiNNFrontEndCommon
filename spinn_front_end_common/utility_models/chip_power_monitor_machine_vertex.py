@@ -121,7 +121,8 @@ class ChipPowerMonitorMachineVertex(
             # The number of samples per recording entry is the lower value,
             # so as to ensure detail is not missed when required
             self.__n_samples_per_recording = min(
-                get_config_int("EnergyMonitor", "n_samples_per_recording_entry"),
+                get_config_int(
+                    "EnergyMonitor", "n_samples_per_recording_entry"),
                 _get_config_int_or_timestep(
                     "SampleMonitor", "profile_n_samples_per_recording_entry",
                     self.__sampling_frequency))
