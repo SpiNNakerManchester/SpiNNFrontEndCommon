@@ -65,9 +65,9 @@ def _get_config_int_or_timestep(
     """
     value = get_config_str(config_section, config_key)
     if value == "@timestep":
-        return int(FecDataView.get_hardware_time_step_us() / sample_frequency)
-    else:
-        return int(value)
+        return max(1, int(math.ceil(
+            FecDataView.get_hardware_time_step_us() / sample_frequency)))
+    return int(value)
 
 
 class ChipPowerMonitorMachineVertex(
@@ -121,10 +121,10 @@ class ChipPowerMonitorMachineVertex(
             # The number of samples per recording entry is the lower value,
             # so as to ensure detail is not missed when required
             self.__n_samples_per_recording = min(
-                get_config_int("EnergyMonitor",
-                               "n_samples_per_recording_entry"),
-                get_config_int("SampleMonitor",
-                               "profile_n_samples_per_recording_entry"))
+                get_config_int("EnergyMonitor", "n_samples_per_recording_entry"),
+                _get_config_int_or_timestep(
+                    "SampleMonitor", "profile_n_samples_per_recording_entry",
+                    self.__sampling_frequency))
 
     @property
     def sampling_frequency(self) -> int:

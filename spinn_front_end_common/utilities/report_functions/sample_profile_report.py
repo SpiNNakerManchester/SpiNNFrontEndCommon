@@ -41,10 +41,12 @@ def write_sample_profile_report() -> None:
 
     power_cores = get_power_cores()
     chip_activity = extract_core_activity(power_cores, version)
-    timestep_us = FecDataView.get_simulation_time_step_us()
+    simulation_timestep_us = FecDataView.get_simulation_time_step_us()
+    hardware_timestep_us = FecDataView.get_hardware_time_step_us()
 
     json_report_data: Dict[str, Any] = {}
-    json_report_data["timestep_us"] = timestep_us
+    json_report_data["simulation_timestep_us"] = simulation_timestep_us
+    json_report_data["hardware_timestep_us"] = hardware_timestep_us
     for (x, y), activity in chip_activity.items():
         p, active_cores = power_cores[(x, y)]
         vertex = cast(
