@@ -169,7 +169,8 @@ class ConfigHandler(AbstractSpiNNManSimulation):
         """
         Reserves the sizes for the system vertices
         """
-        if get_config_bool("Reports", "write_energy_report"):
+        if (get_config_bool("Reports", "write_energy_report") or
+                get_config_bool("Reports", "write_chip_power_reports")):
             self._data_writer.add_sample_monitor_vertex(
                 sample_chip_power_monitor(), True)
         if (get_config_bool("Machine", "enable_advanced_monitor_support")
