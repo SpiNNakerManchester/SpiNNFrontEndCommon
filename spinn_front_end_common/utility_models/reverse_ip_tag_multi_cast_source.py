@@ -165,7 +165,10 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         return self.__send_buffer_times
 
     @send_buffer_times.setter
-    def send_buffer_times(self, send_buffer_times: _SendBufferTimes_out) -> None:
+    def send_buffer_times(self, send_buffer_times: _SendBufferTimes_in) -> None:
+        self.set_send_buffer_times(send_buffer_times)
+
+    def set_send_buffer_times(self, send_buffer_times: _SendBufferTimes_int) -> None:
         self.__send_buffer_times = self._validate_send_buffer_times(
             send_buffer_times)
         for vertex in self.machine_vertices:
