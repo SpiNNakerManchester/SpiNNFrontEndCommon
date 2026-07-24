@@ -37,7 +37,8 @@ from .eieio_parameters import EIEIOParameters
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex, is_array_list)
 
-_SendBufferTimes = Optional[Union[numpy.ndarray, List[numpy.ndarray]]]
+_SendBufferTimes_in = numpy.ndarray | list[numpy.ndarray] | None
+_SendBufferTimes_out = numpy.ndarray | None
 
 
 class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
@@ -67,7 +68,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             check_keys: bool = False,
 
             # Send buffer parameters
-            send_buffer_times: _SendBufferTimes = None,
+            send_buffer_times: _SendBufferTimes_in = None,
 
             # Extra flag for input without a reserved port
             reserve_reverse_ip_tag: bool = False,
@@ -133,7 +134,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         self._is_recording = False
 
     def _validate_send_buffer_times(
-            self, send_buffer_times: _SendBufferTimes) -> _SendBufferTimes:
+            self, send_buffer_times: _SendBufferTimes_in) -> _SendBufferTimes_out:
         if send_buffer_times is None:
             return None
         if is_array_list(send_buffer_times):
@@ -157,14 +158,14 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             vertex_slice.n_atoms)
 
     @property
-    def send_buffer_times(self) -> _SendBufferTimes:
+    def send_buffer_times(self) -> _SendBufferTimes_out:
         """
         When messages will be sent.
         """
         return self.__send_buffer_times
 
     @send_buffer_times.setter
-    def send_buffer_times(self, send_buffer_times: _SendBufferTimes) -> None:
+    def send_buffer_times(self, send_buffer_times: _SendBufferTimes_out) -> None:
         self.__send_buffer_times = self._validate_send_buffer_times(
             send_buffer_times)
         for vertex in self.machine_vertices:
@@ -200,7 +201,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         return machine_vertex
 
     def _filtered_send_buffer_times(
-            self, vertex_slice: Slice) -> _SendBufferTimes:
+            self, vertex_slice: Slice) -> _SendBufferTimes_out:
         ids = vertex_slice.get_raster_ids()
         send_buffer_times = self.__send_buffer_times
         n_buffer_times = 0
