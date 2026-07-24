@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import sys
-from typing import List, Optional, Union, Tuple
+from typing import Optional, Union, Tuple
 
 import numpy
 
@@ -134,7 +134,8 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         self._is_recording = False
 
     def _validate_send_buffer_times(
-            self, send_buffer_times: _SendBufferTimes_in) -> _SendBufferTimes_out:
+            self,
+            send_buffer_times: _SendBufferTimes_in) -> _SendBufferTimes_out:
         if send_buffer_times is None:
             return None
         if is_array_list(send_buffer_times):
@@ -165,10 +166,12 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         return self.__send_buffer_times
 
     @send_buffer_times.setter
-    def send_buffer_times(self, send_buffer_times: _SendBufferTimes_in) -> None:
+    def send_buffer_times(
+            self, send_buffer_times: _SendBufferTimes_in) -> None:
         self.set_send_buffer_times(send_buffer_times)
 
-    def set_send_buffer_times(self, send_buffer_times: _SendBufferTimes_in) -> None:
+    def set_send_buffer_times(
+            self, send_buffer_times: _SendBufferTimes_in) -> None:
         self.__send_buffer_times = self._validate_send_buffer_times(
             send_buffer_times)
         for vertex in self.machine_vertices:
