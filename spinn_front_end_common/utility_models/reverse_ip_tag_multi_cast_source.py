@@ -38,7 +38,7 @@ from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex, is_array_list)
 
 _SendBufferTimesIn = numpy.ndarray | list[numpy.ndarray] | None
-_SendBufferTimesIOut = numpy.ndarray | None
+_SendBufferTimesOut = numpy.ndarray | None
 
 
 class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
@@ -135,7 +135,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
 
     def _validate_send_buffer_times(
             self,
-            send_buffer_times: _SendBufferTimesIn) -> _SendBufferTimesIOut:
+            send_buffer_times: _SendBufferTimesIn) -> _SendBufferTimesOut:
         if send_buffer_times is None:
             return None
         if is_array_list(send_buffer_times):
@@ -159,7 +159,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             vertex_slice.n_atoms)
 
     @property
-    def send_buffer_times(self) -> _SendBufferTimesIOut:
+    def send_buffer_times(self) -> _SendBufferTimesOut:
         """
         When messages will be sent.
         """
@@ -172,6 +172,11 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
 
     def set_send_buffer_times(
             self, send_buffer_times: _SendBufferTimesIn) -> None:
+        """
+        Sets when messages will be sent.
+
+        :param send_buffer_times:
+        """
         self.__send_buffer_times = self._validate_send_buffer_times(
             send_buffer_times)
         for vertex in self.machine_vertices:
@@ -207,7 +212,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         return machine_vertex
 
     def _filtered_send_buffer_times(
-            self, vertex_slice: Slice) -> _SendBufferTimesIOut:
+            self, vertex_slice: Slice) -> _SendBufferTimesOut:
         ids = vertex_slice.get_raster_ids()
         send_buffer_times = self.__send_buffer_times
         n_buffer_times = 0
