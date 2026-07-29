@@ -75,6 +75,8 @@ def fec_cfg_paths_skipped() -> Set[str]:
     skipped.update(packman_cfg_paths_skipped())
     if not get_config_bool("Reports", "write_energy_report"):
         skipped.add(optionxform("path_energy_report"))
+    if not get_config_bool("Reports", "write_sample_profile_report"):
+        skipped.add(optionxform("path_sample_profile_report"))
 
     if get_config_bool("Machine", "virtual_board"):
         skipped.add(optionxform("path_data_speed_up_reports_routers"))

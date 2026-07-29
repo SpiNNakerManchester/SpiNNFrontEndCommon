@@ -17,7 +17,8 @@ import logging
 from enum import IntEnum
 from typing import List
 
-from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.config_holder import (
+    get_config_int, get_config_bool, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 
@@ -51,6 +52,23 @@ DEFAULT_MALLOCS_USED = 3
 CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 
+def _get_samples_per_recording_entry(sample_frequency: int) -> int:
+    """ Get the number of samples per recording entry
+
+        If the value is @timestep, the number of samples per hardware timestep
+        is returned.
+
+    :param sample_frequency: the sampling frequency to use in the calculation
+    :return: the configuration value, or the number of samples per timestep
+    """
+    value = get_config_str(
+        "SampleMonitor", "profile_n_samples_per_recording_entry")
+    if value == "@timestep":
+        return max(1, int(math.ceil(
+            FecDataView.get_hardware_time_step_us() / sample_frequency)))
+    return int(value)
+
+
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
@@ -79,10 +97,43 @@ class ChipPowerMonitorMachineVertex(
         """
         super().__init__(
             label=label, app_vertex=None, vertex_slice=None)
-        self.__sampling_frequency = get_config_int(
-            "EnergyMonitor", "sampling_frequency")
-        self.__n_samples_per_recording = get_config_int(
-            "EnergyMonitor", "n_samples_per_recording_entry")
+        energy_report = get_config_bool("Reports", "write_energy_report")
+        sample_report = get_config_bool(
+            "Reports", "write_sample_profile_report")
+        if energy_report and not sample_report:
+            self.__sampling_frequency = get_config_int(
+                "EnergyMonitor", "sampling_frequency")
+            self.__n_samples_per_recording = get_config_int(
+                "EnergyMonitor", "n_samples_per_recording_entry")
+        elif sample_report and not energy_report:
+            self.__sampling_frequency = get_config_int(
+                "SampleMonitor", "profile_sampling_frequency")
+            self.__n_samples_per_recording = _get_samples_per_recording_entry(
+                self.__sampling_frequency)
+        else:
+            # Sampling "frequency" is in microseconds, so the lower value is
+            # the higher frequency
+            self.__sampling_frequency = min(
+                get_config_int("EnergyMonitor", "sampling_frequency"),
+                get_config_int("SampleMonitor", "profile_sampling_frequency"))
+            # The number of samples per recording entry is the lower value,
+            # so as to ensure detail is not missed when required
+            self.__n_samples_per_recording = min(
+                get_config_int(
+                    "EnergyMonitor", "n_samples_per_recording_entry"),
+                _get_samples_per_recording_entry(self.__sampling_frequency))
+
+    @property
+    def sampling_frequency(self) -> int:
+        """ The frequency at which samples are taken, in microseconds.
+        """
+        return self.__sampling_frequency
+
+    @property
+    def n_samples_per_recording(self) -> int:
+        """ The number of samples per recording entry.
+        """
+        return self.__n_samples_per_recording
 
     @property
     @overrides(MachineVertex.sdram_required)
