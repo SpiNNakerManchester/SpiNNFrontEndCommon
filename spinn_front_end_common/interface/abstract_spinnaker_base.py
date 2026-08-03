@@ -126,7 +126,7 @@ from spinn_front_end_common.utilities.report_functions import (
     memory_map_on_host_chip_report, network_specification,
     tags_from_machine_report,
     write_json_machine, write_json_placements,
-    write_json_routing_tables, drift_report)
+    write_json_routing_tables, drift_report, write_sample_profile_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
@@ -229,6 +229,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             os.path.dirname(common_model_binaries.__file__))
 
         self._data_writer.set_up_timings(timestep, time_scale_factor)
+
+        self._reserve_system_vertices()
 
         external_binaries = get_config_str_or_none(
             "Mapping", "external_binaries")
@@ -832,7 +834,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
-            if timer.skip_if_cfg_false("Reports", "write_energy_report"):
+            if timer.skip_if_cfgs_false(
+                    "Reports", "write_energy_report",
+                    "write_sample_profile_report"):
                 return
             insert_chip_power_monitors(system_placements)
 
@@ -1611,7 +1615,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
-                    "Reports", "write_memory_map_report"):
+                    "Reports", "write_memory_map_report_summary"):
                 return
             memory_map_on_host_report()
 
@@ -1623,7 +1627,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
-                    "Reports", "write_memory_map_report"):
+                    "Reports", "write_memory_map_report_detailed"):
                 return
             memory_map_on_host_chip_report()
 
@@ -1819,6 +1823,19 @@ class AbstractSpinnakerBase(ConfigHandler):
             energy_reporter = EnergyReport()
             # run energy report
             energy_reporter.write_energy_report(power_used)
+
+    def _report_sample_profile(self) -> None:
+        """
+        Runs, times and logs the sample profile report if requested.
+        """
+        with FecTimer("Sample profile report", TimerWork.REPORT) as timer:
+            if timer.skip_if_cfg_false(
+                    "Reports", "write_sample_profile_report"):
+                return
+            if timer.skip_if_virtual_board():
+                return
+
+            write_sample_profile_report()
 
     def _do_provenance_reports(self) -> None:
         """
@@ -2218,6 +2235,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have run forever, stop the binaries
 
         self._report_energy()
+        self._report_sample_profile()
         try:
             if (self._data_writer.is_ran_ever()
                     and self._data_writer.get_current_run_timesteps() is None

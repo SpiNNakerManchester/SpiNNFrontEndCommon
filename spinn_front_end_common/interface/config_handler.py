@@ -67,7 +67,6 @@ class ConfigHandler(AbstractSpiNNManSimulation):
         # set up machine targeted data
         self._debug_configs()
         self._previous_handler()
-        self._reserve_system_vertices()
         self._ensure_provenance_for_energy_report()
 
     @property
@@ -143,6 +142,9 @@ class ConfigHandler(AbstractSpiNNManSimulation):
                            "run_compression_checker")
         self._replaced_cfg("Reports", "report_enabled",
                            "[Mode]mode = Production to turn off most reports")
+        self._replaced_cfg("Reports", "write_memory_map_report",
+                           "write_memory_map_report_summary and"
+                           " write_memory_map_report_detailed")
 
     def _error_on_previous(self, option: str) -> None:
         try:
@@ -169,7 +171,8 @@ class ConfigHandler(AbstractSpiNNManSimulation):
         """
         Reserves the sizes for the system vertices
         """
-        if get_config_bool("Reports", "write_energy_report"):
+        if (get_config_bool("Reports", "write_energy_report") or
+                get_config_bool("Reports", "write_sample_profile_report")):
             self._data_writer.add_sample_monitor_vertex(
                 sample_chip_power_monitor(), True)
         if (get_config_bool("Machine", "enable_advanced_monitor_support")
