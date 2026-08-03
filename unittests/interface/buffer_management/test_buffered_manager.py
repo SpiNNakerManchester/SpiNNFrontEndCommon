@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import os
-from typing import Sequence, Tuple
 import unittest
+from typing import Sequence, Tuple
 
 from parameterized import parameterized
 
@@ -29,12 +29,16 @@ from pacman.model.placements import Placement, Placements
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost, AbstractReceiveRegionsToHost)
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferDatabase
+    AbstractReceiveBuffersToHost,
+    AbstractReceiveRegionsToHost,
+)
+from spinn_front_end_common.interface.buffer_management.storage_objects import (
+    BufferDatabase,
+)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.exceptions import (
-    BufferedRegionNotPresent)
+    BufferedRegionNotPresent,
+)
 
 
 class MockAbstractReceiveBuffersToHost(

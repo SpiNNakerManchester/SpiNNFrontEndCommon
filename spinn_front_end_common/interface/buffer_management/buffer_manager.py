@@ -14,38 +14,60 @@
 # limitations under the License.
 
 from __future__ import annotations
+
 import ctypes
 import difflib
 import logging
 from typing import (
-    Dict, Iterable, List, Optional, Set, Tuple, cast, TYPE_CHECKING)
+    TYPE_CHECKING,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    cast,
+)
+
 from typing_extensions import Never
 
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman.messages.eieio.command_messages import EventStopRequest
+
 from spinnman.messages.eieio import EIEIOType
+from spinnman.messages.eieio.command_messages import EventStopRequest
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
+
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost,
+    AbstractReceiveRegionsToHost,
+    AbstractSendsBuffersFromHost,
+)
+from spinn_front_end_common.interface.buffer_management.storage_objects import (
+    BufferDatabase,
+    BuffersSentDeque,
+)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import (
-    SpinnFrontEndException)
+    BufferedRegionNotPresent,
+    SpinnFrontEndException,
+)
 from spinn_front_end_common.utilities.helpful_functions import (
-    locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import (BuffersSentDeque, BufferDatabase)
-from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost,
-    AbstractReceiveRegionsToHost)
-from spinn_front_end_common.utilities.exceptions import (
-    BufferedRegionNotPresent)
+    locate_extra_monitor_mc_receiver,
+    locate_memory_region_for_placement,
+)
 from spinn_front_end_common.utility_models.streaming_context_manager import (
-    StreamingContextManager)
+    StreamingContextManager,
+)
+
 from .recording_utilities import get_recording_header_size
+
 if TYPE_CHECKING:
     from spinn_front_end_common.interface.java_caller import JavaCaller
 

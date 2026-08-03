@@ -13,19 +13,24 @@
 # limitations under the License.
 
 from typing import Dict, Iterable, List, Optional, Tuple, Union
+
 from spinn_utilities.overrides import overrides
+
 from spinn_machine import CoreSubsets
+
+from spinnman.connections.udp_packet_connections import SDPConnection
 from spinnman.messages.scp.enums import Signal
 from spinnman.messages.sdp import SDPMessage
 from spinnman.model import CPUInfo, CPUInfos
 from spinnman.model.enums import ExecutableType
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman.transceiver.version5transceiver import Version5Transceiver
+
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    application_finisher)
-from spinnman.connections.udp_packet_connections import SDPConnection
+    application_finisher,
+)
 
 
 class _MockTransceiver(Version5Transceiver):

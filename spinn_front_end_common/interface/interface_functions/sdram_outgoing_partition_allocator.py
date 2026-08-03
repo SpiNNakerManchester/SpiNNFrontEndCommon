@@ -13,16 +13,22 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Dict, Optional, cast, Tuple, List
+from typing import Dict, List, Optional, Tuple, cast
+
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
+
 from spinnman.transceiver import Transceiver
+
 from pacman.model.graphs import AbstractSingleSourcePartition
 from pacman.model.graphs.machine import (
-    SourceSegmentedSDRAMMachinePartition, AbstractSDRAMPartition)
+    AbstractSDRAMPartition,
+    SourceSegmentedSDRAMMachinePartition,
+)
+
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
 def sdram_outgoing_partition_allocator() -> None:

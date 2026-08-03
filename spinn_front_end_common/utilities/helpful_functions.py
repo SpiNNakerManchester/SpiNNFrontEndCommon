@@ -12,23 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-import os
+
 import logging
+import os
 import struct
 from typing import (
-    Any, Collection, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING)
+    TYPE_CHECKING,
+    Any,
+    Collection,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+)
+
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import CoreSubsets, Chip, Machine, MulticastRoutingEntry
+
+from spinn_machine import Chip, CoreSubsets, Machine, MulticastRoutingEntry
+
 from spinnman.model.enums import CPUState, ExecutableType
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
-    APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
+    APP_PTR_TABLE_HEADER_BYTE_SIZE,
+    APP_PTR_TABLE_REGION_BYTE_SIZE,
+)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+
 if TYPE_CHECKING:
-    from pacman.model.placements import Placement
     from pacman.model.graphs.machine import MachineVertex
+    from pacman.model.placements import Placement
+
     from spinn_front_end_common.utility_models import (
-        DataSpeedUpPacketGatherMachineVertex)
+        DataSpeedUpPacketGatherMachineVertex,
+    )
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _n_word_structs: List[Optional[struct.Struct]] = []

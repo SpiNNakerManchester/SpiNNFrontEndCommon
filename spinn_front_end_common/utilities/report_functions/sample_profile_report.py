@@ -12,21 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
 import json
-from typing import Dict, Tuple, cast, Any
+from collections import defaultdict
+from typing import Any, Dict, Tuple, cast
+
 import numpy
 
 from spinn_utilities.config_holder import get_report_path
+
 from spinn_machine.version.abstract_version import AbstractVersion
+
 from spinnman.model.enums.executable_type import ExecutableType
-from spinn_front_end_common.data.fec_data_view import FecDataView
+
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management\
     .storage_objects import BufferDatabase
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
-        RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
+    RECORDING_CHANNEL,
+    ChipPowerMonitorMachineVertex,
+)
 
 
 def write_sample_profile_report() -> None:

@@ -13,15 +13,20 @@
 # limitations under the License.
 
 import logging
-from spinnman.model import ExecutableTargets
-from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
+
+from spinnman.model import ExecutableTargets
+
 from pacman.model.graphs import AbstractVirtual
 from pacman.model.placements import Placement
+
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
-    ExecutableNotFoundException)
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+    ExecutableNotFoundException,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

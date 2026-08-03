@@ -12,54 +12,79 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-import os
+
 import datetime
 import logging
-import time
+import os
 import struct
+import time
 from enum import Enum, IntEnum
 from typing import (
-    Any, BinaryIO, Iterable, List, Optional, Set, Tuple, TYPE_CHECKING)
+    TYPE_CHECKING,
+    Any,
+    BinaryIO,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+)
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path
-from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
 
 from spinn_machine import Chip
 
-from spinnman.exceptions import SpinnmanTimeoutException
-from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
-from spinnman.model.enums import (
-    CPUState, ExecutableType, SDP_PORTS, UserRegister)
 from spinnman.connections.udp_packet_connections import SCAMPConnection
+from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
+from spinnman.model.enums import (
+    SDP_PORTS,
+    CPUState,
+    ExecutableType,
+    UserRegister,
+)
 from spinnman.spalloc.spalloc_allocator import SpallocJobController
 
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ConstantSDRAM, IPtagResource
 from pacman.model.placements import Placement
+from pacman.model.resources import ConstantSDRAM, IPtagResource
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, n_word_struct)
-from spinn_front_end_common.utilities.emergency_recovery import (
-    emergency_recover_state_from_failure)
 from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
-from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine)
-from spinn_front_end_common.utilities.constants import (
-    BYTES_PER_WORD, BYTES_PER_KB)
-from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset, retarget_tag)
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.utilities.scp import ReinjectorControlProcess
-from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
+    AbstractGeneratesDataSpecification,
+    AbstractHasAssociatedBinary,
+)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+from spinn_front_end_common.interface.provenance import (
+    AbstractProvidesProvenanceDataFromMachine,
+    ProvenanceWriter,
+)
+from spinn_front_end_common.utilities.constants import (
+    BYTES_PER_KB,
+    BYTES_PER_WORD,
+)
+from spinn_front_end_common.utilities.emergency_recovery import (
+    emergency_recover_state_from_failure,
+)
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_vertices_to_core_subset,
+    n_word_struct,
+)
+from spinn_front_end_common.utilities.scp import ReinjectorControlProcess
+from spinn_front_end_common.utilities.utility_calls import (
+    get_region_base_address_offset,
+    retarget_tag,
+)
+from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
+
 if TYPE_CHECKING:
-    from .extra_monitor_support_machine_vertex import \
-        ExtraMonitorSupportMachineVertex
+    from .extra_monitor_support_machine_vertex import (
+        ExtraMonitorSupportMachineVertex,
+    )
 
 log = FormatAdapter(logging.getLogger(__name__))
 

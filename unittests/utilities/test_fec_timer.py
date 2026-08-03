@@ -13,12 +13,18 @@
 # limitations under the License.
 
 import unittest
+
 from testfixtures import LogCapture  # type: ignore[import]
 
 from spinn_utilities.config_holder import set_config
-from spinn_front_end_common.interface.provenance import (
-    FecTimer, GlobalProvenance, TimerCategory, TimerWork)
+
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.interface.provenance import (
+    FecTimer,
+    GlobalProvenance,
+    TimerCategory,
+    TimerWork,
+)
 
 
 class TestFecTimer(unittest.TestCase):

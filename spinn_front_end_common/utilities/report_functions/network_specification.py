@@ -17,7 +17,9 @@ from typing import TextIO
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
+
 from pacman.model.graphs.application import ApplicationVertex
+
 from spinn_front_end_common.data import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))

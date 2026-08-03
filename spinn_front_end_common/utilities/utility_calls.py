@@ -19,25 +19,31 @@ Utility calls for interpreting bits of the DSG
 import io
 import os
 import threading
-from typing import (Optional, Union, TextIO, Tuple, TypeVar)
-
+from typing import Optional, TextIO, Tuple, TypeVar, Union
 from urllib.parse import urlparse
 
 from spinn_utilities.config_holder import (
-    get_config_bool, get_config_str, get_report_path)
+    get_config_bool,
+    get_config_str,
+    get_report_path,
+)
 
 from spinn_machine import Chip
 
 from spinnman.connections.udp_packet_connections import SCAMPConnection
+from spinnman.spalloc import SpallocEIEIOConnection, SpallocEIEIOListener
 from spinnman.utilities.utility_functions import (
-    reprogram_tag, reprogram_tag_to_listener)
-from spinnman.spalloc import SpallocEIEIOListener, SpallocEIEIOConnection
+    reprogram_tag,
+    reprogram_tag_to_listener,
+)
 
 from pacman.model.placements import Placements
 
-from spinn_front_end_common.utilities.constants import (
-    APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.constants import (
+    APP_PTR_TABLE_HEADER_BYTE_SIZE,
+    APP_PTR_TABLE_REGION_BYTE_SIZE,
+)
 
 # used to stop file conflicts
 _lock_condition = threading.Condition()

@@ -15,6 +15,7 @@
 main interface for the SpiNNaker tools
 """
 from __future__ import annotations
+
 import logging
 import math
 import os
@@ -24,46 +25,63 @@ import sys
 import threading
 import types
 from threading import Condition
-from typing import (
-    Dict, Iterable, Optional, Sequence, Tuple, Type,
-    TypeVar, Union, cast, final)
 from types import FrameType
+from typing import (
+    Dict,
+    Iterable,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+    final,
+)
 
 from numpy import __version__ as numpy_version
 
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
-    check_user_cfg, config_options, config_sections,
-    get_config_bool, get_config_int, get_config_str, get_config_str_or_none,
-    get_report_path, get_timestamp_path, is_config_none, set_config)
+    check_user_cfg,
+    config_options,
+    config_sections,
+    get_config_bool,
+    get_config_int,
+    get_config_str,
+    get_config_str_or_none,
+    get_report_path,
+    get_timestamp_path,
+    is_config_none,
+    set_config,
+)
 from spinn_utilities.exceptions import DataNotYetAvialable
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
-from spinn_utilities.typing.coords import XY
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.typing.coords import XY
 
-from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import CoreSubsets, Machine
+from spinn_machine import __version__ as spinn_machine_version
 
 from spinnman import __version__ as spinnman_version
-from spinnman.exceptions import (
-    SpiNNManCoresNotInStateException)
+from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 from spinnman.spalloc import is_server_address
 from spinnman.transceiver import (
-    create_transceiver_from_hostname, Transceiver, transceiver_generator)
-
-from spalloc_client import (  # type: ignore[import]
-    __version__ as spalloc_version)
+    Transceiver,
+    create_transceiver_from_hostname,
+    transceiver_generator,
+)
 
 from pacman import __version__ as pacman_version
 from pacman.exceptions import PacmanPlaceException
-from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.graphs import AbstractVirtual
-from pacman.model.resources import AbstractSDRAM
+from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
+from pacman.model.resources import AbstractSDRAM
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.fixed_route_router import fixed_route_router
 from pacman.operations.multi_cast_router_check_functionality.\
@@ -72,73 +90,121 @@ from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import place_application_graph
 from pacman.operations.router_algorithms import route_application_graph
 from pacman.operations.router_compressors import (
-    pair_compressor, range_compressor)
-from pacman.operations.router_compressors.ordered_covering_router_compressor \
-    import ordered_covering_compressor
+    pair_compressor,
+    range_compressor,
+)
+from pacman.operations.router_compressors.ordered_covering_router_compressor import (
+    ordered_covering_compressor,
+)
 from pacman.operations.routing_info_allocator_algorithms.\
     zoned_routing_info_allocator import ZonedRoutingInfoAllocator
 from pacman.operations.routing_table_generators import (
-    basic_routing_table_generator, merged_routing_table_generator)
+    basic_routing_table_generator,
+    merged_routing_table_generator,
+)
 from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
+
+from spalloc_client import (  # type: ignore[import]
+    __version__ as spalloc_version,
+)
 
 from spinn_front_end_common import __version__ as fec_version
 from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
-    AbstractVertexWithEdgeToDependentVertices)
+    AbstractVertexWithEdgeToDependentVertices,
+)
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferDatabase
-from spinn_front_end_common.interface.config_handler import (
-    ConfigHandler)
+from spinn_front_end_common.interface.buffer_management.storage_objects import (
+    BufferDatabase,
+)
+from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
-    application_finisher, application_runner,
-    chip_io_buf_clearer, chip_io_buf_extractor,
-    chip_provenance_updater, chip_runtime_updater, compute_energy_used,
-    create_notification_protocol, database_interface,
-    reload_dsg_regions, energy_provenance_reporter,
-    load_application_data_specs, load_system_data_specs,
-    graph_binary_gatherer, graph_data_specification_writer,
-    hbp_allocator, insert_chip_power_monitors,
-    insert_extra_monitor_vertices, split_lpg_vertices,
-    load_app_images, load_fixed_routes, load_sys_images,
+    add_command_senders,
+    application_finisher,
+    application_runner,
+    chip_io_buf_clearer,
+    chip_io_buf_extractor,
+    chip_provenance_updater,
+    chip_runtime_updater,
+    compute_energy_used,
+    create_notification_protocol,
+    database_interface,
+    energy_provenance_reporter,
+    graph_binary_gatherer,
+    graph_data_specification_writer,
+    hbp_allocator,
+    insert_chip_power_monitors,
+    insert_extra_monitor_vertices,
+    load_app_images,
+    load_application_data_specs,
+    load_fixed_routes,
+    load_sys_images,
+    load_system_data_specs,
     locate_executable_start_type,
-    placements_provenance_gatherer, profile_data_gatherer,
-    read_routing_tables_from_machine, router_provenance_gatherer,
-    routing_table_loader, sdram_outgoing_partition_allocator,
+    placements_provenance_gatherer,
+    profile_data_gatherer,
+    read_routing_tables_from_machine,
+    reload_dsg_regions,
+    router_provenance_gatherer,
+    routing_table_loader,
+    sdram_outgoing_partition_allocator,
     spalloc_allocate_job_old,
+    split_lpg_vertices,
     system_multicast_routing_generator,
-    tags_loader, add_command_senders)
+    tags_loader,
+)
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
-        ordered_covering_compression, pair_compression)
-from spinn_front_end_common.interface.provenance import (
-    FecTimer, GlobalProvenance, ProvenanceWriter, TimerCategory, TimerWork)
-from spinn_front_end_common.interface.splitter_selectors import (
-    splitter_selector)
+    ordered_covering_compression,
+    pair_compression,
+)
 from spinn_front_end_common.interface.java_caller import JavaCaller
+from spinn_front_end_common.interface.provenance import (
+    FecTimer,
+    GlobalProvenance,
+    ProvenanceWriter,
+    TimerCategory,
+    TimerWork,
+)
+from spinn_front_end_common.interface.splitter_selectors import (
+    splitter_selector,
+)
 from spinn_front_end_common.utilities.database import DatabaseUpdater
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.report_functions import (
-    board_chip_report, EnergyReport,
-    fixed_route_from_machine_report,
-    generate_routing_compression_checker_report, memory_map_on_host_report,
-    memory_map_on_host_chip_report, network_specification,
-    tags_from_machine_report,
-    write_json_machine, write_json_placements,
-    write_json_routing_tables, drift_report, write_sample_profile_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
-from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.utilities.report_functions import (
+    EnergyReport,
+    board_chip_report,
+    drift_report,
+    fixed_route_from_machine_report,
+    generate_routing_compression_checker_report,
+    memory_map_on_host_chip_report,
+    memory_map_on_host_report,
+    network_specification,
+    tags_from_machine_report,
+    write_json_machine,
+    write_json_placements,
+    write_json_routing_tables,
+    write_sample_profile_report,
+)
 from spinn_front_end_common.utilities.report_functions.reports import (
-    generate_binaries_report, generate_comparison_router_report,
-    partitioner_report, placer_reports_with_application_graph,
-    router_compressed_summary_report, routing_info_report,
+    generate_binaries_report,
+    generate_comparison_router_report,
+    partitioner_report,
+    placer_reports_with_application_graph,
+    router_compressed_summary_report,
     router_report_from_compressed_router_tables,
     router_report_from_paths,
-    router_report_from_router_tables, router_summary_report,
+    router_report_from_router_tables,
+    router_summary_report,
+    routing_info_report,
     sdram_usage_report_per_chip,
-    tag_allocator_report)
+    tag_allocator_report,
+)
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex,
+)
 
 try:
     from scipy import __version__ as scipy_version

@@ -15,11 +15,15 @@
 import logging
 import traceback
 from typing import Iterable, List
+
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine)
+    AbstractProvidesProvenanceDataFromMachine,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

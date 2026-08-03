@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Sequence, Tuple
+
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 

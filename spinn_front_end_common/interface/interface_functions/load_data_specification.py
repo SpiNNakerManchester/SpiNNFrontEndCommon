@@ -19,19 +19,26 @@ import numpy
 from typing_extensions import TypeAlias
 
 from spinn_utilities.config_holder import get_config_bool
-from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinnman.model.enums import UserRegister
 
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    APPDATA_MAGIC_NUM, APP_PTR_TABLE_BYTE_SIZE, BYTES_PER_WORD,
-    CORE_DATA_SDRAM_BASE_TAG, DSE_VERSION, MAX_MEM_REGIONS, TABLE_TYPE)
-from spinn_front_end_common.utilities.exceptions import DataSpecException
-from spinn_front_end_common.utilities.emergency_recovery import (
-    emergency_recover_states_from_failure)
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.utilities.constants import (
+    APP_PTR_TABLE_BYTE_SIZE,
+    APPDATA_MAGIC_NUM,
+    BYTES_PER_WORD,
+    CORE_DATA_SDRAM_BASE_TAG,
+    DSE_VERSION,
+    MAX_MEM_REGIONS,
+    TABLE_TYPE,
+)
+from spinn_front_end_common.utilities.emergency_recovery import (
+    emergency_recover_states_from_failure,
+)
+from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _Writer: TypeAlias = Callable[[int, int, int, bytearray | bytes], Any]

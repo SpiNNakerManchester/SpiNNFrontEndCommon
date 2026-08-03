@@ -18,24 +18,33 @@ import time
 from typing import Iterable, Optional, TextIO, Tuple
 
 from spinn_utilities.config_holder import get_report_path
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_utilities.log import FormatAdapter
 
-from spinn_machine import Chip, MulticastRoutingEntry, Router, CoreSubset
+from spinn_machine import Chip, CoreSubset, MulticastRoutingEntry, Router
 
 from pacman.model.graphs.application import (
-    ApplicationEdgePartition, ApplicationVertex)
+    ApplicationEdgePartition,
+    ApplicationVertex,
+)
 from pacman.model.graphs.machine import (
-    MachineFPGAVertex, MachineSpiNNakerLinkVertex, MachineVertex)
-from pacman.model.routing_tables import (
-    AbstractMulticastRoutingTable, MulticastRoutingTables)
+    MachineFPGAVertex,
+    MachineSpiNNakerLinkVertex,
+    MachineVertex,
+)
 from pacman.model.routing_info import BaseKeyAndMask, RoutingInfo
-from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
-    get_app_partitions)
+from pacman.model.routing_tables import (
+    AbstractMulticastRoutingTable,
+    MulticastRoutingTables,
+)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
+from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
+    get_app_partitions,
+)
 
 from spinn_front_end_common.data import FecDataView
+
 from .router_summary import RouterSummary
 
 logger = FormatAdapter(logging.getLogger(__name__))

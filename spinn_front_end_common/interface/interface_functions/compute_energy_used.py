@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
 import logging
-from typing import Final, Optional, cast, Dict, Tuple
+from collections import defaultdict
+from typing import Dict, Final, Optional, Tuple, cast
 
 import numpy
 
@@ -23,20 +23,28 @@ from spinn_utilities.log import FormatAdapter
 
 from spinn_machine import Machine
 from spinn_machine.version.abstract_version import (
-    AbstractVersion, RouterPackets)
+    AbstractVersion,
+    RouterPackets,
+)
 
 from spinnman.model.enums.executable_type import ExecutableType
 
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.buffer_management.storage_objects import (
+    BufferDatabase,
+)
 from spinn_front_end_common.interface.provenance import (
-    GlobalProvenance, ProvenanceReader, TimerCategory)
+    GlobalProvenance,
+    ProvenanceReader,
+    TimerCategory,
+)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
-        RECORDING_CHANNEL, ChipPowerMonitorMachineVertex)
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferDatabase
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+    RECORDING_CHANNEL,
+    ChipPowerMonitorMachineVertex,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

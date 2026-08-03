@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import sys
-from typing import List, Optional, Union, Tuple
+from typing import List, Optional, Tuple, Union
 
 import numpy
 
@@ -24,18 +24,20 @@ from spinn_machine.tags import IPTag
 from spinnman.messages.eieio import EIEIOPrefix
 from spinnman.model.enums import SDP_PORTS
 
-from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
-from pacman.model.graphs.common import Slice
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
+from pacman.model.graphs.common import Slice
+from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.resources import AbstractSDRAM
+from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 from .eieio_parameters import EIEIOParameters
 from .reverse_ip_tag_multicast_source_machine_vertex import (
-    ReverseIPTagMulticastSourceMachineVertex, is_array_list)
+    ReverseIPTagMulticastSourceMachineVertex,
+    is_array_list,
+)
 
 _SendBufferTimes = Optional[Union[numpy.ndarray, List[numpy.ndarray]]]
 

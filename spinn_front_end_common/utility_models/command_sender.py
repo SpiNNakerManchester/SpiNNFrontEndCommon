@@ -12,15 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from typing import Iterable, List, Tuple, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Iterable, List, Tuple
+
 from spinn_utilities.overrides import overrides
+
 from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.graphs.application.abstract import (
-    AbstractOneAppOneMachineVertex)
+    AbstractOneAppOneMachineVertex,
+)
 from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
 from pacman.model.routing_info import BaseKeyAndMask
+
 from .command_sender_machine_vertex import CommandSenderMachineVertex
+
 if TYPE_CHECKING:
     from spinn_front_end_common.utility_models import MultiCastCommand
 

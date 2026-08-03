@@ -12,24 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import partial
-import struct
 import logging
+import struct
+from functools import partial
 from typing import Optional
+
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_utilities.log import FormatAdapter
+
 from spinn_machine import CoreSubsets
-from spinnman.messages.sdp import SDPHeader, SDPFlag
-from spinnman.messages.scp.abstract_messages import (
-    AbstractSCPRequest, AbstractSCPResponse)
-from spinnman.messages.scp import SCPRequestHeader
-from spinnman.processes import (
-    AbstractMultiConnectionProcess, MostDirectConnectionSelector)
-from spinnman.model.enums import (
-    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
-from spinnman.messages.scp.enums import SCPResult
+
 from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
+from spinnman.messages.scp import SCPRequestHeader
+from spinnman.messages.scp.abstract_messages import (
+    AbstractSCPRequest,
+    AbstractSCPResponse,
+)
+from spinnman.messages.scp.enums import SCPResult
+from spinnman.messages.sdp import SDPFlag, SDPHeader
+from spinnman.model.enums import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
+from spinnman.processes import (
+    AbstractMultiConnectionProcess,
+    MostDirectConnectionSelector,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

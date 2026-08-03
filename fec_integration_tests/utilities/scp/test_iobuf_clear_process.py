@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import struct
-from spinn_machine import CoreSubsets, CoreSubset
-from spinnman.processes import RoundRobinConnectionSelector
+import unittest
+
+from spinn_machine import CoreSubset, CoreSubsets
+
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.messages.sdp import SDPHeader
 from spinnman.model.enums import SDP_RUNNING_MESSAGE_CODES
-from spinnman.connections.udp_packet_connections import SCAMPConnection
+from spinnman.processes import RoundRobinConnectionSelector
+
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
+
 from fec_integration_tests.mock_receiver import MockReceiver
 
 

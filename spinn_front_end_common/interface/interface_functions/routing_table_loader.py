@@ -13,7 +13,9 @@
 # limitations under the License.
 
 from spinn_utilities.progress_bar import ProgressBar
+
 from pacman.model.routing_tables import MulticastRoutingTables
+
 from spinn_front_end_common.data import FecDataView
 
 

@@ -13,13 +13,18 @@
 # limitations under the License.
 
 import logging
+
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.routing_compression_checker import (
-    codify_table, compare_route)
+    codify_table,
+    compare_route,
+)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
+
 logger = FormatAdapter(logging.getLogger(__name__))
 
 

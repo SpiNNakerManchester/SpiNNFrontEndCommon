@@ -13,22 +13,29 @@
 # limitations under the License.
 
 import logging
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from typing import List, Optional
-from concurrent.futures import Future
-from concurrent.futures import ThreadPoolExecutor, wait
+
 from spinn_utilities.config_holder import (
-    get_config_bool, get_config_int_or_none)
+    get_config_bool,
+    get_config_int_or_none,
+)
 from spinn_utilities.log import FormatAdapter
+
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinnman.messages.eieio.command_messages import (
-    NotificationProtocolDatabaseLocation, NotificationProtocolPauseStop,
-    NotificationProtocolStartResume)
 from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.messages.eieio.command_messages import (
+    NotificationProtocolDatabaseLocation,
+    NotificationProtocolPauseStop,
+    NotificationProtocolStartResume,
+)
+
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    MAX_DATABASE_PATH_LENGTH)
+from spinn_front_end_common.utilities.constants import MAX_DATABASE_PATH_LENGTH
 from spinn_front_end_common.utilities.exceptions import (
-    ConfigurationException, SpinnFrontEndException)
+    ConfigurationException,
+    SpinnFrontEndException,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

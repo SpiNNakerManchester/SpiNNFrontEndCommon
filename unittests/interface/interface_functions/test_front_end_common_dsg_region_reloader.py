@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from typing import BinaryIO, Optional, List, Tuple, Union
+from typing import BinaryIO, List, Optional, Tuple, Union
 
 import numpy
 from parameterized import parameterized
@@ -24,20 +24,26 @@ from spinn_utilities.overrides import overrides
 from spinn_machine.version import MANY_BOARD_TYPES
 
 from spinnman.model.enums import ExecutableType
+from spinnman.transceiver.mockable_transceiver import MockableTransceiver
 
-from pacman.model.placements import Placements, Placement
+from pacman.model.graphs.machine import SimpleMachineVertex
+from pacman.model.placements import Placement, Placements
 
 from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
-    AbstractRewritesDataSpecification)
-from spinn_front_end_common.interface.config_setup import unittest_setup
+    AbstractGeneratesDataSpecification,
+    AbstractHasAssociatedBinary,
+    AbstractRewritesDataSpecification,
+)
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
-from spinn_front_end_common.interface.interface_functions import (
-    reload_dsg_regions)
-from pacman.model.graphs.machine import (SimpleMachineVertex)
-from spinnman.transceiver.mockable_transceiver import MockableTransceiver
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import (
-    DataSpecificationGenerator, DataSpecificationReloader, DsSqlliteDatabase)
+    DataSpecificationGenerator,
+    DataSpecificationReloader,
+    DsSqlliteDatabase,
+)
+from spinn_front_end_common.interface.interface_functions import (
+    reload_dsg_regions,
+)
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 # test specific stuff

@@ -18,7 +18,9 @@ import os
 from typing import Dict, Optional, Tuple
 
 from spinn_utilities.config_holder import (
-    get_config_int, get_config_int_or_none)
+    get_config_int,
+    get_config_int_or_none,
+)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
@@ -29,18 +31,25 @@ from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
+
 from pacman.data.pacman_data_writer import PacmanDataWriter
-from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocol)
+from pacman.model.routing_tables import MulticastRoutingTables
+
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
+    MICRO_TO_MILLISECOND_CONVERSION,
+    MICRO_TO_SECOND_CONVERSION,
+)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.notification_protocol import (
+    NotificationProtocol,
+)
 from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
+    DataSpeedUpPacketGatherMachineVertex,
+    ExtraMonitorSupportMachineVertex,
+)
 
 from .fec_data_view import FecDataView, _FecDataModel
 

@@ -12,34 +12,53 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+
 from collections.abc import Sized
 from enum import IntEnum
 from typing import (
-    Callable, Dict, Iterable, List, Sequence, Set, Tuple, Type, TypeVar,
-    TYPE_CHECKING)
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
 from spinn_utilities.overrides import overrides
 
 from spinnman.model.enums import ExecutableType
 
-from pacman.model.graphs.abstract_edge import AbstractEdge
 from pacman.model.graphs import AbstractVertex
-from pacman.model.graphs.machine import MachineVertex, MachineEdge
+from pacman.model.graphs.abstract_edge import AbstractEdge
+from pacman.model.graphs.machine import MachineEdge, MachineVertex
 from pacman.model.placements import Placement
 from pacman.model.resources import AbstractSDRAM, ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
 
 from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
+    AbstractGeneratesDataSpecification,
+    AbstractHasAssociatedBinary,
+)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import (
-    ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
-from spinn_front_end_common.interface.simulation.simulation_utilities import (
-    get_simulation_header_array)
-from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+from spinn_front_end_common.interface.provenance import (
+    ProvenanceWriter,
+    ProvidesProvenanceDataFromMachineImpl,
+)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array,
+)
+from spinn_front_end_common.utilities.constants import (
+    BYTES_PER_WORD,
+    SIMULATION_N_BYTES,
+    SYSTEM_BYTES_REQUIREMENT,
+)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+
 if TYPE_CHECKING:
     from .command_sender import CommandSender
     from .multi_cast_command import MultiCastCommand

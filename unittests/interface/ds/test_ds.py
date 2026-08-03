@@ -13,33 +13,45 @@
 # limitations under the License.
 
 import unittest
+from sqlite3 import IntegrityError
 
 from parameterized import parameterized
-from sqlite3 import IntegrityError
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
 from spinn_machine import Chip, Router
 from spinn_machine.version import (
-    BIG_BOARD_TYPES, FOUR_PLUS_BOARD_TYPES, MANY_BOARD_TYPES)
+    BIG_BOARD_TYPES,
+    FOUR_PLUS_BOARD_TYPES,
+    MANY_BOARD_TYPES,
+)
 from spinn_machine.virtual_machine import virtual_machine_by_min_size
+
 from spinnman.model.enums import ExecutableType
 
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placement
 
 from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary,  AbstractGeneratesDataSpecification)
+    AbstractGeneratesDataSpecification,
+    AbstractHasAssociatedBinary,
+)
 from spinn_front_end_common.data.fec_data_writer import (
-    FecDataView, FecDataWriter)
+    FecDataView,
+    FecDataWriter,
+)
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.interface.ds import \
-    DataSpecificationGenerator, DataSpecificationReloader, DsSqlliteDatabase
-from spinn_front_end_common.utilities.constants import (
-    APP_PTR_TABLE_BYTE_SIZE)
+from spinn_front_end_common.interface.ds import (
+    DataSpecificationGenerator,
+    DataSpecificationReloader,
+    DsSqlliteDatabase,
+)
+from spinn_front_end_common.utilities.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_front_end_common.utilities.exceptions import (
-    DataSpecException, DsDatabaseException)
+    DataSpecException,
+    DsDatabaseException,
+)
 
 
 class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary,

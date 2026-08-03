@@ -17,14 +17,22 @@ import os
 import sqlite3
 from types import ModuleType, TracebackType
 from typing import (
-    Any, ContextManager, FrozenSet, Iterable, List, Optional, Tuple, Type,
-    cast)
+    Any,
+    ContextManager,
+    FrozenSet,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    cast,
+)
 
 import numpy
 from typing_extensions import Literal
 
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 # The types of router provenance that we'll plot
 ROUTER_PLOTTABLES = (

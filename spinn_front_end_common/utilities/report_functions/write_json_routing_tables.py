@@ -16,9 +16,12 @@ import json
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.utilities import file_format_schemas
+
 from pacman.model.routing_tables.multicast_routing_tables import (
-    to_json, MulticastRoutingTables)
+    MulticastRoutingTables,
+    to_json,
+)
+from pacman.utilities import file_format_schemas
 
 _ROUTING_TABLES_SCHEMA = "routing_tables.json"
 

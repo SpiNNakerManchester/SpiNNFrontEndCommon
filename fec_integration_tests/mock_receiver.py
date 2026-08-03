@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from threading import Thread
-from collections import deque
 import struct
+from collections import deque
+from threading import Thread
 
-from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
+from spinnman.connections.udp_packet_connections import UDPConnection
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.enums import SCPResult
-from spinnman.connections.udp_packet_connections import UDPConnection
+from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 
 
 class _SCPOKMessage(SDPMessage):

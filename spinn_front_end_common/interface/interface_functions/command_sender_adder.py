@@ -12,17 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Dict, Iterable, List, Optional
+
 from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_machine import Chip
 from spinn_machine.link_data_objects import AbstractLinkData
+
 from pacman.model.graphs.application import ApplicationVirtualVertex
 from pacman.model.placements import Placement, Placements
-from spinn_front_end_common.data.fec_data_view import FecDataView
+
 from spinn_front_end_common.abstract_models import (
-    AbstractSendMeMulticastCommandsVertex)
-from spinn_front_end_common.utility_models import CommandSender
+    AbstractSendMeMulticastCommandsVertex,
+)
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.utility_calls import (
-    pick_core_for_system_placement)
+    pick_core_for_system_placement,
+)
+from spinn_front_end_common.utility_models import CommandSender
 
 
 def add_command_senders(system_placements: Placements) -> List[CommandSender]:

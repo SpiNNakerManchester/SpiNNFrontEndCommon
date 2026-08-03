@@ -13,14 +13,18 @@
 # limitations under the License.
 
 import unittest
-from spinn_front_end_common.interface.config_setup import unittest_setup
+
 from spinn_utilities.socket_address import SocketAddress
+
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
 from spinnman.constants import EIEIO_COMMAND_IDS
+from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
+
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocol)
+    NotificationProtocol,
+)
 
 
 class TestStopPauseNotificationProtocol(unittest.TestCase):

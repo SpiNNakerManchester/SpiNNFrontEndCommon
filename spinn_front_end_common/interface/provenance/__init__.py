@@ -13,14 +13,16 @@
 # limitations under the License.
 
 from .abstract_provides_provenance_data_from_machine import (
-    AbstractProvidesProvenanceDataFromMachine)
+    AbstractProvidesProvenanceDataFromMachine,
+)
 from .fec_timer import FecTimer
 from .global_provenance import GlobalProvenance
 from .log_store_db import LogStoreDB
 from .provenance_reader import ProvenanceReader
-from .provides_provenance_data_from_machine_impl import (
-    ProvidesProvenanceDataFromMachineImpl)
 from .provenance_writer import ProvenanceWriter
+from .provides_provenance_data_from_machine_impl import (
+    ProvidesProvenanceDataFromMachineImpl,
+)
 from .timer_category import TimerCategory
 from .timer_work import TimerWork
 
