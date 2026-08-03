@@ -25,5 +25,23 @@ man="../SpiNNMan/spinnman"
 pacman="../PACMAN/pacman"
 spalloc="../spalloc/spalloc_client"
 
-mypy --disallow-untyped-defs $utils $machine $man $pacman $spalloc spinn_front_end_common unittests fec_integration_tests
+# This bash assumes that other repositories are installed in parallel
+
+if [ "$#" -eq  "0" ]
+  then
+    echo "Provide any argument to run setup"
+    source ../SupportScripts/venv/mypy_runner/bin/activate
+else
+    python3 -m venv ../SupportScripts/venv/mypy_runner
+    source ../SupportScripts/venv/mypy_runner/bin/activate
+    pip3 install --upgrade ../SpiNNUtils
+    pip3 install --upgrade ../SpiNNMachine
+    pip3 install --upgrade ../SpiNNMan
+    pip3 install --upgrade ../spalloc
+    pip3 install --upgrade ../PACMAN
+    pip3 install --upgrade ../SpiNNFrontEndCommon[test]
+    python3 -m pip install --upgrade mypy
+fi
+
+mypy --disallow-untyped-defs spinn_front_end_common unittests fec_integration_tests
 
