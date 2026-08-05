@@ -1611,7 +1611,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs MemoryMapOnHostReport if requested.
         """
-        with FecTimer("Memory report", TimerWork.REPORT) as timer:
+        with FecTimer("Memory report sumary", TimerWork.REPORT) as timer:
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
@@ -1623,7 +1623,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs MemoryMapOnHostChipReport if requested.
         """
-        with FecTimer("Memory report", TimerWork.REPORT) as timer:
+        with FecTimer("Memory report detailed", TimerWork.REPORT) as timer:
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
