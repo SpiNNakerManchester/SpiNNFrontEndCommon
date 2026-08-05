@@ -42,9 +42,9 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
-    RECORDING_CHANNEL,
-    ChipPowerMonitorMachineVertex,
-)
+        RECORDING_CHANNEL,
+        ChipPowerMonitorMachineVertex,
+    )
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

@@ -24,14 +24,15 @@ from spinnman.processes import AbstractMultiConnectionProcess
 
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
-from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages import (
-    ClearReinjectionQueueMessage,
-    GetReinjectionStatusMessage,
-    GetReinjectionStatusMessageResponse,
-    ResetCountersMessage,
-    SetReinjectionPacketTypesMessage,
-    SetRouterTimeoutMessage,
-)
+from spinn_front_end_common.utilities.utility_objs. \
+    extra_monitor_scp_messages import (
+        ClearReinjectionQueueMessage,
+        GetReinjectionStatusMessage,
+        GetReinjectionStatusMessageResponse,
+        ResetCountersMessage,
+        SetReinjectionPacketTypesMessage,
+        SetRouterTimeoutMessage,
+    )
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

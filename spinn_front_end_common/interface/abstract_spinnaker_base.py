@@ -93,9 +93,8 @@ from pacman.operations.router_compressors import (
     pair_compressor,
     range_compressor,
 )
-from pacman.operations.router_compressors.ordered_covering_router_compressor import (
-    ordered_covering_compressor,
-)
+from pacman.operations.router_compressors \
+    .ordered_covering_router_compressor import ordered_covering_compressor
 from pacman.operations.routing_info_allocator_algorithms.\
     zoned_routing_info_allocator import ZonedRoutingInfoAllocator
 from pacman.operations.routing_table_generators import (
@@ -115,9 +114,6 @@ from spinn_front_end_common.abstract_models import (
 )
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.interface.buffer_management.storage_objects import (
-    BufferDatabase,
-)
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     add_command_senders,
@@ -170,6 +166,8 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector,
 )
+from spinn_front_end_common.interface \
+    .buffer_management.storage_objects import BufferDatabase
 from spinn_front_end_common.utilities.database import DatabaseUpdater
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor

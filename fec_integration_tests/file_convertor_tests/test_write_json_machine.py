@@ -34,9 +34,8 @@ from spinnman.transceiver import create_transceiver_from_hostname
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.spinnaker import SpiNNaker
-from spinn_front_end_common.utilities.report_functions.write_json_machine import (
-    write_json_machine,
-)
+from spinn_front_end_common.utilities.report_functions \
+    .write_json_machine import write_json_machine
 
 
 class TestWriteJson(unittest.TestCase):

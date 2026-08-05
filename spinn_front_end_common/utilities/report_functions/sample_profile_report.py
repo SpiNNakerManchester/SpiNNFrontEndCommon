@@ -30,9 +30,9 @@ from spinn_front_end_common.interface.buffer_management\
     .storage_objects import BufferDatabase
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
-    RECORDING_CHANNEL,
-    ChipPowerMonitorMachineVertex,
-)
+        RECORDING_CHANNEL,
+        ChipPowerMonitorMachineVertex,
+    )
 
 
 def write_sample_profile_report() -> None:

@@ -49,10 +49,11 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveRegionsToHost,
     AbstractSendsBuffersFromHost,
 )
-from spinn_front_end_common.interface.buffer_management.storage_objects import (
-    BufferDatabase,
-    BuffersSentDeque,
-)
+from spinn_front_end_common.interface. \
+    buffer_management.storage_objects import (
+        BufferDatabase,
+        BuffersSentDeque,
+    )
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import (
     BufferedRegionNotPresent,

@@ -39,9 +39,9 @@ from spinn_front_end_common.interface.interface_functions.\
     insert_chip_power_monitors import sample_chip_power_monitor
 from spinn_front_end_common.interface.interface_functions.\
     insert_extra_monitor_vertices import (
-    sample_monitor_vertex,
-    sample_speedup_vertex,
-)
+        sample_monitor_vertex,
+        sample_speedup_vertex,
+    )
 from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
