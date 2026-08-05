@@ -35,7 +35,7 @@ ruff check ../SpiNNUtils/spinn_utilities ../SpiNNUtils/unittests \
     ../PACMAN/pacman ../PACMAN/pacman_test_objects ../PACMAN/unittests \
     ../spalloc/spalloc_client ../spalloc/tests \
      spinn_front_end_common unittests fec_integration_tests \
-    --target-version py310 --config ../SupportScripts/actions/ruff/ruff.toml --fix
+    --target-version py310 --config ../SupportScripts/actions/ruff/ruff.toml
 echo using ruff_up.toml
 ruff check ../SpiNNUtils/spinn_utilities ../SpiNNUtils/unittests \
     ../SpiNNMachine/spinn_machine ../SpiNNMachine/unittests \
