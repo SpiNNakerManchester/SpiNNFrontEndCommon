@@ -20,10 +20,9 @@ import unittest
 import httpretty  # type: ignore[import]
 from testfixtures import LogCapture  # type: ignore[import]
 
+from spinn_front_end_common.interface. \
+    interface_functions.hbp_allocator import _HBPJobController
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.interface.interface_functions.hbp_allocator import (
-    _HBPJobController,
-)
 
 
 class TestHBPAllocator(unittest.TestCase):

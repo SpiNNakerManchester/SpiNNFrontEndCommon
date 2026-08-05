@@ -44,16 +44,16 @@ from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
 
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface. \
+    buffer_management.storage_objects import (
+    BufferDatabase,
+    BuffersSentDeque,
+)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost,
     AbstractReceiveRegionsToHost,
     AbstractSendsBuffersFromHost,
 )
-from spinn_front_end_common.interface. \
-    buffer_management.storage_objects import (
-        BufferDatabase,
-        BuffersSentDeque,
-    )
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import (
     BufferedRegionNotPresent,

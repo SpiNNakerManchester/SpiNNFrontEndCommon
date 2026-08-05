@@ -31,9 +31,8 @@ from spinnman.model.enums.executable_type import ExecutableType
 
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.buffer_management.storage_objects import (
-    BufferDatabase,
-)
+from spinn_front_end_common.interface. \
+    buffer_management.storage_objects import BufferDatabase
 from spinn_front_end_common.interface.provenance import (
     GlobalProvenance,
     ProvenanceReader,

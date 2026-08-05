@@ -38,18 +38,18 @@ from pacman.model.graphs import AbstractVirtual
 from pacman.model.placements import Placement
 
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface. \
+    buffer_management.storage_objects import BufferDatabase
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost,
     AbstractReceiveRegionsToHost,
 )
-from spinn_front_end_common.interface. \
-    buffer_management.storage_objects import BufferDatabase
+from spinn_front_end_common.utilities. \
+    report_functions.write_json_machine import write_json_machine
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException,
     SpinnFrontEndException,
 )
-from spinn_front_end_common.utilities. \
-    report_functions.write_json_machine import write_json_machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

@@ -152,9 +152,9 @@ from spinn_front_end_common.interface.interface_functions import (
 )
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
-    ordered_covering_compression,
-    pair_compression,
-)
+        ordered_covering_compression,
+        pair_compression,
+    )
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.provenance import (
     FecTimer,
