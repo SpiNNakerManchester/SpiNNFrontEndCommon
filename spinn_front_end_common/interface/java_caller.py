@@ -12,35 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
 import datetime
-from io import BufferedReader
 import json
 import logging
 import os
-import subprocess
 import selectors
+import subprocess
 import sys
+from collections import defaultdict
+from io import BufferedReader
 from typing import Dict, Iterable, List, Optional, cast
 
 from spinn_utilities.config_holder import (
-    get_config_str, get_config_str_or_none, get_report_path)
+    get_config_str,
+    get_config_str_or_none,
+    get_report_path,
+)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.json import JsonArray, JsonObject
+
 from spinn_machine import Chip
 from spinn_machine.tags import IPTag
+
 from pacman.model.graphs import AbstractVirtual
 from pacman.model.placements import Placement
 
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.report_functions.write_json_machine \
-    import write_json_machine
-from spinn_front_end_common.utilities.exceptions import (
-    ConfigurationException, SpinnFrontEndException)
+from spinn_front_end_common.interface. \
+    buffer_management.storage_objects import BufferDatabase
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost, AbstractReceiveRegionsToHost)
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferDatabase
+    AbstractReceiveBuffersToHost,
+    AbstractReceiveRegionsToHost,
+)
+from spinn_front_end_common.utilities. \
+    report_functions.write_json_machine import write_json_machine
+from spinn_front_end_common.utilities.exceptions import (
+    ConfigurationException,
+    SpinnFrontEndException,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

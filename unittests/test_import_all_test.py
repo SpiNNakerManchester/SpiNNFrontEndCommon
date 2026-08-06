@@ -14,7 +14,9 @@
 
 import os
 import unittest
+
 import spinn_utilities.package_loader as package_loader
+
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 

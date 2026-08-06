@@ -13,8 +13,10 @@
 # limitations under the License.
 
 from typing import Iterable
+
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_front_end_common.data import FecDataView
 
 

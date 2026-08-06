@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import struct
 import logging
+import struct
 from time import sleep
-from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_machine import CoreSubsets
+
 from spinnman.model.enums import CPUState
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 

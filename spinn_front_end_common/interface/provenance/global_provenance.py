@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime, timedelta
 import logging
 import os
 import re
+from datetime import datetime, timedelta
 from sqlite3 import Row
 from typing import Iterable, List, Optional, Union
 
@@ -23,10 +23,11 @@ from spinn_utilities.config_holder import get_timestamp_path
 from spinn_utilities.log import FormatAdapter
 
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.interface.provenance.timer_work import TimerWork
+from spinn_front_end_common.utilities.constants import (
+    MICRO_TO_MILLISECOND_CONVERSION,
+)
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 from .timer_category import TimerCategory
 

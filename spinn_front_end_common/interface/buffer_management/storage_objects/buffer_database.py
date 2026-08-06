@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlite3 import Binary, IntegrityError
 import time
+from sqlite3 import Binary, IntegrityError
 from typing import Optional, Tuple
+
 from spinn_utilities.config_holder import get_config_bool
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 

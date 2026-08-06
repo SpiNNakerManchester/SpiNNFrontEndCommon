@@ -12,10 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations  # Type checking trickery
+
 import logging
 import os
 from typing import (
-    Dict, Iterable, Iterator, Optional, Set, Tuple, Union, List, TYPE_CHECKING)
+    TYPE_CHECKING,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+)
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
@@ -23,10 +33,11 @@ from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
 
 from spinn_machine import Chip, CoreSubsets, RoutingEntry
+
 from spinnman.data import SpiNNManDataView
+from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
-from spinnman.messages.scp.enums.signal import Signal
 
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
@@ -34,18 +45,22 @@ from pacman.model.routing_tables import MulticastRoutingTables
 
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
-    from spinn_front_end_common.interface.buffer_management import (
-        BufferManager)
-    from spinn_front_end_common.interface.java_caller import JavaCaller
-    from spinn_front_end_common.utilities.utility_objs import (
-        LivePacketGatherParameters)
-    from spinn_front_end_common.utility_models import (
-        ExtraMonitorSupportMachineVertex,
-        DataSpeedUpPacketGatherMachineVertex)
-    from spinn_front_end_common.utilities.notification_protocol import (
-        NotificationProtocol)
-    from spinn_front_end_common.utility_models import LivePacketGather
     from spinn_front_end_common.abstract_models import LiveOutputDevice
+    from spinn_front_end_common.interface.buffer_management import (
+        BufferManager,
+    )
+    from spinn_front_end_common.interface.java_caller import JavaCaller
+    from spinn_front_end_common.utilities.notification_protocol import (
+        NotificationProtocol,
+    )
+    from spinn_front_end_common.utilities.utility_objs import (
+        LivePacketGatherParameters,
+    )
+    from spinn_front_end_common.utility_models import (
+        DataSpeedUpPacketGatherMachineVertex,
+        ExtraMonitorSupportMachineVertex,
+        LivePacketGather,
+    )
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _EMPTY_CORE_SUBSETS = CoreSubsets()
@@ -715,7 +730,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             # pylint: disable=import-outside-toplevel
             # UGLY import due to circular reference
             from spinn_front_end_common.utility_models import (
-                LivePacketGather as LPG)
+                LivePacketGather as LPG,
+            )
             lpg_vertex = LPG(
                 live_packet_gatherer_params, live_packet_gatherer_params.label)
             cls.__fec_data._live_packet_recorder_params[

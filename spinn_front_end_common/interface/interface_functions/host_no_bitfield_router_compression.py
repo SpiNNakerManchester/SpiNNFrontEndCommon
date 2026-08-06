@@ -15,21 +15,28 @@
 import logging
 import struct
 from typing import List
+
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
+
 from spinn_machine import CoreSubsets, Router
+
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState, ExecutableType, UserRegister
+
 from pacman.model.routing_tables import AbstractMulticastRoutingTable
+
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.utilities.system_control_logic import (
-    run_system_application)
-from spinn_front_end_common.utilities.helpful_functions import (
-    get_defaultable_source_id)
 from spinn_front_end_common.utilities.constants import COMPRESSOR_SDRAM_TAG
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.helpful_functions import (
+    get_defaultable_source_id,
+)
+from spinn_front_end_common.utilities.system_control_logic import (
+    run_system_application,
+)
 
 _FOUR_WORDS = struct.Struct("<IIII")
 _THREE_WORDS = struct.Struct("<III")

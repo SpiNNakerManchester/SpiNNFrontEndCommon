@@ -13,20 +13,20 @@
 # limitations under the License.
 
 from .board_chip_report import board_chip_report
+from .drift_report import drift_report
 from .energy_report import EnergyReport
 from .fixed_route_from_machine_report import fixed_route_from_machine_report
 from .memory_map_on_host_chip_report import memory_map_on_host_chip_report
 from .memory_map_on_host_report import memory_map_on_host_report
 from .network_specification import network_specification
-from .routing_compression_report import (
-    generate_routing_compression_checker_report)
 from .real_tags_report import tags_from_machine_report
+from .routing_compression_report import (
+    generate_routing_compression_checker_report,
+)
+from .sample_profile_report import write_sample_profile_report
 from .write_json_machine import write_json_machine
 from .write_json_placements import write_json_placements
 from .write_json_routing_tables import write_json_routing_tables
-from .drift_report import drift_report
-from .sample_profile_report import write_sample_profile_report
-
 
 __all__ = (
     "board_chip_report",

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from enum import Enum
+
 import numpy
 
 # conversion from words to bytes

@@ -12,12 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections.abc import Sized
 import logging
 import os
 import re
+from collections.abc import Sized
 from typing import (
-    Iterable, List, Optional, Pattern, Sequence, Set, Tuple, TypeVar, Union)
+    Iterable,
+    List,
+    Optional,
+    Pattern,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from spinn_utilities.config_holder import get_config_str_or_none
 from spinn_utilities.log import FormatAdapter
@@ -32,8 +41,8 @@ from spinnman.model.io_buffer import IOBuffer
 
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_string_into_chip_and_core_subset)
-
+    convert_string_into_chip_and_core_subset,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")

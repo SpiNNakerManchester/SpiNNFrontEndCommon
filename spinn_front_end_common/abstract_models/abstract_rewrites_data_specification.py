@@ -12,12 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
+
 from pacman.model.placements import Placement
+
 from .abstract_generates_data_specification import (
-    AbstractGeneratesDataSpecification)
+    AbstractGeneratesDataSpecification,
+)
+
 if TYPE_CHECKING:
     from spinn_front_end_common.interface.ds import DataSpecificationReloader
 

@@ -12,35 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from enum import IntEnum
+
 import struct
-from typing import List, Optional, Sequence, Tuple, TYPE_CHECKING
+from enum import IntEnum
+from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
 
 from spinn_utilities.overrides import overrides
+
 from spinn_machine.tags import IPTag
 
 from spinnman.model.enums import ExecutableType
 
 from pacman.model.graphs.common.mdslice import MDSlice
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import AbstractSDRAM, ConstantSDRAM, IPtagResource
 from pacman.model.placements import Placement
+from pacman.model.resources import AbstractSDRAM, ConstantSDRAM, IPtagResource
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import (
-    ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
-from spinn_front_end_common.interface.simulation.simulation_utilities import (
-    get_simulation_header_array)
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
-from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+    AbstractGeneratesDataSpecification,
+    AbstractHasAssociatedBinary,
+)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+from spinn_front_end_common.interface.provenance import (
+    ProvenanceWriter,
+    ProvidesProvenanceDataFromMachineImpl,
+)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array,
+)
+from spinn_front_end_common.utilities.constants import (
+    BYTES_PER_WORD,
+    SIMULATION_N_BYTES,
+    SYSTEM_BYTES_REQUIREMENT,
+)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 if TYPE_CHECKING:
     from spinn_front_end_common.utilities.utility_objs import (
-        LivePacketGatherParameters)
+        LivePacketGatherParameters,
+    )
+
     from .live_packet_gather import LivePacketGather
 
 _ONE_SHORT = struct.Struct("<H")

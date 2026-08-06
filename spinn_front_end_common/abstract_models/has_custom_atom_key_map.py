@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Iterable, Tuple
+
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
+
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine.machine_vertex import MachineVertex
 from pacman.model.routing_info.routing_info import RoutingInfo
+
 # mypy: disable-error-code=empty-body
 
 

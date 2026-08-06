@@ -12,19 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
 import logging
-from typing import Dict, List, Tuple, Set, Optional, cast
+from collections import defaultdict
+from typing import Dict, List, Optional, Set, Tuple, cast
 
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.typing.coords import XY
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.typing.coords import XY
 
 from spinn_machine import Chip, MulticastRoutingEntry, RoutingEntry
 
-from pacman.exceptions import (PacmanRoutingException)
+from pacman.exceptions import PacmanRoutingException
 from pacman.model.routing_tables import (
-    MulticastRoutingTables, UnCompressedMulticastRoutingTable)
+    MulticastRoutingTables,
+    UnCompressedMulticastRoutingTable,
+)
 
 from spinn_front_end_common.data import FecDataView
 

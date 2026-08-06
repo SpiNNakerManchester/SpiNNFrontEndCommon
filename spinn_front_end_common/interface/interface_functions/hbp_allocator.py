@@ -22,6 +22,7 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.json import JsonArray, JsonObject
 
 from spinnman.spalloc import MachineAllocationController
+
 from pacman.exceptions import PacmanConfigurationException
 
 from spinn_front_end_common.data import FecDataView

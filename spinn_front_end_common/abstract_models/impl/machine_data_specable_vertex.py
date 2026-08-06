@@ -13,14 +13,19 @@
 # limitations under the License.
 
 from typing import Iterable, Optional
+
 from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
+
 from spinn_machine.tags import IPTag, ReverseIPTag
+
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification)
-from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+    AbstractGeneratesDataSpecification,
+)
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 
 
 class MachineDataSpecableVertex(

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import unittest
+
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.profiling.profile_data import ProfileData
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct

@@ -12,45 +12,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from enum import Enum, IntEnum
+
 import logging
 import struct
-from typing import Dict, Iterable, Optional, ContextManager, Type
+from enum import Enum, IntEnum
 from types import TracebackType
+from typing import ContextManager, Dict, Iterable, Optional, Type
 
 from typing_extensions import Literal
 
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
-from spinn_utilities.config_holder import get_config_bool
 
 from spinn_machine import Chip, CoreSubsets, MulticastRoutingEntry, Router
 
 from spinnman.model.enums import ExecutableType, UserRegister
 
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import AbstractSDRAM, ConstantSDRAM
 from pacman.model.placements import Placement
+from pacman.model.resources import AbstractSDRAM, ConstantSDRAM
 
 from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
+    AbstractGeneratesDataSpecification,
+    AbstractHasAssociatedBinary,
+)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.scp import (
-    ReinjectorControlProcess, LoadMCRoutesProcess)
-from spinn_front_end_common.utilities.constants import (
-    SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
-    BYTES_PER_WORD, BYTES_PER_KB)
-from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, get_region_base_address_offset)
-from spinn_front_end_common.utilities.emergency_recovery import (
-    emergency_recover_state_from_failure)
-from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
-from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+from spinn_front_end_common.interface.provenance import (
+    AbstractProvidesProvenanceDataFromMachine,
+    ProvenanceWriter,
+)
+from spinn_front_end_common.utilities.constants import (
+    BYTES_PER_KB,
+    BYTES_PER_WORD,
+    DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
+    SARK_PER_MALLOC_SDRAM_USAGE,
+)
+from spinn_front_end_common.utilities.emergency_recovery import (
+    emergency_recover_state_from_failure,
+)
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_vertices_to_core_subset,
+    get_region_base_address_offset,
+)
+from spinn_front_end_common.utilities.scp import (
+    LoadMCRoutesProcess,
+    ReinjectorControlProcess,
+)
+from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 
 from .data_speed_up_packet_gatherer_machine_vertex import (
-    DataSpeedUpPacketGatherMachineVertex as Gatherer)
+    DataSpeedUpPacketGatherMachineVertex as Gatherer,
+)
 
 log = FormatAdapter(logging.getLogger(__name__))
 

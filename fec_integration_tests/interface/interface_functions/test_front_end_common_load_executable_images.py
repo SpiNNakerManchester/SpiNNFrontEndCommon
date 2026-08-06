@@ -12,18 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import BinaryIO, Dict, Iterable, Optional, Tuple, Union
 import unittest
 from collections import defaultdict
+from typing import BinaryIO, Dict, Iterable, Optional, Tuple, Union
+
 from spinn_utilities.overrides import overrides
+
 from spinn_machine import CoreSubsets
-from spinnman.transceiver.mockable_transceiver import MockableTransceiver
+
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState, ExecutableType
+from spinnman.transceiver.mockable_transceiver import MockableTransceiver
+
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    load_app_images)
+    load_app_images,
+)
 
 SIM = ExecutableType.USES_SIMULATION_INTERFACE
 

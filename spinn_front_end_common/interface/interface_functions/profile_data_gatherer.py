@@ -13,12 +13,16 @@
 # limitations under the License.
 
 import os
+
 from spinn_utilities.progress_bar import ProgressBar
+
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.profiling import (
-    AbstractHasProfileData, ProfileData)
-
+    AbstractHasProfileData,
+    ProfileData,
+)
 
 _FMT_A = "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
 _FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"

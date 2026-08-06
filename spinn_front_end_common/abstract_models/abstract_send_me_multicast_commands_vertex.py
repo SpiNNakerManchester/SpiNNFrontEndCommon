@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from typing import Iterable, List, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Iterable, List
+
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+
 if TYPE_CHECKING:
     from spinn_front_end_common.utility_models import MultiCastCommand
 # mypy: disable-error-code=empty-body

@@ -15,11 +15,12 @@ from typing import Mapping
 
 from pacman.model.placements import Placement
 
-from spinn_front_end_common.utilities.helpful_functions import (
-    locate_memory_region_for_placement)
-from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement,
+)
 
 from .profile_data import ProfileData
 

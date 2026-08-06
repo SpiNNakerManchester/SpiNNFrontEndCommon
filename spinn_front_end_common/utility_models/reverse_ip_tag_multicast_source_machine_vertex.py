@@ -14,13 +14,21 @@
 
 from __future__ import annotations
 
-import sys
-from enum import IntEnum
 import logging
 import math
 import struct
+import sys
+from enum import IntEnum
 from typing import (
-    Collection, Dict, Final, List, Optional, Sequence, Union, TYPE_CHECKING)
+    TYPE_CHECKING,
+    Collection,
+    Dict,
+    Final,
+    List,
+    Optional,
+    Sequence,
+    Union,
+)
 
 import numpy
 from numpy.typing import NDArray
@@ -37,40 +45,56 @@ from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
 from pacman.model.resources import (
-    ReverseIPtagResource, AbstractSDRAM, VariableSDRAM)
+    AbstractSDRAM,
+    ReverseIPtagResource,
+    VariableSDRAM,
+)
 from pacman.utilities.utility_calls import get_keys
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.helpful_functions import (
-    locate_memory_region_for_placement)
-from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
-from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .buffered_sending_region import (
-        get_n_bytes)
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import (
-        BufferedSendingRegion)
-from spinn_front_end_common.interface.ds import DataSpecificationGenerator
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-    AbstractSupportsDatabaseInjection)
-from spinn_front_end_common.interface.simulation.simulation_utilities import (
-    get_simulation_header_array)
+    AbstractGeneratesDataSpecification,
+    AbstractHasAssociatedBinary,
+    AbstractSupportsDatabaseInjection,
+)
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface. \
+    buffer_management.buffer_models import (
+        AbstractReceiveBuffersToHost,
+        AbstractSendsBuffersFromHost,
+    )
+from spinn_front_end_common.interface. \
+    buffer_management.storage_objects import BufferedSendingRegion
+from spinn_front_end_common.interface.buffer_management. \
+    recording_utilities import (
+        get_recording_data_constant_size,
+        get_recording_header_array,
+        get_recording_header_size,
+    )
+from spinn_front_end_common.interface.buffer_management.storage_objects\
+    .buffered_sending_region import get_n_bytes
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from spinn_front_end_common.interface.provenance import (
-    ProvidesProvenanceDataFromMachineImpl)
-from spinn_front_end_common.interface.buffer_management.recording_utilities \
-    import (get_recording_header_array, get_recording_header_size,
-            get_recording_data_constant_size)
+    ProvenanceWriter,
+    ProvidesProvenanceDataFromMachineImpl,
+)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array,
+)
+from spinn_front_end_common.utilities.constants import (
+    BYTES_PER_WORD,
+    SIMULATION_N_BYTES,
+    SYSTEM_BYTES_REQUIREMENT,
+)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement,
+)
 
 from .eieio_parameters import EIEIOParameters
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
+
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
     _SBT: Final['TypeAlias'] = Union[NDArray, List[NDArray]]
     _SendBufferTimes: TypeAlias = Optional[_SBT]

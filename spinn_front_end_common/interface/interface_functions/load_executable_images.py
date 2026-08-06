@@ -11,20 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Callable
 import logging
-from spinn_utilities.progress_bar import ProgressBar
+from typing import Callable
+
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
+
+from spinnman.exceptions import (
+    SpiNNManCoresNotInStateException,
+    SpinnmanException,
+)
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState, ExecutableType
-from spinnman.exceptions import (
-    SpiNNManCoresNotInStateException, SpinnmanException)
+
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.helpful_functions import (
-    flood_fill_binary_to_spinnaker)
 from spinn_front_end_common.utilities.emergency_recovery import (
-    emergency_recover_states_from_failure)
+    emergency_recover_states_from_failure,
+)
+from spinn_front_end_common.utilities.helpful_functions import (
+    flood_fill_binary_to_spinnaker,
+)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 # 10 seconds is lots of time to wait for the application to become ready!
