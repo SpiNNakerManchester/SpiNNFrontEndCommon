@@ -11,15 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Dict
+from typing import Dict, Tuple
+
 from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_machine import Chip
+
 from pacman.model.placements import Placement, Placements
+
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
 from spinn_front_end_common.utilities.utility_calls import (
-    pick_core_for_system_placement)
+    pick_core_for_system_placement,
+)
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex,
+    ExtraMonitorSupportMachineVertex,
+)
 
 
 def sample_speedup_vertex() -> DataSpeedUpPacketGatherMachineVertex:

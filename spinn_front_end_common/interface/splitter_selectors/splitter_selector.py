@@ -14,12 +14,17 @@
 import logging
 
 from spinn_utilities.log import FormatAdapter
+
 from pacman.data import PacmanDataView
-from pacman.model.partitioner_splitters import (
-    SplitterOneAppOneMachine, SplitterFixedLegacy)
-from pacman.model.graphs.application.abstract import (
-    AbstractOneAppOneMachineVertex)
 from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.graphs.application.abstract import (
+    AbstractOneAppOneMachineVertex,
+)
+from pacman.model.partitioner_splitters import (
+    SplitterFixedLegacy,
+    SplitterOneAppOneMachine,
+)
+
 from spinn_front_end_common.utility_models import ReverseIpTagMultiCastSource
 
 logger = FormatAdapter(logging.getLogger(__name__))

@@ -13,10 +13,19 @@
 # limitations under the License.
 
 from __future__ import annotations
+
 import logging
 import os
 from typing import (
-    cast, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union)
+    TYPE_CHECKING,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+)
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
@@ -24,21 +33,29 @@ from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
 
 from pacman.model.graphs import AbstractVertex
-from pacman.model.graphs.machine import MachineVertex
-from pacman.model.graphs.application.abstract import (
-    AbstractOneAppOneMachineVertex)
-from pacman.utilities.utility_calls import get_keys
 from pacman.model.graphs.abstract_edge_partition import AbstractEdgePartition
+from pacman.model.graphs.application.abstract import (
+    AbstractOneAppOneMachineVertex,
+)
+from pacman.model.graphs.machine import MachineVertex
+from pacman.utilities.utility_calls import get_keys
 
+from spinn_front_end_common.abstract_models import (
+    AbstractSupportsDatabaseInjection,
+    HasCustomAtomKeyMap,
+    LiveOutputDevice,
+)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from spinn_front_end_common.abstract_models import (
-    AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap, LiveOutputDevice)
 from spinn_front_end_common.utility_models import (
-    LivePacketGather, LivePacketGatherMachineVertex)
+    LivePacketGather,
+    LivePacketGatherMachineVertex,
+)
+
 if TYPE_CHECKING:
     from spinn_front_end_common.utility_models.live_packet_gather import (
-        _LPGSplitter)
+        _LPGSplitter,
+    )
 
 logger = FormatAdapter(logging.getLogger(__name__))
 INIT_SQL = "db.sql"

@@ -13,21 +13,26 @@
 # limitations under the License.
 
 import logging
-from time import sleep
 import struct
 from threading import Condition
+from time import sleep
 from typing import Optional
+
 from spinn_utilities.log import FormatAdapter
-from spinnman.messages.scp.enums import Signal
-from spinnman.model.enums import ExecutableType, CPUState
+
 from spinnman.exceptions import SpinnmanException
+from spinnman.messages.scp.enums import Signal
+from spinnman.model.enums import CPUState, ExecutableType
+
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.exceptions import (
-    ConfigurationException)
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
+    MICRO_TO_MILLISECOND_CONVERSION,
+)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.scp import (
-    GetCurrentTimeProcess, SendPauseProcess)
+    GetCurrentTimeProcess,
+    SendPauseProcess,
+)
 
 SAFETY_FINISH_TIME = 0.1
 

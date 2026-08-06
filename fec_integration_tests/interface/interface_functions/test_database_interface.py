@@ -12,40 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable, List,  Sequence
+from typing import Iterable, List, Sequence
 
 from parameterized import parameterized
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
-from spinn_machine.version import ALL_BOARD_TYPES
 from spinn_machine.tags.iptag import IPTag
+from spinn_machine.version import ALL_BOARD_TYPES
 
-from pacman.model.graphs.application import ApplicationVertex, ApplicationEdge
-from pacman.model.graphs.machine import MachineVertex, SimpleMachineVertex
-from pacman.model.resources import ConstantSDRAM
-from pacman.model.placements import Placements, Placement
-from pacman.model.routing_info import (
-    RoutingInfo,
-    GlobalAppVertexRoutingInfo, GlobalMachineVertexRoutingInfo, BaseKeyAndMask)
-from pacman.model.tags.tags import Tags
-from pacman.model.partitioner_splitters import AbstractSplitterCommon
+from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.graphs.common.slice import Slice
+from pacman.model.graphs.machine import MachineVertex, SimpleMachineVertex
+from pacman.model.partitioner_splitters import AbstractSplitterCommon
+from pacman.model.placements import Placement, Placements
+from pacman.model.resources import ConstantSDRAM
+from pacman.model.routing_info import (
+    BaseKeyAndMask,
+    GlobalAppVertexRoutingInfo,
+    GlobalMachineVertexRoutingInfo,
+    RoutingInfo,
+)
+from pacman.model.tags.tags import Tags
 from pacman.utilities.utility_objs import ChipCounter
 
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
-from spinn_front_end_common.interface.interface_functions import (
-    database_interface)
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    _LPGSplitter
-from spinn_front_end_common.utilities.utility_objs import (
-    LivePacketGatherParameters)
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.utility_models import LivePacketGather
+from spinn_front_end_common.interface.interface_functions import (
+    database_interface,
+)
 from spinn_front_end_common.utilities.database import (
-    DatabaseReader, DatabaseUpdater)
+    DatabaseReader,
+    DatabaseUpdater,
+)
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters,
+)
+from spinn_front_end_common.utility_models import LivePacketGather
+from spinn_front_end_common.utility_models.live_packet_gather import (
+    _LPGSplitter,
+)
 
 
 class MockSplitter(AbstractSplitterCommon):

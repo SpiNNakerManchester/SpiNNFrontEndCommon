@@ -12,14 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from collections import deque
 from threading import Lock
 from typing import Deque, Iterable
-import logging
+
 from spinn_utilities.log import FormatAdapter
-from spinnman.messages.eieio.command_messages import (
-    EventStopRequest, HostSendSequencedData)
+
 from spinnman.messages.eieio import AbstractEIEIOMessage
+from spinnman.messages.eieio.command_messages import (
+    EventStopRequest,
+    HostSendSequencedData,
+)
+
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = FormatAdapter(logging.getLogger(__name__))

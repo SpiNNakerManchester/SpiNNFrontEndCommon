@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from spinn_utilities.progress_bar import ProgressBar
+
 from spinnman.model.enums import CPUState, ExecutableType
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 

@@ -13,16 +13,21 @@
 # limitations under the License.
 
 from .abstract_generates_data_specification import (
-    AbstractGeneratesDataSpecification)
+    AbstractGeneratesDataSpecification,
+)
 from .abstract_has_associated_binary import AbstractHasAssociatedBinary
 from .abstract_rewrites_data_specification import (
-    AbstractRewritesDataSpecification)
+    AbstractRewritesDataSpecification,
+)
 from .abstract_send_me_multicast_commands_vertex import (
-    AbstractSendMeMulticastCommandsVertex)
-from .abstract_vertex_with_dependent_vertices import (
-    AbstractVertexWithEdgeToDependentVertices)
+    AbstractSendMeMulticastCommandsVertex,
+)
 from .abstract_supports_database_injection import (
-    AbstractSupportsDatabaseInjection)
+    AbstractSupportsDatabaseInjection,
+)
+from .abstract_vertex_with_dependent_vertices import (
+    AbstractVertexWithEdgeToDependentVertices,
+)
 from .has_custom_atom_key_map import HasCustomAtomKeyMap
 from .live_output_device import LiveOutputDevice
 

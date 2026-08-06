@@ -12,22 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
 import logging
+from collections import defaultdict
 from typing import Dict, List, Tuple
 
 from spinn_utilities.config_holder import get_report_path
-from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
+from spinn_utilities.progress_bar import ProgressBar
+
 from pacman.model.placements import Placement
+from pacman.model.resources import ConstantSDRAM, MultiRegionSDRAM
+
 from spinn_front_end_common.abstract_models import (
-    AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
+    AbstractGeneratesDataSpecification,
+    AbstractRewritesDataSpecification,
+)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.exceptions import (
-    ConfigurationException, DataSpecException)
 from spinn_front_end_common.interface.ds import (
-    DataSpecificationGenerator, DsSqlliteDatabase)
+    DataSpecificationGenerator,
+    DsSqlliteDatabase,
+)
+from spinn_front_end_common.utilities.exceptions import (
+    ConfigurationException,
+    DataSpecException,
+)
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
 
 logger = FormatAdapter(logging.getLogger(__name__))

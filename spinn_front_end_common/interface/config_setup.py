@@ -16,15 +16,21 @@ import os
 from typing import Set
 
 from spinn_utilities.config_holder import (
-    add_default_cfg, add_template, clear_cfg_files, get_config_bool)
+    add_default_cfg,
+    add_template,
+    clear_cfg_files,
+    get_config_bool,
+)
 from spinn_utilities.configs.camel_case_config_parser import optionxform
 
 from spinnman.config_setup import add_spinnman_cfg, man_cfg_paths_skipped
 
 from pacman.config_setup import add_pacman_cfg, packman_cfg_paths_skipped
+
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
-from spinn_front_end_common.interface.interface_functions \
-    import load_using_advanced_monitors
+from spinn_front_end_common.interface.interface_functions import (
+    load_using_advanced_monitors,
+)
 
 BASE_CONFIG_FILE = "spinnaker.cfg"
 TEMPLATE_FILE = "spinnaker.cfg.template"

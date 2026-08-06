@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from spinn_utilities.exceptions import NotSetupException, DataNotYetAvialable
+from spinn_utilities.config_holder import clear_cfg_files
+from spinn_utilities.exceptions import DataNotYetAvialable, NotSetupException
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import add_spinnaker_cfg
-from spinn_utilities.config_holder import clear_cfg_files
 
 # This can not be a unittest as the unitest suite would use the same
 # python console and therefore the same singleton multiple times

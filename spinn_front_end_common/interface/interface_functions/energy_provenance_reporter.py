@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 

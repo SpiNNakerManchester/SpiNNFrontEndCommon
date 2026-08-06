@@ -13,10 +13,14 @@
 # limitations under the License.
 
 from typing import cast
+
 from pacman.model.placements import Placements
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models.live_packet_gather import (
-    LivePacketGather, _LPGSplitter)
+    LivePacketGather,
+    _LPGSplitter,
+)
 
 
 def split_lpg_vertices(system_placements: Placements) -> None:

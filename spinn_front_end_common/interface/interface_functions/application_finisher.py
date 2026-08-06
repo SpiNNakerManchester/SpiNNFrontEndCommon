@@ -12,16 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import struct
 import time
-import logging
-from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
+
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState, ExecutableType
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
-    ExecutableFailedToStopException)
+    ExecutableFailedToStopException,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

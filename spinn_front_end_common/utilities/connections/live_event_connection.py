@@ -12,36 +12,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from collections import defaultdict
+
 import logging
 import struct
-from threading import Thread, Condition
+from collections import defaultdict
+from threading import Condition, Thread
 from time import sleep
-from typing import (
-    Callable, Dict, Iterable, List, Optional, Set, Tuple, Union)
-
+from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once
 
-from spinnman.messages.eieio.data_messages import (
-    EIEIODataMessage, KeyPayloadDataElement, KeyDataElement)
-from spinnman.messages.eieio import EIEIOType, AbstractEIEIOMessage
 from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import (
-    EIEIOConnection, UDPConnection)
-from spinnman.messages.sdp.sdp_flag import SDPFlag
+    EIEIOConnection,
+    UDPConnection,
+)
 from spinnman.constants import SCP_SCAMP_PORT
-from spinnman.messages.sdp.sdp_message import SDPMessage
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.utilities.utility_functions import reprogram_tag_to_listener
 from spinnman.messages.eieio import (
-    read_eieio_command_message, read_eieio_data_message)
+    AbstractEIEIOMessage,
+    EIEIOType,
+    read_eieio_command_message,
+    read_eieio_data_message,
+)
+from spinnman.messages.eieio.data_messages import (
+    EIEIODataMessage,
+    KeyDataElement,
+    KeyPayloadDataElement,
+)
+from spinnman.messages.sdp.sdp_flag import SDPFlag
+from spinnman.messages.sdp.sdp_header import SDPHeader
+from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.spalloc import SpallocEIEIOListener
+from spinnman.utilities.utility_functions import reprogram_tag_to_listener
 
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import (
-    DatabaseConnection, DatabaseReader)
+    DatabaseConnection,
+    DatabaseReader,
+)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 _InitCallback = Callable[[str, int, float, float], None]

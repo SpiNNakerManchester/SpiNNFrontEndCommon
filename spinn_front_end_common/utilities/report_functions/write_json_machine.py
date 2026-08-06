@@ -15,10 +15,11 @@
 import json
 import os
 
-from spinn_utilities.config_holder import (
-    get_config_bool, get_report_path)
-from spinn_utilities.progress_bar import ProgressBar, DummyProgressBar
+from spinn_utilities.config_holder import get_config_bool, get_report_path
+from spinn_utilities.progress_bar import DummyProgressBar, ProgressBar
+
 from spinn_machine.json_machine import to_json
+
 from pacman.utilities import file_format_schemas
 
 #: The name of the schema that we validate against.

@@ -25,7 +25,9 @@ from pacman.model.placements import Placement, Placements
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.report_functions import (
-    write_json_machine, write_json_placements)
+    write_json_machine,
+    write_json_placements,
+)
 
 
 class TestJson(unittest.TestCase):

@@ -12,36 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import logging
+import math
 from enum import IntEnum
 from typing import List
 
 from spinn_utilities.config_holder import (
-    get_config_int, get_config_bool, get_config_str)
+    get_config_bool,
+    get_config_int,
+    get_config_str,
+)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 
 from spinnman.model.enums import ExecutableType
 
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import AbstractSDRAM, VariableSDRAM
 from pacman.model.placements import Placement
+from pacman.model.resources import AbstractSDRAM, VariableSDRAM
 
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+    AbstractGeneratesDataSpecification,
+    AbstractHasAssociatedBinary,
+)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management import (
-    recording_utilities)
+    recording_utilities,
+)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost)
+    AbstractReceiveBuffersToHost,
+)
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
-from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
-from spinn_front_end_common.utilities.helpful_functions import (
-    locate_memory_region_for_placement)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
-    get_simulation_header_array)
+    get_simulation_header_array,
+)
+from spinn_front_end_common.utilities.constants import (
+    BYTES_PER_WORD,
+    SIMULATION_N_BYTES,
+    SYSTEM_BYTES_REQUIREMENT,
+)
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"

@@ -13,19 +13,23 @@
 # limitations under the License.
 
 import os
-from typing import Iterable, List, Optional, Tuple
 import unittest
+from typing import Iterable, List, Optional, Tuple
+
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
-from spinn_machine import CoreSubsets, CoreSubset
-from spinnman.model import IOBuffer
+
+from spinn_machine import CoreSubset, CoreSubsets
+
+from spinnman.model import ExecutableTargets, IOBuffer
+from spinnman.transceiver.mockable_transceiver import MockableTransceiver
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    chip_io_buf_extractor)
-from spinnman.model import ExecutableTargets
-from spinnman.transceiver.mockable_transceiver import MockableTransceiver
+    chip_io_buf_extractor,
+)
 
 
 class _PretendTransceiver(MockableTransceiver):

@@ -14,7 +14,8 @@
 
 from .simulation_utilities import (
     get_simulation_header_array,
-    get_simulation_header_array_no_timestep)
+    get_simulation_header_array_no_timestep,
+)
 
 __all__ = ("get_simulation_header_array",
            "get_simulation_header_array_no_timestep")

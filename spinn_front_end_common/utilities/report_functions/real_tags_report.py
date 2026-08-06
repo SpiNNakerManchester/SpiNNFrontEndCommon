@@ -13,7 +13,9 @@
 # limitations under the License.
 
 from typing import Any, Iterable
+
 from spinn_utilities.config_holder import get_report_path
+
 from spinn_front_end_common.data import FecDataView
 
 _REPORT_FILENAME = "tags_on_machine.txt"

@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import decimal
+import unittest
+
 from spinn_front_end_common.interface.ds import DataType
 
 

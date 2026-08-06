@@ -14,8 +14,11 @@
 
 import os
 from typing import List
-from pacman.utilities.utility_calls import md5
+
 from spinnman.model.enums import SDP_PORTS
+
+from pacman.utilities.utility_calls import md5
+
 from spinn_front_end_common.data import FecDataView
 
 

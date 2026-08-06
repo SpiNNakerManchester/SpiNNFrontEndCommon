@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Optional
-from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
+
+from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
+
 from pacman.model.resources.iptag_resource import IPtagResource
+
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 _HAS_PAYLOAD = (EIEIOType.KEY_PAYLOAD_32_BIT, EIEIOType.KEY_PAYLOAD_16_BIT)

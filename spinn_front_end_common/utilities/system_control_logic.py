@@ -13,13 +13,18 @@
 # limitations under the License.
 import time
 from typing import Callable, FrozenSet, List, Optional
-from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
+
 from spinnman.exceptions import (
-    SpinnmanException, SpiNNManCoresNotInStateException)
+    SpiNNManCoresNotInStateException,
+    SpinnmanException,
+)
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState, ExecutableType
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 

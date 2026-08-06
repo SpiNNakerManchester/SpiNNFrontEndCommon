@@ -12,26 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from configparser import NoOptionError
 import logging
 import os
 import shutil
 import traceback
-from typing import cast, List, Optional
+from configparser import NoOptionError
+from typing import List, Optional, cast
 
-from spinn_utilities.log import FormatAdapter
-from spinn_utilities.configs.camel_case_config_parser import FALSES
 from spinn_utilities.config_holder import (
-    config_options, has_config_option, get_config_bool, get_config_int,
-    get_config_str, get_config_str_list, get_timestamp_path, set_config)
+    config_options,
+    get_config_bool,
+    get_config_int,
+    get_config_str,
+    get_config_str_list,
+    get_timestamp_path,
+    has_config_option,
+    set_config,
+)
+from spinn_utilities.configs.camel_case_config_parser import FALSES
+from spinn_utilities.log import FormatAdapter
+
 from spinnman.spinnman_simulation import AbstractSpiNNManSimulation
+
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions.\
     insert_chip_power_monitors import sample_chip_power_monitor
 from spinn_front_end_common.interface.interface_functions.\
     insert_extra_monitor_vertices import (
-        sample_monitor_vertex, sample_speedup_vertex)
+        sample_monitor_vertex,
+        sample_speedup_vertex,
+    )
 from spinn_front_end_common.interface.provenance import LogStoreDB
-from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))

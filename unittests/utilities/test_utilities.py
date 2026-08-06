@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import unittest
+
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.helpful_functions import (
-    get_region_base_address_offset)
+    get_region_base_address_offset,
+)
 
 
 class TestingUtilities(unittest.TestCase):

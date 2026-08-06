@@ -12,22 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from typing import Dict, List, Optional, Set, Sequence, Tuple, TypeVar
+
+from typing import Dict, List, Optional, Sequence, Set, Tuple, TypeVar
+
 from spinn_utilities.overrides import overrides
+
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.placements import Placement, Placements
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
-    vertex_chip)
+    vertex_chip,
+)
 from pacman.utilities.utility_objs import ChipCounter
-from spinn_front_end_common.utilities.utility_calls import (
-    pick_core_for_system_placement)
-from spinn_front_end_common.utilities.utility_objs import (
-    LivePacketGatherParameters)
+
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.utility_calls import (
+    pick_core_for_system_placement,
+)
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters,
+)
+
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
+
 #: :meta private:
 MV = TypeVar("MV", bound=MachineVertex)
 

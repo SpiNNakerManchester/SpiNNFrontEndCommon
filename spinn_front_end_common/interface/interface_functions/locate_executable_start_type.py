@@ -13,9 +13,13 @@
 # limitations under the License.
 
 from typing import Dict, cast
+
 from spinn_machine import CoreSubsets
+
 from spinnman.model.enums import ExecutableType
+
 from pacman.model.placements import Placement
+
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
 

@@ -14,15 +14,21 @@
 
 import logging
 from typing import Optional, Set, Tuple
+
 from spinn_utilities.config_holder import (
-    get_config_bool, get_config_bool_or_none)
-from spinn_utilities.progress_bar import ProgressBar
+    get_config_bool,
+    get_config_bool_or_none,
+)
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
+
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.utilities.database import DatabaseWriter
+
 from spinn_front_end_common.abstract_models import (
-    AbstractSupportsDatabaseInjection)
+    AbstractSupportsDatabaseInjection,
+)
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.database import DatabaseWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

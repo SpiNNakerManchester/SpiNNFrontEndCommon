@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 import sqlite3
+from datetime import datetime
 from typing import List, Optional
 
 from spinn_utilities.config_holder import configs_loaded
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
+
 from .global_provenance import GlobalProvenance
 
 
