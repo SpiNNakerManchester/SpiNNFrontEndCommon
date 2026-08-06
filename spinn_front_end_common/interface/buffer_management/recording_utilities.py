@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import List, Sequence
+
 from spinn_front_end_common.utilities.constants import (
-    SARK_PER_MALLOC_SDRAM_USAGE, BYTES_PER_WORD)
+    BYTES_PER_WORD,
+    SARK_PER_MALLOC_SDRAM_USAGE,
+)
 
 # Size of data in the header for each recording region
 # 1 word for space, 1 word for size+missing, 1 word for pointer

@@ -14,43 +14,49 @@
 
 import os
 import sys
-from typing import Dict, Tuple
 import unittest
+from typing import Dict, Tuple
 
 from parameterized import parameterized
 
 from spinn_utilities.config_holder import set_config
+
 # hack do not copy
 from spinn_utilities.data.data_status import DataStatus
+
 # hack do not copy
 from spinn_utilities.data.utils_data_writer import _UtilsDataModel
-from spinn_utilities.exceptions import (
-    DataNotYetAvialable, NotSetupException)
+from spinn_utilities.exceptions import DataNotYetAvialable, NotSetupException
+from spinn_utilities.socket_address import SocketAddress
 from spinn_utilities.typing.coords import XY
 
 from spinn_machine import Chip, CoreSubsets, RoutingEntry
 from spinn_machine.version import FOUR_PLUS_BOARD_TYPES
 
 from spinnman.messages.scp.enums.signal import Signal
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 
-from spinn_utilities.socket_address import SocketAddress
-from spinnman.model import ExecutableTargets
 from pacman.model.placements import Placements
 from pacman.model.routing_tables import MulticastRoutingTables
+
 from pacman_test_objects import SimpleTestVertex
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocol)
+    NotificationProtocol,
+)
 from spinn_front_end_common.utilities.utility_objs import (
-    LivePacketGatherParameters)
+    LivePacketGatherParameters,
+)
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex,
-    ExtraMonitorSupportMachineVertex)
+    ExtraMonitorSupportMachineVertex,
+)
 
 
 class TestSimulatorData(unittest.TestCase):

@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary)
-from spinn_front_end_common.utilities.constants import SIMULATION_N_BYTES
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
-    get_simulation_header_array, get_simulation_header_array_no_timestep)
+    get_simulation_header_array,
+    get_simulation_header_array_no_timestep,
+)
+from spinn_front_end_common.utilities.constants import SIMULATION_N_BYTES
 
 
 def generate_system_data_region(

@@ -12,36 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import BinaryIO, List, Optional, Tuple, Union
+import struct
 import unittest
+from sqlite3 import IntegrityError
+from typing import BinaryIO, List, Optional, Tuple, Union
 
 from parameterized import parameterized
-from sqlite3 import IntegrityError
-import struct
-
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 
 from spinn_machine.version import FOUR_PLUS_BOARD_TYPES, MANY_BOARD_TYPES
 
-from spinnman.transceiver.version5transceiver import Version5Transceiver
 from spinnman.model.enums import ExecutableType
+from spinnman.transceiver.version5transceiver import Version5Transceiver
 
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placement, Placements
 
 from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
+    AbstractGeneratesDataSpecification,
+    AbstractHasAssociatedBinary,
+)
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
-from spinn_front_end_common.interface.ds import (
-    DataSpecificationGenerator)
-from spinn_front_end_common.interface.interface_functions import (
-    load_application_data_specs)
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.interface.ds import (
+    DataSpecificationGenerator,
+    DsSqlliteDatabase,
+)
+from spinn_front_end_common.interface.interface_functions import (
+    load_application_data_specs,
+)
 from spinn_front_end_common.utilities.constants import (
-    BYTES_PER_WORD, MAX_MEM_REGIONS)
+    BYTES_PER_WORD,
+    MAX_MEM_REGIONS,
+)
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 

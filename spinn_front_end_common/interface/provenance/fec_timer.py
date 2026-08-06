@@ -12,22 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from collections.abc import Sized
+
 import logging
 import time
+from collections.abc import Sized
 from datetime import timedelta
-from typing import List, Optional, Tuple, Type, Union, TYPE_CHECKING
-from types import TracebackType
 from sqlite3 import DatabaseError
+from types import TracebackType
+from typing import TYPE_CHECKING, List, Optional, Tuple, Type, Union
 
 from typing_extensions import Literal, Self
 
-from spinn_utilities.config_holder import (
-    get_config_bool, get_timestamp_path)
+from spinn_utilities.config_holder import get_config_bool, get_timestamp_path
 from spinn_utilities.log import FormatAdapter
+
 from spinn_front_end_common.data import FecDataView
+
 from .global_provenance import GlobalProvenance
 from .timer_category import TimerCategory
+
 if TYPE_CHECKING:
     from spinn_front_end_common.interface.provenance import TimerWork
 

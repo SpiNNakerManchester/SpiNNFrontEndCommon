@@ -13,18 +13,25 @@
 # limitations under the License.
 
 import unittest
+
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_utilities.overrides import overrides
+
 from spinnman.model.enums import ExecutableType
-from pacman.model.graphs.machine import SimpleMachineVertex
+
 from pacman.model.graphs.application.abstract import (
-    AbstractOneAppOneMachineVertex)
-from pacman.model.placements import Placements, Placement
+    AbstractOneAppOneMachineVertex,
+)
+from pacman.model.graphs.machine import SimpleMachineVertex
+from pacman.model.placements import Placement, Placements
+
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    graph_binary_gatherer, locate_executable_start_type)
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+    graph_binary_gatherer,
+    locate_executable_start_type,
+)
 
 
 class _TestAppVertexWithBinary(AbstractOneAppOneMachineVertex):

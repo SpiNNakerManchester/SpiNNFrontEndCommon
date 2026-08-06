@@ -15,10 +15,11 @@
 import bisect
 import math
 from typing import Dict, Iterable, List, Optional, Sequence
+
+from spinnman.constants import UDP_MESSAGE_MAX_SIZE
+from spinnman.messages.eieio import EIEIOType
 from spinnman.messages.eieio.command_messages import HostSendSequencedData
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from spinnman.messages.eieio import EIEIOType
-from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 
 _HEADER_SIZE = EIEIODataHeader.get_header_size(
     EIEIOType.KEY_32_BIT, is_payload_base=True)

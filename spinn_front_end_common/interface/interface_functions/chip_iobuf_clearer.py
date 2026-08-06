@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from spinnman.model.enums import ExecutableType
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
 

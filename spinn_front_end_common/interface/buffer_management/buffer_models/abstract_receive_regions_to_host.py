@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Sequence, Tuple
+
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
+
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
+
 # mypy: disable-error-code=empty-body
 
 

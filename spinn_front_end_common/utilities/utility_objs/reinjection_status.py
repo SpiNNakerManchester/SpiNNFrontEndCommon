@@ -14,6 +14,7 @@
 
 import struct
 from typing import Sequence, Tuple
+
 from .dpri_flags import DPRIFlags
 
 _PATTERN = struct.Struct("<IIIIIIIIII")

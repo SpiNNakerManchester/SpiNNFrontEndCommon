@@ -13,11 +13,13 @@
 # limitations under the License.
 
 from spinn_utilities.overrides import overrides
+
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
-from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
+from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.model.enums import SDP_PORTS
+
 from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 

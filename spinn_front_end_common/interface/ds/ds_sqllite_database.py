@@ -26,13 +26,11 @@ from spinnman.model.enums import ExecutableType
 from spinnman.spalloc.spalloc_allocator import SpallocJobController
 from spinnman.spalloc.spalloc_job import SpallocJob
 
-from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinn_front_end_common.utilities.constants import (
-    APP_PTR_TABLE_BYTE_SIZE)
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))

@@ -13,20 +13,23 @@
 # limitations under the License.
 
 import logging
-from typing import Dict, Tuple, Optional
+from typing import Dict, Optional, Tuple
 
 from spinn_utilities.config_holder import (
-    get_config_str_or_none, get_config_str_list)
+    get_config_int,
+    get_config_str,
+    get_config_str_list,
+    get_config_str_or_none,
+)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
-from spinn_utilities.config_holder import get_config_int, get_config_str
-
-from spalloc_client import Job
-from spalloc_client.states import JobState
 
 from spinnman.spalloc import MachineAllocationController
 from spinnman.spalloc.spalloc_client import get_n_boards
+
+from spalloc_client import Job
+from spalloc_client.states import JobState
 
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc

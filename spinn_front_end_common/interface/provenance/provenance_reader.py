@@ -14,10 +14,15 @@
 
 import os
 from typing import Iterable, List, Optional, Sequence, Tuple, cast
+
 from typing_extensions import TypeAlias
+
 from spinn_utilities.typing.coords import XYP
+
 from spinn_front_end_common.utilities.base_database import (
-    BaseDatabase, _SqliteTypes)
+    BaseDatabase,
+    _SqliteTypes,
+)
 
 #: Basic types supported natively by SQLite
 _MonitorItem: TypeAlias = Tuple[int, int, _SqliteTypes]

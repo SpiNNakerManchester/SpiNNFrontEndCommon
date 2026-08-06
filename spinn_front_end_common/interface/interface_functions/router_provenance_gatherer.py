@@ -14,13 +14,18 @@
 
 import logging
 from typing import Dict, Optional, Set
-from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
+
 from spinn_machine import Chip
+
 from spinnman.exceptions import SpinnmanException
 from spinnman.model import RouterDiagnostics
+
 from pacman.model.routing_tables import AbstractMulticastRoutingTable
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus

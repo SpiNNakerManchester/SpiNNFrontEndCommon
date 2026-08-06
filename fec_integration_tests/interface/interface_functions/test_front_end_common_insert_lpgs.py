@@ -22,15 +22,19 @@ from spinn_machine.version import BIG_BOARD_TYPES
 from spinn_machine.virtual_machine import virtual_machine_by_boards
 
 from spinnman.messages.eieio import EIEIOType
+
+from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placements
-from pacman.model.graphs.application import ApplicationVertex
+
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    split_lpg_vertices)
+    split_lpg_vertices,
+)
 from spinn_front_end_common.utilities.utility_objs import (
-    LivePacketGatherParameters)
+    LivePacketGatherParameters,
+)
 from spinn_front_end_common.utility_models import LivePacketGather
 
 

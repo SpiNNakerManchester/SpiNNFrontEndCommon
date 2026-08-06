@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from spinn_utilities.progress_bar import ProgressBar
+
 from pacman.model.placements import Placement, Placements
+
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utility_models import (
-    ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.utilities.utility_calls import (
-    pick_core_for_system_placement)
+    pick_core_for_system_placement,
+)
+from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 
 
 def sample_chip_power_monitor() -> ChipPowerMonitorMachineVertex:

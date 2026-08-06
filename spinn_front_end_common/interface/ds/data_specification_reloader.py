@@ -13,9 +13,12 @@
 # limitations under the License.
 
 from typing import Optional
+
 from spinn_utilities.overrides import overrides
+
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import DataSpecException
+
 from .data_specification_generator import DataSpecificationBase
 
 

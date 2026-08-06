@@ -13,11 +13,15 @@
 # limitations under the License.
 
 from spinn_machine import CoreSubsets
-from spinnman.processes import AbstractMultiConnectionProcess
+
 from spinnman.messages.scp.impl import CheckOKResponse
+from spinnman.processes import AbstractMultiConnectionProcess
+
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_messages import (
-        LoadApplicationMCRoutesMessage, LoadSystemMCRoutesMessage)
+        LoadApplicationMCRoutesMessage,
+        LoadSystemMCRoutesMessage,
+    )
 
 
 class LoadMCRoutesProcess(AbstractMultiConnectionProcess[CheckOKResponse]):

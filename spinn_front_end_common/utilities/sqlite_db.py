@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from __future__ import annotations
+
 import hashlib
 import logging
 import os
@@ -21,14 +22,15 @@ import sqlite3
 import struct
 from types import TracebackType
 from typing import Literal, Optional, Type, Union
+
 from typing_extensions import Self
 
 from spinn_utilities.log import FormatAdapter
 
 from pacman.exceptions import PacmanValueError
 
-from spinn_front_end_common.utilities.utility_calls import check_file_exists
 from spinn_front_end_common.utilities.exceptions import DatabaseException
+from spinn_front_end_common.utilities.utility_calls import check_file_exists
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

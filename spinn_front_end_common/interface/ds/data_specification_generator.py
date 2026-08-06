@@ -13,12 +13,17 @@
 # limitations under the License.
 
 from typing import Optional, TextIO, Union, cast
+
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from spinn_front_end_common.utilities.exceptions import DataSpecException
+
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification,
-    AbstractRewritesDataSpecification, AbstractHasAssociatedBinary)
+    AbstractHasAssociatedBinary,
+    AbstractRewritesDataSpecification,
+)
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.utilities.exceptions import DataSpecException
+
 from .data_specification_base import DataSpecificationBase
 from .ds_sqllite_database import DsSqlliteDatabase
 

@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+
 from types import TracebackType
-from typing import ContextManager, Iterable, Optional, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, ContextManager, Iterable, Optional, Type
+
 from typing_extensions import Literal
+
 if TYPE_CHECKING:
     from .data_speed_up_packet_gatherer_machine_vertex import (
-        DataSpeedUpPacketGatherMachineVertex)
+        DataSpeedUpPacketGatherMachineVertex,
+    )
 
 
 class StreamingContextManager(ContextManager[None]):

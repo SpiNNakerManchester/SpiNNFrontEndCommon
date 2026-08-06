@@ -17,6 +17,7 @@ from typing import Any, Optional, Sequence, TextIO, Union
 import numpy
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 from .data_type import DataType

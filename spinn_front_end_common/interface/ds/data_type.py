@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import struct
 from decimal import Decimal
 from enum import Enum
-import struct
 from typing import Any, Callable, Optional, Union, cast
+
 import numpy as np
-from numpy.typing import NDArray
 from numpy import uint32
+from numpy.typing import NDArray
 
 
 class DataType(Enum):
