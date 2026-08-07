@@ -148,8 +148,8 @@ class IOBufExtractor(object):
                 else self.__app_path)
 
     def __extract_all_cores(self) -> Tuple[List[str], List[str]]:
-        error_entries: List[str] = list()
-        warn_entries: List[str] = list()
+        error_entries: List[str] = []
+        warn_entries: List[str] = []
         # all the cores
         progress = self.__progress(self.__executable_targets.binaries)
         for binary in progress.over(self.__executable_targets.binaries):
@@ -161,8 +161,8 @@ class IOBufExtractor(object):
 
     def __extract_selected_cores_and_types(
             self) -> Tuple[List[str], List[str]]:
-        error_entries: List[str] = list()
-        warn_entries: List[str] = list()
+        error_entries: List[str] = []
+        warn_entries: List[str] = []
         # bit of both
         assert self.__binary_types is not None
         progress = self.__progress(self.__executable_targets.binaries)
@@ -181,8 +181,8 @@ class IOBufExtractor(object):
         return error_entries, warn_entries
 
     def __extract_selected_cores(self) -> Tuple[List[str], List[str]]:
-        error_entries: List[str] = list()
-        warn_entries: List[str] = list()
+        error_entries: List[str] = []
+        warn_entries: List[str] = []
         # some hard coded cores
         progress = self.__progress(self.__executable_targets.binaries)
         iocores = convert_string_into_chip_and_core_subset(self.__from_cores)
@@ -195,8 +195,8 @@ class IOBufExtractor(object):
         return error_entries, warn_entries
 
     def __extract_selected_types(self) -> Tuple[List[str], List[str]]:
-        error_entries: List[str] = list()
-        warn_entries: List[str] = list()
+        error_entries: List[str] = []
+        warn_entries: List[str] = []
         # some binaries
         assert self.__binary_types is not None
         binaries = FecDataView.get_executable_paths(self.__binary_types)

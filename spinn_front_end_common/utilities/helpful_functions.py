@@ -200,8 +200,8 @@ def determine_flow_states(
     :param  no_sync_changes: the number of times sync signals been sent
     :return: dict of executable type to states.
     """
-    expected_start_states: Dict[ExecutableType, Collection[CPUState]] = dict()
-    expected_end_states: Dict[ExecutableType, Collection[CPUState]] = dict()
+    expected_start_states: Dict[ExecutableType, Collection[CPUState]] = {}
+    expected_end_states: Dict[ExecutableType, Collection[CPUState]] = {}
     for start_type in executable_types.keys():
         # cores that ignore all control and are just running
         if start_type == ExecutableType.RUNNING:

@@ -39,7 +39,7 @@ class _MockTransceiver(MockableTransceiver):
         self._test_case = test_case
         self._n_cores_in_app: Dict[int, int] = defaultdict(lambda: 0)
         self._executable_on_core: Dict[Tuple[int, int, int],
-                                       Union[BinaryIO, bytes, str]] = dict()
+                                       Union[BinaryIO, bytes, str]] = {}
 
     @overrides(MockableTransceiver.execute_flood)
     def execute_flood(

@@ -66,7 +66,7 @@ class NotificationProtocol(object):
             "Database", "wait_on_confirmation_timeout")
         self.__wait_pool: Optional[ThreadPoolExecutor] = \
             ThreadPoolExecutor(max_workers=1)
-        self.__wait_futures: List[Future[None]] = list()
+        self.__wait_futures: List[Future[None]] = []
         self.__sent_visualisation_confirmation = False
         # These connections are not used to talk to SpiNNaker boards
         # but rather to code running on the current host computer
@@ -92,7 +92,7 @@ class NotificationProtocol(object):
                 raise SpinnmanTimeoutException(
                     f"waiting for external sources: {results.not_done}",
                     self.__wait_for_read_timeout)
-        self.__wait_futures = list()
+        self.__wait_futures = []
 
     def send_start_resume_notification(self) -> None:
         """
@@ -208,7 +208,7 @@ class NotificationProtocol(object):
         """
         if self.__wait_pool is not None:
             self.__wait_pool.shutdown()
-            self.__wait_futures = list()
+            self.__wait_futures = []
             self.__wait_pool = None
         for c in self.__database_message_connections:
             c.close()

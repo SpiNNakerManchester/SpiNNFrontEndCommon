@@ -38,7 +38,7 @@ def placements_provenance_gatherer(
         The placements of the vertices to gather data form.
         May not be all placements so don't use View
     """
-    errors: List[str] = list()
+    errors: List[str] = []
 
     progress = ProgressBar(n_placements, "Getting provenance data")
 

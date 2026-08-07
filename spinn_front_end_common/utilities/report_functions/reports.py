@@ -433,7 +433,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
     :param details: If True will get costs printed by regions
     """
     f.write(f"Based on {timesteps} timesteps\n\n")
-    sdram_by_chip = dict()
+    sdram_by_chip = {}
     placements = sorted(
         FecDataView.iterate_placemements(),
         key=lambda x: x.vertex.label or "")
@@ -761,7 +761,7 @@ def generate_binaries_report() -> None:
             try:
                 targets = FecDataView.get_executable_targets()
 
-                aplxs = dict()
+                aplxs = {}
                 for binary in targets.binaries:
                     _, aplx = os.path.split(binary)
                     aplxs[aplx] = binary

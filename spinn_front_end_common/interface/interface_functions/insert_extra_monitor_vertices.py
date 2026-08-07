@@ -59,8 +59,8 @@ def insert_extra_monitor_vertices(placements: Placements) -> Tuple[
     :return: mapping from *Ethernet-enabled* chip locations to their gatherer,
         mapping from *all* chip locations to their extra monitor
     """
-    chip_to_gatherer_map = dict()
-    chip_to_monitor_map = dict()
+    chip_to_gatherer_map = {}
+    chip_to_monitor_map = {}
     machine = FecDataView.get_machine()
     ethernet_chips = machine.ethernet_connected_chips
     progress = ProgressBar(

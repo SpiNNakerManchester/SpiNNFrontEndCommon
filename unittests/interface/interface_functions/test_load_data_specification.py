@@ -57,7 +57,7 @@ class _MockTransceiver(Version5Transceiver):
 
     def __init__(self) -> None:
         self._regions_written: List[Tuple[
-            int, Union[bytearray, bytes]]] = list()
+            int, Union[bytearray, bytes]]] = []
         self._next_address: int = 0
 
     @property
@@ -238,7 +238,7 @@ class TestLoadDataSpecification(unittest.TestCase):
                              db.get_memory_to_write(0, 0, 2))
 
         # Find the base addresses
-        base_addresses = dict()
+        base_addresses = {}
         for base_addr, data in regions:
             # user 0 p 0
             if base_addr == 3842011248:
@@ -251,7 +251,7 @@ class TestLoadDataSpecification(unittest.TestCase):
                 base_addresses[2] = struct.unpack("<I", data)[0]
 
         # Find the headers
-        header_data = dict()
+        header_data = {}
         for base_addr, data in regions:
             for core, addr in base_addresses.items():
                 if base_addr == addr:

@@ -358,7 +358,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param p: Processor ID of the core
         :return: dict of region_num to size but only for regions with a size
         """
-        regions: Dict[int, int] = dict()
+        regions: Dict[int, int] = {}
         for row in self.cursor().execute(
                 """
                 SELECT region_num, size

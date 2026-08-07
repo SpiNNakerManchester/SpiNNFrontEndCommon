@@ -351,9 +351,9 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_data_in_multicast_routing_tables()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_system_multicast_router_timeout_keys()
-        data_in_multicast_key_to_chip_map:  Dict[XY, int] = dict()
+        data_in_multicast_key_to_chip_map:  Dict[XY, int] = {}
         data_in_multicast_routing_tables = MulticastRoutingTables()
-        system_multicast_router_timeout_keys: Dict[XY, int] = dict()
+        system_multicast_router_timeout_keys: Dict[XY, int] = {}
         data = (data_in_multicast_routing_tables,
                 data_in_multicast_key_to_chip_map,
                 system_multicast_router_timeout_keys)
@@ -381,7 +381,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_fixed_routes()
         self.assertFalse(FecDataView.has_fixed_routes())
-        data: Dict[Tuple[int, int], RoutingEntry] = dict()
+        data: Dict[Tuple[int, int], RoutingEntry] = {}
         writer.set_fixed_routes(data)
         self.assertEqual(data, FecDataView.get_fixed_routes())
         self.assertTrue(FecDataView.has_fixed_routes())
@@ -421,7 +421,7 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_executable_types()
-        data: Dict[ExecutableType, CoreSubsets] = dict()
+        data: Dict[ExecutableType, CoreSubsets] = {}
         writer.set_executable_types(data)
         self.assertEqual(data, FecDataView.get_executable_types())
 
@@ -492,7 +492,7 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.iterate_gathers()
         vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, "1.1.1.1")
         vertex2 = DataSpeedUpPacketGatherMachineVertex(1, 1, "1.1.1.1")
-        map: Dict[Chip, DataSpeedUpPacketGatherMachineVertex] = dict()
+        map: Dict[Chip, DataSpeedUpPacketGatherMachineVertex] = {}
         # Setting empty ok
         writer.set_gatherer_map(map)
         map[FecDataView.get_chip_at(0, 0)] = vertex1
@@ -512,19 +512,19 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_gatherer_map([])  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map1 = dict()
+            map1 = {}
             map1[(1, 2, 3)] = vertex
             writer.set_gatherer_map(map1)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map2 = dict()
+            map2 = {}
             map2[(1)] = vertex
             writer.set_gatherer_map(map2)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map3 = dict()
+            map3 = {}
             map3[(0, 0)] = "Bacon"
             writer.set_gatherer_map(map3)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map4 = dict()
+            map4 = {}
             map4[(0, "bacon")] = vertex
             writer.set_gatherer_map(map4)  # type: ignore[arg-type]
 
@@ -543,7 +543,7 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.iterate_monitors()
         vertex1 = ExtraMonitorSupportMachineVertex()
         vertex2 = ExtraMonitorSupportMachineVertex()
-        map: Dict[Chip, ExtraMonitorSupportMachineVertex] = dict()
+        map: Dict[Chip, ExtraMonitorSupportMachineVertex] = {}
         # Setting empty ok
         writer.set_monitor_map(map)
         map[FecDataView.get_chip_at(0, 0)] = vertex1
@@ -566,19 +566,19 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_monitor_map([])  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map1 = dict()
+            map1 = {}
             map1[(1, 2, 3)] = vertex
             writer.set_monitor_map(map1)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map2 = dict()
+            map2 = {}
             map2[(1)] = vertex
             writer.set_monitor_map(map2)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map3 = dict()
+            map3 = {}
             map3[(0, 0)] = "Bacon"
             writer.set_monitor_map(map3)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
-            map4 = dict()
+            map4 = {}
             map4[(0, "bacon")] = vertex
             writer.set_monitor_map(map4)  # type: ignore[arg-type]
 

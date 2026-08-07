@@ -50,7 +50,7 @@ def _emergency_state_check() -> None:
             "Could not read the status count - going to individual cores")
         machine = FecDataView.get_machine()
         infos = CPUInfos()
-        errors: List[Tuple[int, int, int]] = list()
+        errors: List[Tuple[int, int, int]] = []
         for chip in machine.chips:
             for p in chip.all_processor_ids:
                 try:

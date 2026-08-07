@@ -123,13 +123,13 @@ class CommandSenderMachineVertex(
         """
         super().__init__(label, app_vertex)
 
-        self._timed_commands: List[MultiCastCommand] = list()
-        self._commands_at_start_resume: List[MultiCastCommand] = list()
-        self._commands_at_pause_stop: List[MultiCastCommand] = list()
-        self._keys_to_partition_id: Dict[int, str] = dict()
-        self._partition_id_keys: Dict[str, int] = dict()
+        self._timed_commands: List[MultiCastCommand] = []
+        self._commands_at_start_resume: List[MultiCastCommand] = []
+        self._commands_at_pause_stop: List[MultiCastCommand] = []
+        self._keys_to_partition_id: Dict[int, str] = {}
+        self._partition_id_keys: Dict[str, int] = {}
         self._edge_partition_id_counter = 0
-        self._vertex_to_key_map: Dict[AbstractVertex, Set[int]] = dict()
+        self._vertex_to_key_map: Dict[AbstractVertex, Set[int]] = {}
 
     def add_commands(
             self, start_resume_commands: Iterable[MultiCastCommand],
@@ -379,8 +379,8 @@ class CommandSenderMachineVertex(
             subclass of :py:class:`~pacman.model.graphs.AbstractEdge`
         :return: edges, partition IDs
         """
-        edges: List[E] = list()
-        partition_ids: List[str] = list()
+        edges: List[E] = []
+        partition_ids: List[str] = []
         keys_added = set()
         for vertex in self._vertex_to_key_map:
             if not isinstance(vertex, vertex_type):

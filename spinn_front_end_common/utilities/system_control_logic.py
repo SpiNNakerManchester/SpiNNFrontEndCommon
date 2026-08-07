@@ -76,7 +76,7 @@ def run_system_application(
         transceiver.send_signal(app_id, Signal.SYNC0)
 
     error: Optional[Exception] = None
-    binary_start_types = dict()
+    binary_start_types = {}
     if binaries_to_track is None:
         check_targets = executable_cores
     else:

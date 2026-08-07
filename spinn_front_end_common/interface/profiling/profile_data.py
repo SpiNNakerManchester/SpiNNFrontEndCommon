@@ -56,7 +56,7 @@ class ProfileData(object):
         :param tag_labels: A list of labels indexed by tag ID
         """
         self._tag_labels = tag_labels
-        self._tags: Dict[str, Tuple[numpy.ndarray, numpy.ndarray]] = dict()
+        self._tags: Dict[str, Tuple[numpy.ndarray, numpy.ndarray]] = {}
         self._max_time: float = 0.0
 
     def add_data(self, data: bytearray) -> None:

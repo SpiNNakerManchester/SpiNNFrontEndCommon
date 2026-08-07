@@ -144,7 +144,7 @@ class _FecDataModel(object):
             LivePacketGatherParameters,
             LivePacketGather]] = None
         self._live_output_vertices: Set[Tuple[ApplicationVertex, str]] = set()
-        self._live_output_devices: List[LiveOutputDevice] = list()
+        self._live_output_devices: List[LiveOutputDevice] = []
         self._java_caller: Optional[JavaCaller] = None
         self._none_labelled_edge_count = 0
         self._simulation_time_step_ms: Optional[float] = None
@@ -723,7 +723,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             can also be a single string (strings are iterable)
         """
         if cls.__fec_data._live_packet_recorder_params is None:
-            cls.__fec_data._live_packet_recorder_params = dict()
+            cls.__fec_data._live_packet_recorder_params = {}
         lpg_vertex = cls.__fec_data._live_packet_recorder_params.get(
             live_packet_gatherer_params)
         if lpg_vertex is None:

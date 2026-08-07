@@ -114,7 +114,7 @@ class _MockTransceiver(MockableTransceiver):
     # pylint: disable=unused-argument
 
     def __init__(self) -> None:
-        self._regions_rewritten: List = list()
+        self._regions_rewritten: List = []
 
     @overrides(MockableTransceiver.write_memory)
     def write_memory(

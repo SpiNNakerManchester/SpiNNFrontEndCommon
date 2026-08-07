@@ -134,7 +134,7 @@ class BufferManager(object):
 
         # Dictionary of sender vertex -> buffers sent
         self._sent_messages: Dict[
-            AbstractSendsBuffersFromHost, BuffersSentDeque] = dict()
+            AbstractSendsBuffersFromHost, BuffersSentDeque] = {}
 
         self._java_caller: Optional[JavaCaller]
         if FecDataView.has_java_caller():

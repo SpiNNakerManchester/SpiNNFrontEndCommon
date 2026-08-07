@@ -59,7 +59,7 @@ class CommandSenderAdder(object):
         self.__system_placements = system_placements
 
         # Keep track of command senders by which chip they are on
-        self.__command_sender_for_chip: Dict[Chip, CommandSender] = dict()
+        self.__command_sender_for_chip: Dict[Chip, CommandSender] = {}
         self.__general_command_sender: Optional[CommandSender] = None
 
     def add_command_senders(self) -> Iterable[CommandSender]:
