@@ -48,7 +48,7 @@ def _write_report(
         writer.write(
             f"board with IP address: {e_chip.ip_address}\n")
         for l_x, l_y in machine.local_xys:
-            down_chips: List[Tuple[int, int]] = list()
+            down_chips: List[Tuple[int, int]] = []
             x, y = machine.get_global_xy(l_x, l_y, e_chip.x, e_chip.y)
             if machine.is_chip_at(x, y):
                 chip = machine[x, y]
@@ -64,7 +64,7 @@ def _write_report(
 
                 router = chip.router
                 if len(router) < n_links:
-                    down_links = list()
+                    down_links = []
                     for link in range(n_links):
                         if chip.router.is_link(link):
                             continue

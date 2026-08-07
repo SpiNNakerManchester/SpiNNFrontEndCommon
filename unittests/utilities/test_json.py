@@ -41,11 +41,11 @@ class TestJson(unittest.TestCase):
         tests the placements iterator functionality.
         """
         writer = FecDataWriter.mock()
-        subv = list()
+        subv = []
         for i in range(5):
             subv.append(SimpleMachineVertex(None, ""))
 
-        pl = list()
+        pl = []
         for i in range(4):
             pl.append(Placement(subv[i], 0, 0, i))
         writer.set_placements(Placements(pl))

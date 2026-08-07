@@ -645,7 +645,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         # Go through the placements and find how much SDRAM is used
         # on each chip
-        usage_by_chip: Dict[XY, AbstractSDRAM] = dict()
+        usage_by_chip: Dict[XY, AbstractSDRAM] = {}
 
         for place in self._data_writer.iterate_placemements():
             if isinstance(place.vertex, AbstractVirtual):

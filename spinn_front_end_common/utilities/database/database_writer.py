@@ -85,8 +85,8 @@ class DatabaseWriter(SQLiteDB):
             os.remove(self._database_path)
 
         super().__init__(self._database_path, ddl_file=init_sql_path)
-        self.__machine_to_id: Dict[Machine, int] = dict()
-        self.__vertex_to_id: Dict[AbstractVertex, int] = dict()
+        self.__machine_to_id: Dict[Machine, int] = {}
+        self.__vertex_to_id: Dict[AbstractVertex, int] = {}
 
         # set up checks
         self._machine_id = 0
@@ -232,7 +232,7 @@ class DatabaseWriter(SQLiteDB):
         # This could happen if there are no LPGs
         if machine_vertices is None:
             return
-        key_vertices: Dict[int, MachineVertex] = dict()
+        key_vertices: Dict[int, MachineVertex] = {}
         for (m_vertex, partition_id) in machine_vertices:
             atom_keys: Iterable[Tuple[int, int]] = ()
             if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):

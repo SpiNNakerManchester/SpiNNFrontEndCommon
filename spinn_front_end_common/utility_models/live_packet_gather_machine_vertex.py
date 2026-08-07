@@ -95,7 +95,7 @@ class LivePacketGatherMachineVertex(
 
         # app specific data items
         self._lpg_params = lpg_params
-        self._incoming_sources: List[Tuple[MachineVertex, str]] = list()
+        self._incoming_sources: List[Tuple[MachineVertex, str]] = []
 
     def add_incoming_source(
             self, m_vertex: MachineVertex, partition_id: str) -> None:

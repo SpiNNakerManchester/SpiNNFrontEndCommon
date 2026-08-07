@@ -329,7 +329,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         self._transaction_id = 0
 
-        self._missing_seq_nums_data_in: List[Set[int]] = list()
+        self._missing_seq_nums_data_in: List[Set[int]] = []
 
         # Create a connection to be used
         self._x, self._y = x, y
@@ -1095,7 +1095,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             self, placement: Placement, connection: SCAMPConnection,
             transaction_id: int) -> List[int]:
         seq_nums: Set[int] = set()
-        lost_seq_nums: List[int] = list()
+        lost_seq_nums: List[int] = []
         timeoutcount = 0
         finished = False
         while not finished:

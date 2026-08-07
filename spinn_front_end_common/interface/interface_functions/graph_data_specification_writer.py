@@ -82,7 +82,7 @@ class _GraphDataSpecificationWriter(object):
 
             progress = ProgressBar(FecDataView.get_n_placements(),
                                    "Generating data specifications")
-            vertices_to_reset: List[AbstractRewritesDataSpecification] = list()
+            vertices_to_reset: List[AbstractRewritesDataSpecification] = []
 
             for placement in progress.over(FecDataView.iterate_placemements()):
                 # Try to generate the data spec for the placement

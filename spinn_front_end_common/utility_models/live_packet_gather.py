@@ -52,7 +52,7 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
     def __init__(self) -> None:
         super().__init__()
         self.__m_vertices_by_ethernet: Dict[
-            Tuple[int, int], LivePacketGatherMachineVertex] = dict()
+            Tuple[int, int], LivePacketGatherMachineVertex] = {}
         self.__targeted_lpgs: Set[Tuple[
             LivePacketGatherMachineVertex, MachineVertex, str]] = set()
 
@@ -137,7 +137,7 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
 
     @overrides(AbstractSplitterCommon.reset_called)
     def reset_called(self) -> None:
-        self.__m_vertices_by_ethernet = dict()
+        self.__m_vertices_by_ethernet = {}
         self.__targeted_lpgs = set()
 
 

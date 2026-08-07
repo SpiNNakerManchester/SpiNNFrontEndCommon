@@ -68,8 +68,8 @@ class BufferedSendingRegion(object):
         "_current_timestamp_pos")
 
     def __init__(self) -> None:
-        self._buffer: Dict[int, List[int]] = dict()
-        self._timestamps: List[int] = list()
+        self._buffer: Dict[int, List[int]] = {}
+        self._timestamps: List[int] = []
         self._current_timestamp_pos: int = 0
 
     def add_key(self, timestamp: int, key: int) -> None:
@@ -81,7 +81,7 @@ class BufferedSendingRegion(object):
         """
         if timestamp not in self._buffer:
             bisect.insort(self._timestamps, timestamp)
-            self._buffer[timestamp] = list()
+            self._buffer[timestamp] = []
         self._buffer[timestamp].append(key)
 
     def add_keys(self, timestamp: int, keys: Iterable[int]) -> None:
@@ -183,6 +183,6 @@ class BufferedSendingRegion(object):
         """
         Clears the buffer.
         """
-        self._buffer = dict()
-        self._timestamps = list()
+        self._buffer = {}
+        self._timestamps = []
         self._current_timestamp_pos = 0

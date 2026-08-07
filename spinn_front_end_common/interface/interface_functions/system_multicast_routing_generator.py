@@ -66,8 +66,8 @@ class _SystemMulticastRoutingGenerator(object):
     def __init__(self) -> None:
         self._machine = FecDataView.get_machine()
         self._routing_tables = MulticastRoutingTables()
-        self._key_to_destination_map: Dict[XY, int] = dict()
-        self._time_out_keys_by_board: Dict[XY, int] = dict()
+        self._key_to_destination_map: Dict[XY, int] = {}
+        self._time_out_keys_by_board: Dict[XY, int] = {}
 
     def generate_system_routes(self) -> Tuple[
             MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]:
@@ -100,7 +100,7 @@ class _SystemMulticastRoutingGenerator(object):
         :param ethernet_chip:
         :return: Map of chip to (source_chip, source_link)
         """
-        tree: Dict[Chip, Tuple[Chip, int]] = dict()
+        tree: Dict[Chip, Tuple[Chip, int]] = {}
         to_reach = set(self._machine.get_chips_by_ethernet(
             ethernet_chip.x, ethernet_chip.y))
         to_reach.remove(ethernet_chip)
@@ -128,7 +128,7 @@ class _SystemMulticastRoutingGenerator(object):
 
     def _logging_retry(
             self, ethernet_chip: Chip) -> Dict[Chip, Tuple[Chip, int]]:
-        tree: Dict[Chip, Tuple[Chip, int]] = dict()
+        tree: Dict[Chip, Tuple[Chip, int]] = {}
         to_reach = set(self._machine.get_chips_by_ethernet(
             ethernet_chip.x, ethernet_chip.y))
         to_reach.remove(ethernet_chip)

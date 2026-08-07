@@ -161,30 +161,30 @@ class LiveEventConnection(DatabaseConnection):
             list(send_labels) if send_labels is not None else None)
         self.__sender_connection: Optional[EIEIOConnection] = None
         self.__send_address_details: Dict[str, Tuple[
-            int, int, int, str]] = dict()
+            int, int, int, str]] = {}
         # Also used by SpynnakerPoissonControlConnection
-        self._atom_id_to_key: Dict[str, Dict[int, int]] = dict()
-        self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = dict()
+        self._atom_id_to_key: Dict[str, Dict[int, int]] = {}
+        self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = {}
         self.__no_time_event_callbacks: List[
-            List[Tuple[_RcvCallback, bool]]] = list()
+            List[Tuple[_RcvCallback, bool]]] = []
         self.__time_event_callbacks: List[
-            List[Tuple[Union[_RcvTimeCallback], bool]]] = list()
-        self.__start_resume_callbacks: Dict[str, List[_Callback]] = dict()
-        self.__pause_stop_callbacks: Dict[str, List[_Callback]] = dict()
-        self.__init_callbacks: Dict[str, List[_InitCallback]] = dict()
-        self.__receiver_details: List[Tuple[int, int, int, str]] = list()
+            List[Tuple[Union[_RcvTimeCallback], bool]]] = []
+        self.__start_resume_callbacks: Dict[str, List[_Callback]] = {}
+        self.__pause_stop_callbacks: Dict[str, List[_Callback]] = {}
+        self.__init_callbacks: Dict[str, List[_InitCallback]] = {}
+        self.__receiver_details: List[Tuple[int, int, int, str]] = []
         if receive_labels is not None:
             for label in receive_labels:
-                self.__no_time_event_callbacks.append(list())
-                self.__time_event_callbacks.append(list())
-                self.__start_resume_callbacks[label] = list()
-                self.__pause_stop_callbacks[label] = list()
-                self.__init_callbacks[label] = list()
+                self.__no_time_event_callbacks.append([])
+                self.__time_event_callbacks.append([])
+                self.__start_resume_callbacks[label] = []
+                self.__pause_stop_callbacks[label] = []
+                self.__init_callbacks[label] = []
         if send_labels is not None:
             for label in send_labels:
-                self.__start_resume_callbacks[label] = list()
-                self.__pause_stop_callbacks[label] = list()
-                self.__init_callbacks[label] = list()
+                self.__start_resume_callbacks[label] = []
+                self.__pause_stop_callbacks[label] = []
+                self.__init_callbacks[label] = []
         self.__receiver_listener: Optional[ConnectionListener] = None
         self.__receiver_connection: Optional[UDPConnection] = None
         self.__error_keys: Set[int] = set()
@@ -202,13 +202,13 @@ class LiveEventConnection(DatabaseConnection):
         :param label:
         """
         if self.__send_labels is None:
-            self.__send_labels = list()
+            self.__send_labels = []
         if label not in self.__send_labels:
             self.__send_labels.append(label)
         if label not in self.__start_resume_callbacks:
-            self.__start_resume_callbacks[label] = list()
-            self.__pause_stop_callbacks[label] = list()
-            self.__init_callbacks[label] = list()
+            self.__start_resume_callbacks[label] = []
+            self.__pause_stop_callbacks[label] = []
+            self.__init_callbacks[label] = []
 
     def add_receive_label(self, label: str) -> None:
         """
@@ -221,15 +221,15 @@ class LiveEventConnection(DatabaseConnection):
                 "no live packet gather label given; "
                 "receive labels not supported")
         if self.__receive_labels is None:
-            self.__receive_labels = list()
+            self.__receive_labels = []
         if label not in self.__receive_labels:
             self.__receive_labels.append(label)
-            self.__no_time_event_callbacks.append(list())
-            self.__time_event_callbacks.append(list())
+            self.__no_time_event_callbacks.append([])
+            self.__time_event_callbacks.append([])
         if label not in self.__start_resume_callbacks:
-            self.__start_resume_callbacks[label] = list()
-            self.__pause_stop_callbacks[label] = list()
-            self.__init_callbacks[label] = list()
+            self.__start_resume_callbacks[label] = []
+            self.__pause_stop_callbacks[label] = []
+            self.__init_callbacks[label] = []
 
     def add_init_callback(
             self, label: str, init_callback: _InitCallback) -> None:
@@ -348,7 +348,7 @@ class LiveEventConnection(DatabaseConnection):
     def __read_database_callback(self, db_reader: DatabaseReader) -> None:
         self.__handle_possible_rerun_state()
 
-        vertex_sizes: Dict[str, int] = dict()
+        vertex_sizes: Dict[str, int] = {}
         run_time_ms = db_reader.get_configuration_parameter_value(
             "runtime")
         machine_timestep = db_reader.get_configuration_parameter_value(

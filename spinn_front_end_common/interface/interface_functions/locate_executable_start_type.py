@@ -30,7 +30,7 @@ def locate_executable_start_type() -> Dict[ExecutableType, CoreSubsets]:
 
     :returns: Mapping of type to the cores which have that type
     """
-    binary_start_types: Dict[ExecutableType, CoreSubsets] = dict()
+    binary_start_types: Dict[ExecutableType, CoreSubsets] = {}
 
     for placement in FecDataView.iterate_placements_by_vertex_type(
             AbstractHasAssociatedBinary):

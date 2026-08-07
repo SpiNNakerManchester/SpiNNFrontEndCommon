@@ -178,13 +178,13 @@ class JavaCaller(object):
         Create information describing what's going on with the monitor cores.
         """
         tags = FecDataView.get_tags()
-        self._monitor_cores = dict()
+        self._monitor_cores = {}
         for chip, monitor_core in FecDataView.iterate_monitor_items():
             placement = FecDataView.get_placement_of_vertex(monitor_core)
             self._monitor_cores[chip] = placement.p
 
-        self._gatherer_iptags = dict()
-        self._gatherer_cores = dict()
+        self._gatherer_iptags = {}
+        self._gatherer_cores = {}
         for chip, packet_gather in FecDataView.iterate_gather_items():
             gatherer_tags = tags.get_ip_tags_for_vertex(packet_gather)
             assert gatherer_tags is not None
@@ -312,7 +312,7 @@ class JavaCaller(object):
         assert self._monitor_cores is not None
 
         placements_by_ethernet = self._placements_grouped(used_placements)
-        json_obj: JsonArray = list()
+        json_obj: JsonArray = []
         for ethernet in self._chip_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
             json_gather: JsonObject = {
@@ -320,7 +320,7 @@ class JavaCaller(object):
                 "y": ethernet.y,
                 "p": self._gatherer_cores[ethernet],
                 "iptag": self._json_iptag(self._gatherer_iptags[ethernet])}
-            json_chips: JsonArray = list()
+            json_chips: JsonArray = []
             for chip in self._chip_by_ethernet[ethernet]:
                 json_chip: JsonObject = {
                     "x": chip.x,
@@ -350,7 +350,7 @@ class JavaCaller(object):
         :param path:
         """
         # Read back the regions
-        json_obj: JsonArray = list()
+        json_obj: JsonArray = []
         for placement in used_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
                 json_p = self._json_placement(placement)
