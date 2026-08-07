@@ -31,11 +31,17 @@ from .reverse_ip_tag_multicast_source_machine_vertex import (
 )
 from .streaming_context_manager import StreamingContextManager
 
-__all__ = ("CommandSender", "CommandSenderMachineVertex",
-           "ChipPowerMonitorMachineVertex",
-           "DataSpeedUpPacketGatherMachineVertex",
-           "EIEIOParameters", "ExtraMonitorSupportMachineVertex",
-           "LivePacketGather", "LivePacketGatherMachineVertex",
-           "MultiCastCommand", "ReverseIpTagMultiCastSource",
-           "ReverseIPTagMulticastSourceMachineVertex",
-           "StreamingContextManager")
+__all__ = (
+    "ChipPowerMonitorMachineVertex",
+    "CommandSender",
+    "CommandSenderMachineVertex",
+    "DataSpeedUpPacketGatherMachineVertex",
+    "EIEIOParameters",
+    "ExtraMonitorSupportMachineVertex",
+    "LivePacketGather",
+    "LivePacketGatherMachineVertex",
+    "MultiCastCommand",
+    "ReverseIPTagMulticastSourceMachineVertex",
+    "ReverseIpTagMultiCastSource",
+    "StreamingContextManager",
+)
