@@ -21,8 +21,9 @@ from .update_runtime_process import UpdateRuntimeProcess
 
 __all__ = (
     "ClearIOBUFProcess",
+    "GetCurrentTimeProcess",
     "LoadMCRoutesProcess",
     "ReinjectorControlProcess",
+    "SendPauseProcess",
     "UpdateRuntimeProcess",
-    "GetCurrentTimeProcess",
-    "SendPauseProcess")
+)

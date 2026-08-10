@@ -29,16 +29,17 @@ from .write_json_placements import write_json_placements
 from .write_json_routing_tables import write_json_routing_tables
 
 __all__ = (
-    "board_chip_report",
     "EnergyReport",
+    "board_chip_report",
+    "drift_report",
     "fixed_route_from_machine_report",
     "generate_routing_compression_checker_report",
-    "network_specification",
     "memory_map_on_host_chip_report",
     "memory_map_on_host_report",
+    "network_specification",
     "tags_from_machine_report",
     "write_json_machine",
     "write_json_placements",
     "write_json_routing_tables",
-    "drift_report",
-    "write_sample_profile_report")
+    "write_sample_profile_report",
+)

@@ -16,5 +16,8 @@ from .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from .abstract_receive_regions_to_host import AbstractReceiveRegionsToHost
 from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
 
-__all__ = ("AbstractReceiveBuffersToHost", "AbstractSendsBuffersFromHost",
-           "AbstractReceiveRegionsToHost")
+__all__ = (
+           "AbstractReceiveBuffersToHost",
+           "AbstractReceiveRegionsToHost",
+           "AbstractSendsBuffersFromHost",
+)

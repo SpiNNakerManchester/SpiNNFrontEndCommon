@@ -16,4 +16,4 @@ from .buffer_database import BufferDatabase
 from .buffered_sending_region import BufferedSendingRegion
 from .buffers_sent_deque import BuffersSentDeque
 
-__all__ = ("BufferedSendingRegion", "BuffersSentDeque", "BufferDatabase")
+__all__ = ("BufferDatabase", "BufferedSendingRegion", "BuffersSentDeque")
