@@ -77,9 +77,16 @@ class IOBufExtractor(object):
     """
 
     __slots__ = (
-        "_filename_template", "_recovery_mode", "__system_binaries",
-        "__app_path", "__sys_path", "__suppress_progress",
-        "__from_cores", "__binary_types", "__executable_targets")
+        "__app_path",
+        "__binary_types",
+        "__executable_targets",
+        "__from_cores",
+        "__suppress_progress",
+        "__sys_path",
+        "__system_binaries",
+        "_filename_template",
+        "_recovery_mode",
+    )
 
     def __init__(
             self, executable_targets: Optional[ExecutableTargets] = None, *,

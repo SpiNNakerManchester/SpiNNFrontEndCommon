@@ -64,7 +64,7 @@ class Plotter(ContextManager[SQLiteDB]):
     """
     Code to plot provenance data from the database
     """
-    __slots__ = ("cmap", "_db", "__have_insertion_order", "__verbose")
+    __slots__ = ("__have_insertion_order", "__verbose", "_db", "cmap")
 
     __pyplot: Optional[ModuleType] = None
     __seaborn: Optional[ModuleType] = None

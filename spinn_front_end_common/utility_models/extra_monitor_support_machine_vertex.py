@@ -134,22 +134,23 @@ class ExtraMonitorSupportMachineVertex(
     """
 
     __slots__ = (
-        # if we reinject multicast packets
-        "_reinject_multicast",
-        # if we reinject point to point packets
-        "_reinject_point_to_point",
-        # if we reinject nearest neighbour packets
-        "_reinject_nearest_neighbour",
-        # if we reinject fixed route packets
-        "_reinject_fixed_route",
         # placement holder for ease of access
         "__placement",
+        # provenance region address
+        "__prov_region",
         # app id, used for reporting failures on system core RTE
         "_app_id",
+        # if we reinject fixed route packets
+        "_reinject_fixed_route",
+        # if we reinject multicast packets
+        "_reinject_multicast",
+        # if we reinject nearest neighbour packets
+        "_reinject_nearest_neighbour",
+        # if we reinject point to point packets
+        "_reinject_point_to_point",
         # the local transaction id
         "_transaction_id",
-        # provenance region address
-        "__prov_region")
+    )
 
     def __init__(
             self, reinject_point_to_point: bool = False,

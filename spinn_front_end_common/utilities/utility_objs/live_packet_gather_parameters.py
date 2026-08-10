@@ -32,11 +32,25 @@ class LivePacketGatherParameters(object):
     """
 
     __slots__ = (
-        '_port', '_hostname', "_tag", "_strip_sdp", "_use_prefix",
-        "_key_prefix", "_prefix_type", "_message_type", "_right_shift",
-        "_payload_as_time_stamps", "_use_payload_prefix", "_payload_prefix",
-        "_payload_right_shift", "_n_packets_per_time_step", "_label",
-        "_received_key_mask", "_translate_keys", "_translated_key_right_shift")
+        '_hostname',
+        "_key_prefix",
+        "_label",
+        "_message_type",
+        "_n_packets_per_time_step",
+        "_payload_as_time_stamps",
+        "_payload_prefix",
+        "_payload_right_shift",
+        '_port',
+        "_prefix_type",
+        "_received_key_mask",
+        "_right_shift",
+        "_strip_sdp",
+        "_tag",
+        "_translate_keys",
+        "_translated_key_right_shift",
+        "_use_payload_prefix",
+        "_use_prefix",
+    )
 
     def __init__(
             self, port: int, hostname: str, tag: Optional[int] = None,

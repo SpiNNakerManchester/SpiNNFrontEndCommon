@@ -102,16 +102,16 @@ class _FecDataModel(object):
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_java_caller",
-        "_live_packet_recorder_params",
-        "_live_output_vertices",
         "_live_output_devices",
-        "_n_run_steps",
-        "_next_sync_signal",
-        "_next_ds_reference",
-        "_none_labelled_edge_count",
-        "_notification_protocol",
+        "_live_output_vertices",
+        "_live_packet_recorder_params",
         "_max_run_time_steps",
         "_monitor_map",
+        "_n_run_steps",
+        "_next_ds_reference",
+        "_next_sync_signal",
+        "_none_labelled_edge_count",
+        "_notification_protocol",
         "_run_step",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
@@ -119,7 +119,8 @@ class _FecDataModel(object):
         "_simulation_time_step_s",
         "_simulation_time_step_us",
         "_system_multicast_router_timeout_keys",
-        "_time_scale_factor")
+        "_time_scale_factor",
+    )
 
     def __new__(cls) -> _FecDataModel:
         if cls.__singleton:

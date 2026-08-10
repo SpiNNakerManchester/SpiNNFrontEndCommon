@@ -82,14 +82,15 @@ class Compression(object):
     compressor in order to parallelise.
     """
     __slots__ = (
+        "__failures",
+        "__result_register",
         "_binary_path",
         "_compress_as_much_as_possible",
         "_compress_only_when_needed",
         "_compressor_app_id",
         "_progresses_text",
-        "__result_register",
         "_routing_tables",
-        "__failures")
+    )
 
     def __init__(
             self, binary_path: str, progress_text: str,

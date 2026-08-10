@@ -30,14 +30,15 @@ from spinn_front_end_common.data import FecDataView
 
 class _HBPJobController(MachineAllocationController):
     __slots__ = (
+        "_check_lease_url",
         # the URLs to call the HBP system
         "_extend_lease_url",
-        "_check_lease_url",
+        "_machine_name",
+        "_power_on",
         "_release_machine_url",
         "_set_power_url",
         "_where_is_url",
-        "_machine_name",
-        "_power_on")
+    )
 
     _WAIT_TIME_MS = 10000
 

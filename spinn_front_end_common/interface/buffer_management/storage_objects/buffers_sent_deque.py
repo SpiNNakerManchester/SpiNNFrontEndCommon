@@ -39,26 +39,27 @@ class BuffersSentDeque(object):
     """
 
     __slots__ = (
-        #: The region being managed
-        "_region",
-
         #: A queue of messages sent, ordered by sequence number
         "_buffers_sent",
-
-        #: The current sequence number of the region
-        "_sequence_number",
-
-        #: A lock for the sequence number
-        "_sequence_lock",
 
         #: The last sequence number to be received on the machine
         "_last_received_sequence_number",
 
+        #: The number of sequence numbers allowed in a single transmission
+        "_n_sequences_per_transmission",
+
+        #: The region being managed
+        "_region",
+
         #: True if the stop message has been sent
         "_sent_stop_message",
 
-        #: The number of sequence numbers allowed in a single transmission
-        "_n_sequences_per_transmission")
+        #: A lock for the sequence number
+        "_sequence_lock",
+
+        #: The current sequence number of the region
+        "_sequence_number",
+    )
 
     def __init__(self, region: int, sent_stop_message: bool = False,
                  n_sequences_per_tranmission: int = 64):

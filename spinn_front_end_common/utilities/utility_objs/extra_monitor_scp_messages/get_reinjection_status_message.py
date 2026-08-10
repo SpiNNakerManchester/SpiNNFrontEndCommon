@@ -63,7 +63,7 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
     """
     An SCP response to a request for the dropped packet reinjection status
     """
-    __slots__ = ("_reinjection_status", "_command_code")
+    __slots__ = ("_command_code", "_reinjection_status")
 
     def __init__(self, command_code: ReinjectorSCPCommands):
         """

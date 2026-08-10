@@ -54,10 +54,10 @@ class FecTimer(object):
     _machine_on: bool = False
     _previous: List[TimerCategory] = []
     __slots__ = (
-        # The start time when the timer was set off
-        "_start_time",
         # Name of algorithm what is being timed
         "_algorithm",
+        # The start time when the timer was set off
+        "_start_time",
         # Type of work being done
         "_work")
 

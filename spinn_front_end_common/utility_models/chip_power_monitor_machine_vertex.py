@@ -92,7 +92,7 @@ class ChipPowerMonitorMachineVertex(
         This is an unusual machine vertex, in that it has no associated
         application vertex.
     """
-    __slots__ = ("__sampling_frequency", "__n_samples_per_recording")
+    __slots__ = ("__n_samples_per_recording", "__sampling_frequency")
 
     class _REGIONS(IntEnum):
         # data regions

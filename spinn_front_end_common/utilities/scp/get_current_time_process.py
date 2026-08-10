@@ -99,8 +99,8 @@ class GetCurrentTimeProcess(
         The cores must be using the simulation interface.
     """
     __slots__ = (
-        "__latest_time",
-        "__earliest_time"
+        "__earliest_time",
+        "__latest_time"
     )
 
     def __init__(self, connection_selector: MostDirectConnectionSelector):

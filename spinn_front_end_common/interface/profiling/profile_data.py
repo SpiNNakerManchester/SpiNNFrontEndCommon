@@ -42,14 +42,15 @@ class ProfileData(object):
     DURATION = _DURATION
 
     __slots__ = (
-        # A dictionary of tag label to numpy array of start times and durations
-        "_tags",
+        # The maximum time recorded
+        "_max_time",
 
         # A list of tag labels indexed by the tag ID
         "_tag_labels",
 
-        # The maximum time recorded
-        "_max_time")
+        # A dictionary of tag label to numpy array of start times and durations
+        "_tags",
+    )
 
     def __init__(self, tag_labels: Mapping[int, str]):
         """

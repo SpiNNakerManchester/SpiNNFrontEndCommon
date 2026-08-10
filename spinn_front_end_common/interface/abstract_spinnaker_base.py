@@ -225,25 +225,23 @@ class AbstractSpinnakerBase(ConfigHandler):
     """
 
     __slots__ = (
-        # Condition object used for waiting for stop
-        # Set during init and the used but never new object
-        "_state_condition",
+        # original value which is used in exception handling and control c
+        "__sys_excepthook",
 
-        # Set when run_until_complete is specified by the user
-        "_run_until_complete",
+        # Flag to say is compressed routing tables are on machine
+        # TODO remove this when the data change only algorithms are done
+        "_multicast_routes_loaded",
 
         #
         "_raise_keyboard_interrupt",
 
-        # original value which is used in exception handling and control c
-        "__sys_excepthook",
+        # Set when run_until_complete is specified by the user
+        "_run_until_complete",
 
-        # All beyond this point new for no extractor
-        # The data is not new but now it is held direct and not via inputs
-
-        # Flag to say is compressed routing tables are on machine
-        # TODO remove this when the data change only algorithms are done
-        "_multicast_routes_loaded")
+        # Condition object used for waiting for stop
+        # Set during init and the used but never new object
+        "_state_condition",
+    )
 
     def __init__(
             self, *, n_boards_required: Optional[int] = None,
