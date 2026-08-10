@@ -64,25 +64,26 @@ class JavaCaller(object):
     jar locations, parameters, etc. from the rest of the Python code.
     """
     __slots__ = (
+        # The location where the latest placement json is written
+        "__placement_json",
         "_chip_by_ethernet",
-        # The call to get Java to work. Including the path if required.
-        "_java_call",
+        # Dict of Ethernet (x, y) to the p of the packetGather vertex
+        "_gatherer_cores",
+        # Dict of Ethernet (x, y) and the packetGather IPtags
+        "_gatherer_iptags",
         # The location of the Java jar file
         "_jar_file",
+        # The call to get Java to work. Including the path if required.
+        "_java_call",
+        # Properties flag to be passed to Java
+        "_java_properties",
         # The location where the machine json is written
         "_machine_json_path",
         # Dict of chip (x, y) to the p of the monitor vertex
         "_monitor_cores",
         # Flag to indicate if at least one placement is recording
         "_recording",
-        # Dict of Ethernet (x, y) and the packetGather IPtags
-        "_gatherer_iptags",
-        # Dict of Ethernet (x, y) to the p of the packetGather vertex
-        "_gatherer_cores",
-        # The location where the latest placement json is written
-        "__placement_json",
-        # Properties flag to be passed to Java
-        "_java_properties")
+    )
 
     @classmethod
     def check_java(cls) -> str:

@@ -113,18 +113,19 @@ class BufferManager(object):
     __slots__ = (
         "__enable_monitors",
 
-        # Set of vertices with buffers to be sent
-        "_sender_vertices",
-
-        # Dictionary of sender vertex -> buffers sent
-        "_sent_messages",
-
         # Support class to help call Java
         "_java_caller",
 
         # The machine controller, in case it wants to make proxied connections
         # for us
-        "_machine_controller")
+        "_machine_controller",
+
+        # Set of vertices with buffers to be sent
+        "_sender_vertices",
+
+        # Dictionary of sender vertex -> buffers sent
+        "_sent_messages",
+    )
 
     def __init__(self) -> None:
         self.__enable_monitors: bool = get_config_bool(

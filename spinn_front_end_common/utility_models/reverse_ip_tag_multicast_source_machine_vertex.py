@@ -148,12 +148,23 @@ class ReverseIPTagMulticastSourceMachineVertex(
         array for each key, default disabled)
     """
     __slots__ = (
-        "_reverse_iptags", "_n_keys", "_is_recording",
-        "_first_machine_time_step", "_run_until_timesteps",
-        "_receive_rate", "_receive_sdp_port",
-        "_send_buffer", "_send_buffer_times", "_send_buffers",
-        "_send_buffer_size", "_virtual_key", "_mask", "_prefix",
-        "_prefix_type", "_check_keys")
+        "_check_keys",
+        "_first_machine_time_step",
+        "_is_recording",
+        "_mask",
+        "_n_keys",
+        "_prefix",
+        "_prefix_type",
+        "_receive_rate",
+        "_receive_sdp_port",
+        "_reverse_iptags",
+        "_run_until_timesteps",
+        "_send_buffer",
+        "_send_buffer_size",
+        "_send_buffer_times",
+        "_send_buffers",
+        "_virtual_key",
+    )
 
     class _Regions(IntEnum):
         SYSTEM = 0

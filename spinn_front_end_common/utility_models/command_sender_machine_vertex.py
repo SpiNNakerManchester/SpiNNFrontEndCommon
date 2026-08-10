@@ -78,11 +78,14 @@ class CommandSenderMachineVertex(
     response to particular events into a SpiNNaker application.
     """
     __slots__ = (
-        "_commands_at_start_resume", "_commands_at_pause_stop",
-        "_timed_commands",
-        "_keys_to_partition_id", "_partition_id_keys",
+        "_commands_at_pause_stop",
+        "_commands_at_start_resume",
         "_edge_partition_id_counter",
-        "_vertex_to_key_map")
+        "_keys_to_partition_id",
+        "_partition_id_keys",
+        "_timed_commands",
+        "_vertex_to_key_map",
+    )
 
     # Regions for populations
     class DataRegions(IntEnum):

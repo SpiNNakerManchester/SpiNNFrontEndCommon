@@ -69,12 +69,14 @@ class DatabaseWriter(SQLiteDB):
     """
 
     __slots__ = (
+        # Mappings used to accelerate inserts
+        "__machine_to_id",
+        "__vertex_to_id",
         # the path of the database
         "_database_path",
         # the identifier for the SpiNNaker machine
         "_machine_id",
-        # Mappings used to accelerate inserts
-        "__machine_to_id", "__vertex_to_id")
+    )
 
     def __init__(self) -> None:
         self._database_path = get_report_path("path_input_output_database")

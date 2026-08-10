@@ -48,8 +48,11 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
     machine and converted into multicast packets.
     """
     __slots__ = (
-        "__n_atoms", "_eieio_params", "_is_recording",
-        "__send_buffer_times",)
+        "__n_atoms",
+        "__send_buffer_times",
+        "_eieio_params",
+        "_is_recording",
+    )
 
     def __init__(
             self, n_keys: int, label: Optional[str] = None,

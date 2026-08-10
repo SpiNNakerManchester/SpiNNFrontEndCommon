@@ -32,15 +32,16 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
     """
 
     __slots__ = (
-        "_x",
-        "_y",
-        "_p",
         "_content",
         "_content_debug",
         "_ds_db",
-        "_report_writer",
+        "_p",
         "_region_num",
-        "_size")
+        "_report_writer",
+        "_size",
+        "_x",
+        "_y",
+    )
 
     def __init__(self, x: int, y: int, p: int, ds_db: DsSqlliteDatabase,
                  report_writer: Optional[TextIO] = None):

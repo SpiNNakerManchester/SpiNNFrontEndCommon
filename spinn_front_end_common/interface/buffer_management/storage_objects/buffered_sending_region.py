@@ -61,11 +61,12 @@ class BufferedSendingRegion(object):
         #: A dictionary of timestamp -> list of keys
         "_buffer",
 
+        #: The current position in the list of timestamps
+        "_current_timestamp_pos",
+
         #: A list of timestamps
         "_timestamps",
-
-        #: The current position in the list of timestamps
-        "_current_timestamp_pos")
+    )
 
     def __init__(self) -> None:
         self._buffer: Dict[int, List[int]] = {}

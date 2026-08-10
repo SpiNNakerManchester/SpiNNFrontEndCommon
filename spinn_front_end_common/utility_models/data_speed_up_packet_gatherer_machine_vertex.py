@@ -241,14 +241,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         application vertex.
     """
     __slots__ = (
-        # x coordinate
-        "_x",
-        # y coordinate
-        "_y",
+        # my placement for future lookup
+        "__placement",
+
         # word with x and y
         "_coord_word",
-        # transaction id
-        "_transaction_id",
         # IP address
         "_ip_address",
         # store for the last reinjection status
@@ -259,13 +256,18 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_missing_seq_nums_data_in",
         # holder of data from out
         "_output",
-        # my placement for future lookup
-        "__placement",
+        "_remote_tag",
         # Count of the runs for provenance data
         "_run",
-        "_remote_tag",
+        # transaction id
+        "_transaction_id",
         # data holder for output
-        "_view")
+        "_view",
+        # x coordinate
+        "_x",
+        # y coordinate
+        "_y",
+    )
 
     #: base key (really nasty hack to tie in fixed route keys)
     BASE_KEY = 0xFFFFFFF9
