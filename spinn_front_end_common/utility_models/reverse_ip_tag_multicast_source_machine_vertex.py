@@ -644,11 +644,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         max_offset = (FecDataView.get_hardware_time_step_us() // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
-            ((int(math.ceil(
+            ((math.ceil(
                 max_offset /
-                ReverseIPTagMulticastSourceMachineVertex._n_vertices)) *
+                ReverseIPTagMulticastSourceMachineVertex._n_vertices) *
               ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
-             int(math.ceil(max_offset))) % _MAX_OFFSET_MODULO)
+             math.ceil(max_offset)) % _MAX_OFFSET_MODULO)
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)

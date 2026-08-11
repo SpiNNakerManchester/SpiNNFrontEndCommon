@@ -40,7 +40,7 @@ def get_n_bytes(n_keys: int) -> int:
     :param n_keys: The number of keys
     """
     # Get the total number of messages
-    n_messages = int(math.ceil(float(n_keys) / _N_KEYS_PER_MESSAGE))
+    n_messages = math.ceil(float(n_keys) / _N_KEYS_PER_MESSAGE)
 
     # Add up the bytes
     return ((_HEADER_SIZE * n_messages) +
