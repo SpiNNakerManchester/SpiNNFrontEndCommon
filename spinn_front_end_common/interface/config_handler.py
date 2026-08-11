@@ -17,7 +17,7 @@ import os
 import shutil
 import traceback
 from configparser import NoOptionError
-from typing import List, Optional, cast
+from typing import Optional, cast
 
 from spinn_utilities.config_holder import (
     config_options,
@@ -84,8 +84,8 @@ class ConfigHandler(AbstractSpiNNManSimulation):
     def _data_writer(self) -> FecDataWriter:
         return cast(FecDataWriter, self._untyped_data_writer)
 
-    def __toggle_config(self, section: str, option: str, to_false: List[str],
-                        to_true: List[str]) -> None:
+    def __toggle_config(self, section: str, option: str, to_false: list[str],
+                        to_true: list[str]) -> None:
         previous = get_config_str(section, option).lower()
         if previous in to_true:
             set_config(section, option, "True")

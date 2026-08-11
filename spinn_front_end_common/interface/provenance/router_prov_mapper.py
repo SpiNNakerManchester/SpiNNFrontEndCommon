@@ -19,12 +19,8 @@ from types import ModuleType, TracebackType
 from typing import (
     Any,
     ContextManager,
-    FrozenSet,
     Iterable,
-    List,
     Optional,
-    Tuple,
-    Type,
     cast,
 )
 
@@ -84,7 +80,7 @@ class Plotter(ContextManager[SQLiteDB]):
     def __enter__(self) -> SQLiteDB:
         return self._db.__enter__()
 
-    def __exit__(self, exc_type: Optional[Type],
+    def __exit__(self, exc_type: Optional[type],
                  exc_val: Optional[BaseException],
                  exc_tb: Optional[TracebackType]) -> Literal[False]:
         return self._db.__exit__(exc_type, exc_val, exc_tb)
@@ -115,7 +111,7 @@ class Plotter(ContextManager[SQLiteDB]):
             GROUP BY x, y, p
             """, (description, ))
 
-    def get_per_chip_prov_types(self) -> FrozenSet[str]:
+    def get_per_chip_prov_types(self) -> frozenset[str]:
         """
         :returns: A set of the descriptions available at chip level
         """
@@ -127,7 +123,7 @@ class Plotter(ContextManager[SQLiteDB]):
         return frozenset(row["description"]
                          for row in self._db.cursor().execute(query))
 
-    def get_per_chip_prov_details(self, info: str) -> Tuple[
+    def get_per_chip_prov_details(self, info: str) -> tuple[
             str, int, int, numpy.ndarray]:
         """
         Gets the provenance of a per chip basis
@@ -190,7 +186,7 @@ class Plotter(ContextManager[SQLiteDB]):
             GROUP BY x, y
             """, (description, ))
 
-    def get_per_core_prov_types(self) -> FrozenSet[str]:
+    def get_per_core_prov_types(self) -> frozenset[str]:
         """
         :returns: A set of the descriptions available at core level
         """
@@ -204,7 +200,7 @@ class Plotter(ContextManager[SQLiteDB]):
             cast(str, row["description"])
             for row in self._db.cursor().execute(query))
 
-    def get_sum_chip_prov_details(self, info: str) -> Tuple[
+    def get_sum_chip_prov_details(self, info: str) -> tuple[
             str, int, int, numpy.ndarray]:
         """
         Gets the sum of the provenance
@@ -213,9 +209,9 @@ class Plotter(ContextManager[SQLiteDB]):
             The name of the metadata to sum
         :return: name, max x, max y and data
         """
-        data: List[Tuple[int, int, Any]] = []
-        xs: List[int] = []
-        ys: List[int] = []
+        data: list[tuple[int, int, Any]] = []
+        xs: list[int] = []
+        ys: list[int] = []
         name: Optional[str] = None
         for row in self.__do_sum_query("%" + info + "%"):
             if name is None:
@@ -230,7 +226,7 @@ class Plotter(ContextManager[SQLiteDB]):
         return name.replace("_", " "), max(xs) + 1, max(ys) + 1, ary
 
     @classmethod
-    def __plotter_apis(cls) -> Tuple[ModuleType, ModuleType]:
+    def __plotter_apis(cls) -> tuple[ModuleType, ModuleType]:
         # Import here because otherwise CI fails
         # pylint: disable=import-error,import-outside-toplevel
         if not cls.__pyplot:

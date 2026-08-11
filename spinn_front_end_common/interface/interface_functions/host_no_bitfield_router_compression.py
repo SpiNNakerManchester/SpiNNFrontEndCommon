@@ -14,7 +14,6 @@
 
 import logging
 import struct
-from typing import List
 
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
@@ -76,7 +75,7 @@ def ordered_covering_compression() -> None:
     compression.compress()
 
 
-class Compression(object):
+class Compression:
     """
     Compression algorithm implementation that uses a on-chip router
     compressor in order to parallelise.
@@ -109,7 +108,7 @@ class Compression(object):
         self._routing_tables = FecDataView.get_precompressed()
         self._progresses_text = progress_text
         self._compressor_app_id = -1
-        self.__failures: List[XY] = []
+        self.__failures: list[XY] = []
         self.__result_register = result_register
 
     def compress(self) -> None:

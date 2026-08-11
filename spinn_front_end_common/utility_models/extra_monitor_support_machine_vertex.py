@@ -17,7 +17,7 @@ import logging
 import struct
 from enum import Enum, IntEnum
 from types import TracebackType
-from typing import ContextManager, Dict, Iterable, Optional, Type
+from typing import ContextManager, Iterable, Optional
 
 from typing_extensions import Literal
 
@@ -433,7 +433,7 @@ class ExtraMonitorSupportMachineVertex(
             return process.get_reinjection_status(
                 placement.x, placement.y, placement.p)
 
-    def get_reinjection_status_for_vertices(self) -> Dict[
+    def get_reinjection_status_for_vertices(self) -> dict[
             Chip, ReInjectionStatus]:
         """
         Get the reinjection status from a set of extra monitor cores.
@@ -538,7 +538,7 @@ class _Recoverer:
     def __enter__(self) -> Placement:
         return self.__placement
 
-    def __exit__(self, exc_type: Optional[Type],
+    def __exit__(self, exc_type: Optional[type],
                  exc_val: Optional[BaseException],
                  exc_tb: Optional[TracebackType]) -> Literal[False]:
         if exc_val:

@@ -24,10 +24,7 @@ from typing import (
     Any,
     BinaryIO,
     Iterable,
-    List,
     Optional,
-    Set,
-    Tuple,
 )
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path
@@ -331,7 +328,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         self._transaction_id = 0
 
-        self._missing_seq_nums_data_in: List[Set[int]] = []
+        self._missing_seq_nums_data_in: list[set[int]] = []
 
         # Create a connection to be used
         self._x, self._y = x, y
@@ -366,7 +363,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @property
     @overrides(MachineVertex.iptags)
-    def iptags(self) -> List[IPtagResource]:
+    def iptags(self) -> list[IPtagResource]:
         return [IPtagResource(
             port=self._TAG_INITIAL_PORT, strip_sdp=True,
             ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
@@ -668,7 +665,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # Don't create a missing buffer until at least one packet has
                 # come back.
-                missing: Optional[Set[int]] = None
+                missing: Optional[set[int]] = None
 
                 while not received_confirmation:
                     try:
@@ -733,7 +730,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _read_in_missing_seq_nums(
             self, data: bytes, position: int,
-            seq_nums: Set[int]) -> Tuple[bool, bool]:
+            seq_nums: set[int]) -> tuple[bool, bool]:
         """
         Handles a missing sequence number packet from SpiNNaker.
 
@@ -765,7 +762,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return seen_last, seen_all
 
     def _outgoing_retransmit_missing_seq_nums(
-            self, data_to_write: bytearray | bytes, missing: Set[int],
+            self, data_to_write: bytearray | bytes, missing: set[int],
             connection: SCAMPConnection) -> None:
         """
         Transmits back into SpiNNaker the missing data based off missing
@@ -799,7 +796,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def __make_data_in_stream_message(
             self, data_to_write: bytearray | bytes, seq_num: int,
-            position: Optional[int]) -> Tuple[SDPMessage, int]:
+            position: Optional[int]) -> tuple[SDPMessage, int]:
         """
         Determine the data needed to be sent to the SpiNNaker machine
         given a sequence number.
@@ -924,7 +921,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         FecDataView.get_monitor_by_xy(0, 0).load_system_mc_routes()
 
-    def set_router_wait1_timeout(self, timeout: Tuple[int, int]) -> None:
+    def set_router_wait1_timeout(self, timeout: tuple[int, int]) -> None:
         """
         Set the wait1 field for a set of routers.
 
@@ -943,7 +940,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def set_router_wait2_timeout(self, timeout: Tuple[int, int]) -> None:
+    def set_router_wait2_timeout(self, timeout: tuple[int, int]) -> None:
         """
         Set the wait2 field for a set of routers.
 
@@ -1095,9 +1092,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _receive_data(
             self, placement: Placement, connection: SCAMPConnection,
-            transaction_id: int) -> List[int]:
-        seq_nums: Set[int] = set()
-        lost_seq_nums: List[int] = []
+            transaction_id: int) -> list[int]:
+        seq_nums: set[int] = set()
+        lost_seq_nums: list[int] = []
         timeoutcount = 0
         finished = False
         while not finished:
@@ -1129,7 +1126,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return lost_seq_nums
 
     @staticmethod
-    def __describe_fixed_route_from(placement: Placement) -> List[XY]:
+    def __describe_fixed_route_from(placement: Placement) -> list[XY]:
         """
         Traverse the fixed route paths from a given location to its
         destination. Used for determining which routers were used.
@@ -1166,7 +1163,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 f"[{placement.x}:{placement.y}:{placement.p}] "
                 f"= {routers_used}\n")
 
-    def __missing_seq_nums(self, seq_nums: Set[int]) -> List[int]:
+    def __missing_seq_nums(self, seq_nums: set[int]) -> list[int]:
         """
         Determine which sequence numbers we've missed.
 
@@ -1176,8 +1173,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         return [sn for sn in range(self._max_seq_num) if sn not in seq_nums]
 
     def _determine_and_retransmit_missing_seq_nums(
-            self, seq_nums: Set[int], placement: Placement,
-            lost_seq_nums: List[int], transaction_id: int,
+            self, seq_nums: set[int], placement: Placement,
+            lost_seq_nums: list[int], transaction_id: int,
             connection: SCAMPConnection) -> bool:
         """
         Determine if there are any missing sequence numbers, and if so
@@ -1279,10 +1276,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         return False
 
     def _process_data(
-            self, data: bytes, seq_nums: Set[int], finished: bool,
-            placement: Placement, lost_seq_nums: List[int],
+            self, data: bytes, seq_nums: set[int], finished: bool,
+            placement: Placement, lost_seq_nums: list[int],
             transaction_id: int,
-            connection: SCAMPConnection) -> Tuple[Set[int], bool]:
+            connection: SCAMPConnection) -> tuple[set[int], bool]:
         """
         Take a packet and process it see if we're finished yet.
 

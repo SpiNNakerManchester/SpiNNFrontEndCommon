@@ -14,7 +14,7 @@
 from typing import Any
 
 
-class PowerUsed(object):
+class PowerUsed:
     """
     Describes the power used by a simulation.
     """

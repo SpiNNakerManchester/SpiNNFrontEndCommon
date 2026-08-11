@@ -15,7 +15,7 @@
 import logging
 import os
 import sqlite3
-from typing import Dict, Iterable, List, Optional, Tuple, cast
+from typing import Iterable, Optional, cast
 
 import numpy
 
@@ -112,8 +112,8 @@ class DsSqlliteDatabase(SQLiteDB):
             VALUES(?, ?, ?, ?)
             """, (x, y, p, is_system))
 
-    def get_core_infos(self, is_system: bool) -> List[
-            Tuple[int, int, int, int, int]]:
+    def get_core_infos(self, is_system: bool) -> list[
+            tuple[int, int, int, int, int]]:
         """
         Gets a list of id, x, y, p, ethernet_x, ethernet_y for all cores
         according to is_system
@@ -124,7 +124,7 @@ class DsSqlliteDatabase(SQLiteDB):
             (x, y, p, ethernet_x, ethernet_y)
             for each system or app core
         """
-        core_infos: List[Tuple[int, int, int, int, int]] = []
+        core_infos: list[tuple[int, int, int, int, int]] = []
         for row in self.cursor().execute(
                 """
                 SELECT x, y, p, ethernet_x, ethernet_y
@@ -218,7 +218,7 @@ class DsSqlliteDatabase(SQLiteDB):
             """, (x, y, p, region_num, reference, ref_label))
 
     def get_reference_pointers(self, x: int, y: int, p: int) -> Iterable[
-            Tuple[int, int]]:
+            tuple[int, int]]:
         """
         Yields the reference regions and where they point for this core
 
@@ -242,7 +242,7 @@ class DsSqlliteDatabase(SQLiteDB):
             yield row["ref_region"], row["pointer"]
 
     def get_unlinked_references(self) -> Iterable[
-            Tuple[int, int, int, int, int, str]]:
+            tuple[int, int, int, int, int, str]]:
         """
         Finds and yields info on unreferenced links
 
@@ -263,7 +263,7 @@ class DsSqlliteDatabase(SQLiteDB):
             yield (row["x"], row["y"], row["ref_p"], row["ref_region"],
                    row["reference_num"], str(row["ref_label"], "utf8"))
 
-    def get_double_region(self) -> Iterable[Tuple[int, int, int, int]]:
+    def get_double_region(self) -> Iterable[tuple[int, int, int, int]]:
         """
         Finds and yields any region that was used in both region definition
             and a reference
@@ -346,7 +346,7 @@ class DsSqlliteDatabase(SQLiteDB):
             return row["pointer"]
         raise DsDatabaseException(f"No region {x=} {y=} {p=} {region_num=}")
 
-    def get_region_sizes(self, x: int, y: int, p: int) -> Dict[int, int]:
+    def get_region_sizes(self, x: int, y: int, p: int) -> dict[int, int]:
         """
         Gets a dict of the regions and sizes reserved
 
@@ -358,7 +358,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param p: Processor ID of the core
         :return: dict of region_num to size but only for regions with a size
         """
-        regions: Dict[int, int] = {}
+        regions: dict[int, int] = {}
         for row in self.cursor().execute(
                 """
                 SELECT region_num, size
@@ -455,7 +455,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 f"No region {x=} {y=} {p=} {region_num=}")
 
     def get_region_pointers_and_content(
-            self, x: int, y: int, p: int) -> Iterable[Tuple[
+            self, x: int, y: int, p: int) -> Iterable[tuple[
                 int, int, Optional[bytearray]]]:
         """
         Yields the number, pointers and content for each reserved region
@@ -484,7 +484,7 @@ class DsSqlliteDatabase(SQLiteDB):
             yield row["region_num"], row["pointer"], content
 
     def get_regions_content(self, x: int, y: int,
-                            p: int) -> Iterable[Tuple[int, int, bytearray]]:
+                            p: int) -> Iterable[tuple[int, int, bytearray]]:
         """
         Yields the number, pointers and content for each region
 
@@ -527,7 +527,7 @@ class DsSqlliteDatabase(SQLiteDB):
             return the_max
         raise DsDatabaseException("Max content size query")
 
-    def get_content_sizes(self, is_system: bool) -> List[Tuple[int, int]]:
+    def get_content_sizes(self, is_system: bool) -> list[tuple[int, int]]:
         """
         Returns the sizes of the content and the count of each size.
 
@@ -537,7 +537,7 @@ class DsSqlliteDatabase(SQLiteDB):
             otherwise application cores
         :returns: The sizes of the content and the count of each size
         """
-        sizes: List[Tuple[int, int]] = []
+        sizes: list[tuple[int, int]] = []
         for row in self.cursor().execute(
                 """
                 SELECT LENGTH(content) AS size, COUNT(*) AS num
@@ -627,7 +627,7 @@ class DsSqlliteDatabase(SQLiteDB):
             to_write += row["contents_size"]
         return to_write
 
-    def get_info_for_cores(self) -> Iterable[Tuple[XYP, int, int, int]]:
+    def get_info_for_cores(self) -> Iterable[tuple[XYP, int, int, int]]:
         """
         Yields the (x, y, p) and write info for each core
 

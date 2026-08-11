@@ -15,7 +15,7 @@
 
 import logging
 import os
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 from spinn_utilities.config_holder import (
     get_config_int,
@@ -273,8 +273,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             rounded / MICRO_TO_MILLISECOND_CONVERSION)
 
     def set_system_multicast_routing_data(
-            self, data: Tuple[
-                MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]) -> None:
+            self, data: tuple[
+                MulticastRoutingTables, dict[XY, int], dict[XY, int]]) -> None:
         """
         Sets the system_multicast_routing_data.
 
@@ -296,7 +296,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
 
     def set_fixed_routes(
-            self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]) -> None:
+            self, fixed_routes: dict[tuple[int, int], RoutingEntry]) -> None:
         """
         Sets the routes.
 
@@ -322,7 +322,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         self.__fec_data._next_sync_signal = Signal.SYNC0
 
-    def set_executable_types(self, executable_types: Dict[
+    def set_executable_types(self, executable_types: dict[
             ExecutableType, CoreSubsets]) -> None:
         """
         Sets/ overwrites the executable types
@@ -371,7 +371,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             "gatherer_map must be a dict(Chip, "
             "DataSpeedUpPacketGatherMachineVertex)")
 
-    def set_gatherer_map(self, gatherer_map: Dict[
+    def set_gatherer_map(self, gatherer_map: dict[
             Chip, DataSpeedUpPacketGatherMachineVertex]) -> None:
         """
         Sets the map of Chip to Gatherer Vertices.
@@ -397,7 +397,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             "monitor_map must be a dict(Chip, "
             "ExtraMonitorSupportMachineVertex)")
 
-    def set_monitor_map(self, monitor_map: Dict[
+    def set_monitor_map(self, monitor_map: dict[
             Chip, ExtraMonitorSupportMachineVertex]) -> None:
         """
         Sets the map of Chip to Monitor Vertices.

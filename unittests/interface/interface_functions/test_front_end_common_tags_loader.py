@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import unittest
-from typing import List
 
 from spinn_utilities.overrides import overrides
 
@@ -32,8 +31,8 @@ from spinn_front_end_common.interface.interface_functions import tags_loader
 class _MockTransceiver(MockableTransceiver):
 
     def __init__(self) -> None:
-        self._ip_tags: List[IPTag] = []
-        self._reverse_ip_tags: List[ReverseIPTag] = []
+        self._ip_tags: list[IPTag] = []
+        self._reverse_ip_tags: list[ReverseIPTag] = []
 
     @overrides(MockableTransceiver.set_ip_tag)
     def set_ip_tag(self, ip_tag: IPTag, use_sender: bool = False) -> None:

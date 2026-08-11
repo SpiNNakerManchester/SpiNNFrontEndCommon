@@ -14,7 +14,7 @@
 
 import logging
 from collections import defaultdict
-from typing import Dict, List, Optional, Set, Tuple, cast
+from typing import Optional, cast
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
@@ -40,8 +40,8 @@ ROUTING_MASK = 0xFFFFFFF8
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def system_multicast_routing_generator() -> Tuple[
-        MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]:
+def system_multicast_routing_generator() -> tuple[
+        MulticastRoutingTables, dict[XY, int], dict[XY, int]]:
     """
     Generates routing table entries used by the data-in processes with the
     extra monitor cores.
@@ -52,7 +52,7 @@ def system_multicast_routing_generator() -> Tuple[
     return _SystemMulticastRoutingGenerator().generate_system_routes()
 
 
-class _SystemMulticastRoutingGenerator(object):
+class _SystemMulticastRoutingGenerator:
     """
     Generates routing table entries used by the data in processes with the
     extra monitor cores.
@@ -66,11 +66,11 @@ class _SystemMulticastRoutingGenerator(object):
     def __init__(self) -> None:
         self._machine = FecDataView.get_machine()
         self._routing_tables = MulticastRoutingTables()
-        self._key_to_destination_map: Dict[XY, int] = {}
-        self._time_out_keys_by_board: Dict[XY, int] = {}
+        self._key_to_destination_map: dict[XY, int] = {}
+        self._time_out_keys_by_board: dict[XY, int] = {}
 
-    def generate_system_routes(self) -> Tuple[
-            MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]:
+    def generate_system_routes(self) -> tuple[
+            MulticastRoutingTables, dict[XY, int], dict[XY, int]]:
         """
         :return: routing tables, destination-to-key map,
             board-location-to-timeout-key map
@@ -93,20 +93,20 @@ class _SystemMulticastRoutingGenerator(object):
     __LINK_ORDER = (1, 0, 2, 5, 3, 4)
 
     def _generate_routing_tree(self, ethernet_chip: Chip) -> Optional[
-            Dict[Chip, Tuple[Chip, int]]]:
+            dict[Chip, tuple[Chip, int]]]:
         """
         Generates a map for each chip to over which link it gets its data.
 
         :param ethernet_chip:
         :return: Map of chip to (source_chip, source_link)
         """
-        tree: Dict[Chip, Tuple[Chip, int]] = {}
+        tree: dict[Chip, tuple[Chip, int]] = {}
         to_reach = set(self._machine.get_chips_by_ethernet(
             ethernet_chip.x, ethernet_chip.y))
         to_reach.remove(ethernet_chip)
         found = {ethernet_chip}
         while to_reach:
-            just_reached: Set[Chip]
+            just_reached: set[Chip]
             just_reached, found = found, set()
             for chip in just_reached:
                 # Check links starting with the most direct from 0,0
@@ -127,8 +127,8 @@ class _SystemMulticastRoutingGenerator(object):
         return tree
 
     def _logging_retry(
-            self, ethernet_chip: Chip) -> Dict[Chip, Tuple[Chip, int]]:
-        tree: Dict[Chip, Tuple[Chip, int]] = {}
+            self, ethernet_chip: Chip) -> dict[Chip, tuple[Chip, int]]:
+        tree: dict[Chip, tuple[Chip, int]] = {}
         to_reach = set(self._machine.get_chips_by_ethernet(
             ethernet_chip.x, ethernet_chip.y))
         to_reach.remove(ethernet_chip)
@@ -168,7 +168,7 @@ class _SystemMulticastRoutingGenerator(object):
 
     def _add_routing_entry(
             self, chip: Chip, key: int, *, processor_id: Optional[int] = None,
-            link_ids: Optional[List[int]] = None) -> None:
+            link_ids: Optional[list[int]] = None) -> None:
         """
         Adds a routing entry on this chip, creating the table if needed.
 
@@ -196,7 +196,7 @@ class _SystemMulticastRoutingGenerator(object):
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(self, ethernet_chip: Chip,
-                             tree: Dict[Chip, Tuple[Chip, int]]) -> None:
+                             tree: dict[Chip, tuple[Chip, int]]) -> None:
         """
         Adds the routing entries based on the tree.
 

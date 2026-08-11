@@ -21,7 +21,7 @@ import subprocess
 import sys
 from collections import defaultdict
 from io import BufferedReader
-from typing import Dict, Iterable, List, Optional, cast
+from typing import Iterable, Optional, cast
 
 from spinn_utilities.config_holder import (
     get_config_str,
@@ -54,7 +54,7 @@ from spinn_front_end_common.utilities.exceptions import (
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class JavaCaller(object):
+class JavaCaller:
     """
     Support class that holds all the stuff for running stuff in Java.
     This includes the work of preparing data for transmitting to Java and
@@ -116,11 +116,11 @@ class JavaCaller(object):
 
         self._machine_json_path: Optional[str] = None
         self.__placement_json: Optional[str] = None
-        self._monitor_cores: Optional[Dict[Chip, int]] = None
-        self._gatherer_iptags: Optional[Dict[Chip, IPTag]] = None
-        self._gatherer_cores: Optional[Dict[Chip, int]] = None
+        self._monitor_cores: Optional[dict[Chip, int]] = None
+        self._gatherer_iptags: Optional[dict[Chip, IPTag]] = None
+        self._gatherer_cores: Optional[dict[Chip, int]] = None
         java_properties = get_config_str_or_none("Java", "java_properties")
-        self._chip_by_ethernet: Optional[Dict[Chip, List[Chip]]] = None
+        self._chip_by_ethernet: Optional[dict[Chip, list[Chip]]] = None
         if java_properties is not None:
             self._java_properties = java_properties.split()
             for _property in self._java_properties:
@@ -286,9 +286,9 @@ class JavaCaller(object):
             "trafficIdentifier": iptag.traffic_identifier}
 
     def _placements_grouped(
-            self, recording_placements: Iterable[Placement]) -> Dict[
-                Chip, Dict[Chip, List[Placement]]]:
-        by_ethernet: Dict[Chip, Dict[Chip, List[Placement]]] = defaultdict(
+            self, recording_placements: Iterable[Placement]) -> dict[
+                Chip, dict[Chip, list[Placement]]]:
+        by_ethernet: dict[Chip, dict[Chip, list[Placement]]] = defaultdict(
             lambda: defaultdict(list))
         machine = FecDataView.get_machine()
         for placement in recording_placements:

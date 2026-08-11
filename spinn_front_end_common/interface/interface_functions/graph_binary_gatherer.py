@@ -40,7 +40,7 @@ def graph_binary_gatherer() -> ExecutableTargets:
     return _GraphBinaryGatherer().gather_binaries()
 
 
-class _GraphBinaryGatherer(object):
+class _GraphBinaryGatherer:
     """
     Extracts binaries to be executed.
     """

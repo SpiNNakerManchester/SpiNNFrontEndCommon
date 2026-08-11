@@ -15,7 +15,6 @@
 import logging
 import math
 from enum import IntEnum
-from typing import List
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -253,7 +252,7 @@ class ChipPowerMonitorMachineVertex(
             placement, self._REGIONS.RECORDING)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
-    def get_recorded_region_ids(self) -> List[int]:
+    def get_recorded_region_ids(self) -> list[int]:
         return [0]
 
     def _deduce_sdram_requirements_per_timer_tick(self) -> int:

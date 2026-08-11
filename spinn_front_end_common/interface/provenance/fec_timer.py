@@ -19,7 +19,7 @@ from collections.abc import Sized
 from datetime import timedelta
 from sqlite3 import DatabaseError
 from types import TracebackType
-from typing import TYPE_CHECKING, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from typing_extensions import Literal, Self
 
@@ -40,7 +40,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _NANO_TO_MICRO = 1000.0
 
 
-class FecTimer(object):
+class FecTimer:
     """
     Timer.
     """
@@ -52,7 +52,7 @@ class FecTimer(object):
     _category_time: int = 0
     # machine on cycle to allocate time to
     _machine_on: bool = False
-    _previous: List[TimerCategory] = []
+    _previous: list[TimerCategory] = []
     __slots__ = (
         # Name of algorithm what is being timed
         "_algorithm",
@@ -240,7 +240,7 @@ class FecTimer(object):
             return True
 
     def skip_all_cfgs_false(
-            self, pairs: List[Tuple[str, str]], reason: str) -> bool:
+            self, pairs: list[tuple[str, str]], reason: str) -> bool:
         """
         Skips if all Boolean cfg values are False.
 
@@ -295,7 +295,7 @@ class FecTimer(object):
         """
         return timedelta(microseconds=time_diff / _NANO_TO_MICRO)
 
-    def __exit__(self, exc_type: Optional[Type],
+    def __exit__(self, exc_type: Optional[type],
                  exc_val: Optional[BaseException],
                  exc_tb: Optional[TracebackType]) -> Literal[False]:
         if self._start_time is None:

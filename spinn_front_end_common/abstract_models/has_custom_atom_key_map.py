@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Iterable, Tuple
+from typing import Iterable
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
@@ -24,7 +24,7 @@ from pacman.model.routing_info.routing_info import RoutingInfo
 
 
 @require_subclass(ApplicationVertex)
-class HasCustomAtomKeyMap(object, metaclass=AbstractBase):
+class HasCustomAtomKeyMap(metaclass=AbstractBase):
     """
     An object that can provide a custom atom-key mapping for a partition.
     Useful when there isn't a one-to-one correspondence between atoms
@@ -34,7 +34,7 @@ class HasCustomAtomKeyMap(object, metaclass=AbstractBase):
     @abstractmethod
     def get_atom_key_map(
             self, pre_vertex: MachineVertex, partition_id: str,
-            routing_info: RoutingInfo) -> Iterable[Tuple[int, int]]:
+            routing_info: RoutingInfo) -> Iterable[tuple[int, int]]:
         """
         Get the mapping between atoms and keys for the given partition id,
         and for the given machine pre-vertex.

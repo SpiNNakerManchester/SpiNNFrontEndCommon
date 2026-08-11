@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Sequence
+from typing import Sequence
 
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD,
@@ -50,7 +50,7 @@ def get_recording_data_constant_size(n_recording_regions: int) -> int:
 
 
 def get_recording_header_array(
-        recorded_region_sizes: Sequence[int]) -> List[int]:
+        recorded_region_sizes: Sequence[int]) -> list[int]:
     """
     Get data to be written for the recording header.
 

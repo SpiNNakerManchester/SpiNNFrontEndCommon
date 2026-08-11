@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import struct
 from enum import IntEnum
-from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Optional, Sequence
 
 from spinn_utilities.overrides import overrides
 
@@ -95,7 +95,7 @@ class LivePacketGatherMachineVertex(
 
         # app specific data items
         self._lpg_params = lpg_params
-        self._incoming_sources: List[Tuple[MachineVertex, str]] = []
+        self._incoming_sources: list[tuple[MachineVertex, str]] = []
 
     def add_incoming_source(
             self, m_vertex: MachineVertex, partition_id: str) -> None:
@@ -135,7 +135,7 @@ class LivePacketGatherMachineVertex(
 
     @property
     @overrides(MachineVertex.iptags)
-    def iptags(self) -> List[IPtagResource]:
+    def iptags(self) -> list[IPtagResource]:
         return [self._lpg_params.get_iptag_resource()]
 
     @overrides(
@@ -213,7 +213,7 @@ class LivePacketGatherMachineVertex(
         self.reserve_provenance_data_region(spec)
 
     def _write_configuration_region(self, spec: DataSpecificationGenerator,
-                                    iptags: List[IPTag]) -> None:
+                                    iptags: list[IPTag]) -> None:
         """
         Write the configuration region to the spec.
 

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Sequence, Tuple
+from typing import Sequence
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
@@ -23,7 +23,7 @@ from pacman.model.placements import Placement
 
 
 @require_subclass(MachineVertex)
-class AbstractReceiveRegionsToHost(object, metaclass=AbstractBase):
+class AbstractReceiveRegionsToHost(metaclass=AbstractBase):
     """
     Indicates that this :py:class:`~pacman.model.graphs.machine.MachineVertex`
     has regions that are to be downloaded to the host.
@@ -33,7 +33,7 @@ class AbstractReceiveRegionsToHost(object, metaclass=AbstractBase):
 
     @abstractmethod
     def get_download_regions(self, placement: Placement) -> Sequence[
-            Tuple[int, int, int]]:
+            tuple[int, int, int]]:
         """
         Get the region IDs that are to be downloaded
 

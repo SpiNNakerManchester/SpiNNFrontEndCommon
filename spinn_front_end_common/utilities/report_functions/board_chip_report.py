@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, TextIO, Tuple
+from typing import TextIO
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.progress_bar import ProgressBar
@@ -48,7 +48,7 @@ def _write_report(
         writer.write(
             f"board with IP address: {e_chip.ip_address}\n")
         for l_x, l_y in machine.local_xys:
-            down_chips: List[Tuple[int, int]] = []
+            down_chips: list[tuple[int, int]] = []
             x, y = machine.get_global_xy(l_x, l_y, e_chip.x, e_chip.y)
             if machine.is_chip_at(x, y):
                 chip = machine[x, y]

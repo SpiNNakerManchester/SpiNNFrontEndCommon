@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, List, Tuple
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 from pacman.model.graphs.machine.machine_vertex import MachineVertex
 
 
-class LiveOutputDevice(object, metaclass=AbstractBase):
+class LiveOutputDevice(metaclass=AbstractBase):
     """
     Indicates a device that will live-output other vertices, and so has a
     different mapping of keys to atoms.
@@ -27,8 +26,8 @@ class LiveOutputDevice(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def get_device_output_keys(self) -> Dict[MachineVertex,
-                                             List[Tuple[int, int]]]:
+    def get_device_output_keys(self) -> dict[MachineVertex,
+                                             list[tuple[int, int]]]:
         """
         Get the atom key mapping to be output for each machine vertex received
         by the device to be output.  Note that the device may change the keys

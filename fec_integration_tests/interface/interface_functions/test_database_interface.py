@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable, List, Sequence
+from typing import Iterable, Sequence
 
 from parameterized import parameterized
 
@@ -127,7 +127,7 @@ def _add_rinfo(
             bkmm, partition_id, m_vertex, i, app_mask))
 
 
-def _place_vertices(app_vertexes: List[ApplicationVertex],
+def _place_vertices(app_vertexes: list[ApplicationVertex],
                     placements: Placements) -> Placements:
     machine = FecDataView.get_machine()
     chips = machine.chips

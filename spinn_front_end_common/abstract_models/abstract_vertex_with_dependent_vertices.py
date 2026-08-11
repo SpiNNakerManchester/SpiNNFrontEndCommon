@@ -23,7 +23,7 @@ from pacman.model.graphs.application import ApplicationVertex
 
 @require_subclass(ApplicationVertex)
 class AbstractVertexWithEdgeToDependentVertices(
-        object, metaclass=AbstractBase):
+        metaclass=AbstractBase):
     """
     A vertex with a dependent vertices, which should be connected to this
     vertex by an edge directly to each of them.

@@ -21,7 +21,7 @@ from pacman.model.graphs.machine import MachineVertex
 
 
 @require_subclass(MachineVertex)
-class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
+class AbstractSupportsDatabaseInjection(metaclass=AbstractBase):
     """
     Marks a machine vertex as supporting injection of information via a
     database running on the controlling host.

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from typing import Optional, Tuple, cast
+from typing import Optional, cast
 
 import requests
 
@@ -112,9 +112,9 @@ class _HBPJobController(MachineAllocationController):
         self._power_on = power
 
     @overrides(MachineAllocationController.where_is_machine)
-    def where_is_machine(self, chip_x: int, chip_y: int) -> Tuple[
+    def where_is_machine(self, chip_x: int, chip_y: int) -> tuple[
             int, int, int]:
-        c, f, b = cast(Tuple[int, int, int],
+        c, f, b = cast(tuple[int, int, int],
                        self._where_is(self._machine_name, chip_x, chip_y))
         return (c, f, b)
 
@@ -123,7 +123,7 @@ class _HBPJobController(MachineAllocationController):
         return bool(self._check_lease(self._WAIT_TIME_MS)["allocated"])
 
 
-def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
+def hbp_allocator(total_run_time: Optional[float]) -> tuple[
         str, Optional[str], MachineAllocationController]:
     """
     Request a machine from the HBP remote access server that will fit

@@ -14,7 +14,7 @@
 
 import bisect
 import math
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Iterable, Optional, Sequence
 
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.messages.eieio import EIEIOType
@@ -47,7 +47,7 @@ def get_n_bytes(n_keys: int) -> int:
             (n_keys * _N_BYTES_PER_KEY))
 
 
-class BufferedSendingRegion(object):
+class BufferedSendingRegion:
     """
     A set of keys to be sent at given timestamps for a given region of
     data.
@@ -69,8 +69,8 @@ class BufferedSendingRegion(object):
     )
 
     def __init__(self) -> None:
-        self._buffer: Dict[int, List[int]] = {}
-        self._timestamps: List[int] = []
+        self._buffer: dict[int, list[int]] = {}
+        self._timestamps: list[int] = []
         self._current_timestamp_pos: int = 0
 
     def add_key(self, timestamp: int, key: int) -> None:

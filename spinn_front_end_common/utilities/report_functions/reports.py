@@ -15,7 +15,7 @@
 import logging
 import os
 import time
-from typing import Iterable, Optional, TextIO, Tuple
+from typing import Iterable, Optional, TextIO
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
@@ -476,7 +476,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
 
 
 def routing_info_report(extra_allocations: Iterable[
-        Tuple[ApplicationVertex, str]] = ()) -> None:
+        tuple[ApplicationVertex, str]] = ()) -> None:
     """
     Generates a report which says which keys is being allocated to each
     vertex.

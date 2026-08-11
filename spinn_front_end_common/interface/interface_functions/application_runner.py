@@ -62,7 +62,7 @@ def application_runner(
         runtime, time_threshold, run_until_complete, state_condition)
 
 
-class _ApplicationRunner(object):
+class _ApplicationRunner:
     """
     Ensures all cores are initialised correctly, ran, and completed
     successfully.

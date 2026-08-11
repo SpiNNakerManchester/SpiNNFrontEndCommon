@@ -26,7 +26,7 @@ from .ds_sqllite_database import DsSqlliteDatabase
 BYTES_PER_WORD = 4
 
 
-class DataSpecificationBase(object, metaclass=AbstractBase):
+class DataSpecificationBase(metaclass=AbstractBase):
     """
     Base class for all vertex data specification creation
     """

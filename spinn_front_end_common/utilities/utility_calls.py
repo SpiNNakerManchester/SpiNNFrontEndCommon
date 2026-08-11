@@ -19,7 +19,7 @@ Utility calls for interpreting bits of the DSG
 import io
 import os
 import threading
-from typing import Optional, TextIO, Tuple, TypeVar, Union
+from typing import Optional, TextIO, TypeVar, Union
 from urllib.parse import urlparse
 
 from spinn_utilities.config_holder import (
@@ -116,7 +116,7 @@ def get_report_writer(
 
 def parse_old_spalloc(
         spalloc_server: str, spalloc_port: int,
-        spalloc_user: str) -> Tuple[str, int, str]:
+        spalloc_user: str) -> tuple[str, int, str]:
     """
     Parse a URL to the old-style service. This may take the form:
 

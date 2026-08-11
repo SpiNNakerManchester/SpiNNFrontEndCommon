@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterable, List
+from typing import TYPE_CHECKING, Iterable
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 # mypy: disable-error-code=empty-body
 
 
-class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
+class AbstractSendMeMulticastCommandsVertex(metaclass=AbstractBase):
     """
     A device that may be a virtual vertex which wants to commands to be
     sent to it as multicast packets at fixed points in the simulation.
@@ -53,7 +53,7 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
 
     @property
     @abstractmethod
-    def timed_commands(self) -> List[MultiCastCommand]:
+    def timed_commands(self) -> list[MultiCastCommand]:
         """
         The commands to be sent at given times in the simulation.
         """

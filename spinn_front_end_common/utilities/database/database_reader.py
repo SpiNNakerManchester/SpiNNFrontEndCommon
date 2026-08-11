@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from spinnman.spalloc import SpallocClient, SpallocJob
 
@@ -67,7 +67,7 @@ class DatabaseReader(SQLiteDB):
                 service_url, job_url, cookies, headers)
         return self.__job
 
-    def get_key_to_atom_id_mapping(self, label: str) -> Dict[int, int]:
+    def get_key_to_atom_id_mapping(self, label: str) -> dict[int, int]:
         """
         Get a mapping of event key to atom ID for a given vertex.
 
@@ -82,7 +82,7 @@ class DatabaseReader(SQLiteDB):
                 WHERE label = ?
                 """, (label, ))}
 
-    def get_atom_id_to_key_mapping(self, label: str) -> Dict[int, int]:
+    def get_atom_id_to_key_mapping(self, label: str) -> dict[int, int]:
         """
         Get a mapping of atom ID to event key for a given vertex.
 
@@ -98,7 +98,7 @@ class DatabaseReader(SQLiteDB):
                 """, (label, ))}
 
     def get_live_output_details(
-            self, label: str, receiver_label: str) -> Tuple[
+            self, label: str, receiver_label: str) -> tuple[
                 str, int, bool, str, int, int, int]:
         """
         Get the IP address, port and whether the SDP headers are to be
@@ -138,7 +138,7 @@ class DatabaseReader(SQLiteDB):
         row = self.fetchone()
         return None if row is None else float(row["value"])
 
-    def get_placements(self, label: str) -> List[Tuple[int, int, int]]:
+    def get_placements(self, label: str) -> list[tuple[int, int, int]]:
         """
         Get the placements of an application vertex with a given label.
 

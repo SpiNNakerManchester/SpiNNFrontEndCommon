@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 
 @require_subclass(AbstractHasAssociatedBinary)
-class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
+class AbstractGeneratesDataSpecification(metaclass=AbstractBase):
     """
     A machine vertex that generates a data specification that describes what
     its binary's initialisation data is.

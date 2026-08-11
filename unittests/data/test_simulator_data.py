@@ -15,7 +15,6 @@
 import os
 import sys
 import unittest
-from typing import Dict, Tuple
 
 from parameterized import parameterized
 
@@ -351,9 +350,9 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_data_in_multicast_routing_tables()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_system_multicast_router_timeout_keys()
-        data_in_multicast_key_to_chip_map:  Dict[XY, int] = {}
+        data_in_multicast_key_to_chip_map:  dict[XY, int] = {}
         data_in_multicast_routing_tables = MulticastRoutingTables()
-        system_multicast_router_timeout_keys: Dict[XY, int] = {}
+        system_multicast_router_timeout_keys: dict[XY, int] = {}
         data = (data_in_multicast_routing_tables,
                 data_in_multicast_key_to_chip_map,
                 system_multicast_router_timeout_keys)
@@ -381,7 +380,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_fixed_routes()
         self.assertFalse(FecDataView.has_fixed_routes())
-        data: Dict[Tuple[int, int], RoutingEntry] = {}
+        data: dict[tuple[int, int], RoutingEntry] = {}
         writer.set_fixed_routes(data)
         self.assertEqual(data, FecDataView.get_fixed_routes())
         self.assertTrue(FecDataView.has_fixed_routes())
@@ -421,7 +420,7 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_executable_types()
-        data: Dict[ExecutableType, CoreSubsets] = {}
+        data: dict[ExecutableType, CoreSubsets] = {}
         writer.set_executable_types(data)
         self.assertEqual(data, FecDataView.get_executable_types())
 
@@ -492,7 +491,7 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.iterate_gathers()
         vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, "1.1.1.1")
         vertex2 = DataSpeedUpPacketGatherMachineVertex(1, 1, "1.1.1.1")
-        map: Dict[Chip, DataSpeedUpPacketGatherMachineVertex] = {}
+        map: dict[Chip, DataSpeedUpPacketGatherMachineVertex] = {}
         # Setting empty ok
         writer.set_gatherer_map(map)
         map[FecDataView.get_chip_at(0, 0)] = vertex1
@@ -543,7 +542,7 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.iterate_monitors()
         vertex1 = ExtraMonitorSupportMachineVertex()
         vertex2 = ExtraMonitorSupportMachineVertex()
-        map: Dict[Chip, ExtraMonitorSupportMachineVertex] = {}
+        map: dict[Chip, ExtraMonitorSupportMachineVertex] = {}
         # Setting empty ok
         writer.set_monitor_map(map)
         map[FecDataView.get_chip_at(0, 0)] = vertex1

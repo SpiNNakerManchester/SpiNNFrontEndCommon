@@ -23,7 +23,7 @@ from pacman.model.placements import Placement
 
 
 @require_subclass(MachineVertex)
-class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
+class AbstractReceiveBuffersToHost(metaclass=AbstractBase):
     """
     Indicates that this :py:class:`~pacman.model.graphs.machine.MachineVertex`
     can receive buffers.

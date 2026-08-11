@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterable, List, Tuple
+from typing import TYPE_CHECKING, Iterable
 
 from spinn_utilities.overrides import overrides
 
@@ -70,7 +70,7 @@ class CommandSender(
             start_resume_commands, pause_stop_commands, timed_commands,
             vertex_to_send_to)
 
-    def edges_and_partitions(self) -> Tuple[List[ApplicationEdge], List[str]]:
+    def edges_and_partitions(self) -> tuple[list[ApplicationEdge], list[str]]:
         """
         Construct application edges from this vertex to the app vertices
         that this vertex knows how to target (and has keys allocated for).

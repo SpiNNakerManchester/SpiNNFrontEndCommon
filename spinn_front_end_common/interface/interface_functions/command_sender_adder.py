@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, Iterable, List, Optional
+from typing import Iterable, Optional
 
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -31,7 +31,7 @@ from spinn_front_end_common.utilities.utility_calls import (
 from spinn_front_end_common.utility_models import CommandSender
 
 
-def add_command_senders(system_placements: Placements) -> List[CommandSender]:
+def add_command_senders(system_placements: Placements) -> list[CommandSender]:
     """
     Add command senders
 
@@ -42,7 +42,7 @@ def add_command_senders(system_placements: Placements) -> List[CommandSender]:
     return list(CommandSenderAdder(system_placements).add_command_senders())
 
 
-class CommandSenderAdder(object):
+class CommandSenderAdder:
     """
     Code to add CommandSender vertices and their placements.
     """
@@ -59,7 +59,7 @@ class CommandSenderAdder(object):
         self.__system_placements = system_placements
 
         # Keep track of command senders by which chip they are on
-        self.__command_sender_for_chip: Dict[Chip, CommandSender] = {}
+        self.__command_sender_for_chip: dict[Chip, CommandSender] = {}
         self.__general_command_sender: Optional[CommandSender] = None
 
     def add_command_senders(self) -> Iterable[CommandSender]:

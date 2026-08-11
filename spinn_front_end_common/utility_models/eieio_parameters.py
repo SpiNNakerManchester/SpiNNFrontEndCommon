@@ -13,14 +13,14 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import numpy
 
 from spinnman.messages.eieio import EIEIOPrefix
 from spinnman.model.enums import SDP_PORTS
 
-_SendBufferTimes = Optional[Union[numpy.ndarray, List[numpy.ndarray]]]
+_SendBufferTimes = Optional[Union[numpy.ndarray, list[numpy.ndarray]]]
 
 
 @dataclass(frozen=False)

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import struct
-from typing import Sequence, Tuple
+from typing import Sequence
 
 from .dpri_flags import DPRIFlags
 
@@ -34,7 +34,7 @@ def _decode_router_timeout_value(value: int) -> int:
     return (mantissa + 16) * (2 ** exponent)
 
 
-class ReInjectionStatus(object):
+class ReInjectionStatus:
     """
     Represents a status information report from dropped packet reinjection.
     """
@@ -88,7 +88,7 @@ class ReInjectionStatus(object):
         return _decode_router_timeout_value(self._wait1_timeout)
 
     @property
-    def router_wait1_timeout_parameters(self) -> Tuple[int, int]:
+    def router_wait1_timeout_parameters(self) -> tuple[int, int]:
         """
         The WAIT1 timeout value of the router as mantissa and exponent.
         """
@@ -104,7 +104,7 @@ class ReInjectionStatus(object):
         return _decode_router_timeout_value(self._wait2_timeout)
 
     @property
-    def router_wait2_timeout_parameters(self) -> Tuple[int, int]:
+    def router_wait2_timeout_parameters(self) -> tuple[int, int]:
         """
         The WAIT2 timeout value of the router as mantissa and exponent.
         """

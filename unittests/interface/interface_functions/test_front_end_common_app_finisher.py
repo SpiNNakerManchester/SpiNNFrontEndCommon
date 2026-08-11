@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Iterable, Optional, Union
 
 from spinn_utilities.overrides import overrides
 
@@ -36,7 +36,7 @@ from spinn_front_end_common.interface.interface_functions import (
 class _MockTransceiver(Version5Transceiver):
 
     def __init__(
-            self, core_states: List[Dict[Tuple[int, int, int], CPUState]],
+            self, core_states: list[dict[tuple[int, int, int], CPUState]],
             time_between_states: float):
         self._core_states = core_states
         self._time_between_states = time_between_states
@@ -46,7 +46,7 @@ class _MockTransceiver(Version5Transceiver):
     @overrides(Version5Transceiver.get_core_state_count)
     def get_core_state_count(
             self, app_id: int, state: CPUState,
-            xys: Optional[Iterable[Tuple[int, int]]] = None) -> int:
+            xys: Optional[Iterable[tuple[int, int]]] = None) -> int:
         count = 0
         for core_state in self._core_states[self._current_state].values():
             if core_state == state:
