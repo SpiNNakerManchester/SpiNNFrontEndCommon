@@ -73,7 +73,7 @@ class SQLiteDB:
     def __init__(
             self, database_file: Optional[str] = None, *,
             read_only: bool = False, ddl_file: Optional[str] = None,
-            row_factory: Optional[type[Union[sqlite3.Row, tuple]]] = sqlite3.Row,
+            row_factory: type[sqlite3.Row | tuple] | None = sqlite3.Row,
             # TODO: Replace in future once mypy is fixed
             # text_factory: Optional[Union[
             #     Type[memoryview], Type[str]]] = memoryview,
