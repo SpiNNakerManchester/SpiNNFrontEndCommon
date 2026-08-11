@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import time
-from typing import Callable, FrozenSet, List, Optional
+from typing import Callable, Optional
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
@@ -34,8 +34,8 @@ def run_system_application(
         read_algorithm_iobuf: bool,
         check_for_success_function: Optional[
             Callable[[ExecutableTargets], bool]],
-        cpu_end_states: FrozenSet[CPUState], needs_sync_barrier: bool,
-        filename_template: str, binaries_to_track: Optional[List[str]] = None,
+        cpu_end_states: frozenset[CPUState], needs_sync_barrier: bool,
+        filename_template: str, binaries_to_track: Optional[list[str]] = None,
         progress_bar: Optional[ProgressBar] = None,
         logger: Optional[FormatAdapter] = None,
         timeout: Optional[float] = None) -> None:

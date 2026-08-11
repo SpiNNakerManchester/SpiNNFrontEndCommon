@@ -14,7 +14,7 @@
 
 import os
 import unittest
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, Optional
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
@@ -33,7 +33,7 @@ from spinn_front_end_common.interface.interface_functions import (
 
 
 class _PretendTransceiver(MockableTransceiver):
-    def __init__(self, iobuffers: List[IOBuffer]):
+    def __init__(self, iobuffers: list[IOBuffer]):
         self._iobuffers = iobuffers
 
     @overrides(MockableTransceiver.get_iobuf)
@@ -45,7 +45,7 @@ class _PretendTransceiver(MockableTransceiver):
                 yield iobuf
 
 
-def mock_text(x: int, y: int, p: int) -> Tuple[str, str, str]:
+def mock_text(x: int, y: int, p: int) -> tuple[str, str, str]:
     filename = "myfile.c"
     error = "Test Error"
     warning = "Test Warning"

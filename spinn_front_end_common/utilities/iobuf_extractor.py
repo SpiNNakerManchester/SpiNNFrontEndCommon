@@ -18,12 +18,9 @@ import re
 from collections.abc import Sized
 from typing import (
     Iterable,
-    List,
     Optional,
     Pattern,
     Sequence,
-    Set,
-    Tuple,
     TypeVar,
     Union,
 )
@@ -54,7 +51,7 @@ ENTRY_TEXT = 2
 T = TypeVar("T")
 
 
-class _DummyProgress(object):
+class _DummyProgress:
     """
     An alternative to the Progress bar so the over can be called.
     """
@@ -70,7 +67,7 @@ class _DummyProgress(object):
         return values
 
 
-class IOBufExtractor(object):
+class IOBufExtractor:
     """
     Extract the logging output buffers from the machine, and separates
     lines based on their prefix.
@@ -117,7 +114,7 @@ class IOBufExtractor(object):
         else:
             self.__executable_targets = executable_targets
 
-        self.__system_binaries: Set[str] = set()
+        self.__system_binaries: set[str] = set()
         try:
             self.__system_binaries.update(
                 self.__executable_targets.get_binaries_of_executable_type(
@@ -125,7 +122,7 @@ class IOBufExtractor(object):
         except KeyError:
             pass
 
-    def extract_iobuf(self) -> Tuple[Sequence[str], Sequence[str]]:
+    def extract_iobuf(self) -> tuple[Sequence[str], Sequence[str]]:
         """
         Perform the extraction of IOBUF.
 
@@ -154,9 +151,9 @@ class IOBufExtractor(object):
         return (self.__sys_path if binary in self.__system_binaries
                 else self.__app_path)
 
-    def __extract_all_cores(self) -> Tuple[List[str], List[str]]:
-        error_entries: List[str] = []
-        warn_entries: List[str] = []
+    def __extract_all_cores(self) -> tuple[list[str], list[str]]:
+        error_entries: list[str] = []
+        warn_entries: list[str] = []
         # all the cores
         progress = self.__progress(self.__executable_targets.binaries)
         for binary in progress.over(self.__executable_targets.binaries):
@@ -167,9 +164,9 @@ class IOBufExtractor(object):
         return error_entries, warn_entries
 
     def __extract_selected_cores_and_types(
-            self) -> Tuple[List[str], List[str]]:
-        error_entries: List[str] = []
-        warn_entries: List[str] = []
+            self) -> tuple[list[str], list[str]]:
+        error_entries: list[str] = []
+        warn_entries: list[str] = []
         # bit of both
         assert self.__binary_types is not None
         progress = self.__progress(self.__executable_targets.binaries)
@@ -187,9 +184,9 @@ class IOBufExtractor(object):
                     core_subsets, binary, error_entries, warn_entries)
         return error_entries, warn_entries
 
-    def __extract_selected_cores(self) -> Tuple[List[str], List[str]]:
-        error_entries: List[str] = []
-        warn_entries: List[str] = []
+    def __extract_selected_cores(self) -> tuple[list[str], list[str]]:
+        error_entries: list[str] = []
+        warn_entries: list[str] = []
         # some hard coded cores
         progress = self.__progress(self.__executable_targets.binaries)
         iocores = convert_string_into_chip_and_core_subset(self.__from_cores)
@@ -201,9 +198,9 @@ class IOBufExtractor(object):
                     core_subsets, binary, error_entries, warn_entries)
         return error_entries, warn_entries
 
-    def __extract_selected_types(self) -> Tuple[List[str], List[str]]:
-        error_entries: List[str] = []
-        warn_entries: List[str] = []
+    def __extract_selected_types(self) -> tuple[list[str], list[str]]:
+        error_entries: list[str] = []
+        warn_entries: list[str] = []
         # some binaries
         assert self.__binary_types is not None
         binaries = FecDataView.get_executable_paths(self.__binary_types)
@@ -218,7 +215,7 @@ class IOBufExtractor(object):
 
     def __extract_iobufs_for_binary(
             self, core_subsets: CoreSubsets, binary: str,
-            error_entries: List[str], warn_entries: List[str]) -> None:
+            error_entries: list[str], warn_entries: list[str]) -> None:
         """
         :param core_subsets: Where the binary is deployed
         :param binary: What binary was deployed there.
@@ -243,7 +240,7 @@ class IOBufExtractor(object):
 
     def __process_one_iobuf(
             self, iobuf: IOBuffer, file_path: str, replacer: Replacer,
-            error_entries: List[str], warn_entries: List[str]) -> None:
+            error_entries: list[str], warn_entries: list[str]) -> None:
         file_name = os.path.join(
             file_path, self._filename_template.format(
                 iobuf.x, iobuf.y, iobuf.p))
@@ -262,8 +259,8 @@ class IOBufExtractor(object):
                 self.__add_value_if_match(
                     WARNING_ENTRY, replaced, warn_entries, iobuf)
 
-    def __recover_iobufs(self, core_subsets: CoreSubsets) -> List[IOBuffer]:
-        io_buffers: List[IOBuffer] = []
+    def __recover_iobufs(self, core_subsets: CoreSubsets) -> list[IOBuffer]:
+        io_buffers: list[IOBuffer] = []
         for core_subset in core_subsets:
             for p in core_subset.processor_ids:
                 cs = CoreSubsets()
@@ -281,7 +278,7 @@ class IOBufExtractor(object):
 
     @staticmethod
     def __add_value_if_match(regex: Pattern, line: str,
-                             entries: List[str], iobuf: IOBuffer) -> None:
+                             entries: list[str], iobuf: IOBuffer) -> None:
         match = regex.match(line)
         if match:
             entries.append(f"{iobuf.x}, {iobuf.y}, {iobuf.p}: "

@@ -15,7 +15,7 @@
 from spinnman.model.enums import ExecutableType as _ExecutableType
 
 
-class ExecutableType(object):
+class ExecutableType:
     """
     This class is deprecated. Please use spinnman.model.enums.ExecutableType
     """

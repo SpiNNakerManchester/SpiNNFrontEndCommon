@@ -16,7 +16,7 @@ from typing import Optional
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
-class MultiCastCommand(object):
+class MultiCastCommand:
     """
     A command to be sent to a vertex.
     """

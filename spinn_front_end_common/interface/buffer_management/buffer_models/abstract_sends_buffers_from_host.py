@@ -22,7 +22,7 @@ from pacman.model.graphs.machine import MachineVertex
 
 
 @require_subclass(MachineVertex)
-class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
+class AbstractSendsBuffersFromHost(metaclass=AbstractBase):
     """
     A vertex that sends buffers of keys to be
     transmitted at given timestamps in the simulation.

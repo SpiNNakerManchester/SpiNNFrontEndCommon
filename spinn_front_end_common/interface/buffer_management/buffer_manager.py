@@ -20,12 +20,8 @@ import difflib
 import logging
 from typing import (
     TYPE_CHECKING,
-    Dict,
     Iterable,
-    List,
     Optional,
-    Set,
-    Tuple,
     cast,
 )
 
@@ -105,7 +101,7 @@ class _RecordingRegion(ctypes.LittleEndianStructure):
     ]
 
 
-class BufferManager(object):
+class BufferManager:
     """
     Manager of send buffers.
     """
@@ -131,10 +127,10 @@ class BufferManager(object):
         self.__enable_monitors: bool = get_config_bool(
             "Machine", "enable_advanced_monitor_support") or False
         # Set of vertices with buffers to be sent
-        self._sender_vertices: Set[AbstractSendsBuffersFromHost] = set()
+        self._sender_vertices: set[AbstractSendsBuffersFromHost] = set()
 
         # Dictionary of sender vertex -> buffers sent
-        self._sent_messages: Dict[
+        self._sent_messages: dict[
             AbstractSendsBuffersFromHost, BuffersSentDeque] = {}
 
         self._java_caller: Optional[JavaCaller]
@@ -402,7 +398,7 @@ class BufferManager(object):
             self.__python_extract_no_monitors(recording_placements)
 
     def __python_extract_with_monitors(
-            self, recording_placements: List[Placement]) -> None:
+            self, recording_placements: list[Placement]) -> None:
         """
         :param recording_placements: Where to get the data from.
         """
@@ -420,7 +416,7 @@ class BufferManager(object):
             self.__python_extract_no_monitors(recording_placements)
 
     def __python_extract_no_monitors(
-            self, recording_placements: List[Placement]) -> None:
+            self, recording_placements: list[Placement]) -> None:
         """
         :param recording_placements: Where to get the data from.
         """
@@ -434,7 +430,7 @@ class BufferManager(object):
 
     def get_data_by_placement(
             self, placement: Placement,
-            recording_region_id: int) -> Tuple[memoryview, bool]:
+            recording_region_id: int) -> tuple[memoryview, bool]:
         """
         Deprecated use get_recording or get_download
 
@@ -459,7 +455,7 @@ class BufferManager(object):
                 f"Unable to get data for vertex {placement.vertex}")
 
     def get_recording(self, placement: Placement,
-                      recording_region_id: int) -> Tuple[memoryview, bool]:
+                      recording_region_id: int) -> tuple[memoryview, bool]:
         """
         Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
@@ -484,7 +480,7 @@ class BufferManager(object):
                 placement, recording_region_id, lookup_error)
 
     def get_download(self, placement: Placement,
-                     recording_region_id: int) -> Tuple[memoryview, bool]:
+                     recording_region_id: int) -> tuple[memoryview, bool]:
         """
         Get the data container for the data retrieved
         during the simulation from a specific region area of a core.
@@ -574,7 +570,7 @@ class BufferManager(object):
                                       region, False, data)
 
     def _get_region_information(
-            self, address: int, x: int, y: int) -> List[Tuple[int, int, bool]]:
+            self, address: int, x: int, y: int) -> list[tuple[int, int, bool]]:
         """
         Get the recording information from all regions of a core.
 

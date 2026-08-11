@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import sys
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy
 
@@ -39,7 +39,7 @@ from .reverse_ip_tag_multicast_source_machine_vertex import (
     is_array_list,
 )
 
-_SendBufferTimes = Optional[Union[numpy.ndarray, List[numpy.ndarray]]]
+_SendBufferTimes = Optional[Union[numpy.ndarray, list[numpy.ndarray]]]
 
 
 class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
@@ -57,7 +57,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
     def __init__(
             self, n_keys: int, label: Optional[str] = None,
             max_atoms_per_core: Optional[
-                Union[int, Tuple[int, ...]]] = sys.maxsize,
+                Union[int, tuple[int, ...]]] = sys.maxsize,
 
             # Live input parameters
             receive_port: Optional[int] = None,

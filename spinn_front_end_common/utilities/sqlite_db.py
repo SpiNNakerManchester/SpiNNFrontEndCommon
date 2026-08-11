@@ -21,7 +21,7 @@ import pathlib
 import sqlite3
 import struct
 from types import TracebackType
-from typing import Literal, Optional, Type, Union
+from typing import Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -35,7 +35,7 @@ from spinn_front_end_common.utilities.utility_calls import check_file_exists
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class SQLiteDB(object):
+class SQLiteDB:
     """
     General support class for SQLite databases. This handles a lot of the
     low-level detail of setting up a connection.
@@ -73,8 +73,7 @@ class SQLiteDB(object):
     def __init__(
             self, database_file: Optional[str] = None, *,
             read_only: bool = False, ddl_file: Optional[str] = None,
-            row_factory: Optional[Union[
-                Type[sqlite3.Row], Type[tuple]]] = sqlite3.Row,
+            row_factory: type[sqlite3.Row | tuple] | None = sqlite3.Row,
             # TODO: Replace in future once mypy is fixed
             # text_factory: Optional[Union[
             #     Type[memoryview], Type[str]]] = memoryview,
@@ -177,7 +176,7 @@ class SQLiteDB(object):
         self._context_entered()
         return self
 
-    def __exit__(self, exc_type: Optional[Type],
+    def __exit__(self, exc_type: Optional[type],
                  exc_val: Optional[BaseException],
                  exc_tb: Optional[TracebackType]) -> Literal[False]:
         if self.__db is not None:

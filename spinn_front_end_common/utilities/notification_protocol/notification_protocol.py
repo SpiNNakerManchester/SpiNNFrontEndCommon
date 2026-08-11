@@ -14,7 +14,7 @@
 
 import logging
 from concurrent.futures import Future, ThreadPoolExecutor, wait
-from typing import List, Optional
+from typing import Optional
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -40,7 +40,7 @@ from spinn_front_end_common.utilities.exceptions import (
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class NotificationProtocol(object):
+class NotificationProtocol:
     """
     The protocol which hand shakes with external devices about the
     database and starting execution.
@@ -66,7 +66,7 @@ class NotificationProtocol(object):
             "Database", "wait_on_confirmation_timeout")
         self.__wait_pool: Optional[ThreadPoolExecutor] = \
             ThreadPoolExecutor(max_workers=1)
-        self.__wait_futures: List[Future[None]] = []
+        self.__wait_futures: list[Future[None]] = []
         self.__sent_visualisation_confirmation = False
         # These connections are not used to talk to SpiNNaker boards
         # but rather to code running on the current host computer

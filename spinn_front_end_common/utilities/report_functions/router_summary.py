@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-class RouterSummary(object):
+class RouterSummary:
     """
     Summary of information about a router.
     """

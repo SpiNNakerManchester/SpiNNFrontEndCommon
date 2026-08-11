@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, cast
+from typing import cast
 
 from spinn_machine import CoreSubsets
 
@@ -24,13 +24,13 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
 
 
-def locate_executable_start_type() -> Dict[ExecutableType, CoreSubsets]:
+def locate_executable_start_type() -> dict[ExecutableType, CoreSubsets]:
     """
     Discovers where applications of particular types need to be launched.
 
     :returns: Mapping of type to the cores which have that type
     """
-    binary_start_types: Dict[ExecutableType, CoreSubsets] = {}
+    binary_start_types: dict[ExecutableType, CoreSubsets] = {}
 
     for placement in FecDataView.iterate_placements_by_vertex_type(
             AbstractHasAssociatedBinary):

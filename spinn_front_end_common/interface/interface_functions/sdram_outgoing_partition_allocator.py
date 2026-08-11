@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple, cast
+from typing import Optional, cast
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
@@ -35,7 +35,7 @@ def sdram_outgoing_partition_allocator() -> None:
     """
     Goes through all vertices to see if sdram has to be allocated.
     """
-    virtual_usage: Optional[Dict[XY, int]]
+    virtual_usage: Optional[dict[XY, int]]
     transceiver: Optional[Transceiver]
     if FecDataView.has_transceiver():
         transceiver = FecDataView.get_transceiver()
@@ -51,12 +51,12 @@ def sdram_outgoing_partition_allocator() -> None:
             "Allocating SDRAM for SDRAM outgoing egde partitions"))
 
     # Keep track of SDRAM tags used
-    next_tag: Dict[XY, int] = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
+    next_tag: dict[XY, int] = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
 
     # Keep the allocations to do them all at once
-    allocations: List[Tuple[int, int, int, int, int]] = []
+    allocations: list[tuple[int, int, int, int, int]] = []
     # Match the above list with the partitions to set to align the results
-    partitions_to_set: List[AbstractSDRAMPartition] = []
+    partitions_to_set: list[AbstractSDRAMPartition] = []
 
     for vertex in progress_bar.over(FecDataView.iterate_vertices()):
         for sdram_partition in vertex.splitter.get_internal_sdram_partitions():

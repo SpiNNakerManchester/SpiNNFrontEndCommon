@@ -14,7 +14,6 @@
 import functools
 import logging
 import traceback
-from typing import Dict
 
 from spinn_utilities.log import FormatAdapter
 
@@ -69,7 +68,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
 
     @staticmethod
     def __handle_response(
-            result: Dict[Chip, ReInjectionStatus],
+            result: dict[Chip, ReInjectionStatus],
             response: GetReinjectionStatusMessageResponse) -> None:
         status = response.reinjection_functionality_status
         header = response.sdp_header
@@ -86,7 +85,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         :returns: The reinjection status of a particular monitor.
         """
         chip = FecDataView.get_chip_at(x, y)
-        status: Dict[Chip, ReInjectionStatus] = {}
+        status: dict[Chip, ReInjectionStatus] = {}
         with self._collect_responses():
             self._send_request(
                 GetReinjectionStatusMessage(x, y, p),
@@ -94,14 +93,14 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         return status[chip]
 
     def get_reinjection_status_for_core_subsets(
-            self, core_subsets: CoreSubsets) -> Dict[Chip, ReInjectionStatus]:
+            self, core_subsets: CoreSubsets) -> dict[Chip, ReInjectionStatus]:
         """
         Get the reinjection status of a collection of monitors.
 
         :param core_subsets:
         :returns: Mapping of the Chips to their reinjection status.
         """
-        status: Dict[Chip, ReInjectionStatus] = {}
+        status: dict[Chip, ReInjectionStatus] = {}
         with self._collect_responses(check_error=False):
             for core_subset in core_subsets.core_subsets:
                 for processor_id in core_subset.processor_ids:

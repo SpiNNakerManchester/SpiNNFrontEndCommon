@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from typing import Iterable, List, Optional, Sequence, Tuple, cast
+from typing import Iterable, Optional, Sequence, cast
 
 from typing_extensions import TypeAlias
 
@@ -25,8 +25,8 @@ from spinn_front_end_common.utilities.base_database import (
 )
 
 #: Basic types supported natively by SQLite
-_MonitorItem: TypeAlias = Tuple[int, int, _SqliteTypes]
-_RouterItem: TypeAlias = Tuple[int, int, int]
+_MonitorItem: TypeAlias = tuple[int, int, _SqliteTypes]
+_RouterItem: TypeAlias = tuple[int, int, int]
 
 
 class ProvenanceReader(BaseDatabase):
@@ -63,7 +63,7 @@ class ProvenanceReader(BaseDatabase):
                          row_factory=None, text_factory=None)
 
     def run_query(self, query: str, params: Iterable[_SqliteTypes] = ()
-                  ) -> List[Sequence[_SqliteTypes]]:
+                  ) -> list[Sequence[_SqliteTypes]]:
         """
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection.
@@ -92,7 +92,7 @@ class ProvenanceReader(BaseDatabase):
         """
         return list(self.cursor().execute(query, list(params)))
 
-    def cores_with_late_spikes(self) -> List[Tuple[int, int, int, int]]:
+    def cores_with_late_spikes(self) -> list[tuple[int, int, int, int]]:
         """
         Gets the x, y, p and count of the cores where late spikes arrived.
 
@@ -107,7 +107,7 @@ class ProvenanceReader(BaseDatabase):
             WHERE description = 'Number_of_late_spikes'
                 AND the_value > 0
             """
-        return cast(List[Tuple[int, int, int, int]], self.run_query(query))
+        return cast(list[tuple[int, int, int, int]], self.run_query(query))
 
     def get_provenance_for_router(self, x: int, y: int) -> str:
         """
@@ -132,7 +132,7 @@ class ProvenanceReader(BaseDatabase):
             f"{cast(str, row[0])}: {cast(int, row[1])}"
             for row in self.run_query(query, [int(x), int(y)]))
 
-    def get_cores_with_provenace(self) -> List[XYP]:
+    def get_cores_with_provenace(self) -> list[XYP]:
         """
         Gets the cores with provenance.
 
@@ -143,9 +143,9 @@ class ProvenanceReader(BaseDatabase):
             FROM core_provenance_view
             group by x, y, p
             """
-        return cast(List[XYP], self.run_query(query))
+        return cast(list[XYP], self.run_query(query))
 
-    def get_router_by_chip(self, description: str) -> List[_RouterItem]:
+    def get_router_by_chip(self, description: str) -> list[_RouterItem]:
         """
         Gets the router values for a specific item.
 
@@ -159,11 +159,11 @@ class ProvenanceReader(BaseDatabase):
             """
         data = self.run_query(query, [description])
         try:
-            return cast(List[_RouterItem], data)
+            return cast(list[_RouterItem], data)
         except IndexError:
             return []
 
-    def get_monitor_by_chip(self, description: str) -> List[_MonitorItem]:
+    def get_monitor_by_chip(self, description: str) -> list[_MonitorItem]:
         """
         Gets the monitor values for a specific item.
 
@@ -177,11 +177,11 @@ class ProvenanceReader(BaseDatabase):
             """
         data = self.run_query(query, [description])
         try:
-            return cast(List[_MonitorItem], data)
+            return cast(list[_MonitorItem], data)
         except IndexError:
             return []
 
-    def messages(self) -> List[str]:
+    def messages(self) -> list[str]:
         """
         List all the provenance messages.
 

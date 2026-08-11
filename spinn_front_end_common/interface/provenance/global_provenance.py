@@ -17,7 +17,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from sqlite3 import Row
-from typing import Iterable, List, Optional, Union
+from typing import Iterable, Optional, Union
 
 from spinn_utilities.config_holder import get_timestamp_path
 from spinn_utilities.log import FormatAdapter
@@ -202,7 +202,7 @@ class GlobalProvenance(SQLiteDB):
 
     def run_query(self, query: str,
                   params: Iterable[Union[str, int, float, None, bytes]] = ()
-                  ) -> List[Row]:
+                  ) -> list[Row]:
         """
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection
@@ -406,7 +406,7 @@ class GlobalProvenance(SQLiteDB):
             return 0
 
     def retreive_log_messages(
-            self, min_level: int = 0) -> List[str]:
+            self, min_level: int = 0) -> list[str]:
         """
         :returns: All log messages at or above the min_level
         """

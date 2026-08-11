@@ -27,12 +27,9 @@ import types
 from threading import Condition
 from types import FrameType
 from typing import (
-    Dict,
     Iterable,
     Optional,
     Sequence,
-    Tuple,
-    Type,
     TypeVar,
     Union,
     cast,
@@ -379,7 +376,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._shutdown()
 
     def exception_handler(
-            self, exc_type: Type[BaseException], value: BaseException,
+            self, exc_type: type[BaseException], value: BaseException,
             traceback_obj: Optional[types.TracebackType]) -> None:
         """
         Handler of exceptions.
@@ -459,7 +456,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return n_time_steps
 
     def _calc_run_time(self, run_time: Optional[float]) -> Union[
-            Tuple[int, float], Tuple[None, None]]:
+            tuple[int, float], tuple[None, None]]:
         """
         Calculates n_machine_time_steps and total_run_time based on run_time
         and machine_time_step.
@@ -643,7 +640,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         # Go through the placements and find how much SDRAM is used
         # on each chip
-        usage_by_chip: Dict[XY, AbstractSDRAM] = {}
+        usage_by_chip: dict[XY, AbstractSDRAM] = {}
 
         for place in self._data_writer.iterate_placemements():
             if isinstance(place.vertex, AbstractVirtual):
@@ -724,7 +721,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     @overrides(ConfigHandler._execute_transceiver_by_spalloc)
     def _execute_transceiver_by_spalloc(
             self, ensure_board_is_ready: bool
-            ) -> Tuple[Transceiver, Dict[XY, str]]:
+            ) -> tuple[Transceiver, dict[XY, str]]:
         with (FecTimer("Transceiver by Spalloc", TimerWork.OTHER)):
             transceiver, connections = (
                 super()._execute_transceiver_by_spalloc(

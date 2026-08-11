@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Sequence, Tuple
+from typing import Sequence
 
 from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
@@ -121,7 +121,7 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     @staticmethod
     def _get_provenance_placement_description(
-            placement: Placement) -> Tuple[str, int, int, int]:
+            placement: Placement) -> tuple[str, int, int, int]:
         """
         :param placement:
         :returns:

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from typing import Optional, Set, Tuple
+from typing import Optional
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -74,7 +74,7 @@ def _write_to_db(w: DatabaseWriter) -> None:
 
         if get_config_bool(
                 "Database", "create_routing_info_to_neuron_id_mapping"):
-            machine_vertices: Set[Tuple[MachineVertex, str]] = {
+            machine_vertices: set[tuple[MachineVertex, str]] = {
                 (vertex, vertex.injection_partition_id)
                 for vertex in FecDataView.iterate_machine_vertices()
                 if isinstance(vertex, AbstractSupportsDatabaseInjection)

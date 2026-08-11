@@ -14,7 +14,7 @@
 
 import os
 import unittest
-from typing import Sequence, Tuple
+from typing import Sequence
 
 from parameterized import parameterized
 
@@ -57,7 +57,7 @@ class MockAbstractReceiveRegionsToHost(
 
     @overrides(AbstractReceiveRegionsToHost.get_download_regions)
     def get_download_regions(self, placement: Placement) -> Sequence[
-            Tuple[int, int, int]]:
+            tuple[int, int, int]]:
         return [(0, 1235678, 90)]
 
 

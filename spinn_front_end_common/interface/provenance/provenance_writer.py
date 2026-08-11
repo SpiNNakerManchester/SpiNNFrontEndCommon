@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -225,7 +225,7 @@ class ProvenanceWriter(BaseDatabase):
              the_value])
 
     def insert_board_provenance(self, connections: Optional[
-            Dict[Tuple[int, int], str]]) -> None:
+            dict[tuple[int, int], str]]) -> None:
         """
         Write the connection details retrieved from spalloc_client job to the
         `boards_provenance` table.

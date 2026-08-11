@@ -25,7 +25,7 @@ _NO_PAYLOAD = (EIEIOType.KEY_32_BIT, EIEIOType.KEY_16_BIT)
 TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
 
-class LivePacketGatherParameters(object):
+class LivePacketGatherParameters:
     """
     Parameter holder for :py:class:`LivePacketGather`\\ers so that they can be
     instantiated at a later date.

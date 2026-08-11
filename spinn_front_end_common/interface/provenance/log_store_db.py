@@ -14,7 +14,7 @@
 
 import sqlite3
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from spinn_utilities.config_holder import configs_loaded
 from spinn_utilities.log_store import LogStore
@@ -50,7 +50,7 @@ class LogStoreDB(LogStore):
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(
-            self, min_level: int = 0) -> List[str]:
+            self, min_level: int = 0) -> list[str]:
         with GlobalProvenance() as db:
             return db.retreive_log_messages(min_level)
 

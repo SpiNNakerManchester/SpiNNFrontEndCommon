@@ -18,11 +18,8 @@ import logging
 import os
 from typing import (
     TYPE_CHECKING,
-    Dict,
     Iterable,
-    List,
     Optional,
-    Tuple,
     Union,
     cast,
 )
@@ -87,8 +84,8 @@ class DatabaseWriter(SQLiteDB):
             os.remove(self._database_path)
 
         super().__init__(self._database_path, ddl_file=init_sql_path)
-        self.__machine_to_id: Dict[Machine, int] = {}
-        self.__vertex_to_id: Dict[AbstractVertex, int] = {}
+        self.__machine_to_id: dict[Machine, int] = {}
+        self.__vertex_to_id: dict[AbstractVertex, int] = {}
 
         # set up checks
         self._machine_id = 0
@@ -224,7 +221,7 @@ class DatabaseWriter(SQLiteDB):
 
     def create_atom_to_event_id_mapping(
             self, machine_vertices: Optional[
-                Iterable[Tuple[MachineVertex, str]]]) -> None:
+                Iterable[tuple[MachineVertex, str]]]) -> None:
         """
         Creates atom keys and stores them in the database.
 
@@ -234,9 +231,9 @@ class DatabaseWriter(SQLiteDB):
         # This could happen if there are no LPGs
         if machine_vertices is None:
             return
-        key_vertices: Dict[int, MachineVertex] = {}
+        key_vertices: dict[int, MachineVertex] = {}
         for (m_vertex, partition_id) in machine_vertices:
-            atom_keys: Iterable[Tuple[int, int]] = ()
+            atom_keys: Iterable[tuple[int, int]] = ()
             if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):
                 atom_keys = list(m_vertex.app_vertex.get_atom_key_map(
                     m_vertex, partition_id, routing_infos))
@@ -282,7 +279,7 @@ class DatabaseWriter(SQLiteDB):
 
     def _get_machine_lpg_mappings(
             self, part: AbstractEdgePartition) -> Iterable[
-                Tuple[MachineVertex, str, MachineVertex]]:
+                tuple[MachineVertex, str, MachineVertex]]:
         """
         Get places where an LPG Machine vertex has been added to a graph
         "directly" (via SpiNNakerGraphFrontEnd);
@@ -303,13 +300,13 @@ class DatabaseWriter(SQLiteDB):
     def __lpg_splitter(vertex: LivePacketGather) -> _LPGSplitter:
         return cast('_LPGSplitter', vertex.splitter)
 
-    def add_lpg_mapping(self) -> List[Tuple[MachineVertex, str]]:
+    def add_lpg_mapping(self) -> list[tuple[MachineVertex, str]]:
         """
         Add mapping from machine vertex to LPG machine vertex.
 
         :return: A list of (source vertex, partition id)
         """
-        targets: List[Tuple[MachineVertex, str, MachineVertex]] = [
+        targets: list[tuple[MachineVertex, str, MachineVertex]] = [
             (m_vertex, part_id, lpg_m_vertex)
             for vertex in FecDataView.iterate_vertices()
             if isinstance(vertex, LivePacketGather)

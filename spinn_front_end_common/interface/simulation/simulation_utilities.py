@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-from typing import List
 
 from spinnman.model.enums import SDP_PORTS
 
@@ -22,7 +21,7 @@ from pacman.utilities.utility_calls import md5
 from spinn_front_end_common.data import FecDataView
 
 
-def get_simulation_header_array(binary_file_name: str) -> List[int]:
+def get_simulation_header_array(binary_file_name: str) -> list[int]:
     """
     Get data to be written to the simulation header.
 
@@ -41,7 +40,7 @@ def get_simulation_header_array(binary_file_name: str) -> List[int]:
 
 
 def get_simulation_header_array_no_timestep(
-        binary_file_name: str) -> List[int]:
+        binary_file_name: str) -> list[int]:
     """
     Get data to be written to the simulation header.
     Use for binaries that do not want to know the system timestep.

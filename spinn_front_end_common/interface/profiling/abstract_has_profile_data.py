@@ -24,7 +24,7 @@ from .profile_data import ProfileData
 
 
 @require_subclass(MachineVertex)
-class AbstractHasProfileData(object, metaclass=AbstractBase):
+class AbstractHasProfileData(metaclass=AbstractBase):
     """
     Indicates a
     :py:class:`~pacman.model.graphs.machine.MachineVertex`

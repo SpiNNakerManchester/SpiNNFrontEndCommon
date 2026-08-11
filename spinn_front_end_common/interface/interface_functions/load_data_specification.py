@@ -89,7 +89,7 @@ def load_application_data_specs() -> None:
         raise
 
 
-class _LoadDataSpecification(object):
+class _LoadDataSpecification:
     """
     Loads the data specification.
     """

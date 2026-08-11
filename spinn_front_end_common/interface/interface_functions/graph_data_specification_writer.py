@@ -14,7 +14,6 @@
 
 import logging
 from collections import defaultdict
-from typing import Dict, List, Tuple
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
@@ -50,7 +49,7 @@ def graph_data_specification_writer() -> str:
     return _GraphDataSpecificationWriter().run()
 
 
-class _GraphDataSpecificationWriter(object):
+class _GraphDataSpecificationWriter:
     """
     Executes the data specification generation step.
     """
@@ -62,9 +61,9 @@ class _GraphDataSpecificationWriter(object):
         "_vertices_by_chip")
 
     def __init__(self) -> None:
-        self._sdram_usage: Dict[Tuple[int, int], int] = defaultdict(lambda: 0)
+        self._sdram_usage: dict[tuple[int, int], int] = defaultdict(lambda: 0)
         self._vertices_by_chip: \
-            Dict[Tuple[int, int], List[AbstractGeneratesDataSpecification]] =\
+            dict[tuple[int, int], list[AbstractGeneratesDataSpecification]] =\
             defaultdict(list)
 
     def run(self) -> str:
@@ -82,7 +81,7 @@ class _GraphDataSpecificationWriter(object):
 
             progress = ProgressBar(FecDataView.get_n_placements(),
                                    "Generating data specifications")
-            vertices_to_reset: List[AbstractRewritesDataSpecification] = []
+            vertices_to_reset: list[AbstractRewritesDataSpecification] = []
 
             for placement in progress.over(FecDataView.iterate_placemements()):
                 # Try to generate the data spec for the placement

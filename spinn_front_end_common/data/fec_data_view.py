@@ -17,13 +17,9 @@ import logging
 import os
 from typing import (
     TYPE_CHECKING,
-    Dict,
     Iterable,
     Iterator,
-    List,
     Optional,
-    Set,
-    Tuple,
     Union,
 )
 
@@ -68,7 +64,7 @@ hash(_EMPTY_CORE_SUBSETS)
 
 
 # pylint: disable=protected-access
-class _FecDataModel(object):
+class _FecDataModel:
     """
     Singleton data model.
 
@@ -136,16 +132,16 @@ class _FecDataModel(object):
         Clears out all data.
         """
         # Can not be cleared during hard reset as previous runs data checked
-        self._database_socket_addresses: Set[SocketAddress] = set()
+        self._database_socket_addresses: set[SocketAddress] = set()
         self._executable_types: Optional[
-            Dict[ExecutableType, CoreSubsets]] = None
+            dict[ExecutableType, CoreSubsets]] = None
         self._hardware_time_step_ms: Optional[float] = None
         self._hardware_time_step_us: Optional[int] = None
-        self._live_packet_recorder_params: Optional[Dict[
+        self._live_packet_recorder_params: Optional[dict[
             LivePacketGatherParameters,
             LivePacketGather]] = None
-        self._live_output_vertices: Set[Tuple[ApplicationVertex, str]] = set()
-        self._live_output_devices: List[LiveOutputDevice] = []
+        self._live_output_vertices: set[tuple[ApplicationVertex, str]] = set()
+        self._live_output_devices: list[LiveOutputDevice] = []
         self._java_caller: Optional[JavaCaller] = None
         self._none_labelled_edge_count = 0
         self._simulation_time_step_ms: Optional[float] = None
@@ -161,23 +157,23 @@ class _FecDataModel(object):
         Clears out all data that should change after a reset and graph change.
         """
         self._buffer_manager: Optional[BufferManager] = None
-        self._data_in_multicast_key_to_chip_map: Optional[Dict[XY, int]] = None
+        self._data_in_multicast_key_to_chip_map: Optional[dict[XY, int]] = None
         self._data_in_multicast_routing_tables: Optional[
             MulticastRoutingTables] = None
         self._database_file_path: Optional[str] = None
         self._ds_database_path: Optional[str] = None
         self._next_ds_reference = 0
         self._executable_targets: Optional[ExecutableTargets] = None
-        self._fixed_routes: Optional[Dict[XY, RoutingEntry]] = None
+        self._fixed_routes: Optional[dict[XY, RoutingEntry]] = None
         self._gatherer_map: \
-            Optional[Dict[Chip, DataSpeedUpPacketGatherMachineVertex]] = None
+            Optional[dict[Chip, DataSpeedUpPacketGatherMachineVertex]] = None
         self._next_sync_signal: Signal = Signal.SYNC0
         self._notification_protocol: Optional[NotificationProtocol] = None
         self._max_run_time_steps: Optional[int] = None
         self._monitor_map: \
-            Optional[Dict[Chip, ExtraMonitorSupportMachineVertex]] = None
+            Optional[dict[Chip, ExtraMonitorSupportMachineVertex]] = None
         self._system_multicast_router_timeout_keys: Optional[
-            Dict[XY, int]] = None
+            dict[XY, int]] = None
         self._soft_reset()
         self._clear_notification_protocol()
 
@@ -486,7 +482,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # system multicast routing data
 
     @classmethod
-    def get_data_in_multicast_key_to_chip_map(cls) -> Dict[XY, int]:
+    def get_data_in_multicast_key_to_chip_map(cls) -> dict[XY, int]:
         """
         Retrieve the data_in_multicast_key_to_chip_map if known.
         Keys are the coordinates of chips.
@@ -517,7 +513,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._data_in_multicast_routing_tables
 
     @classmethod
-    def get_system_multicast_router_timeout_keys(cls) -> Dict[XY, int]:
+    def get_system_multicast_router_timeout_keys(cls) -> dict[XY, int]:
         """
         Retrieve the system_multicast_router_timeout_keys if known.
         Keys are the coordinates of chips.
@@ -544,7 +540,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._fixed_routes is not None
 
     @classmethod
-    def get_fixed_routes(cls) -> Dict[XY, RoutingEntry]:
+    def get_fixed_routes(cls) -> dict[XY, RoutingEntry]:
         """
         Gets the fixed routes if they have been created.
 
@@ -647,7 +643,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return Signal.SYNC1
 
     @classmethod
-    def get_executable_types(cls) -> Dict[ExecutableType, CoreSubsets]:
+    def get_executable_types(cls) -> dict[ExecutableType, CoreSubsets]:
         """
         Gets the executable_types if they have been created.
 
@@ -684,7 +680,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._live_packet_recorder_params is not None
 
     @classmethod
-    def get_live_packet_recorder_params(cls) -> Dict[
+    def get_live_packet_recorder_params(cls) -> dict[
             LivePacketGatherParameters, LivePacketGather]:
         """
         :returns: Mapping of live_packet_gatherer_params to a list of tuples
@@ -820,7 +816,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def iterate_monitor_items(cls) -> \
-            Iterable[Tuple[Chip, ExtraMonitorSupportMachineVertex]]:
+            Iterable[tuple[Chip, ExtraMonitorSupportMachineVertex]]:
         """
         Iterates over the Chip and ExtraMonitorSupportMachineVertex.
 
@@ -895,7 +891,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def iterate_gather_items(cls) -> Iterable[
-            Tuple[Chip, DataSpeedUpPacketGatherMachineVertex]]:
+            tuple[Chip, DataSpeedUpPacketGatherMachineVertex]]:
         """
         Iterates over the Chip and DataSpeedUpPacketGatherMachineVertex.
 
@@ -1028,7 +1024,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def iterate_live_output_vertices(
-            cls) -> Iterable[Tuple[ApplicationVertex, str]]:
+            cls) -> Iterable[tuple[ApplicationVertex, str]]:
         """
         :returns:
            An iterator over the live output vertices and partition IDs.
@@ -1036,7 +1032,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return iter(cls.__fec_data._live_output_vertices)
 
     @classmethod
-    def get_next_ds_references(cls, number: int) -> List[int]:
+    def get_next_ds_references(cls, number: int) -> list[int]:
         """
         Get a list of unique data specification references
 

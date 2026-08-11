@@ -14,7 +14,7 @@
 
 import logging
 import traceback
-from typing import Iterable, List
+from typing import Iterable
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
@@ -38,7 +38,7 @@ def placements_provenance_gatherer(
         The placements of the vertices to gather data form.
         May not be all placements so don't use View
     """
-    errors: List[str] = []
+    errors: list[str] = []
 
     progress = ProgressBar(n_placements, "Getting provenance data")
 
@@ -51,7 +51,7 @@ def placements_provenance_gatherer(
             logger.warning("{}", error)
 
 
-def _add_placement_provenance(placement: Placement, errors: List[str]) -> None:
+def _add_placement_provenance(placement: Placement, errors: list[str]) -> None:
     # retrieve provenance data from any cores that provide data
     if isinstance(
             placement.vertex, AbstractProvidesProvenanceDataFromMachine):

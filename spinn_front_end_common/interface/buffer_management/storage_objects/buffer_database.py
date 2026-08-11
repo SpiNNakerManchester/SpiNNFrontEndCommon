@@ -14,7 +14,7 @@
 
 import time
 from sqlite3 import Binary, IntegrityError
-from typing import Optional, Tuple
+from typing import Optional
 
 from spinn_utilities.config_holder import get_config_bool
 
@@ -99,7 +99,7 @@ class BufferDatabase(BaseDatabase):
         content, _ = self._read_recording_with_missing(region_id)
         return content
 
-    def _read_recording_with_missing(self, region_id: int) -> Tuple[
+    def _read_recording_with_missing(self, region_id: int) -> tuple[
             memoryview, bool]:
         """
         Get the contents from a recording region
@@ -122,7 +122,7 @@ class BufferDatabase(BaseDatabase):
             return self._read_recording_multiple(
                 region_id, total_content_length)
 
-    def _read_contents_single(self, region_id: int) -> Tuple[
+    def _read_contents_single(self, region_id: int) -> tuple[
             memoryview, bool]:
         """
         Reads the content for a single block for this recording region
@@ -145,7 +145,7 @@ class BufferDatabase(BaseDatabase):
 
     def _read_recording_by_extraction_id(
             self, region_id: int,
-            extraction_id: int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> tuple[memoryview, bool]:
         """
         Reads the content for a single block for this region
         """
@@ -167,7 +167,7 @@ class BufferDatabase(BaseDatabase):
 
     def _read_download_by_extraction_id(
             self, region_id: int,
-            extraction_id: int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> tuple[memoryview, bool]:
         """
         Reads the content for a single block for this region
         """
@@ -188,7 +188,7 @@ class BufferDatabase(BaseDatabase):
             f"no record for {region_id=} and {extraction_id=}")
 
     def _read_recording_multiple(
-            self, region_id: int, total_content_length: int) -> Tuple[
+            self, region_id: int, total_content_length: int) -> tuple[
             memoryview, bool]:
         """
         Reads the contents of all blocks for this regions.
@@ -398,7 +398,7 @@ class BufferDatabase(BaseDatabase):
                   missing))
         assert self.rowcount == 1
 
-    def get_recording(self, x: int, y: int, p: int, region: int) -> Tuple[
+    def get_recording(self, x: int, y: int, p: int, region: int) -> tuple[
             memoryview, bool]:
         """
         Get the data stored for a given region of a given core.
@@ -427,7 +427,7 @@ class BufferDatabase(BaseDatabase):
 
     def get_recording_by_extraction_id(
             self, x: int, y: int, p: int, region: int,
-            extraction_id: int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> tuple[memoryview, bool]:
         """
         Get the data stored for a given region of a given core.
 
@@ -455,7 +455,7 @@ class BufferDatabase(BaseDatabase):
 
     def get_download_by_extraction_id(
             self, x: int, y: int, p: int, region: int,
-            extraction_id: int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> tuple[memoryview, bool]:
         """
         Get the data stored for a given region of a given core.
 

@@ -18,13 +18,8 @@ from enum import IntEnum
 from typing import (
     TYPE_CHECKING,
     Callable,
-    Dict,
     Iterable,
-    List,
     Sequence,
-    Set,
-    Tuple,
-    Type,
     TypeVar,
 )
 
@@ -126,13 +121,13 @@ class CommandSenderMachineVertex(
         """
         super().__init__(label, app_vertex)
 
-        self._timed_commands: List[MultiCastCommand] = []
-        self._commands_at_start_resume: List[MultiCastCommand] = []
-        self._commands_at_pause_stop: List[MultiCastCommand] = []
-        self._keys_to_partition_id: Dict[int, str] = {}
-        self._partition_id_keys: Dict[str, int] = {}
+        self._timed_commands: list[MultiCastCommand] = []
+        self._commands_at_start_resume: list[MultiCastCommand] = []
+        self._commands_at_pause_stop: list[MultiCastCommand] = []
+        self._keys_to_partition_id: dict[int, str] = {}
+        self._partition_id_keys: dict[str, int] = {}
         self._edge_partition_id_counter = 0
-        self._vertex_to_key_map: Dict[AbstractVertex, Set[int]] = {}
+        self._vertex_to_key_map: dict[AbstractVertex, set[int]] = {}
 
     def add_commands(
             self, start_resume_commands: Iterable[MultiCastCommand],
@@ -152,7 +147,7 @@ class CommandSenderMachineVertex(
         :param vertex_to_send_to: The vertex these commands are to be sent to
         """
         # container for keys for partition mapping (remove duplicates)
-        command_keys: Set[int] = set()
+        command_keys: set[int] = set()
         self._vertex_to_key_map[vertex_to_send_to] = set()
 
         # We need to hold these properly, as they might be generators!
@@ -263,7 +258,7 @@ class CommandSenderMachineVertex(
         spec.end_specification()
 
     def _write_basic_commands(
-            self, commands: List[MultiCastCommand],
+            self, commands: list[MultiCastCommand],
             spec: DataSpecificationGenerator) -> None:
         # number of commands
         spec.write_value(len(commands))
@@ -273,7 +268,7 @@ class CommandSenderMachineVertex(
             self.__write_command(command, spec)
 
     def _write_timed_commands(
-            self, timed_commands: List[MultiCastCommand],
+            self, timed_commands: list[MultiCastCommand],
             spec: DataSpecificationGenerator) -> None:
         spec.write_value(len(timed_commands))
 
@@ -364,8 +359,8 @@ class CommandSenderMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     def get_edges_and_partitions(
-            self, pre_vertex: CS, vertex_type: Type[V],
-            edge_type: Callable[[CS, V], E]) -> Tuple[List[E], List[str]]:
+            self, pre_vertex: CS, vertex_type: type[V],
+            edge_type: Callable[[CS, V], E]) -> tuple[list[E], list[str]]:
         """
         Construct edges from this vertex to the vertices that this vertex
         knows how to target (and has keys allocated for).
@@ -382,8 +377,8 @@ class CommandSenderMachineVertex(
             subclass of :py:class:`~pacman.model.graphs.AbstractEdge`
         :return: edges, partition IDs
         """
-        edges: List[E] = []
-        partition_ids: List[str] = []
+        edges: list[E] = []
+        partition_ids: list[str] = []
         keys_added = set()
         for vertex in self._vertex_to_key_map:
             if not isinstance(vertex, vertex_type):
@@ -395,7 +390,7 @@ class CommandSenderMachineVertex(
                     partition_ids.append(self._keys_to_partition_id[key])
         return edges, partition_ids
 
-    def edges_and_partitions(self) -> Tuple[List[MachineEdge], List[str]]:
+    def edges_and_partitions(self) -> tuple[list[MachineEdge], list[str]]:
         """
         Construct machine edges from this vertex to the machine vertices
         that this vertex knows how to target (and has keys allocated for).

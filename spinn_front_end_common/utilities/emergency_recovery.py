@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from spinn_utilities.log import FormatAdapter
 
@@ -50,7 +50,7 @@ def _emergency_state_check() -> None:
             "Could not read the status count - going to individual cores")
         machine = FecDataView.get_machine()
         infos = CPUInfos()
-        errors: List[Tuple[int, int, int]] = []
+        errors: list[tuple[int, int, int]] = []
         for chip in machine.chips:
             for p in chip.all_processor_ids:
                 try:

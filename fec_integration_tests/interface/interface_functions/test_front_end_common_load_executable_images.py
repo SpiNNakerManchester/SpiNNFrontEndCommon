@@ -14,7 +14,7 @@
 
 import unittest
 from collections import defaultdict
-from typing import BinaryIO, Dict, Iterable, Optional, Tuple, Union
+from typing import BinaryIO, Iterable, Optional, Union
 
 from spinn_utilities.overrides import overrides
 
@@ -37,8 +37,8 @@ class _MockTransceiver(MockableTransceiver):
 
     def __init__(self, test_case: unittest.TestCase):
         self._test_case = test_case
-        self._n_cores_in_app: Dict[int, int] = defaultdict(lambda: 0)
-        self._executable_on_core: Dict[Tuple[int, int, int],
+        self._n_cores_in_app: dict[int, int] = defaultdict(lambda: 0)
+        self._executable_on_core: dict[tuple[int, int, int],
                                        Union[BinaryIO, bytes, str]] = {}
 
     @overrides(MockableTransceiver.execute_flood)
@@ -57,7 +57,7 @@ class _MockTransceiver(MockableTransceiver):
     @overrides(MockableTransceiver.get_core_state_count)
     def get_core_state_count(
             self, app_id: int, state: CPUState,
-            xys: Optional[Iterable[Tuple[int, int]]] = None) -> int:
+            xys: Optional[Iterable[tuple[int, int]]] = None) -> int:
         return self._n_cores_in_app[app_id]
 
 
