@@ -76,8 +76,8 @@ def _get_samples_per_recording_entry(sample_frequency: int) -> int:
     value = get_config_str(
         "SampleMonitor", "profile_n_samples_per_recording_entry")
     if value == "@timestep":
-        return max(1, int(math.ceil(
-            FecDataView.get_hardware_time_step_us() / sample_frequency)))
+        return max(1, math.ceil(
+            FecDataView.get_hardware_time_step_us() / sample_frequency))
     return int(value)
 
 
@@ -266,4 +266,4 @@ class ChipPowerMonitorMachineVertex(
             self.__sampling_frequency * self.__n_samples_per_recording)
         n_entries = math.floor(FecDataView.get_hardware_time_step_us() /
                                recording_time)
-        return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
+        return math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY)

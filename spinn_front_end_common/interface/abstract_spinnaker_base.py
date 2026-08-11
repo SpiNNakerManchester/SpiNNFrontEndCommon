@@ -446,7 +446,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: The number of timesteps
         """
         time_step_ms = self._data_writer.get_simulation_time_step_ms()
-        n_time_steps = int(math.ceil(time_in_ms / time_step_ms))
+        n_time_steps = math.ceil(time_in_ms / time_step_ms)
         calc_time = n_time_steps * time_step_ms
 
         # Allow for minor float errors
@@ -689,7 +689,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if n_steps == 0:
             return [0]
         n_steps_per_segment = self._data_writer.get_max_run_time_steps()
-        n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
+        n_full_iterations = math.floor(n_steps / n_steps_per_segment)
         left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
         steps = [int(n_steps_per_segment)] * n_full_iterations
         if left_over_steps:

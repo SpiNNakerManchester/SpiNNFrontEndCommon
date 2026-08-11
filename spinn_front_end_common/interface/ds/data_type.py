@@ -456,7 +456,7 @@ class DataType(Enum):
                 raise ValueError(
                     f"value {value:f} cannot be converted to {self.__doc__}"
                     ": out of range")
-            return int(round(Decimal(str(value)) * self._scale))
+            return round(Decimal(str(value)) * self._scale)
         if self._force_cast is not None:
             return self._force_cast(value)
         return cast(int, value)

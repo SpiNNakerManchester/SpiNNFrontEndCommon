@@ -201,8 +201,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             simulation_time_step_us = get_config_int(
                 "Machine", "simulation_time_step")
         else:
-            simulation_time_step_us = int(round(
-                simulation_time_step_ms * MICRO_TO_MILLISECOND_CONVERSION))
+            simulation_time_step_us = round(
+                simulation_time_step_ms * MICRO_TO_MILLISECOND_CONVERSION)
 
         if simulation_time_step_us <= 0:
             raise ConfigurationException(
