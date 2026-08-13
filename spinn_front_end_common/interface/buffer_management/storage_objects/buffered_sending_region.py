@@ -14,7 +14,7 @@
 
 import bisect
 import math
-from typing import Iterable, Optional, Sequence
+from typing import Iterable, Sequence
 
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.messages.eieio import EIEIOType
@@ -129,7 +129,7 @@ class BufferedSendingRegion:
         return self._current_timestamp_pos < len(self._timestamps)
 
     @property
-    def next_timestamp(self) -> Optional[int]:
+    def next_timestamp(self) -> int | None:
         """
         The next timestamp of the data to be sent,
             or `None` if no more data.

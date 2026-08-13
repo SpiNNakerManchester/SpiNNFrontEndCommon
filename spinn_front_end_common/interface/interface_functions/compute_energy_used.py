@@ -14,7 +14,7 @@
 
 import logging
 from collections import defaultdict
-from typing import Final, Optional, cast
+from typing import Final, cast
 
 import numpy
 
@@ -55,8 +55,8 @@ _US_PER_MS: Final = 1000.0
 _US_PER_SECOND: Final = 1000000.0
 
 
-def compute_energy_used(checkpoint: Optional[int] = None,
-                        n_reset: Optional[int] = None) -> PowerUsed:
+def compute_energy_used(checkpoint: int | None = None,
+                        n_reset: int | None = None) -> PowerUsed:
     """
     This algorithm does the actual work of computing energy used by a
     simulation (or other application) running on SpiNNaker.
@@ -182,7 +182,7 @@ def _extract_router_packets(
 
 
 def _extract_cores_active_time(
-        checkpoint: Optional[int], active_cores: dict[tuple[int, int], int],
+        checkpoint: int | None, active_cores: dict[tuple[int, int], int],
         power_cores: dict[tuple[int, int], int],
         version: AbstractVersion) -> float:
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")

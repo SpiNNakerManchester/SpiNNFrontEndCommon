@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
 
 from spinn_utilities.overrides import overrides
 
@@ -70,7 +69,7 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
         :param command_code: Text for error message
         """
         super().__init__()
-        self._reinjection_status: Optional[ReInjectionStatus] = None
+        self._reinjection_status: ReInjectionStatus | None = None
         self._command_code = command_code
 
     @overrides(AbstractSCPResponse.read_data_bytestring)

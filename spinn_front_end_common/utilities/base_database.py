@@ -15,7 +15,6 @@
 import os
 import sqlite3
 import time
-from typing import Optional, Union
 
 from typing_extensions import TypeAlias
 
@@ -26,7 +25,7 @@ from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 _DDL_FILE = os.path.join(os.path.dirname(__file__),
                          "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
-_SqliteTypes: TypeAlias = Union[str, int, float, bytes, None]
+_SqliteTypes: TypeAlias = str | int | float | bytes | None
 
 
 def _timestamp() -> int:
@@ -51,10 +50,10 @@ class BaseDatabase(SQLiteDB):
 
     __slots__ = ("_database_file", )
 
-    def __init__(self, database_file: Optional[str] = None, *,
+    def __init__(self, database_file: str | None = None, *,
                  read_only: bool = False,
-                 row_factory: Optional[type] = sqlite3.Row,
-                 text_factory: Optional[type] = memoryview):
+                 row_factory: type | None = sqlite3.Row,
+                 text_factory: type | None = memoryview):
         """
         :param database_file:
             The name of a file that contains (or will contain) an SQLite

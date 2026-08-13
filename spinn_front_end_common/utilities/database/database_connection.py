@@ -14,7 +14,7 @@
 
 import logging
 from threading import Thread
-from typing import Callable, Optional
+from typing import Callable
 
 from spinn_utilities.log import FormatAdapter
 
@@ -63,10 +63,10 @@ class DatabaseConnection(UDPConnection):
         "__start_resume_callback")
 
     def __init__(
-            self, start_resume_callback_function: Optional[_CB] = None,
-            stop_pause_callback_function: Optional[_CB] = None,
-            local_host: Optional[str] = None,
-            local_port: Optional[int] = NOTIFY_PORT):
+            self, start_resume_callback_function: _CB | None = None,
+            stop_pause_callback_function: _CB | None = None,
+            local_host: str | None = None,
+            local_port: int | None = NOTIFY_PORT):
         """
         :param start_resume_callback_function:
             A function to be called when the start message has been received.

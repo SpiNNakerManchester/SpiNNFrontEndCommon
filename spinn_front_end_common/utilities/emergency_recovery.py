@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from typing import Optional
 
 from spinn_utilities.log import FormatAdapter
 
@@ -69,7 +68,7 @@ def _emergency_state_check() -> None:
 
 
 def _emergency_iobuf_extract(
-        executable_targets: Optional[ExecutableTargets] = None) -> None:
+        executable_targets: ExecutableTargets | None = None) -> None:
     """
     :param executable_targets:
         The specific targets to extract, or `None` for all

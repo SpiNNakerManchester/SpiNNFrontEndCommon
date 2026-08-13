@@ -15,7 +15,7 @@
 import struct
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, Callable, cast
 
 import numpy as np
 from numpy import uint32
@@ -341,7 +341,7 @@ class DataType(Enum):
 
     def __new__(cls, value: int, size: int, min_val: Decimal, max_val: Decimal,
                 scale: Decimal, struct_encoding: str, apply_scale: bool,
-                force_cast: Optional[Callable[[Any], int]],
+                force_cast: Callable[[Any], int] | None,
                 numpy_typename: type, _doc: str) -> 'DataType':
         obj = object.__new__(cls)
         obj._value_ = value
@@ -351,7 +351,7 @@ class DataType(Enum):
     def __init__(
             self, value: int, size: int, min_val: Decimal, max_val: Decimal,
             scale: Decimal, struct_encoding: str, apply_scale: bool,
-            force_cast: Optional[Callable[[Any], int]],
+            force_cast: Callable[[Any], int] | None,
             numpy_typename: type, _doc: str) -> None:
         """
         :param value: ID for the enum
@@ -403,7 +403,7 @@ class DataType(Enum):
         """
         return self._max
 
-    def check_value(self, value: Union[int, float]) -> None:
+    def check_value(self, value: int | float) -> None:
         """
         Check the value against the allowed min and max
 
@@ -439,7 +439,7 @@ class DataType(Enum):
         """
         return self._numpy_typename
 
-    def encode_as_int(self, value: Union[int, float]) -> int:
+    def encode_as_int(self, value: int | float) -> int:
         """
         Returns the value as an integer, according to this type.
 
@@ -461,7 +461,7 @@ class DataType(Enum):
             return self._force_cast(value)
         return cast(int, value)
 
-    def encode_as_numpy_int(self, value: Union[int, float]) -> uint32:
+    def encode_as_numpy_int(self, value: int | float) -> uint32:
         """
         Returns the value as a numpy integer, according to this type.
 
@@ -492,7 +492,7 @@ class DataType(Enum):
                 uint32)
         return np.array(array)
 
-    def as_bytes(self, value: Union[int, float]) -> bytes:
+    def as_bytes(self, value: int | float) -> bytes:
         """
         Encode the Python value as bytes with NO padding.
 
@@ -508,7 +508,7 @@ class DataType(Enum):
         """
         return array / float(self._scale)
 
-    def decode_array(self, values: Union[NDArray, bytes]) -> NDArray:
+    def decode_array(self, values: NDArray | bytes) -> NDArray:
         """
         Decodes a byte array into numpy array of this type.
 

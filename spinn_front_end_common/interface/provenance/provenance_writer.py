@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-from typing import Optional
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -45,7 +44,7 @@ class ProvenanceWriter(BaseDatabase):
 
     __slots__ = ()
 
-    def __init__(self, database_file: Optional[str] = None):
+    def __init__(self, database_file: str | None = None):
         """
         :param database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -224,8 +223,8 @@ class ProvenanceWriter(BaseDatabase):
             [pre_population, post_population, the_type, description,
              the_value])
 
-    def insert_board_provenance(self, connections: Optional[
-            dict[tuple[int, int], str]]) -> None:
+    def insert_board_provenance(
+            self, connections: dict[tuple[int, int], str] | None) -> None:
         """
         Write the connection details retrieved from spalloc_client job to the
         `boards_provenance` table.

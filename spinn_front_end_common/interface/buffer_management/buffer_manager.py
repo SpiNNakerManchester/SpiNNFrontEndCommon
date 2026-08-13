@@ -21,7 +21,6 @@ import logging
 from typing import (
     TYPE_CHECKING,
     Iterable,
-    Optional,
     cast,
 )
 
@@ -133,7 +132,7 @@ class BufferManager:
         self._sent_messages: dict[
             AbstractSendsBuffersFromHost, BuffersSentDeque] = {}
 
-        self._java_caller: Optional[JavaCaller]
+        self._java_caller: JavaCaller | None
         if FecDataView.has_java_caller():
             with BufferDatabase() as db:
                 db.write_session_credentials_to_db()
@@ -272,7 +271,7 @@ class BufferManager:
 
     def _create_message_to_send(
             self, size: int, vertex: AbstractSendsBuffersFromHost,
-            region: int) -> Optional[EIEIODataMessage]:
+            region: int) -> EIEIODataMessage | None:
         """
         Creates a single message to send with the given boundaries.
 

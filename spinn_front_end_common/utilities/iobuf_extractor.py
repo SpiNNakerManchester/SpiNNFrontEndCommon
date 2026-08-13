@@ -18,11 +18,9 @@ import re
 from collections.abc import Sized
 from typing import (
     Iterable,
-    Optional,
     Pattern,
     Sequence,
     TypeVar,
-    Union,
 )
 
 from spinn_utilities.config_holder import get_config_str_or_none
@@ -86,7 +84,7 @@ class IOBufExtractor:
     )
 
     def __init__(
-            self, executable_targets: Optional[ExecutableTargets] = None, *,
+            self, executable_targets: ExecutableTargets | None = None, *,
             recovery_mode: bool = False,
             filename_template: str = (
                 "iobuf_for_chip_{}_{}_processor_id_{}.txt"),
@@ -140,7 +138,7 @@ class IOBufExtractor:
             # nothing
             return [], []
 
-    def __progress(self, bins: Sized) -> Union[ProgressBar, _DummyProgress]:
+    def __progress(self, bins: Sized) -> ProgressBar | _DummyProgress:
         if self.__suppress_progress:
             return _DummyProgress()
         label = (("Recovering" if self._recovery_mode else "Extracting")

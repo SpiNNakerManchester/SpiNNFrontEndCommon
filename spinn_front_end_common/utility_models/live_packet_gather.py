@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import Optional, Sequence, TypeVar
+from typing import Sequence, TypeVar
 
 from spinn_utilities.overrides import overrides
 
@@ -148,7 +148,7 @@ class LivePacketGather(ApplicationVertex[LivePacketGatherMachineVertex]):
     __slots__ = ("__params", )
 
     def __init__(self, params: LivePacketGatherParameters,
-                 label: Optional[str] = None):
+                 label: str | None = None):
         """
         :param params: The parameters object
         :param label: An optional label

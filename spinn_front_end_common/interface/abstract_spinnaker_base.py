@@ -28,10 +28,8 @@ from threading import Condition
 from types import FrameType
 from typing import (
     Iterable,
-    Optional,
     Sequence,
     TypeVar,
-    Union,
     cast,
     final,
 )
@@ -241,10 +239,10 @@ class AbstractSpinnakerBase(ConfigHandler):
     )
 
     def __init__(
-            self, *, n_boards_required: Optional[int] = None,
-            n_chips_required: Optional[int] = None,
-            timestep: Optional[float] = None,
-            time_scale_factor: Optional[float] = None):
+            self, *, n_boards_required: int | None = None,
+            n_chips_required: int | None = None,
+            timestep: float | None = None,
+            time_scale_factor: float | None = None):
         """
         :param n_boards_required:
             `None` or the number of boards requested by the user
@@ -361,7 +359,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_java_caller(JavaCaller())
 
     def __signal_handler(
-            self, _signal: int, _frame: Optional[FrameType]) -> None:
+            self, _signal: int, _frame: FrameType | None) -> None:
         """
         Handles closing down of script via keyboard interrupt
 
@@ -377,7 +375,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def exception_handler(
             self, exc_type: type[BaseException], value: BaseException,
-            traceback_obj: Optional[types.TracebackType]) -> None:
+            traceback_obj: types.TracebackType | None) -> None:
         """
         Handler of exceptions.
 
@@ -406,7 +404,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Therefore the run call will exit immediately.")
         return False
 
-    def run_until_complete(self, n_steps: Optional[int] = None) -> None:
+    def run_until_complete(self, n_steps: int | None = None) -> None:
         """
         Run a simulation until it completes.
 
@@ -420,7 +418,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run(n_steps, sync_time=0.0)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
 
-    def run(self, run_time: Optional[float], sync_time: float = 0) -> None:
+    def run(self, run_time: float | None, sync_time: float = 0) -> None:
         """
         Run a simulation for a fixed amount of time.
 
@@ -455,8 +453,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 time_in_ms, time_step_ms, calc_time)
         return n_time_steps
 
-    def _calc_run_time(self, run_time: Optional[float]) -> Union[
-            tuple[int, float], tuple[None, None]]:
+    def _calc_run_time(self, run_time: float | None
+                       ) -> tuple[int, float] | tuple[None, None]:
         """
         Calculates n_machine_time_steps and total_run_time based on run_time
         and machine_time_step.
@@ -502,7 +500,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             f"{self._data_writer.get_hardware_time_step_us()} us")
         return n_machine_time_steps, total_run_time
 
-    def _run(self, run_time: Optional[float], sync_time: float) -> None:
+    def _run(self, run_time: float | None, sync_time: float) -> None:
         self._data_writer.start_run()
         try:
             self.__run(run_time, sync_time)
@@ -567,7 +565,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.get_app_id())
             self._data_writer.reset_sync_signal()
 
-    def __run(self, run_time: Optional[float], sync_time: float) -> None:
+    def __run(self, run_time: float | None, sync_time: float) -> None:
         """
         The main internal run function.
 
@@ -632,7 +630,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @final
     def _deduce_data_n_timesteps(
-            self, n_machine_time_steps: Optional[int]) -> None:
+            self, n_machine_time_steps: int | None) -> None:
         """
         Operates the auto pause and resume functionality by figuring out
         how many timer ticks a simulation can run before SDRAM runs out,
@@ -700,7 +698,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @overrides(ConfigHandler._do_transceiver_by_remote)
     def _do_transceiver_by_remote(
-            self, total_run_time: Optional[float],
+            self, total_run_time: float | None,
             ensure_board_is_ready: bool) -> Transceiver:
         spalloc_server = get_config_str_or_none("Machine", "spalloc_server")
         if spalloc_server:
@@ -744,7 +742,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return transceiver
 
     def _execute_transceiver_by_hbp(
-            self, total_run_time:  Optional[float]) -> Transceiver:
+            self, total_run_time:  float | None) -> Transceiver:
         with (FecTimer("HBPAllocator", TimerWork.OTHER)):
             # TODO: Would passing the bearer token to this ever make sense?
             ipaddress, bmp_details, controller = hbp_allocator(total_run_time)
@@ -789,7 +787,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @overrides(ConfigHandler._get_known_machine)
     def _get_known_machine(
-            self, total_run_time: Optional[float] = 0.0) -> Machine:
+            self, total_run_time: float | None = 0.0) -> Machine:
         FecTimer.start_category(TimerCategory.MACHINE_ON)
         machine = super()._get_known_machine()
         FecTimer.end_category(TimerCategory.MACHINE_ON)
@@ -1277,8 +1275,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._data_writer.get_transceiver().control_sync(do_sync)
 
-    def _stage_mapping(self, total_run_time: Optional[float],
-                       n_machine_time_steps: Optional[int]) -> None:
+    def _stage_mapping(self, total_run_time: float | None,
+                       n_machine_time_steps: int | None) -> None:
         """
         Runs, times and logs all the algorithms in the mapping stage.
         """
@@ -1408,8 +1406,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return ordered_covering_compressor()
 
     @final
-    def _execute_ordered_covering_compression(self) -> Optional[
-            MulticastRoutingTables]:
+    def _execute_ordered_covering_compression(
+            self) -> MulticastRoutingTables | None:
         """
         Runs, times and logs the ordered covering compressor on machine.
 
@@ -1450,7 +1448,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return pair_compressor()
 
     @final
-    def _execute_pair_compression(self) -> Optional[MulticastRoutingTables]:
+    def _execute_pair_compression(self) -> MulticastRoutingTables | None:
         """
         Runs, times and logs the pair compressor on machine.
 
@@ -1518,7 +1516,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._data_writer.set_precompressed(range_compressor())
 
-    def _do_compression(self) -> Optional[MulticastRoutingTables]:
+    def _do_compression(self) -> MulticastRoutingTables | None:
         """
         Calls a compressor based on the name provided.
 
@@ -1556,7 +1554,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @final
     def _execute_load_routing_tables(
-            self, compressed: Optional[MulticastRoutingTables]) -> None:
+            self, compressed: MulticastRoutingTables | None) -> None:
         """
         Runs, times and logs the RoutingTableLoader if required.
         """
@@ -1691,8 +1689,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             memory_map_on_host_chip_report()
 
     # TODO consider different cfg flags
-    def _report_compressed(self, compressed: Optional[
-            MulticastRoutingTables]) -> None:
+    def _report_compressed(
+            self, compressed: MulticastRoutingTables | None) -> None:
         """
         Runs, times and logs the compressor reports if requested.
         """
@@ -1954,7 +1952,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 database_interface())
 
     def _execute_update_database_interface(
-            self, run_time: Optional[float]) -> None:
+            self, run_time: float | None) -> None:
         """
         Runs, times and logs Database Interface Updater.
 
@@ -1981,7 +1979,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 create_notification_protocol())
 
     def _execute_runner(
-            self, n_sync_steps: int, run_time: Optional[float]) -> None:
+            self, n_sync_steps: int, run_time: float | None) -> None:
         """
         Runs, times and logs the ApplicationRunner.
 
@@ -2044,7 +2042,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._do_provenance_reports()
 
     def _do_run(
-            self, n_machine_time_steps: Optional[int],
+            self, n_machine_time_steps: int | None,
             n_sync_steps: int) -> None:
         """
         Runs, times and logs the do run steps.
@@ -2071,8 +2069,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_drift(start=False)
         self._execute_control_sync(True)
 
-    def _stage_run(self, n_machine_time_steps: Optional[int],
-                   run_time: Optional[float], sync_time: float) -> None:
+    def _stage_run(self, n_machine_time_steps: int | None,
+                   run_time: float | None, sync_time: float) -> None:
         """
         Runs, times and logs the do run steps.
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from typing import Iterable, Optional, Sequence, cast
+from typing import Iterable, Sequence, cast
 
 from typing_extensions import TypeAlias
 
@@ -49,7 +49,7 @@ class ProvenanceReader(BaseDatabase):
 
     __slots__ = ()
 
-    def __init__(self, provenance_data_path: Optional[str] = None):
+    def __init__(self, provenance_data_path: str | None = None):
         """
         Create a wrapper around the database.
 

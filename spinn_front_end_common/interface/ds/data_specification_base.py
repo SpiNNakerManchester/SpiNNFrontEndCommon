@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional, Sequence, TextIO, Union
+from typing import Any, Sequence, TextIO
 
 import numpy
 
@@ -44,7 +44,7 @@ class DataSpecificationBase(metaclass=AbstractBase):
     )
 
     def __init__(self, x: int, y: int, p: int, ds_db: DsSqlliteDatabase,
-                 report_writer: Optional[TextIO] = None):
+                 report_writer: TextIO | None = None):
         """
         :param report_writer:
             Determines if a text version of the specification is to be
@@ -55,10 +55,10 @@ class DataSpecificationBase(metaclass=AbstractBase):
         self._p = p
         self._ds_db = ds_db
         self._report_writer = report_writer
-        self._content: Optional[bytearray] = None
-        self._content_debug: Optional[str] = None
-        self._region_num: Optional[int] = None
-        self._size: Optional[int] = None
+        self._content: bytearray | None = None
+        self._content_debug: str | None = None
+        self._region_num: int | None = None
+        self._size: int | None = None
 
     def _report(self, *args: Any) -> None:
         if self._report_writer is not None:
@@ -84,8 +84,8 @@ class DataSpecificationBase(metaclass=AbstractBase):
 
     @abstractmethod
     def reserve_memory_region(
-            self, region: int, size: int, label: Optional[str] = None,
-            reference: Optional[int] = None) -> None:
+            self, region: int, size: int, label: str | None = None,
+            reference: int | None = None) -> None:
         """
         Insert command to reserve a memory region.
 
@@ -102,7 +102,7 @@ class DataSpecificationBase(metaclass=AbstractBase):
 
     @abstractmethod
     def reference_memory_region(
-            self, region: int, ref: int, label: Optional[str] = None) -> None:
+            self, region: int, ref: int, label: str | None = None) -> None:
         """
         Insert command to reference another memory region.
 
@@ -135,7 +135,7 @@ class DataSpecificationBase(metaclass=AbstractBase):
         if self._size <= 0:
             raise DataSpecException(f"No size set for region {region}")
 
-    def write_value(self, data: Union[int, float],
+    def write_value(self, data: int | float,
                     data_type: DataType = DataType.UINT32) -> None:
         """
         Insert command to write a value (once) to the current write pointer,
@@ -180,8 +180,9 @@ class DataSpecificationBase(metaclass=AbstractBase):
         self._content += as_bytes
         self._content_debug += f"{data}:{data_type.name} "
 
-    def write_array(self, array_values: Union[
-            Sequence[int], Sequence[float], numpy.ndarray],
+    def write_array(
+            self,
+            array_values: Sequence[int] | Sequence[float] | numpy.ndarray,
             data_type: DataType = DataType.UINT32) -> None:
         """
         Insert command to write an array, causing the write pointer

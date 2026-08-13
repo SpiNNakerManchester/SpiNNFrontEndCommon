@@ -16,7 +16,6 @@ import logging
 import struct
 from threading import Condition
 from time import sleep
-from typing import Optional
 
 from spinn_utilities.log import FormatAdapter
 
@@ -43,8 +42,8 @@ _LIMIT = 10
 
 
 def application_runner(
-        runtime: Optional[float], time_threshold: Optional[float],
-        run_until_complete: bool, state_condition: Condition) -> Optional[int]:
+        runtime: float | None, time_threshold: float | None,
+        run_until_complete: bool, state_condition: Condition) -> int | None:
     """
     Ensures all cores are initialised correctly, ran, and completed
     successfully.
@@ -75,9 +74,9 @@ class _ApplicationRunner:
         self.__app_id = FecDataView.get_app_id()
 
     def run_app(
-            self, runtime: Optional[float], time_threshold: Optional[float],
+            self, runtime: float | None, time_threshold: float | None,
             run_until_complete: bool,
-            state_condition: Condition) -> Optional[int]:
+            state_condition: Condition) -> int | None:
         """
         :param runtime:
         :param time_threshold:
@@ -165,8 +164,8 @@ class _ApplicationRunner:
         notification_interface.send_stop_pause_notification()
         return latest_runtime
 
-    def _run_wait(self, runtime: Optional[float],
-                  time_threshold: Optional[float]) -> None:
+    def _run_wait(self, runtime: float | None,
+                  time_threshold: float | None) -> None:
         assert runtime is not None
         factor = (FecDataView.get_time_scale_factor() /
                   MICRO_TO_MILLISECOND_CONVERSION)
@@ -178,7 +177,7 @@ class _ApplicationRunner:
         sleep(time_to_wait)
         self._wait_for_end(timeout=time_threshold)
 
-    def _wait_for_start(self, timeout: Optional[float] = None) -> None:
+    def _wait_for_start(self, timeout: float | None = None) -> None:
         for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.start_state, timeout=timeout)
@@ -199,12 +198,12 @@ class _ApplicationRunner:
                 # fire all signals as required
                 self.__txrx.send_signal(self.__app_id, sync_signal)
 
-    def _wait_for_end(self, timeout: Optional[float] = None) -> None:
+    def _wait_for_end(self, timeout: float | None = None) -> None:
         for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.end_state, timeout=timeout)
 
-    def _determine_simulation_sync_signals(self) -> Optional[Signal]:
+    def _determine_simulation_sync_signals(self) -> Signal | None:
         """
         Determines the start states, and creates core subsets of the
         states for further checks.

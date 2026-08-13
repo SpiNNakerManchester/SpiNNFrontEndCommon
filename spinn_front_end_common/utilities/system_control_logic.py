@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import time
-from typing import Callable, Optional
+from typing import Callable
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
@@ -32,13 +32,12 @@ from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 def run_system_application(
         executable_cores: ExecutableTargets, app_id: int,
         read_algorithm_iobuf: bool,
-        check_for_success_function: Optional[
-            Callable[[ExecutableTargets], bool]],
+        check_for_success_function: Callable[[ExecutableTargets], bool] | None,
         cpu_end_states: frozenset[CPUState], needs_sync_barrier: bool,
-        filename_template: str, binaries_to_track: Optional[list[str]] = None,
-        progress_bar: Optional[ProgressBar] = None,
-        logger: Optional[FormatAdapter] = None,
-        timeout: Optional[float] = None) -> None:
+        filename_template: str, binaries_to_track: list[str] | None = None,
+        progress_bar: ProgressBar | None = None,
+        logger: FormatAdapter | None = None,
+        timeout: float | None = None) -> None:
     """
     Executes the given _system_ application.
     Used for on-chip expander, compressors, etc.
@@ -75,7 +74,7 @@ def run_system_application(
         # fire all signals as required
         transceiver.send_signal(app_id, Signal.SYNC0)
 
-    error: Optional[Exception] = None
+    error: Exception | None = None
     binary_start_types = {}
     if binaries_to_track is None:
         check_targets = executable_cores
@@ -125,7 +124,7 @@ def run_system_application(
 
 
 def _report_iobuf_messages(
-        cores: ExecutableTargets, logger: Optional[FormatAdapter],
+        cores: ExecutableTargets, logger: FormatAdapter | None,
         filename_template: str) -> None:
     # Import in this function to prevent circular import issue
     iobuf_reader = IOBufExtractor(

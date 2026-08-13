@@ -15,7 +15,7 @@
 import logging
 import os
 import sqlite3
-from typing import Iterable, Optional, cast
+from typing import Iterable, cast
 
 import numpy
 
@@ -46,7 +46,7 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     __slots__ = ["_init_file"]
 
-    def __init__(self, database_file:  Optional[str] = None):
+    def __init__(self, database_file:  str | None = None):
         """
         :param database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -155,7 +155,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def set_memory_region(
             self, x: int, y: int, p: int, region_num: int, size: int,
-            reference: Optional[int], label: Optional[str]) -> int:
+            reference: int | None, label: str | None) -> int:
         """
         Writes the information to reserve a memory region into the database
 
@@ -199,7 +199,7 @@ class DsSqlliteDatabase(SQLiteDB):
         raise DsDatabaseException(f"Region {region_num} not set")
 
     def set_reference(self, x: int, y: int, p: int, region_num: int,
-                      reference: int, ref_label: Optional[str]) -> None:
+                      reference: int, ref_label: str | None) -> None:
         """
         Writes a outgoing region_reference into the database
 
@@ -286,7 +286,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def set_region_content(
             self, x: int, y: int, p: int, region_num: int, content: bytearray,
-            content_debug: Optional[str]) -> None:
+            content_debug: str | None) -> None:
         """
         Sets the content for this region
 
@@ -322,7 +322,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 f"No region {x=} {y=} {p=} {region_num=}")
 
     def get_region_pointer(
-            self, x: int, y: int, p: int, region_num: int) -> Optional[int]:
+            self, x: int, y: int, p: int, region_num: int) -> int | None:
         """
         Gets the pointer for this region as set during the original load
 
@@ -456,7 +456,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_region_pointers_and_content(
             self, x: int, y: int, p: int) -> Iterable[tuple[
-                int, int, Optional[bytearray]]]:
+                int, int, bytearray | None]]:
         """
         Yields the number, pointers and content for each reserved region
 

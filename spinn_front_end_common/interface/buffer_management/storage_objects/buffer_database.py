@@ -14,7 +14,6 @@
 
 import time
 from sqlite3 import Binary, IntegrityError
-from typing import Optional
 
 from spinn_utilities.config_holder import get_config_bool
 
@@ -211,7 +210,7 @@ class BufferDatabase(BaseDatabase):
         return memoryview(c_buffer), missing_data
 
     def _find_existing_recording_region_id(
-            self, x: int, y: int, p: int, region: int) -> Optional[int]:
+            self, x: int, y: int, p: int, region: int) -> int | None:
         for row in self.cursor().execute(
                 """
                 SELECT recording_region_id
@@ -224,7 +223,7 @@ class BufferDatabase(BaseDatabase):
         return None
 
     def _find_existing_download_region_id(
-            self, x: int, y: int, p: int, region: int) -> Optional[int]:
+            self, x: int, y: int, p: int, region: int) -> int | None:
         for row in self.cursor().execute(
                 """
                 SELECT download_region_id
@@ -491,7 +490,7 @@ class BufferDatabase(BaseDatabase):
                 """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
     def _set_core_name(
-            self, x: int, y: int, p: int, core_name: Optional[str]) -> None:
+            self, x: int, y: int, p: int, core_name: str | None) -> None:
         try:
             self.cursor().execute(
                 """
@@ -517,7 +516,7 @@ class BufferDatabase(BaseDatabase):
                 self._set_core_name(
                     chip.x, chip.y, p, f"SCAMP(OS)_{chip.x}:{chip.y}")
 
-    def get_core_name(self, x: int, y: int, p: int) -> Optional[str]:
+    def get_core_name(self, x: int, y: int, p: int) -> str | None:
         """
         Gets the label (typically vertex label) for this core.
 

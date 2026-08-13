@@ -15,7 +15,7 @@
 import struct
 import unittest
 from sqlite3 import IntegrityError
-from typing import BinaryIO, Optional, Union
+from typing import BinaryIO
 
 from parameterized import parameterized
 
@@ -57,11 +57,11 @@ class _MockTransceiver(Version5Transceiver):
 
     def __init__(self) -> None:
         self._regions_written: list[tuple[
-            int, Union[bytearray, bytes]]] = []
+            int, bytearray | bytes]] = []
         self._next_address: int = 0
 
     @property
-    def regions_written(self) -> list[tuple[int, Union[bytearray, bytes]]]:
+    def regions_written(self) -> list[tuple[int, bytearray | bytes]]:
         """ A list of tuples of (base_address, data) which has been written
         """
         return self._regions_written
@@ -76,8 +76,8 @@ class _MockTransceiver(Version5Transceiver):
     @overrides(Version5Transceiver.write_memory)
     def write_memory(
             self, x: int, y: int, base_address: int,
-            data:  Union[BinaryIO, bytearray, bytes, int, str], *,
-            n_bytes: Optional[int] = None, offset: int = 0, cpu: int = 0,
+            data:  BinaryIO | bytearray | bytes | int | str, *,
+            n_bytes: int | None = None, offset: int = 0, cpu: int = 0,
             get_sum: bool = False) -> tuple[int, int]:
         if isinstance(data, int):
             data = struct.pack("<I", data)

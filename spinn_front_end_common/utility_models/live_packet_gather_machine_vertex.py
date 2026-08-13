@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import struct
 from enum import IntEnum
-from typing import TYPE_CHECKING, Optional, Sequence
+from typing import TYPE_CHECKING, Sequence
 
 from spinn_utilities.overrides import overrides
 
@@ -82,8 +82,8 @@ class LivePacketGatherMachineVertex(
 
     def __init__(
             self, lpg_params: LivePacketGatherParameters,
-            app_vertex: Optional[LivePacketGather] = None,
-            label: Optional[str] = None):
+            app_vertex: LivePacketGather | None = None,
+            label: str | None = None):
         """
         :param lpg_params: The parameters object
         :param app_vertex: The application vertex

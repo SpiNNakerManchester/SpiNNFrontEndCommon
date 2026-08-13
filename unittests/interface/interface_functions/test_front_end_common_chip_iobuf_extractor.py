@@ -14,7 +14,7 @@
 
 import os
 import unittest
-from typing import Iterable, Optional
+from typing import Iterable
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
@@ -37,7 +37,7 @@ class _PretendTransceiver(MockableTransceiver):
         self._iobuffers = iobuffers
 
     @overrides(MockableTransceiver.get_iobuf)
-    def get_iobuf(self, core_subsets: Optional[CoreSubsets] = None
+    def get_iobuf(self, core_subsets: CoreSubsets | None = None
                   ) -> Iterable[IOBuffer]:
         assert core_subsets is not None
         for iobuf in self._iobuffers:

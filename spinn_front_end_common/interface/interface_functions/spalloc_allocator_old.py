@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-from typing import Optional
 
 from spinn_utilities.config_holder import (
     get_config_int,
@@ -130,7 +129,7 @@ def spalloc_allocate_job_old() -> tuple[
 
 def _launch_checked_job_old(
         n_boards: int, host: str, port: int, owner: str,
-        machine: Optional[str]) -> tuple[Job, str, dict[XY, str]]:
+        machine: str | None) -> tuple[Job, str, dict[XY, str]]:
     logger.info(f"Requesting job with {n_boards} boards")
     avoid_boards = get_config_str_list("Machine", "spalloc_avoid_boards")
     avoid_jobs = []

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any
 
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 
@@ -53,17 +53,17 @@ class LivePacketGatherParameters:
     )
 
     def __init__(
-            self, port: int, hostname: str, tag: Optional[int] = None,
+            self, port: int, hostname: str, tag: int | None = None,
             strip_sdp: bool = True, use_prefix: bool = False,
-            key_prefix: Optional[int] = None,
-            prefix_type: Optional[EIEIOPrefix] = None,
+            key_prefix: int | None = None,
+            prefix_type: EIEIOPrefix | None = None,
             message_type: EIEIOType = EIEIOType.KEY_32_BIT,
             right_shift: int = 0,
             payload_as_time_stamps: bool = True,
             use_payload_prefix: bool = True,
-            payload_prefix: Optional[int] = None, payload_right_shift: int = 0,
+            payload_prefix: int | None = None, payload_right_shift: int = 0,
             number_of_packets_sent_per_time_step: int = 0,
-            label: Optional[str] = None,
+            label: str | None = None,
             received_key_mask: int = 0xFFFFFFFF,
             translate_keys: bool = False,
             translated_key_right_shift: int = 0) -> None:
@@ -125,7 +125,7 @@ class LivePacketGatherParameters:
         return self._hostname
 
     @property
-    def tag(self) -> Optional[int]:
+    def tag(self) -> int | None:
         """
         A fixed tag ID to assign, or `None` if any tag is OK
         """
@@ -146,14 +146,14 @@ class LivePacketGatherParameters:
         return self._use_prefix
 
     @property
-    def key_prefix(self) -> Optional[int]:
+    def key_prefix(self) -> int | None:
         """
         The EIEIO key prefix to remove from messages.
         """
         return self._key_prefix
 
     @property
-    def prefix_type(self) -> Optional[EIEIOPrefix]:
+    def prefix_type(self) -> EIEIOPrefix | None:
         """
         The type of prefix.
         """
@@ -188,7 +188,7 @@ class LivePacketGatherParameters:
         return self._use_payload_prefix
 
     @property
-    def payload_prefix(self) -> Optional[int]:
+    def payload_prefix(self) -> int | None:
         """
         The payload prefix to remove if applying compaction.
         """
@@ -209,7 +209,7 @@ class LivePacketGatherParameters:
         return self._n_packets_per_time_step
 
     @property
-    def label(self) -> Optional[str]:
+    def label(self) -> str | None:
         """
         A label.
         """

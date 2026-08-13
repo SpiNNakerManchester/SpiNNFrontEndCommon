@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from typing import BinaryIO, Optional, Union
+from typing import BinaryIO
 
 import numpy
 from parameterized import parameterized
@@ -119,8 +119,8 @@ class _MockTransceiver(MockableTransceiver):
     @overrides(MockableTransceiver.write_memory)
     def write_memory(
             self, x: int, y: int, base_address: int,
-            data:  Union[BinaryIO, bytearray, bytes, int, str], *,
-            n_bytes: Optional[int] = None, offset: int = 0, cpu: int = 0,
+            data:  BinaryIO | bytearray | bytes | int | str, *,
+            n_bytes: int | None = None, offset: int = 0, cpu: int = 0,
             get_sum: bool = False) -> tuple[int, int]:
         self._regions_rewritten.append((base_address, data))
         return (-1, -1)

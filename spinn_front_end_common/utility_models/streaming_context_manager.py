@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from types import TracebackType
-from typing import TYPE_CHECKING, ContextManager, Iterable, Optional
+from typing import TYPE_CHECKING, ContextManager, Iterable
 
 from typing_extensions import Literal
 
@@ -44,9 +44,9 @@ class StreamingContextManager(ContextManager[None]):
         for gatherer in self._gatherers:
             gatherer.set_cores_for_data_streaming()
 
-    def __exit__(self, exc_type: Optional[type],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, exc_type: type | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> Literal[False]:
         for gatherer in self._gatherers:
             gatherer.unset_cores_for_data_streaming()
         for gatherer in self._gatherers:

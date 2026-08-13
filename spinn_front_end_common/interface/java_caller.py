@@ -21,7 +21,7 @@ import subprocess
 import sys
 from collections import defaultdict
 from io import BufferedReader
-from typing import Iterable, Optional, cast
+from typing import Iterable, cast
 
 from spinn_utilities.config_holder import (
     get_config_str,
@@ -110,17 +110,17 @@ class JavaCaller:
         :raise ConfigurationException: if simple parameter checking fails.
         """
         self._java_call = self.check_java()
-        self._recording: Optional[bool] = None
+        self._recording: bool | None = None
 
         self._find_java_jar()
 
-        self._machine_json_path: Optional[str] = None
-        self.__placement_json: Optional[str] = None
-        self._monitor_cores: Optional[dict[Chip, int]] = None
-        self._gatherer_iptags: Optional[dict[Chip, IPTag]] = None
-        self._gatherer_cores: Optional[dict[Chip, int]] = None
+        self._machine_json_path: str | None = None
+        self.__placement_json: str | None = None
+        self._monitor_cores: dict[Chip, int] | None = None
+        self._gatherer_iptags: dict[Chip, IPTag] | None = None
+        self._gatherer_cores: dict[Chip, int] | None = None
         java_properties = get_config_str_or_none("Java", "java_properties")
-        self._chip_by_ethernet: Optional[dict[Chip, list[Chip]]] = None
+        self._chip_by_ethernet: dict[Chip, list[Chip]] | None = None
         if java_properties is not None:
             self._java_properties = java_properties.split()
             for _property in self._java_properties:

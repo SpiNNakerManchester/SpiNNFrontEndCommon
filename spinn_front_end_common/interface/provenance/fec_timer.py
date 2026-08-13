@@ -19,7 +19,7 @@ from collections.abc import Sized
 from datetime import timedelta
 from sqlite3 import DatabaseError
 from types import TracebackType
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from typing_extensions import Literal, Self
 
@@ -45,10 +45,10 @@ class FecTimer:
     Timer.
     """
 
-    _provenance_path: Optional[str] = None
+    _provenance_path: str | None = None
     _print_timings: bool = False
-    _category_id: Optional[int] = None
-    _category: Optional[TimerCategory] = None
+    _category_id: int | None = None
+    _category: TimerCategory | None = None
     _category_time: int = 0
     # machine on cycle to allocate time to
     _machine_on: bool = False
@@ -86,7 +86,7 @@ class FecTimer:
         :param algorithm: Name of algorithm being timed
         :param work: Type of work being timed
         """
-        self._start_time: Optional[int] = None
+        self._start_time: int | None = None
         self._algorithm = algorithm
         self._work = work
 
@@ -102,7 +102,7 @@ class FecTimer:
             logger.info(message)
 
     def _insert_timing(
-            self, time_taken: timedelta, skip_reason: Optional[str]) -> None:
+            self, time_taken: timedelta, skip_reason: str | None) -> None:
         if self._category_id is not None:
             try:
                 with GlobalProvenance() as db:
@@ -164,8 +164,9 @@ class FecTimer:
         else:
             return False
 
-    def skip_if_empty(self, value: Optional[
-            Union[bool, int, str, Sized]], name: str) -> bool:
+    def skip_if_empty(
+            self,
+            value: bool | int | str | Sized | None, name: str) -> bool:
         """
         Skips if the value is one that evaluates to False.
 
@@ -295,9 +296,9 @@ class FecTimer:
         """
         return timedelta(microseconds=time_diff / _NANO_TO_MICRO)
 
-    def __exit__(self, exc_type: Optional[type],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, exc_type: type | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> Literal[False]:
         if self._start_time is None:
             return False
         time_taken = self._stop_timer()
