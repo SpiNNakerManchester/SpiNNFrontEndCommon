@@ -19,8 +19,6 @@ from typing import (
     TYPE_CHECKING,
     Iterable,
     Iterator,
-    Optional,
-    Union,
 )
 
 from spinn_utilities.config_holder import get_report_path
@@ -133,47 +131,44 @@ class _FecDataModel:
         """
         # Can not be cleared during hard reset as previous runs data checked
         self._database_socket_addresses: set[SocketAddress] = set()
-        self._executable_types: Optional[
-            dict[ExecutableType, CoreSubsets]] = None
-        self._hardware_time_step_ms: Optional[float] = None
-        self._hardware_time_step_us: Optional[int] = None
-        self._live_packet_recorder_params: Optional[dict[
-            LivePacketGatherParameters,
-            LivePacketGather]] = None
+        self._executable_types: dict[ExecutableType, CoreSubsets] | None = None
+        self._hardware_time_step_ms: float | None = None
+        self._hardware_time_step_us: int | None = None
+        self._live_packet_recorder_params: dict[
+            LivePacketGatherParameters, LivePacketGather] | None = None
         self._live_output_vertices: set[tuple[ApplicationVertex, str]] = set()
         self._live_output_devices: list[LiveOutputDevice] = []
-        self._java_caller: Optional[JavaCaller] = None
+        self._java_caller: JavaCaller | None = None
         self._none_labelled_edge_count = 0
-        self._simulation_time_step_ms: Optional[float] = None
-        self._simulation_time_step_per_ms: Optional[float] = None
-        self._simulation_time_step_per_s: Optional[float] = None
-        self._simulation_time_step_s: Optional[float] = None
-        self._simulation_time_step_us: Optional[int] = None
-        self._time_scale_factor: Optional[Union[int, float]] = None
+        self._simulation_time_step_ms: float | None = None
+        self._simulation_time_step_per_ms: float | None = None
+        self._simulation_time_step_per_s: float | None = None
+        self._simulation_time_step_s: float | None = None
+        self._simulation_time_step_us: int | None = None
+        self._time_scale_factor: int | float | None = None
         self._hard_reset()
 
     def _hard_reset(self) -> None:
         """
         Clears out all data that should change after a reset and graph change.
         """
-        self._buffer_manager: Optional[BufferManager] = None
-        self._data_in_multicast_key_to_chip_map: Optional[dict[XY, int]] = None
-        self._data_in_multicast_routing_tables: Optional[
-            MulticastRoutingTables] = None
-        self._database_file_path: Optional[str] = None
-        self._ds_database_path: Optional[str] = None
+        self._buffer_manager: BufferManager | None = None
+        self._data_in_multicast_key_to_chip_map: dict[XY, int] | None = None
+        self._data_in_multicast_routing_tables: (
+                MulticastRoutingTables | None) = None
+        self._database_file_path: str | None = None
+        self._ds_database_path: str | None = None
         self._next_ds_reference = 0
-        self._executable_targets: Optional[ExecutableTargets] = None
-        self._fixed_routes: Optional[dict[XY, RoutingEntry]] = None
+        self._executable_targets: ExecutableTargets | None = None
+        self._fixed_routes: dict[XY, RoutingEntry] | None = None
         self._gatherer_map: \
-            Optional[dict[Chip, DataSpeedUpPacketGatherMachineVertex]] = None
+            dict[Chip, DataSpeedUpPacketGatherMachineVertex] | None = None
         self._next_sync_signal: Signal = Signal.SYNC0
-        self._notification_protocol: Optional[NotificationProtocol] = None
-        self._max_run_time_steps: Optional[int] = None
+        self._notification_protocol: NotificationProtocol | None = None
+        self._max_run_time_steps: int | None = None
         self._monitor_map: \
-            Optional[dict[Chip, ExtraMonitorSupportMachineVertex]] = None
-        self._system_multicast_router_timeout_keys: Optional[
-            dict[XY, int]] = None
+            dict[Chip, ExtraMonitorSupportMachineVertex] | None = None
+        self._system_multicast_router_timeout_keys: dict[XY, int] | None = None
         self._soft_reset()
         self._clear_notification_protocol()
 
@@ -181,10 +176,10 @@ class _FecDataModel:
         """
         Clears timing and other data that should changed every reset.
         """
-        self._current_run_timesteps: Optional[int] = 0
+        self._current_run_timesteps: int | None = 0
         self._first_machine_time_step = 0
-        self._run_step: Optional[int] = None
-        self._n_run_steps: Optional[int] = None
+        self._run_step: int | None = None
+        self._n_run_steps: int | None = None
 
     def _clear_notification_protocol(self) -> None:
         if self._notification_protocol:
@@ -215,7 +210,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # current_run_timesteps and first_machine_time_step
 
     @classmethod
-    def get_current_run_timesteps(cls) -> Optional[int]:
+    def get_current_run_timesteps(cls) -> int | None:
         """
         The end of this or the previous do__run loop time in steps.
 
@@ -426,7 +421,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # time scale factor
 
     @classmethod
-    def get_time_scale_factor(cls) -> Union[int, float]:
+    def get_time_scale_factor(cls) -> int | float:
         """
         :returns: The timescale factor
         :raises SpiNNUtilsException:
@@ -446,7 +441,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._time_scale_factor is not None
 
     @classmethod
-    def get_run_step(cls) -> Optional[int]:
+    def get_run_step(cls) -> int | None:
         """
         Get the auto pause and resume step currently running if any.
 
@@ -745,7 +740,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                     part_id)
 
     @classmethod
-    def get_database_file_path(cls) -> Optional[str]:
+    def get_database_file_path(cls) -> str | None:
         """
         :returns: The database_file_path if set or `None` if not set
             or set to `None`
@@ -960,7 +955,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def add_database_socket_addresses(
-            cls, database_socket_addresses: Optional[Iterable[SocketAddress]]
+            cls, database_socket_addresses: Iterable[SocketAddress] | None
             ) -> None:
         """
         Adds all socket addresses to the list of known addresses.
@@ -976,9 +971,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def add_database_socket_port(
-            cls, database_ack_port_num: Optional[int],
-            database_notify_host: Optional[str],
-            database_notify_port_num: Optional[int]) -> None:
+            cls, database_ack_port_num: int | None,
+            database_notify_host: str | None,
+            database_notify_port_num: int | None) -> None:
         """
         Add a socket address for the notification protocol.
 

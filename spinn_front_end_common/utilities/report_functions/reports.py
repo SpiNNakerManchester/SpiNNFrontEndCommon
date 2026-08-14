@@ -15,7 +15,7 @@
 import logging
 import os
 import time
-from typing import Iterable, Optional, TextIO
+from typing import Iterable, TextIO
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
@@ -85,7 +85,7 @@ def placer_reports_with_application_graph() -> None:
     placement_report_with_application_graph_by_core()
 
 
-def router_summary_report() -> Optional[RouterSummary]:
+def router_summary_report() -> RouterSummary | None:
     """
     Generates a text file of routing summaries.
 
@@ -99,7 +99,7 @@ def router_summary_report() -> Optional[RouterSummary]:
 
 
 def router_compressed_summary_report(
-        routing_tables: MulticastRoutingTables) -> Optional[RouterSummary]:
+        routing_tables: MulticastRoutingTables) -> RouterSummary | None:
     """
     Generates a text file of routing summaries.
 
@@ -114,7 +114,7 @@ def router_compressed_summary_report(
 
 def _do_router_summary_report(
         file_name: str, progress: ProgressBar,
-        routing_tables: MulticastRoutingTables) -> Optional[RouterSummary]:
+        routing_tables: MulticastRoutingTables) -> RouterSummary | None:
     """
     :param file_name:
     :param progress:
@@ -422,7 +422,7 @@ def sdram_usage_report_per_chip() -> None:
 
 
 def _sdram_usage_report_per_chip_with_timesteps(
-        f: TextIO, timesteps: Optional[int], progress: ProgressBar,
+        f: TextIO, timesteps: int | None, progress: ProgressBar,
         end_progress: bool, details: bool) -> None:
     """
     :param f:
@@ -732,8 +732,8 @@ def _recursive_trace_to_destinations(
 
 
 def _locate_routing_entry(
-        current_router: Optional[AbstractMulticastRoutingTable],
-        key: int) -> Optional[MulticastRoutingEntry]:
+        current_router: AbstractMulticastRoutingTable | None,
+        key: int) -> MulticastRoutingEntry | None:
     """
     Locate the entry from the router based off the edge
 

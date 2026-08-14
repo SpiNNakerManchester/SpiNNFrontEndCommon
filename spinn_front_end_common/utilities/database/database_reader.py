@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
 
 from spinnman.spalloc import SpallocClient, SpallocJob
 
@@ -29,10 +28,10 @@ class DatabaseReader(SQLiteDB):
         :param database_path: The path to the database
         """
         super().__init__(database_path, read_only=True, text_factory=str)
-        self.__job: Optional[SpallocJob] = None
+        self.__job: SpallocJob | None = None
         self.__looked_for_job = False
 
-    def get_job(self) -> Optional[SpallocJob]:
+    def get_job(self) -> SpallocJob | None:
         """
         Get the job described in the database. If no job exists, direct
         connection to boards should be used.
@@ -122,7 +121,7 @@ class DatabaseReader(SQLiteDB):
                 row["chip_y"])
 
     def get_configuration_parameter_value(
-            self, parameter_name: str) -> Optional[float]:
+            self, parameter_name: str) -> float | None:
         """
         Get the value of a configuration parameter.
 
@@ -153,7 +152,7 @@ class DatabaseReader(SQLiteDB):
                 WHERE vertex_label = ?
                 """, (label, ))]
 
-    def get_ip_address(self, x: int, y: int) -> Optional[str]:
+    def get_ip_address(self, x: int, y: int) -> str | None:
         """
         Get an IP address to contact a chip.
 

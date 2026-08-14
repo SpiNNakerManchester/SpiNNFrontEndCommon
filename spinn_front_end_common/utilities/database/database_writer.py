@@ -19,8 +19,6 @@ import os
 from typing import (
     TYPE_CHECKING,
     Iterable,
-    Optional,
-    Union,
     cast,
 )
 
@@ -112,7 +110,7 @@ class DatabaseWriter(SQLiteDB):
         """
         return self._database_path
 
-    def __insert(self, sql: str, *args: Union[str, int, None]) -> int:
+    def __insert(self, sql: str, *args: str | int | None) -> int:
         try:
             self.cursor().execute(sql, args)
             return self.lastrowid
@@ -220,8 +218,8 @@ class DatabaseWriter(SQLiteDB):
                 for ipt, vert in tags.ip_tags_vertices))
 
     def create_atom_to_event_id_mapping(
-            self, machine_vertices: Optional[
-                Iterable[tuple[MachineVertex, str]]]) -> None:
+            self, machine_vertices: Iterable[tuple[MachineVertex, str]] | None
+            ) -> None:
         """
         Creates atom keys and stores them in the database.
 

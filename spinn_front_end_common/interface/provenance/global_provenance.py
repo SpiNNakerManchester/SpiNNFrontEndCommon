@@ -17,7 +17,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from sqlite3 import Row
-from typing import Iterable, Optional, Union
+from typing import Iterable
 
 from spinn_utilities.config_holder import get_timestamp_path
 from spinn_utilities.log import FormatAdapter
@@ -72,7 +72,7 @@ class GlobalProvenance(SQLiteDB):
         return get_timestamp_path("tpath_global_provenance")
 
     def __init__(
-            self, database_file: Optional[str] = None, memory: bool = False):
+            self, database_file: str | None = None, memory: bool = False):
         """
         :param database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -147,7 +147,7 @@ class GlobalProvenance(SQLiteDB):
 
     def insert_timing(
             self, category: int, algorithm: str, work: TimerWork,
-            delta: timedelta, skip_reason: Optional[str]) -> None:
+            delta: timedelta, skip_reason: str | None) -> None:
         """
         Inserts algorithms run times into the timer_provenance table
 
@@ -170,7 +170,7 @@ class GlobalProvenance(SQLiteDB):
             [category, algorithm, work.work_name, time_taken, skip_reason])
 
     def store_log(self, level: int, message: str,
-                  timestamp: Optional[datetime] = None) -> None:
+                  timestamp: datetime | None = None) -> None:
         """
         Stores log messages into the database
         """
@@ -201,7 +201,7 @@ class GlobalProvenance(SQLiteDB):
         logger.warning(text)
 
     def run_query(self, query: str,
-                  params: Iterable[Union[str, int, float, None, bytes]] = ()
+                  params: Iterable[str | int | float | None | bytes] = ()
                   ) -> list[Row]:
         """
         Opens a connection to the database, runs a query, extracts the results
@@ -264,7 +264,7 @@ class GlobalProvenance(SQLiteDB):
         """
         return self.get_timer_provenance("%BufferExtractor")
 
-    def get_machine_on_by_reset(self, n_reset: Optional[int] = None) -> int:
+    def get_machine_on_by_reset(self, n_reset: int | None = None) -> int:
         """
         Get the total time the machine was on for this reset
 
@@ -288,7 +288,7 @@ class GlobalProvenance(SQLiteDB):
             return 0
 
     def get_category_timer_sum(self, category: TimerCategory,
-                               n_reset: Optional[int] = None) -> int:
+                               n_reset: int | None = None) -> int:
         """
         Get the total runtime for one category of algorithms
 
@@ -341,7 +341,7 @@ class GlobalProvenance(SQLiteDB):
 
     def get_timer_sum_by_category_and_reset(
             self, category: TimerCategory,
-            n_reset: Optional[int] = None) -> int:
+            n_reset: int | None = None) -> int:
         """
         Get the total runtime for one category of algorithms
 

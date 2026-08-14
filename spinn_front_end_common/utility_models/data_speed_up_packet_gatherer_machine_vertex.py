@@ -24,7 +24,6 @@ from typing import (
     Any,
     BinaryIO,
     Iterable,
-    Optional,
 )
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path
@@ -322,9 +321,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             label=f"SYSTEM:PacketGatherer({x},{y})", app_vertex=None)
 
         # data holders for the output, and sequence numbers
-        self._view: Optional[memoryview] = None
+        self._view: memoryview | None = None
         self._max_seq_num = 0
-        self._output: Optional[bytearray] = None
+        self._output: bytearray | None = None
 
         self._transaction_id = 0
 
@@ -332,16 +331,16 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # Create a connection to be used
         self._x, self._y = x, y
-        self._coord_word: Optional[int] = None
+        self._coord_word: int | None = None
         self._ip_address = ip_address
-        self._remote_tag: Optional[int] = None
+        self._remote_tag: int | None = None
 
         # local provenance storage
         self._run = 0
-        self.__placement: Optional[Placement] = None
+        self.__placement: Placement | None = None
 
         # Stored reinjection status for resetting timeouts
-        self._last_status: Optional[ReInjectionStatus] = None
+        self._last_status: ReInjectionStatus | None = None
 
     def __throttled_send(
             self, message: SDPMessage, connection: SCAMPConnection) -> None:
@@ -513,7 +512,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def send_data_into_spinnaker(
             self, x: int, y: int, base_address: int,
             data: BinaryIO | bytearray | bytes | str | int, *,
-            n_bytes: Optional[int] = None, offset: int = 0) -> None:
+            n_bytes: int | None = None, offset: int = 0) -> None:
         """
         Sends a block of data into SpiNNaker to a given chip.
 
@@ -612,7 +611,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :return: The opened connection, ready for use.
         """
-        connection: Optional[SCAMPConnection] = None
+        connection: SCAMPConnection | None = None
         if FecDataView.has_allocation_controller():
             controller = FecDataView.get_allocation_controller()
             if isinstance(controller, SpallocJobController):
@@ -665,7 +664,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # Don't create a missing buffer until at least one packet has
                 # come back.
-                missing: Optional[set[int]] = None
+                missing: set[int] | None = None
 
                 while not received_confirmation:
                     try:
@@ -796,7 +795,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def __make_data_in_stream_message(
             self, data_to_write: bytearray | bytes, seq_num: int,
-            position: Optional[int]) -> tuple[SDPMessage, int]:
+            position: int | None) -> tuple[SDPMessage, int]:
         """
         Determine the data needed to be sent to the SpiNNaker machine
         given a sequence number.

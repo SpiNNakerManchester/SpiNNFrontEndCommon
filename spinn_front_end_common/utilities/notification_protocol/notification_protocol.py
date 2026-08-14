@@ -14,7 +14,6 @@
 
 import logging
 from concurrent.futures import Future, ThreadPoolExecutor, wait
-from typing import Optional
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -64,7 +63,7 @@ class NotificationProtocol:
             "Database", "wait_on_confirmation")
         self.__wait_for_read_timeout = get_config_int_or_none(
             "Database", "wait_on_confirmation_timeout")
-        self.__wait_pool: Optional[ThreadPoolExecutor] = \
+        self.__wait_pool: ThreadPoolExecutor | None = \
             ThreadPoolExecutor(max_workers=1)
         self.__wait_futures: list[Future[None]] = []
         self.__sent_visualisation_confirmation = False
@@ -161,7 +160,7 @@ class NotificationProtocol:
             logger.warning("problem when sending DB notification",
                            exc_info=True)
 
-    def __do_read_notify(self, database_path: Optional[str]) -> None:
+    def __do_read_notify(self, database_path: str | None) -> None:
         # add file path to database into command message.
         message = NotificationProtocolDatabaseLocation(database_path)
 

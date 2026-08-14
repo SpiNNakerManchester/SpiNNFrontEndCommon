@@ -14,7 +14,7 @@
 
 import logging
 from collections import defaultdict
-from typing import Optional, cast
+from typing import cast
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
@@ -92,8 +92,8 @@ class _SystemMulticastRoutingGenerator:
 
     __LINK_ORDER = (1, 0, 2, 5, 3, 4)
 
-    def _generate_routing_tree(self, ethernet_chip: Chip) -> Optional[
-            dict[Chip, tuple[Chip, int]]]:
+    def _generate_routing_tree(
+            self, ethernet_chip: Chip) -> dict[Chip, tuple[Chip, int]] | None:
         """
         Generates a map for each chip to over which link it gets its data.
 
@@ -167,8 +167,8 @@ class _SystemMulticastRoutingGenerator:
         return tree
 
     def _add_routing_entry(
-            self, chip: Chip, key: int, *, processor_id: Optional[int] = None,
-            link_ids: Optional[list[int]] = None) -> None:
+            self, chip: Chip, key: int, *, processor_id: int | None = None,
+            link_ids: list[int] | None = None) -> None:
         """
         Adds a routing entry on this chip, creating the table if needed.
 
@@ -177,7 +177,7 @@ class _SystemMulticastRoutingGenerator:
         :param processor_id: placement.p of the monitor vertex if applicable
         """
         table = cast(
-            Optional[UnCompressedMulticastRoutingTable],
+            UnCompressedMulticastRoutingTable | None,
             self._routing_tables.get_routing_table_for_chip(chip.x, chip.y))
         if table is None:
             table = UnCompressedMulticastRoutingTable(chip.x, chip.y)

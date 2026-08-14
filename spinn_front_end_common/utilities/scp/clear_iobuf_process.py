@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from functools import partial
-from typing import Optional
 
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -63,7 +62,7 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
         progress.update()
 
     def clear_iobuf(self, core_subsets: CoreSubsets,
-                    n_cores: Optional[int] = None) -> None:
+                    n_cores: int | None = None) -> None:
         """
         Send the clear iobuf request to all cores in the subset
 

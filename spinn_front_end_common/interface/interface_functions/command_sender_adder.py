@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Iterable, Optional
+from typing import Iterable
 
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -60,7 +60,7 @@ class CommandSenderAdder:
 
         # Keep track of command senders by which chip they are on
         self.__command_sender_for_chip: dict[Chip, CommandSender] = {}
-        self.__general_command_sender: Optional[CommandSender] = None
+        self.__general_command_sender: CommandSender | None = None
 
     def add_command_senders(self) -> Iterable[CommandSender]:
         """
@@ -88,7 +88,7 @@ class CommandSenderAdder:
             yield self.__general_command_sender
 
     def __get_command_sender(
-            self, link_data: Optional[AbstractLinkData]) -> CommandSender:
+            self, link_data: AbstractLinkData | None) -> CommandSender:
         if link_data is None:
             if self.__general_command_sender is None:
                 self.__general_command_sender = CommandSender(

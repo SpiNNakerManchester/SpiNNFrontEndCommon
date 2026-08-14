@@ -14,7 +14,6 @@
 
 import sqlite3
 from datetime import datetime
-from typing import Optional
 
 from spinn_utilities.config_holder import configs_loaded
 from spinn_utilities.log_store import LogStore
@@ -32,7 +31,7 @@ class LogStoreDB(LogStore):
     @overrides(LogStore.store_log)
     def store_log(
             self, level: int, message: str,
-            timestamp: Optional[datetime] = None) -> None:
+            timestamp: datetime | None = None) -> None:
         if configs_loaded():
             try:
                 with GlobalProvenance() as db:

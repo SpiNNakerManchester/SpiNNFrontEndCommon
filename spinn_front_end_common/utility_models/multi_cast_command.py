@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
@@ -22,8 +21,8 @@ class MultiCastCommand:
     """
 
     def __init__(
-            self, key: int, payload: Optional[int] = None, *,
-            time: Optional[int] = None, repeat: int = 0,
+            self, key: int, payload: int | None = None, *,
+            time: int | None = None, repeat: int = 0,
             delay_between_repeats: int = 0):
         """
         :param key: The key of the command
@@ -58,7 +57,7 @@ class MultiCastCommand:
         self._delay_between_repeats = delay_between_repeats
 
     @property
-    def time(self) -> Optional[int]:
+    def time(self) -> int | None:
         """
         The time within the simulation at which to send the
         command, or `None` if this is not a timed command.
@@ -94,7 +93,7 @@ class MultiCastCommand:
         return self._delay_between_repeats
 
     @property
-    def payload(self) -> Optional[int]:
+    def payload(self) -> int | None:
         """
         The payload of the command, or `None` if there is no payload.
         """

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable, Optional, Union
+from typing import Iterable
 
 from spinn_utilities.overrides import overrides
 
@@ -46,7 +46,7 @@ class _MockTransceiver(Version5Transceiver):
     @overrides(Version5Transceiver.get_core_state_count)
     def get_core_state_count(
             self, app_id: int, state: CPUState,
-            xys: Optional[Iterable[tuple[int, int]]] = None) -> int:
+            xys: Iterable[tuple[int, int]] | None = None) -> int:
         count = 0
         for core_state in self._core_states[self._current_state].values():
             if core_state == state:
@@ -55,8 +55,8 @@ class _MockTransceiver(Version5Transceiver):
 
     @overrides(Version5Transceiver.get_cpu_infos)
     def get_cpu_infos(
-            self, core_subsets: Optional[CoreSubsets] = None,
-            states: Union[CPUState, Iterable[CPUState], None] = None,
+            self, core_subsets: CoreSubsets | None = None,
+            states: CPUState | Iterable[CPUState] | None = None,
             include: bool = True) -> CPUInfos:
         assert core_subsets is not None
         if states is None or not include:
@@ -80,7 +80,7 @@ class _MockTransceiver(Version5Transceiver):
 
     @overrides(Version5Transceiver.send_sdp_message)
     def send_sdp_message(self, message: SDPMessage,
-                         connection: Optional[SDPConnection] = None) -> None:
+                         connection: SDPConnection | None = None) -> None:
         self.sdp_send_count += 1
 
     @overrides(Version5Transceiver.send_signal)

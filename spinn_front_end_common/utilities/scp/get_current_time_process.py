@@ -15,7 +15,6 @@
 import logging
 import struct
 from functools import partial
-from typing import Optional
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -48,7 +47,7 @@ class _GetCurrentTimeResponse(AbstractSCPResponse):
 
     def __init__(self) -> None:
         super().__init__()
-        self.__current_time: Optional[int] = None
+        self.__current_time: int | None = None
 
     @overrides(AbstractSCPResponse.read_data_bytestring)
     def read_data_bytestring(self, data: bytes, offset: int) -> None:
@@ -109,8 +108,8 @@ class GetCurrentTimeProcess(
             Connection to send the request over.
         """
         super().__init__(connection_selector)
-        self.__latest_time: Optional[int] = None
-        self.__earliest_time: Optional[int] = None
+        self.__latest_time: int | None = None
+        self.__earliest_time: int | None = None
 
     def __receive_response(self, progress: ProgressBar,
                            response: _GetCurrentTimeResponse) -> None:
@@ -122,7 +121,7 @@ class GetCurrentTimeProcess(
             self.__earliest_time = current_time
 
     def get_latest_runtime(
-            self, n_cores: int, core_subsets: CoreSubsets) -> Optional[int]:
+            self, n_cores: int, core_subsets: CoreSubsets) -> int | None:
         """
         Reads the runtime off all cores in the subset
 

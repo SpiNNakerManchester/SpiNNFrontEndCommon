@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-from typing import Optional
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
@@ -61,7 +60,7 @@ class _RouterProvenanceGatherer:
         seen_chips: set[XY] = set()
 
         # get all extra monitor core data if it exists
-        reinjection_data: Optional[dict[Chip, ReInjectionStatus]] = None
+        reinjection_data: dict[Chip, ReInjectionStatus] | None = None
         if FecDataView.has_monitors():
             monitor = FecDataView.get_monitor_by_xy(0, 0)
             reinjection_data = monitor.get_reinjection_status_for_vertices()
@@ -85,7 +84,7 @@ class _RouterProvenanceGatherer:
 
     def _add_router_table_diagnostic(
             self, table: AbstractMulticastRoutingTable,
-            reinjection_data: Optional[dict[Chip, ReInjectionStatus]],
+            reinjection_data: dict[Chip, ReInjectionStatus] | None,
             prefix: str) -> XY:
         chip = table.chip
         try:
@@ -102,7 +101,7 @@ class _RouterProvenanceGatherer:
 
     def _add_unseen_router_chip_diagnostic(
             self, chip: Chip,
-            reinjection_data: Optional[dict[Chip, ReInjectionStatus]],
+            reinjection_data: dict[Chip, ReInjectionStatus] | None,
             prefix: str) -> None:
         try:
             diagnostics = self.__get_router_diagnostics(chip)
@@ -118,14 +117,14 @@ class _RouterProvenanceGatherer:
 
     @staticmethod
     def __get_status(
-            reinjection_data: Optional[dict[Chip, ReInjectionStatus]],
-            chip: Chip) -> Optional[ReInjectionStatus]:
+            reinjection_data: dict[Chip, ReInjectionStatus] | None,
+            chip: Chip) -> ReInjectionStatus | None:
         return reinjection_data.get(chip) if reinjection_data else None
 
     def __router_diagnostics(
             self, chip: Chip, diagnostics: RouterDiagnostics,
-            status: Optional[ReInjectionStatus], expected: bool,
-            table: Optional[AbstractMulticastRoutingTable],
+            status: ReInjectionStatus | None, expected: bool,
+            table: AbstractMulticastRoutingTable | None,
             prefix: str) -> None:
         """
         Describes the router diagnostics for one router.

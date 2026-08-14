@@ -19,7 +19,7 @@ Utility calls for interpreting bits of the DSG
 import io
 import os
 import threading
-from typing import Optional, TextIO, TypeVar, Union
+from typing import TextIO, TypeVar
 from urllib.parse import urlparse
 
 from spinn_utilities.config_holder import (
@@ -89,7 +89,7 @@ _RPT_TMPL = "dataSpec_{}_{}_{}.txt"
 
 def get_report_writer(
         processor_chip_x: int, processor_chip_y: int,
-        processor_id: int, use_run_number: bool = False) -> Optional[TextIO]:
+        processor_id: int, use_run_number: bool = False) -> TextIO | None:
     """
     Check if text reports are needed, and if so initialise the report
     writer to send down to DSG.
@@ -146,9 +146,10 @@ def parse_old_spalloc(
 
 
 def retarget_tag(
-        connection: Union[SpallocEIEIOListener, SpallocEIEIOConnection,
-                          SCAMPConnection], x: int, y: int, tag: int,
-        ip_address: Optional[str] = None, strip: bool = True) -> None:
+        connection: SpallocEIEIOListener | SpallocEIEIOConnection |
+        SCAMPConnection,
+        x: int, y: int, tag: int,
+        ip_address: str | None = None, strip: bool = True) -> None:
     """
     Make a tag deliver to the given connection.
 

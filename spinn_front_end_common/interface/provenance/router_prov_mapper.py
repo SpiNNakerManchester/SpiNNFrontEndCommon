@@ -20,7 +20,6 @@ from typing import (
     Any,
     ContextManager,
     Iterable,
-    Optional,
     cast,
 )
 
@@ -62,8 +61,8 @@ class Plotter(ContextManager[SQLiteDB]):
     """
     __slots__ = ("__have_insertion_order", "__verbose", "_db", "cmap")
 
-    __pyplot: Optional[ModuleType] = None
-    __seaborn: Optional[ModuleType] = None
+    __pyplot: ModuleType | None = None
+    __seaborn: ModuleType | None = None
 
     def __init__(self, db_filename: str, verbose: bool = False):
         """
@@ -80,9 +79,9 @@ class Plotter(ContextManager[SQLiteDB]):
     def __enter__(self) -> SQLiteDB:
         return self._db.__enter__()
 
-    def __exit__(self, exc_type: Optional[type],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, exc_type: type | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> Literal[False]:
         return self._db.__exit__(exc_type, exc_val, exc_tb)
 
     def __do_chip_query(self, description: str) -> Iterable[sqlite3.Row]:
@@ -135,8 +134,8 @@ class Plotter(ContextManager[SQLiteDB]):
         data = []
         xs = []
         ys = []
-        src: Optional[str] = None
-        name: Optional[str] = None
+        src: str | None = None
+        name: str | None = None
         for row in self.__do_chip_query("%" + info + "%"):
             if src is None:
                 src = row["source"]
@@ -212,7 +211,7 @@ class Plotter(ContextManager[SQLiteDB]):
         data: list[tuple[int, int, Any]] = []
         xs: list[int] = []
         ys: list[int] = []
-        name: Optional[str] = None
+        name: str | None = None
         for row in self.__do_sum_query("%" + info + "%"):
             if name is None:
                 name = row["description"]

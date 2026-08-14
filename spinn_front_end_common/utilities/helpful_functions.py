@@ -21,7 +21,6 @@ from typing import (
     Any,
     Collection,
     Iterable,
-    Optional,
 )
 
 from spinn_utilities.log import FormatAdapter
@@ -46,7 +45,7 @@ if TYPE_CHECKING:
     )
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_n_word_structs: list[Optional[struct.Struct]] = []
+_n_word_structs: list[struct.Struct | None] = []
 
 
 def locate_extra_monitor_mc_receiver(
@@ -116,7 +115,7 @@ def locate_memory_region_for_placement(
 
 
 def convert_string_into_chip_and_core_subset(
-        cores: Optional[str]) -> CoreSubsets:
+        cores: str | None) -> CoreSubsets:
     """
     Translate a string list of cores into a core subset.
 

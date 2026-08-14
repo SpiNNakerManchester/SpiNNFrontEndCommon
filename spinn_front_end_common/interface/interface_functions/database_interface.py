@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-from typing import Optional
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -33,7 +32,7 @@ from spinn_front_end_common.utilities.database import DatabaseWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface() -> Optional[str]:
+def database_interface() -> str | None:
     """
     Creates and loads a DataWriter database
 

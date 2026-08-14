@@ -13,14 +13,13 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Optional, Union
 
 import numpy
 
 from spinnman.messages.eieio import EIEIOPrefix
 from spinnman.model.enums import SDP_PORTS
 
-_SendBufferTimes = Optional[Union[numpy.ndarray, list[numpy.ndarray]]]
+_SendBufferTimes = numpy.ndarray | list[numpy.ndarray] | None
 
 
 @dataclass(frozen=False)
@@ -56,12 +55,12 @@ class EIEIOParameters:
         reception of packets on a randomly assigned port, which can be read
         from the database
     """
-    receive_port: Optional[int] = None
+    receive_port: int | None = None
     receive_sdp_port: int = SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value
-    receive_tag: Optional[int] = None
+    receive_tag: int | None = None
     receive_rate: float = 10.0
-    virtual_key: Optional[int] = None
-    prefix: Optional[int] = None
-    prefix_type: Optional[EIEIOPrefix] = None
+    virtual_key: int | None = None
+    prefix: int | None = None
+    prefix_type: EIEIOPrefix | None = None
     check_keys: bool = False
     reserve_reverse_ip_tag: bool = False

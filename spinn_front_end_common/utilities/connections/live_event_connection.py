@@ -18,7 +18,7 @@ import struct
 from collections import defaultdict
 from threading import Condition, Thread
 from time import sleep
-from typing import Callable, Iterable, Optional, Union
+from typing import Callable, Iterable
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once
@@ -54,7 +54,7 @@ from spinn_front_end_common.utilities.database import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 _InitCallback = Callable[[str, int, float, float], None]
-_RcvCallback = Callable[[str, int, Optional[int]], None]
+_RcvCallback = Callable[[str, int, int | None], None]
 _RcvTimeCallback = Callable[[str, int, list[int]], None]
 _Callback = Callable[[str, 'LiveEventConnection'], None]
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -125,11 +125,11 @@ class LiveEventConnection(DatabaseConnection):
         "_atom_id_to_key",
     )
 
-    def __init__(self, live_packet_gather_label: Optional[str],
-                 receive_labels: Optional[Iterable[str]] = None,
-                 send_labels: Optional[Iterable[str]] = None,
-                 local_host: Optional[str] = None,
-                 local_port: Optional[int] = NOTIFY_PORT):
+    def __init__(self, live_packet_gather_label: str | None,
+                 receive_labels: Iterable[str] | None = None,
+                 send_labels: Iterable[str] | None = None,
+                 local_host: str | None = None,
+                 local_port: int | None = NOTIFY_PORT):
         """
         :param live_packet_gather_label:
             The label of the vertex to which received events are being sent.
@@ -160,7 +160,7 @@ class LiveEventConnection(DatabaseConnection):
             list(receive_labels) if receive_labels is not None else None)
         self.__send_labels = (
             list(send_labels) if send_labels is not None else None)
-        self.__sender_connection: Optional[EIEIOConnection] = None
+        self.__sender_connection: EIEIOConnection | None = None
         self.__send_address_details: dict[str, tuple[
             int, int, int, str]] = {}
         # Also used by SpynnakerPoissonControlConnection
@@ -169,7 +169,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__no_time_event_callbacks: list[
             list[tuple[_RcvCallback, bool]]] = []
         self.__time_event_callbacks: list[
-            list[tuple[Union[_RcvTimeCallback], bool]]] = []
+            list[tuple[_RcvTimeCallback, bool]]] = []
         self.__start_resume_callbacks: dict[str, list[_Callback]] = {}
         self.__pause_stop_callbacks: dict[str, list[_Callback]] = {}
         self.__init_callbacks: dict[str, list[_InitCallback]] = {}
@@ -186,15 +186,15 @@ class LiveEventConnection(DatabaseConnection):
                 self.__start_resume_callbacks[label] = []
                 self.__pause_stop_callbacks[label] = []
                 self.__init_callbacks[label] = []
-        self.__receiver_listener: Optional[ConnectionListener] = None
-        self.__receiver_connection: Optional[UDPConnection] = None
+        self.__receiver_listener: ConnectionListener | None = None
+        self.__receiver_connection: UDPConnection | None = None
         self.__error_keys: set[int] = set()
         self.__is_running = False
-        self.__tag_update_thread: Optional[Thread] = None
+        self.__tag_update_thread: Thread | None = None
         self.__send_tag_update_thread_lock = Condition()
         self.__expect_scp_response = False
         self.__expect_scp_response_lock = Condition()
-        self.__scp_response_received: Optional[bytes] = None
+        self.__scp_response_received: bytes | None = None
 
     def add_send_label(self, label: str) -> None:
         """

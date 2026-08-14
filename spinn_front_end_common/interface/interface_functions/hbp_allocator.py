@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from typing import Optional, cast
+from typing import cast
 
 import requests
 
@@ -123,8 +123,8 @@ class _HBPJobController(MachineAllocationController):
         return bool(self._check_lease(self._WAIT_TIME_MS)["allocated"])
 
 
-def hbp_allocator(total_run_time: Optional[float]) -> tuple[
-        str, Optional[str], MachineAllocationController]:
+def hbp_allocator(total_run_time: float | None) -> tuple[
+        str, str | None, MachineAllocationController]:
     """
     Request a machine from the HBP remote access server that will fit
     a number of chips.
@@ -144,11 +144,11 @@ def hbp_allocator(total_run_time: Optional[float]) -> tuple[
     hbp_job_controller = _HBPJobController(url, name)
 
     return (
-        name, cast(Optional[str], machine.get("bmpDetails")),
+        name, cast(str | None, machine.get("bmpDetails")),
         hbp_job_controller)
 
 
-def _get_machine(url: str, total_run_time: Optional[float]) -> JsonObject:
+def _get_machine(url: str, total_run_time: float | None) -> JsonObject:
     if FecDataView.has_n_boards_required():
         get_machine_request = requests.get(
             url, params={"nBoards": FecDataView.get_n_boards_required(),

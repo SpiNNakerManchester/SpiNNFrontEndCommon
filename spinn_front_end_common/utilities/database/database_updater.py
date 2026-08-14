@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
 
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -29,7 +28,7 @@ class DatabaseUpdater(SQLiteDB):
         """
         super().__init__(database_path, read_only=False, text_factory=str)
 
-    def update_system_params(self, runtime: Optional[float]) -> None:
+    def update_system_params(self, runtime: float | None) -> None:
         """
         Write system parameters into the database.
         """

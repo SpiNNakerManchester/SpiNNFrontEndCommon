@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Optional, cast
+from typing import cast
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.typing.coords import XY
@@ -35,8 +35,8 @@ def sdram_outgoing_partition_allocator() -> None:
     """
     Goes through all vertices to see if sdram has to be allocated.
     """
-    virtual_usage: Optional[dict[XY, int]]
-    transceiver: Optional[Transceiver]
+    virtual_usage: dict[XY, int] | None
+    transceiver: Transceiver | None
     if FecDataView.has_transceiver():
         transceiver = FecDataView.get_transceiver()
         virtual_usage = None

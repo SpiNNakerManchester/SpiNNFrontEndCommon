@@ -23,9 +23,7 @@ from typing import (
     TYPE_CHECKING,
     Collection,
     Final,
-    Optional,
     Sequence,
-    Union,
 )
 
 import numpy
@@ -94,8 +92,8 @@ if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
-    _SBT: Final['TypeAlias'] = Union[NDArray, list[NDArray]]
-    _SendBufferTimes: TypeAlias = Optional[_SBT]
+    _SBT: Final['TypeAlias'] = NDArray | list[NDArray]
+    _SendBufferTimes: TypeAlias = _SBT | None
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -190,12 +188,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _n_data_specs: int = 0
 
     def __init__(
-            self, label: Optional[str],
-            vertex_slice: Optional[Slice] = None,
-            app_vertex: Optional[ReverseIpTagMultiCastSource] = None,
-            n_keys: Optional[int] = None,
+            self, label: str | None,
+            vertex_slice: Slice | None = None,
+            app_vertex: ReverseIpTagMultiCastSource | None = None,
+            n_keys: int | None = None,
             # General fixed parameters from app vertex
-            eieio_params: Optional[EIEIOParameters] = None,
+            eieio_params: EIEIOParameters | None = None,
             # Send buffer parameters
             send_buffer_times: _SendBufferTimes = None):
         """
@@ -236,9 +234,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._receive_sdp_port = eieio_params.receive_sdp_port
 
         # Work out if buffers are being sent
-        self._send_buffer: Optional[BufferedSendingRegion] = None
-        self._first_machine_time_step: Optional[int] = None
-        self._run_until_timesteps: Optional[int] = None
+        self._send_buffer: BufferedSendingRegion | None = None
+        self._first_machine_time_step: int | None = None
+        self._run_until_timesteps: int | None = None
         self._send_buffer_size = 0
         n_buffer_times = 0
         if send_buffer_times is not None:
@@ -255,8 +253,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     " which does not spike", send_buffer_times, vertex_slice)
         if n_buffer_times == 0:
             self._send_buffer_times: _SendBufferTimes = None
-            self._send_buffers: Optional[
-                dict[int, BufferedSendingRegion]] = None
+            self._send_buffers: dict[int, BufferedSendingRegion] | None = None
         else:
             assert send_buffer_times is not None
             self._install_send_buffer(send_buffer_times)
@@ -266,7 +263,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Sort out the keys to be used
         self._virtual_key = eieio_params.virtual_key
-        self._mask: Optional[int] = None
+        self._mask: int | None = None
         self._prefix = eieio_params.prefix
         self._prefix_type = eieio_params.prefix_type
         self._check_keys = eieio_params.check_keys
@@ -699,7 +696,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return 0
 
     @property
-    def mask(self) -> Optional[int]:
+    def mask(self) -> int | None:
         """
         The mask if calculated
         """

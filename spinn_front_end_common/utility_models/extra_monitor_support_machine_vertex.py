@@ -17,7 +17,7 @@ import logging
 import struct
 from enum import Enum, IntEnum
 from types import TracebackType
-from typing import ContextManager, Iterable, Optional
+from typing import ContextManager, Iterable
 
 from typing_extensions import Literal
 
@@ -171,10 +171,10 @@ class ExtraMonitorSupportMachineVertex(
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
         # placement holder for ease of access
-        self.__placement: Optional[Placement] = None
-        self._app_id: Optional[int] = None
+        self.__placement: Placement | None = None
+        self._app_id: int | None = None
         self._transaction_id = 0
-        self.__prov_region: Optional[int] = None
+        self.__prov_region: int | None = None
 
     @property
     def reinject_multicast(self) -> bool:
@@ -447,10 +447,10 @@ class ExtraMonitorSupportMachineVertex(
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
-            self, point_to_point: Optional[bool] = None,
-            multicast: Optional[bool] = None,
-            nearest_neighbour: Optional[bool] = None,
-            fixed_route: Optional[bool] = None) -> None:
+            self, point_to_point: bool | None = None,
+            multicast: bool | None = None,
+            nearest_neighbour: bool | None = None,
+            fixed_route: bool | None = None) -> None:
         """
         Sends the reinjection packets for this vertex
 
@@ -538,9 +538,9 @@ class _Recoverer:
     def __enter__(self) -> Placement:
         return self.__placement
 
-    def __exit__(self, exc_type: Optional[type],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, exc_type: type | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> Literal[False]:
         if exc_val:
             emergency_recover_state_from_failure(self.__vtx, self.__placement)
         return False
