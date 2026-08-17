@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import logging
+from collections.abc import Callable
 from threading import Thread
-from typing import Callable
 
 from spinn_utilities.log import FormatAdapter
 

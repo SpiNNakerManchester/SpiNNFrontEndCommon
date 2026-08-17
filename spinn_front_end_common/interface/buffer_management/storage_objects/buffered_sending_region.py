@@ -14,7 +14,7 @@
 
 import bisect
 import math
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.messages.eieio import EIEIOType

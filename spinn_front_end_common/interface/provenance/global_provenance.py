@@ -15,9 +15,9 @@
 import logging
 import os
 import re
+from collections.abc import Iterable
 from datetime import datetime, timedelta
 from sqlite3 import Row
-from typing import Iterable
 
 from spinn_utilities.config_holder import get_timestamp_path
 from spinn_utilities.log import FormatAdapter

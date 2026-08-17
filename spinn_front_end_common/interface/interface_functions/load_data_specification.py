@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import logging
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any, TypeAlias
 
 import numpy
-from typing_extensions import TypeAlias
 
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter

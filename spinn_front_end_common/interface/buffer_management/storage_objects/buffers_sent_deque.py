@@ -14,8 +14,8 @@
 
 import logging
 from collections import deque
+from collections.abc import Iterable
 from threading import Lock
-from typing import Iterable
 
 from spinn_utilities.log import FormatAdapter
 

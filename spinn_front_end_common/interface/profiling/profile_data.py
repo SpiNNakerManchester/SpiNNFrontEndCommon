@@ -14,7 +14,7 @@
 
 import logging
 import math
-from typing import Iterable, Mapping
+from collections.abc import Iterable, Mapping
 
 import numpy
 import scipy.stats  # type: ignore[import]

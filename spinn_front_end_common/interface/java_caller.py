@@ -20,8 +20,9 @@ import selectors
 import subprocess
 import sys
 from collections import defaultdict
+from collections.abc import Iterable
 from io import BufferedReader
-from typing import Iterable, cast
+from typing import cast
 
 from spinn_utilities.config_holder import (
     get_config_str,

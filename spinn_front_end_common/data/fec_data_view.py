@@ -15,10 +15,9 @@ from __future__ import annotations  # Type checking trickery
 
 import logging
 import os
+from collections.abc import Iterable, Iterator
 from typing import (
     TYPE_CHECKING,
-    Iterable,
-    Iterator,
 )
 
 from spinn_utilities.config_holder import get_report_path

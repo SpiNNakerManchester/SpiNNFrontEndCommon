@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import os
-from typing import Iterable, Sequence, cast
-
-from typing_extensions import TypeAlias
+from collections.abc import Iterable, Sequence
+from typing import TypeAlias, cast
 
 from spinn_utilities.typing.coords import XYP
 

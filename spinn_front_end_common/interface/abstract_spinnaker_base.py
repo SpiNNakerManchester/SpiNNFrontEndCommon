@@ -24,11 +24,10 @@ import signal
 import sys
 import threading
 import types
+from collections.abc import Iterable, Sequence
 from threading import Condition
 from types import FrameType
 from typing import (
-    Iterable,
-    Sequence,
     TypeVar,
     cast,
     final,

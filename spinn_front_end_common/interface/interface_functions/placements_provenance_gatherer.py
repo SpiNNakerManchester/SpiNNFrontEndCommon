@@ -14,7 +14,7 @@
 
 import logging
 import traceback
-from typing import Iterable
+from collections.abc import Iterable
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar

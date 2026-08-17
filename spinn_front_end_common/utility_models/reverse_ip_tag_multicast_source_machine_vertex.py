@@ -18,17 +18,16 @@ import logging
 import math
 import struct
 import sys
+from collections.abc import Collection, Sequence
 from enum import IntEnum
 from typing import (
     TYPE_CHECKING,
-    Collection,
     Final,
-    Sequence,
+    TypeGuard,
 )
 
 import numpy
 from numpy.typing import NDArray
-from typing_extensions import TypeGuard
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -89,7 +88,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from .eieio_parameters import EIEIOParameters
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
     _SBT: Final['TypeAlias'] = NDArray | list[NDArray]

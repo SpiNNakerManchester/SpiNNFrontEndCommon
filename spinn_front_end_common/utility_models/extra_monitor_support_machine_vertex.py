@@ -15,11 +15,11 @@ from __future__ import annotations
 
 import logging
 import struct
+from collections.abc import Iterable
+from contextlib import AbstractContextManager
 from enum import Enum, IntEnum
 from types import TracebackType
-from typing import ContextManager, Iterable
-
-from typing_extensions import Literal
+from typing import Literal
 
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
@@ -399,7 +399,7 @@ class ExtraMonitorSupportMachineVertex(
             db.insert_monitor(x, y, _ProvLabels.N_IN_STREAMS, n_in_streams)
             db.insert_monitor(x, y, _ProvLabels.N_OUT_STREAMS, n_out_streams)
 
-    def __recover(self) -> ContextManager[Placement]:
+    def __recover(self) -> AbstractContextManager[Placement]:
         """
         Set up a context to recover what we can on failure.
         The value of the setup is the placement.

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import struct
-from typing import Sequence
+from collections.abc import Sequence
 
 from .dpri_flags import DPRIFlags
 
