@@ -16,10 +16,10 @@ import argparse
 import os
 import sqlite3
 from collections.abc import Iterable
+from contextlib import AbstractContextManager
 from types import ModuleType, TracebackType
 from typing import (
     Any,
-    ContextManager,
     Literal,
     cast,
 )
@@ -55,7 +55,7 @@ ROUTER_PLOTTABLES = (
 SINGLE_PLOTNAME = "Plot.png"
 
 
-class Plotter(ContextManager[SQLiteDB]):
+class Plotter(AbstractContextManager[SQLiteDB]):
     """
     Code to plot provenance data from the database
     """
