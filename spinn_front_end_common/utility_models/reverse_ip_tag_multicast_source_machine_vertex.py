@@ -54,17 +54,17 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface. \
     buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost,
-    AbstractSendsBuffersFromHost,
-)
+        AbstractReceiveBuffersToHost,
+        AbstractSendsBuffersFromHost,
+    )
 from spinn_front_end_common.interface. \
     buffer_management.storage_objects import BufferedSendingRegion
 from spinn_front_end_common.interface.buffer_management. \
     recording_utilities import (
-    get_recording_data_constant_size,
-    get_recording_header_array,
-    get_recording_header_size,
-)
+        get_recording_data_constant_size,
+        get_recording_header_array,
+        get_recording_header_size,
+    )
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import get_n_bytes
 from spinn_front_end_common.interface.ds import DataSpecificationGenerator
