@@ -19,7 +19,9 @@ from collections.abc import Sized
 from datetime import timedelta
 from sqlite3 import DatabaseError
 from types import TracebackType
-from typing import TYPE_CHECKING, Literal, Self
+from typing import TYPE_CHECKING, Literal
+
+from typing_extensions import Self
 
 from spinn_utilities.config_holder import get_config_bool, get_timestamp_path
 from spinn_utilities.log import FormatAdapter

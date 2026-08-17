@@ -21,7 +21,9 @@ import pathlib
 import sqlite3
 import struct
 from types import TracebackType
-from typing import Literal, Self
+from typing import Literal
+
+from typing_extensions import Self
 
 from spinn_utilities.log import FormatAdapter
 
