@@ -15,11 +15,9 @@
 import logging
 import os
 import re
-from collections.abc import Sized
+from collections.abc import Iterable, Sequence, Sized
+from re import Pattern
 from typing import (
-    Iterable,
-    Pattern,
-    Sequence,
     TypeVar,
 )
 

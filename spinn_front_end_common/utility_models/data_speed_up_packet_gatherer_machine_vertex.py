@@ -18,12 +18,12 @@ import logging
 import os
 import struct
 import time
+from collections.abc import Iterable
 from enum import Enum, IntEnum
 from typing import (
     TYPE_CHECKING,
     Any,
     BinaryIO,
-    Iterable,
 )
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path

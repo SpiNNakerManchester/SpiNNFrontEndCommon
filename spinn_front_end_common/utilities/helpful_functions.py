@@ -16,11 +16,10 @@ from __future__ import annotations
 import logging
 import os
 import struct
+from collections.abc import Collection, Iterable
 from typing import (
     TYPE_CHECKING,
     Any,
-    Collection,
-    Iterable,
 )
 
 from spinn_utilities.log import FormatAdapter

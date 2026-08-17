@@ -14,7 +14,7 @@
 
 import os
 import unittest
-from typing import Iterable
+from collections.abc import Iterable
 
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides

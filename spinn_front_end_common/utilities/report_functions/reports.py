@@ -15,7 +15,8 @@
 import logging
 import os
 import time
-from typing import Iterable, TextIO
+from collections.abc import Iterable
+from typing import TextIO
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter

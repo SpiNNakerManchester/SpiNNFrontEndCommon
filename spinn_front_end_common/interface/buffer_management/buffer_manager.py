@@ -18,13 +18,12 @@ from __future__ import annotations
 import ctypes
 import difflib
 import logging
+from collections.abc import Iterable
 from typing import (
     TYPE_CHECKING,
-    Iterable,
+    Never,
     cast,
 )
-
-from typing_extensions import Never
 
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
@@ -41,9 +40,9 @@ from pacman.model.placements import Placement
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface. \
     buffer_management.storage_objects import (
-        BufferDatabase,
-        BuffersSentDeque,
-    )
+    BufferDatabase,
+    BuffersSentDeque,
+)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost,
     AbstractReceiveRegionsToHost,

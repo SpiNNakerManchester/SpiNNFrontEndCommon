@@ -13,10 +13,9 @@
 # limitations under the License.
 from __future__ import annotations
 
+from collections.abc import Iterable
 from types import TracebackType
-from typing import TYPE_CHECKING, ContextManager, Iterable
-
-from typing_extensions import Literal
+from typing import TYPE_CHECKING, ContextManager, Literal
 
 if TYPE_CHECKING:
     from .data_speed_up_packet_gatherer_machine_vertex import (

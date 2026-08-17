@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import struct
+from collections.abc import Callable
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Callable, cast
+from typing import Any, cast
 
 import numpy as np
 from numpy import uint32

@@ -15,16 +15,16 @@
 import argparse
 import os
 import sqlite3
+from collections.abc import Iterable
 from types import ModuleType, TracebackType
 from typing import (
     Any,
     ContextManager,
-    Iterable,
+    Literal,
     cast,
 )
 
 import numpy
-from typing_extensions import Literal
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB

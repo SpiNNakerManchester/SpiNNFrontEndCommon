@@ -14,7 +14,8 @@
 
 import unittest
 from collections import defaultdict
-from typing import BinaryIO, Iterable
+from collections.abc import Iterable
+from typing import BinaryIO
 
 from spinn_utilities.overrides import overrides
 

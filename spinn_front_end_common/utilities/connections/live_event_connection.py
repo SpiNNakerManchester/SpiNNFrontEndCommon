@@ -16,9 +16,9 @@ from __future__ import annotations
 import logging
 import struct
 from collections import defaultdict
+from collections.abc import Callable, Iterable
 from threading import Condition, Thread
 from time import sleep
-from typing import Callable, Iterable
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once

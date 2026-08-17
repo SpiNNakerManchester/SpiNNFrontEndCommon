@@ -13,13 +13,10 @@
 # limitations under the License.
 from __future__ import annotations
 
-from collections.abc import Sized
+from collections.abc import Callable, Iterable, Sequence, Sized
 from enum import IntEnum
 from typing import (
     TYPE_CHECKING,
-    Callable,
-    Iterable,
-    Sequence,
     TypeVar,
 )
 

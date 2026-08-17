@@ -16,9 +16,9 @@ from __future__ import annotations
 
 import logging
 import os
+from collections.abc import Iterable
 from typing import (
     TYPE_CHECKING,
-    Iterable,
     cast,
 )
 
