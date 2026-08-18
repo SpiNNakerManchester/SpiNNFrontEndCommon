@@ -49,12 +49,11 @@ def mock_text(x: int, y: int, p: int) -> tuple[str, str, str]:
     filename = "myfile.c"
     error = "Test Error"
     warning = "Test Warning"
-    error_text = "[ERROR]    ({}): {}\n".format(filename, error)
-    result_error = "{}, {}, {}: {} ({})".format(x, y, p, error, filename)
-    warning_text = "[WARNING]    ({}): {}\n".format(filename, warning)
-    result_warning = "{}, {}, {}: {} ({})".format(
-        x, y, p, warning, filename)
-    text = "Test {} {} {}\n".format(x, y, p) + warning_text + error_text
+    error_text = f"[ERROR]    ({filename}): {error}\n"
+    result_error = f"{x}, {y}, {p}: {error} ({filename})"
+    warning_text = f"[WARNING]    ({filename}): {warning}\n"
+    result_warning = f"{x}, {y}, {p}: {warning} ({filename})"
+    text = f"Test {x} {y} {p}\n" + warning_text + error_text
     return text, result_error, result_warning
 
 
@@ -68,7 +67,7 @@ path = os.path.dirname(os.path.abspath(__file__))
 
 
 def mock_aplx(name: str) -> str:
-    return os.path.join(path, "mock{}.aplx".format(name))
+    return os.path.join(path, f"mock{name}.aplx")
 
 
 executable_targets = ExecutableTargets()

@@ -95,8 +95,7 @@ class TestWriteJson(unittest.TestCase):
         if json1 == json2:
             return
         if json1.keys() != json2.keys():
-            raise AssertionError("Keys differ {} {}".format(
-                json1.keys(), json2.keys()))
+            raise AssertionError(f"Keys differ {json1.keys()} {json2.keys()}")
         for key in json1.keys():
             if key == "chips":
                 chips1 = json1[key]
@@ -111,8 +110,8 @@ class TestWriteJson(unittest.TestCase):
             else:
                 if json1[key] != json2[key]:
                     raise AssertionError(
-                        "Values differ for {} found {} {}".format(
-                            key, json1[key], json2[key]))
+                        f"Values differ for {key} found "
+                        f"{json1[key]} {json2[key]}")
 
     def test_virtual(self) -> None:
         set_config("Machine", "version", "5")
