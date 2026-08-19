@@ -19,7 +19,7 @@ from collections.abc import Sized
 from datetime import timedelta
 from sqlite3 import DatabaseError
 from types import TracebackType
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, ClassVar, Literal
 
 from typing_extensions import Self
 
@@ -45,14 +45,14 @@ class FecTimer:
     Timer.
     """
 
-    _provenance_path: str | None = None
-    _print_timings: bool = False
-    _category_id: int | None = None
-    _category: TimerCategory | None = None
-    _category_time: int = 0
+    _provenance_path: ClassVar[str | None] = None
+    _print_timings: ClassVar[bool] = False
+    _category_id: ClassVar[int | None] = None
+    _category: ClassVar[TimerCategory | None] = None
+    _category_time: ClassVar[int] = 0
     # machine on cycle to allocate time to
-    _machine_on: bool = False
-    _previous: list[TimerCategory] = []
+    _machine_on: ClassVar[bool] = False
+    _previous: ClassVar[list[TimerCategory]] = []
     __slots__ = (
         # Name of algorithm what is being timed
         "_algorithm",
