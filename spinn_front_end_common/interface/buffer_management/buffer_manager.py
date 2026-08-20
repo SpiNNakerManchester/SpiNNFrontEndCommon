@@ -21,6 +21,7 @@ import logging
 from collections.abc import Iterable
 from typing import (
     TYPE_CHECKING,
+    ClassVar,
     cast,
 )
 
@@ -88,7 +89,7 @@ class _RecordingRegion(ctypes.LittleEndianStructure):
     """
     Recording Region data
     """
-    _fields_ = [
+    _fields_: ClassVar = [
         # Space available for recording
         ("space", ctypes.c_uint32),
         # The size of the recording region
