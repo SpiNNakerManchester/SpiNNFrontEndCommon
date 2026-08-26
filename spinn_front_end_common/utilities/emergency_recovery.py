@@ -55,7 +55,7 @@ def _emergency_state_check() -> None:
                 try:
                     txrx.add_cpu_information_from_core(
                         infos, chip.x, chip.y, p, _bad_states)
-                except Exception:
+                except Exception: # NOQA
                     errors.append((chip.x, chip.y, p))
         if len(infos):
             logger.warning(infos.get_status_string())
