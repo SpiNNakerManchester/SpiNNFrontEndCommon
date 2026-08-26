@@ -44,7 +44,7 @@ def _emergency_state_check() -> None:
                 "unexpected core states (rte={}, wdog={})",
                 rte_count, watchdog_count)
             logger.warning(states.get_status_string())
-    except Exception:
+    except Exception:  # NOQA
         logger.exception(
             "Could not read the status count - going to individual cores")
         machine = FecDataView.get_machine()

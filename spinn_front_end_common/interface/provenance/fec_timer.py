@@ -310,7 +310,7 @@ class FecTimer:
                 message = (f"{self._algorithm} exited with "
                            f"{exc_type.__name__} after {time_taken}")
                 skip = exc_type.__name__
-            except Exception as ex:  # pylint: disable=broad-except
+            except Exception as ex:  # NOQA
                 message = (f"{self._algorithm} exited with an exception"
                            f"after {time_taken}")
                 skip = f"Exception {ex}"
