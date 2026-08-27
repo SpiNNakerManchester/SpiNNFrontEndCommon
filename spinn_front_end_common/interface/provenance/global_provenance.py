@@ -229,10 +229,7 @@ class GlobalProvenance(SQLiteDB):
             where the number and type of the values corresponds to the where
             statement
         """
-        results = []
-        for row in self.cursor().execute(query, list(params)):
-            results.append(row)
-        return results
+        return list(self.cursor().execute(query, list(params)))
 
     def get_timer_provenance(self, algorithm: str) -> str:
         """
