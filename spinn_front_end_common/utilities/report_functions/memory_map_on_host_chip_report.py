@@ -56,7 +56,7 @@ def memory_map_on_host_chip_report() -> None:
             try:
                 with open(file_name, "w", encoding="utf-8") as f:
                     _describe_mem_map(f, transceiver, x, y, p)
-            except IOError:
+            except OSError:
                 logger.exception(
                     "Generate_placement_reports: "
                     "Can't open file {} for writing.",

@@ -72,7 +72,7 @@ def tag_allocator_report() -> None:
                 f.write(str(ip_tag) + "\n")
             for reverse_ip_tag in progress.over(tag_infos.reverse_ip_tags):
                 f.write(str(reverse_ip_tag) + "\n")
-    except IOError:
+    except OSError:
         logger.error(
             "Generate tag report: Can't open file {} for writing.", file_name)
 
@@ -171,7 +171,7 @@ def _do_router_summary_report(
                 total_entries, max_entries, max_none_defaultable,
                 max_link_only, max_spinnaker_routes)
 
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate routing summary report: Can't open file {} for writing.",
             file_name)
@@ -197,7 +197,7 @@ def router_report_from_paths() -> None:
 
             for partition in progress.over(partitions):
                 _write_one_router_partition_report(f, partition)
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate routing reports: Can't open file {} for writing.",
             file_name)
@@ -248,7 +248,7 @@ def partitioner_report() -> None:
 
             for vertex in progress.over(FecDataView.iterate_vertices()):
                 _write_one_vertex_partition(f, vertex)
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate partitioning reports: Can't open file {} for writing.",
             file_name)
@@ -293,7 +293,7 @@ def placement_report_with_application_graph_by_vertex() -> None:
 
             for vertex in progress.over(FecDataView.iterate_vertices()):
                 _write_one_vertex_application_placement(f, vertex)
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate placement reports: Can't open file {} for writing.",
             file_name)
@@ -354,7 +354,7 @@ def placement_report_with_application_graph_by_core() -> None:
 
             for chip in progress.over(machine.chips):
                 _write_one_chip_application_placement(f, chip)
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate_placement_reports: Can't open file {} for writing.",
             file_name)
@@ -417,7 +417,7 @@ def sdram_usage_report_per_chip() -> None:
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
                 f, FecDataView.get_max_run_time_steps(), progress, True, True)
-    except IOError:
+    except OSError:
         logger.exception("Generate_placement_reports: Can't open file {} for "
                          "writing.", file_name)
 
@@ -497,7 +497,7 @@ def routing_info_report(extra_allocations: Iterable[
                                    "Generating Routing info report")
             for pre_vert, part_id in progress.over(vertex_partitions):
                 _write_vertex_virtual_keys(f, pre_vert, part_id, routing_infos)
-    except IOError:
+    except OSError:
         logger.exception("generate virtual key space information report: "
                          "Can't open file {} for writing.", file_name)
 
@@ -593,7 +593,7 @@ def generate_routing_table(routing_table: AbstractMulticastRoutingTable,
                     n_defaultable += 1
                 f.write(entry_str)
             f.write(f"{n_defaultable} Defaultable entries\n")
-    except IOError:
+    except OSError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", file_path)
 
@@ -660,7 +660,7 @@ def generate_comparison_router_report(
                     f"Worst case has {uncompressed_for_max} entries whereas "
                     f"compressed tables have {max_compressed} entries. This "
                     f"is a decrease of {ratio}%\n")
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate router comparison reports: "
             "Can't open file {} for writing.", file_name)
@@ -789,6 +789,6 @@ def generate_binaries_report() -> None:
             except Exception as ex:  # pylint: disable=broad-except
                 f.write(str(ex))
                 logger.exception(f"generate_binaries_report error: {ex}")
-    except IOError:
+    except OSError:
         logger.exception("generate_binaries_report: Can't open file"
                          " {} for writing.", file_name)
