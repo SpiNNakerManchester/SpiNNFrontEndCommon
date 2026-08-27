@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
 
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 
@@ -246,7 +245,7 @@ class LivePacketGatherParameters:
             strip_sdp=self.strip_sdp, tag=self.tag,
             traffic_identifier=TRAFFIC_IDENTIFIER)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, LivePacketGatherParameters):
             return False
         return (self._port == other.port and
@@ -271,7 +270,7 @@ class LivePacketGatherParameters:
                 self._translated_key_right_shift ==
                 other.translated_key_right_shift)
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
