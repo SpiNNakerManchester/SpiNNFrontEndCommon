@@ -264,7 +264,7 @@ class IOBufExtractor:
                 try:
                     transceiver = FecDataView.get_transceiver()
                     io_buffers.extend(transceiver.get_iobuf(cs))
-                except Exception as e:  # pylint: disable=broad-except
+                except Exception as e:  # NOQA
                     io_buffers.append(IOBuffer(
                         core_subset.x, core_subset.y, p,
                         "failed to retrieve iobufs from "

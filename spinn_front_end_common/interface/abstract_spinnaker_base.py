@@ -2188,7 +2188,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                         placement = self._data_writer.\
                             get_placement_on_processor(x, y, p)
                         finished_placements.add_placement(placement)
-                    except Exception:   # pylint: disable=broad-except
+                    except Exception:   # NOQA
                         pass  # already recovering from error
                 placements_provenance_gatherer(
                     finished_placements.n_placements,

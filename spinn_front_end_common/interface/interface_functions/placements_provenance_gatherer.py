@@ -58,5 +58,5 @@ def _add_placement_provenance(placement: Placement, errors: list[str]) -> None:
         # get data
         try:
             placement.vertex.get_provenance_data_from_machine(placement)
-        except Exception:  # pylint: disable=broad-except
+        except Exception:  # NOQA
             errors.append(traceback.format_exc())
