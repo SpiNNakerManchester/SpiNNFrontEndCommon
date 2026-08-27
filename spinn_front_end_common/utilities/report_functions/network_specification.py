@@ -35,7 +35,7 @@ def network_specification() -> None:
             f.write("*** Vertices:\n")
             for vertex in FecDataView.iterate_vertices():
                 _write_report(f, vertex)
-    except IOError:
+    except OSError:
         logger.exception("Generate_placement_reports: Can't open file {}"
                          " for writing.", filename)
 

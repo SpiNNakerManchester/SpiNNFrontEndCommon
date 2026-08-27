@@ -234,7 +234,7 @@ class ConfigHandler(AbstractSpiNNManSimulation):
                     logger.warning(
                         "{} has {} old reports that have not been closed",
                         starting_directory, files_not_closed)
-        except IOError:
+        except OSError:
             # This might happen if there is an open file, or more than one
             # process in the same folder, but we shouldn't die because of it
             pass
