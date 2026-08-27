@@ -91,7 +91,7 @@ if TYPE_CHECKING:
     from typing import TypeAlias
 
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
-    _SBT: Final['TypeAlias'] = NDArray | list[NDArray]
+    _SBT: Final[TypeAlias] = NDArray | list[NDArray]
     _SendBufferTimes: TypeAlias = _SBT | None
 
 logger = FormatAdapter(logging.getLogger(__name__))
