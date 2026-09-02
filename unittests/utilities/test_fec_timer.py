@@ -49,7 +49,7 @@ class TestFecTimer(unittest.TestCase):
         with LogCapture() as lc:
             try:
                 with FecTimer("oops", TimerWork.OTHER):
-                    1/0  # pylint: disable=pointless-statement
+                    1/0  # NOQA
             except ZeroDivisionError:
                 pass
             found = False
