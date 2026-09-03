@@ -2117,7 +2117,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._recover_from_error(run_e)
 
             # re-raise exception
-            raise run_e
+            raise
         finally:
             FecTimer.end_category(TimerCategory.RUN_LOOP)
 

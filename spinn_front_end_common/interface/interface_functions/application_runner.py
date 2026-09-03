@@ -129,7 +129,7 @@ class _ApplicationRunner:
                 SendPauseProcess(
                     FecDataView.get_scamp_connection_selector()).send_pause(
                         core_subsets, n_cores)
-            except SpinnmanException as e:
+            except SpinnmanException:
                 # Check if cores have failed now
                 rte_cores = self.__txrx.get_core_state_count(
                     self.__app_id, CPUState.RUN_TIME_EXCEPTION)
@@ -137,7 +137,7 @@ class _ApplicationRunner:
                 # If there are no cores in the RTE state, then re-raise the
                 # original exception, otherwise the wait_for_end will handle it
                 if rte_cores == 0:
-                    raise e
+                    raise
             self._wait_for_end()
 
             process = GetCurrentTimeProcess(

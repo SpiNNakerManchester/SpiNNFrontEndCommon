@@ -92,9 +92,9 @@ class _OldSpallocJobController(MachineAllocationController):
                 self._state = self._job.wait_for_state_change(self._state)
         except TypeError:
             pass
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             if not self._exited:
-                raise e
+                raise
         return self._state != JobState.destroyed
 
     @overrides(MachineAllocationController._teardown)
