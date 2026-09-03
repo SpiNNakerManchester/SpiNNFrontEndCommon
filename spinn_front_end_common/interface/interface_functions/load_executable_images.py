@@ -61,9 +61,9 @@ def load_sys_images() -> None:
         FecDataView.get_transceiver().wait_for_cores_to_be_in_state(
             cores.all_core_subsets, FecDataView.get_app_id(),
             _running_state, timeout=10)
-    except SpiNNManCoresNotInStateException as e:
+    except SpiNNManCoresNotInStateException:
         emergency_recover_states_from_failure()
-        raise e
+        raise
 
 
 def _load_images(filter_predicate: Callable[[ExecutableType], bool],
@@ -82,7 +82,7 @@ def _load_images(filter_predicate: Callable[[ExecutableType], bool],
 
             _start_simulation(cores, FecDataView.get_app_id())
             progress.update()
-    except Exception as e:
+    except Exception:
         try:
 
             transceiver = FecDataView.get_transceiver()
@@ -94,7 +94,7 @@ def _load_images(filter_predicate: Callable[[ExecutableType], bool],
         except SpinnmanException:
             # Ignore this, this was just an attempt at recovery
             pass
-        raise e
+        raise
 
 
 def filter_targets(
