@@ -405,7 +405,7 @@ class DataType(Enum):
         """
         return self._max
 
-    def check_value(self, value: int | float) -> None:
+    def check_value(self, value: float) -> None:
         """
         Check the value against the allowed min and max
 
@@ -441,7 +441,7 @@ class DataType(Enum):
         """
         return self._numpy_typename
 
-    def encode_as_int(self, value: int | float) -> int:
+    def encode_as_int(self, value: float) -> int:
         """
         Returns the value as an integer, according to this type.
 
@@ -463,7 +463,7 @@ class DataType(Enum):
             return self._force_cast(value)
         return cast(int, value)
 
-    def encode_as_numpy_int(self, value: int | float) -> uint32:
+    def encode_as_numpy_int(self, value: float) -> uint32:
         """
         Returns the value as a numpy integer, according to this type.
 
@@ -494,7 +494,7 @@ class DataType(Enum):
                 uint32)
         return np.array(array)
 
-    def as_bytes(self, value: int | float) -> bytes:
+    def as_bytes(self, value: float) -> bytes:
         """
         Encode the Python value as bytes with NO padding.
 
