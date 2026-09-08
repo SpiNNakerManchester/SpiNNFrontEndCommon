@@ -296,7 +296,7 @@ class FecTimer:
         """
         return timedelta(microseconds=time_diff / _NANO_TO_MICRO)
 
-    def __exit__(self, exc_type: type | None,
+    def __exit__(self, exc_type: type[BaseException] | None,
                  exc_val: BaseException | None,
                  exc_tb: TracebackType | None) -> Literal[False]:
         if self._start_time is None:

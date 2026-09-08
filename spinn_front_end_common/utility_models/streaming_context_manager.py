@@ -44,7 +44,7 @@ class StreamingContextManager(AbstractContextManager[None]):
         for gatherer in self._gatherers:
             gatherer.set_cores_for_data_streaming()
 
-    def __exit__(self, exc_type: type | None,
+    def __exit__(self, exc_type: type[BaseException] | None,
                  exc_val: BaseException | None,
                  exc_tb: TracebackType | None) -> Literal[False]:
         for gatherer in self._gatherers:
