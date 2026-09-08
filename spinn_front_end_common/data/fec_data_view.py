@@ -115,7 +115,7 @@ class _FecDataModel:
         "_time_scale_factor",
     )
 
-    def __new__(cls) -> _FecDataModel:
+    def __new__(cls) -> _FecDataModel:  # NOQA: PYI034
         if cls.__singleton:
             return cls.__singleton
         obj = object.__new__(cls)
