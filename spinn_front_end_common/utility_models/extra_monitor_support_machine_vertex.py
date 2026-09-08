@@ -538,7 +538,7 @@ class _Recoverer:
     def __enter__(self) -> Placement:
         return self.__placement
 
-    def __exit__(self, exc_type: type | None,
+    def __exit__(self, exc_type: type[BaseException] | None,
                  exc_val: BaseException | None,
                  exc_tb: TracebackType | None) -> Literal[False]:
         if exc_val:
