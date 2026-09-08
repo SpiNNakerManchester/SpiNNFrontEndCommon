@@ -176,7 +176,7 @@ class SQLiteDB:
         self._context_entered()
         return self
 
-    def __exit__(self, exc_type: type | None,
+    def __exit__(self, exc_type: type[BaseException] | None,
                  exc_val: BaseException | None,
                  exc_tb: TracebackType | None) -> Literal[False]:
         if self.__db is not None:

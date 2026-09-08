@@ -79,7 +79,7 @@ class Plotter(AbstractContextManager[SQLiteDB]):
     def __enter__(self) -> SQLiteDB:
         return self._db.__enter__()
 
-    def __exit__(self, exc_type: type | None,
+    def __exit__(self, exc_type: type[BaseException] | None,
                  exc_val: BaseException | None,
                  exc_tb: TracebackType | None) -> Literal[False]:
         return self._db.__exit__(exc_type, exc_val, exc_tb)
