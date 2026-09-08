@@ -136,7 +136,7 @@ class DataSpecificationBase(metaclass=AbstractBase):
         if self._size <= 0:
             raise DataSpecException(f"No size set for region {region}")
 
-    def write_value(self, data: int | float,
+    def write_value(self, data: float,
                     data_type: DataType = DataType.UINT32) -> None:
         """
         Insert command to write a value (once) to the current write pointer,
