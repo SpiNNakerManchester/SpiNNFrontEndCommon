@@ -21,6 +21,7 @@ from typing import Any, cast
 import numpy as np
 from numpy import uint32
 from numpy.typing import NDArray
+from typing_extensions import Self
 
 
 class DataType(Enum):
@@ -343,7 +344,7 @@ class DataType(Enum):
     def __new__(cls, value: int, size: int, min_val: Decimal, max_val: Decimal,
                 scale: Decimal, struct_encoding: str, apply_scale: bool,
                 force_cast: Callable[[Any], int] | None,
-                numpy_typename: type, _doc: str) -> 'DataType':
+                numpy_typename: type, _doc: str) -> Self:
         obj = object.__new__(cls)
         obj._value_ = value
         obj.__doc__ = _doc
