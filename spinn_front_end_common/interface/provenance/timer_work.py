@@ -14,6 +14,8 @@
 
 from enum import Enum, auto
 
+from typing_extensions import Self
+
 
 class TimerWork(Enum):
     """
@@ -33,7 +35,7 @@ class TimerWork(Enum):
     EXTRACT_DATA = (auto(), "Extracting Data")
     REPORT = (auto(), "Reporting")
 
-    def __new__(cls, value: int, __: str) -> 'TimerWork':
+    def __new__(cls, value: int, __: str) -> Self:
         obj = object.__new__(cls)
         obj._value_ = value
         return obj
