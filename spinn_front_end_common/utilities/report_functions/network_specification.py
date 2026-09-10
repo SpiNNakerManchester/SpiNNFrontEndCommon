@@ -57,9 +57,9 @@ def _write_report(f: TextIO, vertex: ApplicationVertex) -> None:
             FecDataView.get_outgoing_edge_partitions_starting_at_vertex(
                 vertex):
         f.write(f"    Partition {partition.identifier}:\n")
-        for edge in partition.edges:
-            f.write(
-                f"        Edge: {edge.label}, "
-                f"From {edge.pre_vertex.label} to {edge.post_vertex.label}, "
-                f"model: {edge.__class__.__name__}\n")
+        f.writelines(
+            f"        Edge: {edge.label}, "
+            f"From {edge.pre_vertex.label} to {edge.post_vertex.label}, "
+            f"model: {edge.__class__.__name__}\n"
+            for edge in partition.edges)
     f.write("\n")
