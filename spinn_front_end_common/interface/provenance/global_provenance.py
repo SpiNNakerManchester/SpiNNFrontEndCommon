@@ -413,4 +413,4 @@ class GlobalProvenance(SQLiteDB):
             WHERE level >= ?
             """
         messages = self.run_query(query, [min_level])
-        return list(map(lambda x: x[0], messages))
+        return [x[0] for x in messages]
