@@ -59,9 +59,10 @@ def _write(p: Placement, profile_data: ProfileData, directory: str) -> None:
         f.write(_FMT_B.format("", max_tag_len, "", "", "", ""))
 
         # Write content
-        for tag in profile_data.tags:
-            f.write(_FMT_C.format(
+        f.writelines(
+            _FMT_C.format(
                 tag, max_tag_len, profile_data.get_n_calls(tag),
                 profile_data.get_mean_ms(tag),
                 profile_data.get_mean_n_calls_per_ts(tag),
-                profile_data.get_mean_ms_per_ts(tag)))
+                profile_data.get_mean_ms_per_ts(tag))
+            for tag in profile_data.tags)

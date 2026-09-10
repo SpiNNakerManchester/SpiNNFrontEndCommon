@@ -48,9 +48,10 @@ def drift_report() -> None:
                 if ethernet_only:
                     writer.write(f'"{eth_chip.x} {eth_chip.y}",')
                 else:
-                    for chip in machine.get_chips_by_ethernet(
-                            eth_chip.x, eth_chip.y):
-                        writer.write(f'"{chip.x} {chip.y}",')
+                    writer.writelines(
+                        f'"{chip.x} {chip.y}",'
+                        for chip in machine.get_chips_by_ethernet(
+                            eth_chip.x, eth_chip.y))
             writer.write("\n")
 
     # create the progress bar for end users

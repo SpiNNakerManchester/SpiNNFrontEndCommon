@@ -68,10 +68,11 @@ def tag_allocator_report() -> None:
                 len(list(tag_infos.ip_tags)) +
                 len(list(tag_infos.reverse_ip_tags)),
                 "Reporting Tags")
-            for ip_tag in progress.over(tag_infos.ip_tags, False):
-                f.write(str(ip_tag) + "\n")
-            for reverse_ip_tag in progress.over(tag_infos.reverse_ip_tags):
-                f.write(str(reverse_ip_tag) + "\n")
+            f.writelines(str(ip_tag) + "\n"
+                         for ip_tag in progress.over(tag_infos.ip_tags, False))
+            f.writelines(str(reverse_ip_tag) + "\n"
+                         for reverse_ip_tag
+                         in progress.over(tag_infos.reverse_ip_tags))
     except OSError:
         logger.error(
             "Generate tag report: Can't open file {} for writing.", file_name)
@@ -268,8 +269,8 @@ def _write_one_vertex_partition(f: TextIO, vertex: ApplicationVertex) -> None:
                               key=lambda x: x.label)
     machine_vertices = sorted(machine_vertices,
                               key=lambda x: x.vertex_slice.lo_atom)
-    for sv in machine_vertices:
-        f.write(f"  Slice {sv.vertex_slice}    Vertex {sv.label}\n")
+    f.writelines(f"  Slice {sv.vertex_slice}    Vertex {sv.label}\n"
+                 for sv in machine_vertices)
     f.write("\n")
 
 
@@ -770,11 +771,9 @@ def generate_binaries_report() -> None:
                 f.write("Binaries used\n")
                 keys = list(aplxs.keys())
                 keys.sort(key=lambda s: s.lower())
-                for key in keys:
-                    f.write(f"{key}\n")
+                f.writelines(f"{key}\n" for key in keys)
                 f.write("\nFull paths\n")
-                for key in keys:
-                    f.write(f"{key}: {aplxs[key]}\n")
+                f.writelines(f"{key}: {aplxs[key]}\n" for key in keys)
 
                 f.write("\nCores\n")
                 for key in keys:
