@@ -232,9 +232,8 @@ class FecTimer:
         :param option2: The other option to check
         :returns: True if skip has been called
         """
-        if get_config_bool(section, option1):
-            return False
-        elif get_config_bool(section, option2):
+        if (get_config_bool(section, option1) or
+                get_config_bool(section, option2)):
             return False
         else:
             self.skip(f"cfg {section}:{option1} and {option2} are False")
