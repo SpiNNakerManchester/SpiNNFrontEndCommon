@@ -14,7 +14,7 @@
 
 import logging
 import math
-from typing import Dict, Iterable, Mapping, Tuple
+from collections.abc import Iterable, Mapping
 
 import numpy
 import scipy.stats  # type: ignore[import]
@@ -33,7 +33,7 @@ _START_TIME = 0
 _DURATION = 1
 
 
-class ProfileData(object):
+class ProfileData:
     """
     A container for profile data.
     """
@@ -42,21 +42,22 @@ class ProfileData(object):
     DURATION = _DURATION
 
     __slots__ = (
-        # A dictionary of tag label to numpy array of start times and durations
-        "_tags",
+        # The maximum time recorded
+        "_max_time",
 
         # A list of tag labels indexed by the tag ID
         "_tag_labels",
 
-        # The maximum time recorded
-        "_max_time")
+        # A dictionary of tag label to numpy array of start times and durations
+        "_tags",
+    )
 
     def __init__(self, tag_labels: Mapping[int, str]):
         """
         :param tag_labels: A list of labels indexed by tag ID
         """
         self._tag_labels = tag_labels
-        self._tags: Dict[str, Tuple[numpy.ndarray, numpy.ndarray]] = dict()
+        self._tags: dict[str, tuple[numpy.ndarray, numpy.ndarray]] = {}
         self._max_time: float = 0.0
 
     def add_data(self, data: bytearray) -> None:

@@ -15,7 +15,8 @@
 import logging
 import os
 import time
-from typing import Iterable, Optional, TextIO, Tuple
+from collections.abc import Iterable
+from typing import TextIO
 
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
@@ -67,11 +68,12 @@ def tag_allocator_report() -> None:
                 len(list(tag_infos.ip_tags)) +
                 len(list(tag_infos.reverse_ip_tags)),
                 "Reporting Tags")
-            for ip_tag in progress.over(tag_infos.ip_tags, False):
-                f.write(str(ip_tag) + "\n")
-            for reverse_ip_tag in progress.over(tag_infos.reverse_ip_tags):
-                f.write(str(reverse_ip_tag) + "\n")
-    except IOError:
+            f.writelines(str(ip_tag) + "\n"
+                         for ip_tag in progress.over(tag_infos.ip_tags, False))
+            f.writelines(str(reverse_ip_tag) + "\n"
+                         for reverse_ip_tag
+                         in progress.over(tag_infos.reverse_ip_tags))
+    except OSError:
         logger.error(
             "Generate tag report: Can't open file {} for writing.", file_name)
 
@@ -85,7 +87,7 @@ def placer_reports_with_application_graph() -> None:
     placement_report_with_application_graph_by_core()
 
 
-def router_summary_report() -> Optional[RouterSummary]:
+def router_summary_report() -> RouterSummary | None:
     """
     Generates a text file of routing summaries.
 
@@ -99,7 +101,7 @@ def router_summary_report() -> Optional[RouterSummary]:
 
 
 def router_compressed_summary_report(
-        routing_tables: MulticastRoutingTables) -> Optional[RouterSummary]:
+        routing_tables: MulticastRoutingTables) -> RouterSummary | None:
     """
     Generates a text file of routing summaries.
 
@@ -114,7 +116,7 @@ def router_compressed_summary_report(
 
 def _do_router_summary_report(
         file_name: str, progress: ProgressBar,
-        routing_tables: MulticastRoutingTables) -> Optional[RouterSummary]:
+        routing_tables: MulticastRoutingTables) -> RouterSummary | None:
     """
     :param file_name:
     :param progress:
@@ -170,7 +172,7 @@ def _do_router_summary_report(
                 total_entries, max_entries, max_none_defaultable,
                 max_link_only, max_spinnaker_routes)
 
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate routing summary report: Can't open file {} for writing.",
             file_name)
@@ -196,7 +198,7 @@ def router_report_from_paths() -> None:
 
             for partition in progress.over(partitions):
                 _write_one_router_partition_report(f, partition)
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate routing reports: Can't open file {} for writing.",
             file_name)
@@ -247,7 +249,7 @@ def partitioner_report() -> None:
 
             for vertex in progress.over(FecDataView.iterate_vertices()):
                 _write_one_vertex_partition(f, vertex)
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate partitioning reports: Can't open file {} for writing.",
             file_name)
@@ -267,8 +269,8 @@ def _write_one_vertex_partition(f: TextIO, vertex: ApplicationVertex) -> None:
                               key=lambda x: x.label)
     machine_vertices = sorted(machine_vertices,
                               key=lambda x: x.vertex_slice.lo_atom)
-    for sv in machine_vertices:
-        f.write(f"  Slice {sv.vertex_slice}    Vertex {sv.label}\n")
+    f.writelines(f"  Slice {sv.vertex_slice}    Vertex {sv.label}\n"
+                 for sv in machine_vertices)
     f.write("\n")
 
 
@@ -292,7 +294,7 @@ def placement_report_with_application_graph_by_vertex() -> None:
 
             for vertex in progress.over(FecDataView.iterate_vertices()):
                 _write_one_vertex_application_placement(f, vertex)
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate placement reports: Can't open file {} for writing.",
             file_name)
@@ -353,7 +355,7 @@ def placement_report_with_application_graph_by_core() -> None:
 
             for chip in progress.over(machine.chips):
                 _write_one_chip_application_placement(f, chip)
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate_placement_reports: Can't open file {} for writing.",
             file_name)
@@ -416,13 +418,13 @@ def sdram_usage_report_per_chip() -> None:
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
                 f, FecDataView.get_max_run_time_steps(), progress, True, True)
-    except IOError:
+    except OSError:
         logger.exception("Generate_placement_reports: Can't open file {} for "
                          "writing.", file_name)
 
 
 def _sdram_usage_report_per_chip_with_timesteps(
-        f: TextIO, timesteps: Optional[int], progress: ProgressBar,
+        f: TextIO, timesteps: int | None, progress: ProgressBar,
         end_progress: bool, details: bool) -> None:
     """
     :param f:
@@ -433,7 +435,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
     :param details: If True will get costs printed by regions
     """
     f.write(f"Based on {timesteps} timesteps\n\n")
-    sdram_by_chip = dict()
+    sdram_by_chip = {}
     placements = sorted(
         FecDataView.iterate_placemements(),
         key=lambda x: x.vertex.label or "")
@@ -476,7 +478,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
 
 
 def routing_info_report(extra_allocations: Iterable[
-        Tuple[ApplicationVertex, str]] = ()) -> None:
+        tuple[ApplicationVertex, str]] = ()) -> None:
     """
     Generates a report which says which keys is being allocated to each
     vertex.
@@ -496,7 +498,7 @@ def routing_info_report(extra_allocations: Iterable[
                                    "Generating Routing info report")
             for pre_vert, part_id in progress.over(vertex_partitions):
                 _write_vertex_virtual_keys(f, pre_vert, part_id, routing_infos)
-    except IOError:
+    except OSError:
         logger.exception("generate virtual key space information report: "
                          "Can't open file {} for writing.", file_name)
 
@@ -592,7 +594,7 @@ def generate_routing_table(routing_table: AbstractMulticastRoutingTable,
                     n_defaultable += 1
                 f.write(entry_str)
             f.write(f"{n_defaultable} Defaultable entries\n")
-    except IOError:
+    except OSError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", file_path)
 
@@ -659,7 +661,7 @@ def generate_comparison_router_report(
                     f"Worst case has {uncompressed_for_max} entries whereas "
                     f"compressed tables have {max_compressed} entries. This "
                     f"is a decrease of {ratio}%\n")
-    except IOError:
+    except OSError:
         logger.exception(
             "Generate router comparison reports: "
             "Can't open file {} for writing.", file_name)
@@ -732,8 +734,8 @@ def _recursive_trace_to_destinations(
 
 
 def _locate_routing_entry(
-        current_router: Optional[AbstractMulticastRoutingTable],
-        key: int) -> Optional[MulticastRoutingEntry]:
+        current_router: AbstractMulticastRoutingTable | None,
+        key: int) -> MulticastRoutingEntry | None:
     """
     Locate the entry from the router based off the edge
 
@@ -761,7 +763,7 @@ def generate_binaries_report() -> None:
             try:
                 targets = FecDataView.get_executable_targets()
 
-                aplxs = dict()
+                aplxs = {}
                 for binary in targets.binaries:
                     _, aplx = os.path.split(binary)
                     aplxs[aplx] = binary
@@ -769,11 +771,9 @@ def generate_binaries_report() -> None:
                 f.write("Binaries used\n")
                 keys = list(aplxs.keys())
                 keys.sort(key=lambda s: s.lower())
-                for key in keys:
-                    f.write(f"{key}\n")
+                f.writelines(f"{key}\n" for key in keys)
                 f.write("\nFull paths\n")
-                for key in keys:
-                    f.write(f"{key}: {aplxs[key]}\n")
+                f.writelines(f"{key}: {aplxs[key]}\n" for key in keys)
 
                 f.write("\nCores\n")
                 for key in keys:
@@ -788,6 +788,6 @@ def generate_binaries_report() -> None:
             except Exception as ex:  # pylint: disable=broad-except
                 f.write(str(ex))
                 logger.exception(f"generate_binaries_report error: {ex}")
-    except IOError:
+    except OSError:
         logger.exception("generate_binaries_report: Can't open file"
                          " {} for writing.", file_name)

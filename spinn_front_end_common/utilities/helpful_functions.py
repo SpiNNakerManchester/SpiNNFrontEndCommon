@@ -16,15 +16,10 @@ from __future__ import annotations
 import logging
 import os
 import struct
+from collections.abc import Collection, Iterable
 from typing import (
     TYPE_CHECKING,
     Any,
-    Collection,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
 )
 
 from spinn_utilities.log import FormatAdapter
@@ -49,7 +44,7 @@ if TYPE_CHECKING:
     )
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_n_word_structs: List[Optional[struct.Struct]] = []
+_n_word_structs: list[struct.Struct | None] = []
 
 
 def locate_extra_monitor_mc_receiver(
@@ -119,7 +114,7 @@ def locate_memory_region_for_placement(
 
 
 def convert_string_into_chip_and_core_subset(
-        cores: Optional[str]) -> CoreSubsets:
+        cores: str | None) -> CoreSubsets:
     """
     Translate a string list of cores into a core subset.
 
@@ -188,10 +183,10 @@ def get_ethernet_chip(machine: Machine, board_address: str) -> Chip:
 
 
 def determine_flow_states(
-        executable_types: Dict[ExecutableType, Any],
-        no_sync_changes: int) -> Tuple[
-            Dict[ExecutableType, Collection[CPUState]],
-            Dict[ExecutableType, Collection[CPUState]]]:
+        executable_types: dict[ExecutableType, Any],
+        no_sync_changes: int) -> tuple[
+            dict[ExecutableType, Collection[CPUState]],
+            dict[ExecutableType, Collection[CPUState]]]:
     """
     Get the start and end states for these executable types.
 
@@ -200,8 +195,8 @@ def determine_flow_states(
     :param  no_sync_changes: the number of times sync signals been sent
     :return: dict of executable type to states.
     """
-    expected_start_states: Dict[ExecutableType, Collection[CPUState]] = dict()
-    expected_end_states: Dict[ExecutableType, Collection[CPUState]] = dict()
+    expected_start_states: dict[ExecutableType, Collection[CPUState]] = {}
+    expected_end_states: dict[ExecutableType, Collection[CPUState]] = {}
     for start_type in executable_types.keys():
         # cores that ignore all control and are just running
         if start_type == ExecutableType.RUNNING:

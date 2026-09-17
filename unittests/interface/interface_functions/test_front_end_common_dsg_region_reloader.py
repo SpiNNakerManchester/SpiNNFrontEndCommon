@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from typing import BinaryIO, List, Optional, Tuple, Union
+from typing import BinaryIO
 
 import numpy
 from parameterized import parameterized
@@ -114,14 +114,14 @@ class _MockTransceiver(MockableTransceiver):
     # pylint: disable=unused-argument
 
     def __init__(self) -> None:
-        self._regions_rewritten: List = list()
+        self._regions_rewritten: list = []
 
     @overrides(MockableTransceiver.write_memory)
     def write_memory(
             self, x: int, y: int, base_address: int,
-            data:  Union[BinaryIO, bytearray, bytes, int, str], *,
-            n_bytes: Optional[int] = None, offset: int = 0, cpu: int = 0,
-            get_sum: bool = False) -> Tuple[int, int]:
+            data:  BinaryIO | bytearray | bytes | int | str, *,
+            n_bytes: int | None = None, offset: int = 0, cpu: int = 0,
+            get_sum: bool = False) -> tuple[int, int]:
         self._regions_rewritten.append((base_address, data))
         return (-1, -1)
 

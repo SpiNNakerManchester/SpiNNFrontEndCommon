@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import struct
-from typing import Sequence, Tuple
+from collections.abc import Sequence
 
 from .dpri_flags import DPRIFlags
 
@@ -34,41 +34,40 @@ def _decode_router_timeout_value(value: int) -> int:
     return (mantissa + 16) * (2 ** exponent)
 
 
-class ReInjectionStatus(object):
+class ReInjectionStatus:
     """
     Represents a status information report from dropped packet reinjection.
     """
 
     __slots__ = (
-        # The WAIT1 timeout value of the router in cycles
-        "_wait1_timeout",
-        # The WAIT2 timeout value of the router in cycles
-        "_wait2_timeout",
-
+        # the flags that states which types of packets were being recorded
+        "_flags",
+        # Indicates the links or processors dropped from
+        "_link_proc_bits",
         # The number of packets dropped by the router and received by\
         # the re injection functionality (may not fit in the queue though)
+        "_n_dropped_packet_overflows",
+        # The number of times that when a dropped packet was caused due to\
+        # a link failing to take the packet.
         "_n_dropped_packets",
+        # Of the n_dropped_packets received, how many were lost due to not\
+        #    having enough space in the queue of packets to reinject
+        "_n_link_dumps",
         # The number of times that when a dropped packet was read it was\
         #    found that another one or more packets had also been dropped,\
         #    but had been missed
         "_n_missed_dropped_packets",
-        # Of the n_dropped_packets received, how many were lost due to not\
-        #    having enough space in the queue of packets to reinject
-        "_n_dropped_packet_overflows",
-        # Of the n_dropped_packets received, how many packets were\
-        #    successfully re-injected
-        "_n_reinjected_packets",
-        # The number of times that when a dropped packet was caused due to\
-        # a link failing to take the packet.
-        "_n_link_dumps",
         # The number of times that when a dropped packet was caused due to\
         # a processor failing to take the packet.
         "_n_processor_dumps",
-
-        # the flags that states which types of packets were being recorded
-        "_flags",
-        # Indicates the links or processors dropped from
-        "_link_proc_bits")
+        # Of the n_dropped_packets received, how many packets were\
+        #    successfully re-injected
+        "_n_reinjected_packets",
+        # The WAIT1 timeout value of the router in cycles
+        "_wait1_timeout",
+        # The WAIT2 timeout value of the router in cycles
+        "_wait2_timeout",
+    )
 
     def __init__(self, data: bytes, offset: int):
         """
@@ -89,7 +88,7 @@ class ReInjectionStatus(object):
         return _decode_router_timeout_value(self._wait1_timeout)
 
     @property
-    def router_wait1_timeout_parameters(self) -> Tuple[int, int]:
+    def router_wait1_timeout_parameters(self) -> tuple[int, int]:
         """
         The WAIT1 timeout value of the router as mantissa and exponent.
         """
@@ -105,7 +104,7 @@ class ReInjectionStatus(object):
         return _decode_router_timeout_value(self._wait2_timeout)
 
     @property
-    def router_wait2_timeout_parameters(self) -> Tuple[int, int]:
+    def router_wait2_timeout_parameters(self) -> tuple[int, int]:
         """
         The WAIT2 timeout value of the router as mantissa and exponent.
         """

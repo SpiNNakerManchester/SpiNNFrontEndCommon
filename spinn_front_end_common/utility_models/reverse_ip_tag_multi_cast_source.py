@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import sys
-from typing import Optional, Tuple, Union
 
 import numpy
 
@@ -49,24 +48,26 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
     machine and converted into multicast packets.
     """
     __slots__ = (
-        "__n_atoms", "_eieio_params", "_is_recording",
-        "__send_buffer_times",)
+        "__n_atoms",
+        "__send_buffer_times",
+        "_eieio_params",
+        "_is_recording",
+    )
 
     def __init__(
-            self, n_keys: int, label: Optional[str] = None,
-            max_atoms_per_core: Optional[
-                Union[int, Tuple[int, ...]]] = sys.maxsize,
+            self, n_keys: int, label: str | None = None,
+            max_atoms_per_core: int | tuple[int, ...] | None = sys.maxsize,
 
             # Live input parameters
-            receive_port: Optional[int] = None,
+            receive_port: int | None = None,
             receive_sdp_port: int = SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value,
-            receive_tag: Optional[IPTag] = None,
+            receive_tag: IPTag | None = None,
             receive_rate: int = 10,
 
             # Key parameters
-            virtual_key: Optional[int] = None,
-            prefix: Optional[int] = None,
-            prefix_type: Optional[EIEIOPrefix] = None,
+            virtual_key: int | None = None,
+            prefix: int | None = None,
+            prefix_type: EIEIOPrefix | None = None,
             check_keys: bool = False,
 
             # Send buffer parameters
@@ -76,7 +77,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             reserve_reverse_ip_tag: bool = False,
 
             # splitter object
-            splitter: Optional[AbstractSplitterCommon] = None):
+            splitter: AbstractSplitterCommon | None = None):
         """
         :param n_keys:
             The number of keys to be sent via this multicast source
@@ -200,7 +201,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice: Slice, sdram: AbstractSDRAM,
-            label: Optional[str] = None
+            label: str | None = None
             ) -> ReverseIPTagMulticastSourceMachineVertex:
         send_buffer_times = self._filtered_send_buffer_times(vertex_slice)
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
@@ -240,7 +241,7 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
 
     @overrides(ApplicationVertex.get_fixed_key_and_mask)
     def get_fixed_key_and_mask(
-            self, partition_id: str) -> Optional[BaseKeyAndMask]:
+            self, partition_id: str) -> BaseKeyAndMask | None:
         if self._eieio_params.virtual_key is None:
             return None
         mask = ReverseIPTagMulticastSourceMachineVertex.calculate_mask(

@@ -23,7 +23,7 @@ from spinn_front_end_common.utilities.utility_objs import PowerUsed
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class EnergyReport(object):
+class EnergyReport:
     """
     This class creates a report about the approximate total energy
     consumed by a SpiNNaker job execution.

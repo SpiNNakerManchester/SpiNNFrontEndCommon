@@ -16,9 +16,9 @@ from __future__ import annotations
 import logging
 import struct
 from collections import defaultdict
+from collections.abc import Callable, Iterable
 from threading import Condition, Thread
 from time import sleep
-from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once
@@ -54,8 +54,8 @@ from spinn_front_end_common.utilities.database import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 _InitCallback = Callable[[str, int, float, float], None]
-_RcvCallback = Callable[[str, int, Optional[int]], None]
-_RcvTimeCallback = Callable[[str, int, List[int]], None]
+_RcvCallback = Callable[[str, int, int | None], None]
+_RcvTimeCallback = Callable[[str, int, list[int]], None]
 _Callback = Callable[[str, 'LiveEventConnection'], None]
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -99,36 +99,37 @@ class LiveEventConnection(DatabaseConnection):
         process than the one that the simulator is present in.
     """
     __slots__ = (
-        "_atom_id_to_key",
         "__error_keys",
+        "__expect_scp_response",
+        "__expect_scp_response_lock",
         "__init_callbacks",
+        "__is_running",
         "__key_to_atom_id_and_label",
-        "__no_time_event_callbacks",
-        "__time_event_callbacks",
         "__live_packet_gather_label",
+        "__no_time_event_callbacks",
         "__pause_stop_callbacks",
         "__receive_labels",
         "__receiver_connection",
+        "__receiver_details",
         "__receiver_listener",
+        "__scp_response_received",
         "__send_address_details",
         "__send_labels",
+        "__send_tag_update_thread_lock",
         "__sender_connection",
-        "__start_resume_callbacks",
         "__simulator",
         "__spalloc_job",
-        "__receiver_details",
-        "__is_running",
-        "__expect_scp_response",
-        "__expect_scp_response_lock",
-        "__scp_response_received",
+        "__start_resume_callbacks",
         "__tag_update_thread",
-        "__send_tag_update_thread_lock")
+        "__time_event_callbacks",
+        "_atom_id_to_key",
+    )
 
-    def __init__(self, live_packet_gather_label: Optional[str],
-                 receive_labels: Optional[Iterable[str]] = None,
-                 send_labels: Optional[Iterable[str]] = None,
-                 local_host: Optional[str] = None,
-                 local_port: Optional[int] = NOTIFY_PORT):
+    def __init__(self, live_packet_gather_label: str | None,
+                 receive_labels: Iterable[str] | None = None,
+                 send_labels: Iterable[str] | None = None,
+                 local_host: str | None = None,
+                 local_port: int | None = NOTIFY_PORT):
         """
         :param live_packet_gather_label:
             The label of the vertex to which received events are being sent.
@@ -159,41 +160,41 @@ class LiveEventConnection(DatabaseConnection):
             list(receive_labels) if receive_labels is not None else None)
         self.__send_labels = (
             list(send_labels) if send_labels is not None else None)
-        self.__sender_connection: Optional[EIEIOConnection] = None
-        self.__send_address_details: Dict[str, Tuple[
-            int, int, int, str]] = dict()
+        self.__sender_connection: EIEIOConnection | None = None
+        self.__send_address_details: dict[str, tuple[
+            int, int, int, str]] = {}
         # Also used by SpynnakerPoissonControlConnection
-        self._atom_id_to_key: Dict[str, Dict[int, int]] = dict()
-        self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = dict()
-        self.__no_time_event_callbacks: List[
-            List[Tuple[_RcvCallback, bool]]] = list()
-        self.__time_event_callbacks: List[
-            List[Tuple[Union[_RcvTimeCallback], bool]]] = list()
-        self.__start_resume_callbacks: Dict[str, List[_Callback]] = dict()
-        self.__pause_stop_callbacks: Dict[str, List[_Callback]] = dict()
-        self.__init_callbacks: Dict[str, List[_InitCallback]] = dict()
-        self.__receiver_details: List[Tuple[int, int, int, str]] = list()
+        self._atom_id_to_key: dict[str, dict[int, int]] = {}
+        self.__key_to_atom_id_and_label: dict[int, tuple[int, int]] = {}
+        self.__no_time_event_callbacks: list[
+            list[tuple[_RcvCallback, bool]]] = []
+        self.__time_event_callbacks: list[
+            list[tuple[_RcvTimeCallback, bool]]] = []
+        self.__start_resume_callbacks: dict[str, list[_Callback]] = {}
+        self.__pause_stop_callbacks: dict[str, list[_Callback]] = {}
+        self.__init_callbacks: dict[str, list[_InitCallback]] = {}
+        self.__receiver_details: list[tuple[int, int, int, str]] = []
         if receive_labels is not None:
             for label in receive_labels:
-                self.__no_time_event_callbacks.append(list())
-                self.__time_event_callbacks.append(list())
-                self.__start_resume_callbacks[label] = list()
-                self.__pause_stop_callbacks[label] = list()
-                self.__init_callbacks[label] = list()
+                self.__no_time_event_callbacks.append([])
+                self.__time_event_callbacks.append([])
+                self.__start_resume_callbacks[label] = []
+                self.__pause_stop_callbacks[label] = []
+                self.__init_callbacks[label] = []
         if send_labels is not None:
             for label in send_labels:
-                self.__start_resume_callbacks[label] = list()
-                self.__pause_stop_callbacks[label] = list()
-                self.__init_callbacks[label] = list()
-        self.__receiver_listener: Optional[ConnectionListener] = None
-        self.__receiver_connection: Optional[UDPConnection] = None
-        self.__error_keys: Set[int] = set()
+                self.__start_resume_callbacks[label] = []
+                self.__pause_stop_callbacks[label] = []
+                self.__init_callbacks[label] = []
+        self.__receiver_listener: ConnectionListener | None = None
+        self.__receiver_connection: UDPConnection | None = None
+        self.__error_keys: set[int] = set()
         self.__is_running = False
-        self.__tag_update_thread: Optional[Thread] = None
+        self.__tag_update_thread: Thread | None = None
         self.__send_tag_update_thread_lock = Condition()
         self.__expect_scp_response = False
         self.__expect_scp_response_lock = Condition()
-        self.__scp_response_received: Optional[bytes] = None
+        self.__scp_response_received: bytes | None = None
 
     def add_send_label(self, label: str) -> None:
         """
@@ -202,13 +203,13 @@ class LiveEventConnection(DatabaseConnection):
         :param label:
         """
         if self.__send_labels is None:
-            self.__send_labels = list()
+            self.__send_labels = []
         if label not in self.__send_labels:
             self.__send_labels.append(label)
         if label not in self.__start_resume_callbacks:
-            self.__start_resume_callbacks[label] = list()
-            self.__pause_stop_callbacks[label] = list()
-            self.__init_callbacks[label] = list()
+            self.__start_resume_callbacks[label] = []
+            self.__pause_stop_callbacks[label] = []
+            self.__init_callbacks[label] = []
 
     def add_receive_label(self, label: str) -> None:
         """
@@ -221,15 +222,15 @@ class LiveEventConnection(DatabaseConnection):
                 "no live packet gather label given; "
                 "receive labels not supported")
         if self.__receive_labels is None:
-            self.__receive_labels = list()
+            self.__receive_labels = []
         if label not in self.__receive_labels:
             self.__receive_labels.append(label)
-            self.__no_time_event_callbacks.append(list())
-            self.__time_event_callbacks.append(list())
+            self.__no_time_event_callbacks.append([])
+            self.__time_event_callbacks.append([])
         if label not in self.__start_resume_callbacks:
-            self.__start_resume_callbacks[label] = list()
-            self.__pause_stop_callbacks[label] = list()
-            self.__init_callbacks[label] = list()
+            self.__start_resume_callbacks[label] = []
+            self.__pause_stop_callbacks[label] = []
+            self.__init_callbacks[label] = []
 
     def add_init_callback(
             self, label: str, init_callback: _InitCallback) -> None:
@@ -348,7 +349,7 @@ class LiveEventConnection(DatabaseConnection):
     def __read_database_callback(self, db_reader: DatabaseReader) -> None:
         self.__handle_possible_rerun_state()
 
-        vertex_sizes: Dict[str, int] = dict()
+        vertex_sizes: dict[str, int] = {}
         run_time_ms = db_reader.get_configuration_parameter_value(
             "runtime")
         machine_timestep = db_reader.get_configuration_parameter_value(
@@ -368,7 +369,7 @@ class LiveEventConnection(DatabaseConnection):
                     label, vertex_size, run_time_ms, machine_timestep / 1000.0)
 
     def __init_sender(self, database: DatabaseReader,
-                      vertex_sizes: Dict[str, int]) -> None:
+                      vertex_sizes: dict[str, int]) -> None:
         if self.__sender_connection is None:
             job = database.get_job()
             if job:
@@ -385,7 +386,7 @@ class LiveEventConnection(DatabaseConnection):
             vertex_sizes[label] = len(self._atom_id_to_key[label])
 
     def __init_receivers(self, database: DatabaseReader,
-                         vertex_sizes: Dict[str, int]) -> None:
+                         vertex_sizes: dict[str, int]) -> None:
         # Set up a single connection for receive
         if self.__receiver_connection is None:
             job = database.get_job()
@@ -427,7 +428,7 @@ class LiveEventConnection(DatabaseConnection):
             self.__send_tag_messages_now()
 
     def __get_live_input_details(
-            self, db_reader: DatabaseReader, send_label: str) -> Tuple[
+            self, db_reader: DatabaseReader, send_label: str) -> tuple[
                 int, int, int, str]:
         x, y, p = db_reader.get_placements(send_label)[0]
 
@@ -438,7 +439,7 @@ class LiveEventConnection(DatabaseConnection):
         return x, y, p, ip_address
 
     def __get_live_output_details(
-            self, db_reader: DatabaseReader, receive_label: str) -> Tuple[
+            self, db_reader: DatabaseReader, receive_label: str) -> tuple[
                 str, int, str, int, int, int]:
         assert self.__live_packet_gather_label is not None
         host, port, strip_sdp, board_address, tag, chip_x, chip_y = \
@@ -568,9 +569,9 @@ class LiveEventConnection(DatabaseConnection):
         return self.__receive_labels[label_id]
 
     def __handle_time_packet(self, packet: EIEIODataMessage) -> None:
-        key_times_labels: Dict[int, Dict[int, List[int]]] = defaultdict(
+        key_times_labels: dict[int, dict[int, list[int]]] = defaultdict(
             lambda: defaultdict(list))
-        atoms_times_labels: Dict[int, Dict[int, List[int]]] = defaultdict(
+        atoms_times_labels: dict[int, dict[int, list[int]]] = defaultdict(
             lambda: defaultdict(list))
 
         while packet.is_next_element:
@@ -652,7 +653,7 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.send_events(label, [atom_id], send_full_keys)
 
-    def send_events(self, label: str, atom_ids: List[int],
+    def send_events(self, label: str, atom_ids: list[int],
                     send_full_keys: bool = False) -> None:
         """
         Send a number of events.
@@ -705,7 +706,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def send_events_with_payloads(
             self, label: str,
-            atom_ids_and_payloads: List[Tuple[int, int]]) -> None:
+            atom_ids_and_payloads: list[tuple[int, int]]) -> None:
         """
         Send a number of events with payloads.
 

@@ -15,7 +15,6 @@
 import logging
 import math
 from enum import IntEnum
-from typing import List
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -76,8 +75,8 @@ def _get_samples_per_recording_entry(sample_frequency: int) -> int:
     value = get_config_str(
         "SampleMonitor", "profile_n_samples_per_recording_entry")
     if value == "@timestep":
-        return max(1, int(math.ceil(
-            FecDataView.get_hardware_time_step_us() / sample_frequency)))
+        return max(1, math.ceil(
+            FecDataView.get_hardware_time_step_us() / sample_frequency))
     return int(value)
 
 
@@ -92,7 +91,7 @@ class ChipPowerMonitorMachineVertex(
         This is an unusual machine vertex, in that it has no associated
         application vertex.
     """
-    __slots__ = ("__sampling_frequency", "__n_samples_per_recording")
+    __slots__ = ("__n_samples_per_recording", "__sampling_frequency")
 
     class _REGIONS(IntEnum):
         # data regions
@@ -253,7 +252,7 @@ class ChipPowerMonitorMachineVertex(
             placement, self._REGIONS.RECORDING)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
-    def get_recorded_region_ids(self) -> List[int]:
+    def get_recorded_region_ids(self) -> list[int]:
         return [0]
 
     def _deduce_sdram_requirements_per_timer_tick(self) -> int:
@@ -266,4 +265,4 @@ class ChipPowerMonitorMachineVertex(
             self.__sampling_frequency * self.__n_samples_per_recording)
         n_entries = math.floor(FecDataView.get_hardware_time_step_us() /
                                recording_time)
-        return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
+        return math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY)

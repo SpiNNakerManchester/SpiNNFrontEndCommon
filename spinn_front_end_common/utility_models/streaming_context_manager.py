@@ -13,10 +13,10 @@
 # limitations under the License.
 from __future__ import annotations
 
+from collections.abc import Iterable
+from contextlib import AbstractContextManager
 from types import TracebackType
-from typing import TYPE_CHECKING, ContextManager, Iterable, Optional, Type
-
-from typing_extensions import Literal
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
     from .data_speed_up_packet_gatherer_machine_vertex import (
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     )
 
 
-class StreamingContextManager(ContextManager[None]):
+class StreamingContextManager(AbstractContextManager[None]):
     """
     The implementation of the context manager object for streaming
     configuration control.
@@ -44,9 +44,9 @@ class StreamingContextManager(ContextManager[None]):
         for gatherer in self._gatherers:
             gatherer.set_cores_for_data_streaming()
 
-    def __exit__(self, exc_type: Optional[Type],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, exc_type: type[BaseException] | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> Literal[False]:
         for gatherer in self._gatherers:
             gatherer.unset_cores_for_data_streaming()
         for gatherer in self._gatherers:

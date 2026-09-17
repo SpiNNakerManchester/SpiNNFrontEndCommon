@@ -19,9 +19,9 @@ from collections.abc import Sized
 from datetime import timedelta
 from sqlite3 import DatabaseError
 from types import TracebackType
-from typing import TYPE_CHECKING, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, ClassVar, Literal
 
-from typing_extensions import Literal, Self
+from typing_extensions import Self
 
 from spinn_utilities.config_holder import get_config_bool, get_timestamp_path
 from spinn_utilities.log import FormatAdapter
@@ -40,24 +40,24 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _NANO_TO_MICRO = 1000.0
 
 
-class FecTimer(object):
+class FecTimer:
     """
     Timer.
     """
 
-    _provenance_path: Optional[str] = None
-    _print_timings: bool = False
-    _category_id: Optional[int] = None
-    _category: Optional[TimerCategory] = None
-    _category_time: int = 0
+    _provenance_path: ClassVar[str | None] = None
+    _print_timings: ClassVar[bool] = False
+    _category_id: ClassVar[int | None] = None
+    _category: ClassVar[TimerCategory | None] = None
+    _category_time: ClassVar[int] = 0
     # machine on cycle to allocate time to
-    _machine_on: bool = False
-    _previous: List[TimerCategory] = []
+    _machine_on: ClassVar[bool] = False
+    _previous: ClassVar[list[TimerCategory]] = []
     __slots__ = (
-        # The start time when the timer was set off
-        "_start_time",
         # Name of algorithm what is being timed
         "_algorithm",
+        # The start time when the timer was set off
+        "_start_time",
         # Type of work being done
         "_work")
 
@@ -86,7 +86,7 @@ class FecTimer(object):
         :param algorithm: Name of algorithm being timed
         :param work: Type of work being timed
         """
-        self._start_time: Optional[int] = None
+        self._start_time: int | None = None
         self._algorithm = algorithm
         self._work = work
 
@@ -102,7 +102,7 @@ class FecTimer(object):
             logger.info(message)
 
     def _insert_timing(
-            self, time_taken: timedelta, skip_reason: Optional[str]) -> None:
+            self, time_taken: timedelta, skip_reason: str | None) -> None:
         if self._category_id is not None:
             try:
                 with GlobalProvenance() as db:
@@ -164,8 +164,9 @@ class FecTimer(object):
         else:
             return False
 
-    def skip_if_empty(self, value: Optional[
-            Union[bool, int, str, Sized]], name: str) -> bool:
+    def skip_if_empty(
+            self,
+            value: bool | int | str | Sized | None, name: str) -> bool:
         """
         Skips if the value is one that evaluates to False.
 
@@ -231,16 +232,15 @@ class FecTimer(object):
         :param option2: The other option to check
         :returns: True if skip has been called
         """
-        if get_config_bool(section, option1):
-            return False
-        elif get_config_bool(section, option2):
+        if (get_config_bool(section, option1) or
+                get_config_bool(section, option2)):
             return False
         else:
             self.skip(f"cfg {section}:{option1} and {option2} are False")
             return True
 
     def skip_all_cfgs_false(
-            self, pairs: List[Tuple[str, str]], reason: str) -> bool:
+            self, pairs: list[tuple[str, str]], reason: str) -> bool:
         """
         Skips if all Boolean cfg values are False.
 
@@ -295,9 +295,9 @@ class FecTimer(object):
         """
         return timedelta(microseconds=time_diff / _NANO_TO_MICRO)
 
-    def __exit__(self, exc_type: Optional[Type],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, exc_type: type[BaseException] | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> Literal[False]:
         if self._start_time is None:
             return False
         time_taken = self._stop_timer()
@@ -309,7 +309,7 @@ class FecTimer(object):
                 message = (f"{self._algorithm} exited with "
                            f"{exc_type.__name__} after {time_taken}")
                 skip = exc_type.__name__
-            except Exception as ex:  # pylint: disable=broad-except
+            except Exception as ex:  # NOQA
                 message = (f"{self._algorithm} exited with an exception"
                            f"after {time_taken}")
                 skip = f"Exception {ex}"

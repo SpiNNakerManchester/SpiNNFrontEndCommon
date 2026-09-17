@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Iterable
+from collections.abc import Iterable
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
@@ -22,7 +22,7 @@ from pacman.model.graphs.machine import MachineVertex
 
 
 @require_subclass(MachineVertex)
-class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
+class AbstractSendsBuffersFromHost(metaclass=AbstractBase):
     """
     A vertex that sends buffers of keys to be
     transmitted at given timestamps in the simulation.

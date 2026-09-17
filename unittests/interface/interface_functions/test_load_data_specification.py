@@ -15,7 +15,7 @@
 import struct
 import unittest
 from sqlite3 import IntegrityError
-from typing import BinaryIO, List, Optional, Tuple, Union
+from typing import BinaryIO
 
 from parameterized import parameterized
 
@@ -56,12 +56,12 @@ class _MockTransceiver(Version5Transceiver):
     # pylint: disable=unused-argument
 
     def __init__(self) -> None:
-        self._regions_written: List[Tuple[
-            int, Union[bytearray, bytes]]] = list()
+        self._regions_written: list[tuple[
+            int, bytearray | bytes]] = []
         self._next_address: int = 0
 
     @property
-    def regions_written(self) -> List[Tuple[int, Union[bytearray, bytes]]]:
+    def regions_written(self) -> list[tuple[int, bytearray | bytes]]:
         """ A list of tuples of (base_address, data) which has been written
         """
         return self._regions_written
@@ -76,9 +76,9 @@ class _MockTransceiver(Version5Transceiver):
     @overrides(Version5Transceiver.write_memory)
     def write_memory(
             self, x: int, y: int, base_address: int,
-            data:  Union[BinaryIO, bytearray, bytes, int, str], *,
-            n_bytes: Optional[int] = None, offset: int = 0, cpu: int = 0,
-            get_sum: bool = False) -> Tuple[int, int]:
+            data:  BinaryIO | bytearray | bytes | int | str, *,
+            n_bytes: int | None = None, offset: int = 0, cpu: int = 0,
+            get_sum: bool = False) -> tuple[int, int]:
         if isinstance(data, int):
             data = struct.pack("<I", data)
         assert isinstance(data, (bytearray, bytes))
@@ -238,7 +238,7 @@ class TestLoadDataSpecification(unittest.TestCase):
                              db.get_memory_to_write(0, 0, 2))
 
         # Find the base addresses
-        base_addresses = dict()
+        base_addresses = {}
         for base_addr, data in regions:
             # user 0 p 0
             if base_addr == 3842011248:
@@ -251,7 +251,7 @@ class TestLoadDataSpecification(unittest.TestCase):
                 base_addresses[2] = struct.unpack("<I", data)[0]
 
         # Find the headers
-        header_data = dict()
+        header_data = {}
         for base_addr, data in regions:
             for core, addr in base_addresses.items():
                 if base_addr == addr:

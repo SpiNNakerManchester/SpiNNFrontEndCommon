@@ -14,7 +14,6 @@
 
 import time
 from sqlite3 import Binary, IntegrityError
-from typing import Optional, Tuple
 
 from spinn_utilities.config_holder import get_config_bool
 
@@ -99,7 +98,7 @@ class BufferDatabase(BaseDatabase):
         content, _ = self._read_recording_with_missing(region_id)
         return content
 
-    def _read_recording_with_missing(self, region_id: int) -> Tuple[
+    def _read_recording_with_missing(self, region_id: int) -> tuple[
             memoryview, bool]:
         """
         Get the contents from a recording region
@@ -122,7 +121,7 @@ class BufferDatabase(BaseDatabase):
             return self._read_recording_multiple(
                 region_id, total_content_length)
 
-    def _read_contents_single(self, region_id: int) -> Tuple[
+    def _read_contents_single(self, region_id: int) -> tuple[
             memoryview, bool]:
         """
         Reads the content for a single block for this recording region
@@ -145,7 +144,7 @@ class BufferDatabase(BaseDatabase):
 
     def _read_recording_by_extraction_id(
             self, region_id: int,
-            extraction_id: int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> tuple[memoryview, bool]:
         """
         Reads the content for a single block for this region
         """
@@ -167,7 +166,7 @@ class BufferDatabase(BaseDatabase):
 
     def _read_download_by_extraction_id(
             self, region_id: int,
-            extraction_id: int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> tuple[memoryview, bool]:
         """
         Reads the content for a single block for this region
         """
@@ -188,7 +187,7 @@ class BufferDatabase(BaseDatabase):
             f"no record for {region_id=} and {extraction_id=}")
 
     def _read_recording_multiple(
-            self, region_id: int, total_content_length: int) -> Tuple[
+            self, region_id: int, total_content_length: int) -> tuple[
             memoryview, bool]:
         """
         Reads the contents of all blocks for this regions.
@@ -211,7 +210,7 @@ class BufferDatabase(BaseDatabase):
         return memoryview(c_buffer), missing_data
 
     def _find_existing_recording_region_id(
-            self, x: int, y: int, p: int, region: int) -> Optional[int]:
+            self, x: int, y: int, p: int, region: int) -> int | None:
         for row in self.cursor().execute(
                 """
                 SELECT recording_region_id
@@ -224,7 +223,7 @@ class BufferDatabase(BaseDatabase):
         return None
 
     def _find_existing_download_region_id(
-            self, x: int, y: int, p: int, region: int) -> Optional[int]:
+            self, x: int, y: int, p: int, region: int) -> int | None:
         for row in self.cursor().execute(
                 """
                 SELECT download_region_id
@@ -398,7 +397,7 @@ class BufferDatabase(BaseDatabase):
                   missing))
         assert self.rowcount == 1
 
-    def get_recording(self, x: int, y: int, p: int, region: int) -> Tuple[
+    def get_recording(self, x: int, y: int, p: int, region: int) -> tuple[
             memoryview, bool]:
         """
         Get the data stored for a given region of a given core.
@@ -427,7 +426,7 @@ class BufferDatabase(BaseDatabase):
 
     def get_recording_by_extraction_id(
             self, x: int, y: int, p: int, region: int,
-            extraction_id: int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> tuple[memoryview, bool]:
         """
         Get the data stored for a given region of a given core.
 
@@ -455,7 +454,7 @@ class BufferDatabase(BaseDatabase):
 
     def get_download_by_extraction_id(
             self, x: int, y: int, p: int, region: int,
-            extraction_id: int) -> Tuple[memoryview, bool]:
+            extraction_id: int) -> tuple[memoryview, bool]:
         """
         Get the data stored for a given region of a given core.
 
@@ -491,7 +490,7 @@ class BufferDatabase(BaseDatabase):
                 """, [(k1, k2, v) for (k1, k2), v in config.items()])
 
     def _set_core_name(
-            self, x: int, y: int, p: int, core_name: Optional[str]) -> None:
+            self, x: int, y: int, p: int, core_name: str | None) -> None:
         try:
             self.cursor().execute(
                 """
@@ -517,7 +516,7 @@ class BufferDatabase(BaseDatabase):
                 self._set_core_name(
                     chip.x, chip.y, p, f"SCAMP(OS)_{chip.x}:{chip.y}")
 
-    def get_core_name(self, x: int, y: int, p: int) -> Optional[str]:
+    def get_core_name(self, x: int, y: int, p: int) -> str | None:
         """
         Gets the label (typically vertex label) for this core.
 

@@ -13,17 +13,18 @@
 # limitations under the License.
 
 
-class RouterSummary(object):
+class RouterSummary:
     """
     Summary of information about a router.
     """
 
     __slots__ = (
-        "_total_entries",
-        "_max_per_chip",
         "_max_defaultable",
         "_max_link",
-        "_unqiue_routes")
+        "_max_per_chip",
+        "_total_entries",
+        "_unqiue_routes",
+    )
 
     def __init__(self, total_entries: int, max_per_chip: int,
                  max_defaultable: int, max_link: int, unqiue_routes: int):

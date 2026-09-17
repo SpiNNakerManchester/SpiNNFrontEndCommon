@@ -14,7 +14,7 @@
 
 import bisect
 import math
-from typing import Dict, Iterable, List, Optional, Sequence
+from collections.abc import Iterable, Sequence
 
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.messages.eieio import EIEIOType
@@ -40,14 +40,14 @@ def get_n_bytes(n_keys: int) -> int:
     :param n_keys: The number of keys
     """
     # Get the total number of messages
-    n_messages = int(math.ceil(float(n_keys) / _N_KEYS_PER_MESSAGE))
+    n_messages = math.ceil(float(n_keys) / _N_KEYS_PER_MESSAGE)
 
     # Add up the bytes
     return ((_HEADER_SIZE * n_messages) +
             (n_keys * _N_BYTES_PER_KEY))
 
 
-class BufferedSendingRegion(object):
+class BufferedSendingRegion:
     """
     A set of keys to be sent at given timestamps for a given region of
     data.
@@ -61,15 +61,16 @@ class BufferedSendingRegion(object):
         #: A dictionary of timestamp -> list of keys
         "_buffer",
 
+        #: The current position in the list of timestamps
+        "_current_timestamp_pos",
+
         #: A list of timestamps
         "_timestamps",
-
-        #: The current position in the list of timestamps
-        "_current_timestamp_pos")
+    )
 
     def __init__(self) -> None:
-        self._buffer: Dict[int, List[int]] = dict()
-        self._timestamps: List[int] = list()
+        self._buffer: dict[int, list[int]] = {}
+        self._timestamps: list[int] = []
         self._current_timestamp_pos: int = 0
 
     def add_key(self, timestamp: int, key: int) -> None:
@@ -81,7 +82,7 @@ class BufferedSendingRegion(object):
         """
         if timestamp not in self._buffer:
             bisect.insort(self._timestamps, timestamp)
-            self._buffer[timestamp] = list()
+            self._buffer[timestamp] = []
         self._buffer[timestamp].append(key)
 
     def add_keys(self, timestamp: int, keys: Iterable[int]) -> None:
@@ -128,7 +129,7 @@ class BufferedSendingRegion(object):
         return self._current_timestamp_pos < len(self._timestamps)
 
     @property
-    def next_timestamp(self) -> Optional[int]:
+    def next_timestamp(self) -> int | None:
         """
         The next timestamp of the data to be sent,
             or `None` if no more data.
@@ -183,6 +184,6 @@ class BufferedSendingRegion(object):
         """
         Clears the buffer.
         """
-        self._buffer = dict()
-        self._timestamps = list()
+        self._buffer = {}
+        self._timestamps = []
         self._current_timestamp_pos = 0

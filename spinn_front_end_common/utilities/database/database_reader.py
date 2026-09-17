@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, List, Optional, Tuple
 
 from spinnman.spalloc import SpallocClient, SpallocJob
 
@@ -29,10 +28,10 @@ class DatabaseReader(SQLiteDB):
         :param database_path: The path to the database
         """
         super().__init__(database_path, read_only=True, text_factory=str)
-        self.__job: Optional[SpallocJob] = None
+        self.__job: SpallocJob | None = None
         self.__looked_for_job = False
 
-    def get_job(self) -> Optional[SpallocJob]:
+    def get_job(self) -> SpallocJob | None:
         """
         Get the job described in the database. If no job exists, direct
         connection to boards should be used.
@@ -67,7 +66,7 @@ class DatabaseReader(SQLiteDB):
                 service_url, job_url, cookies, headers)
         return self.__job
 
-    def get_key_to_atom_id_mapping(self, label: str) -> Dict[int, int]:
+    def get_key_to_atom_id_mapping(self, label: str) -> dict[int, int]:
         """
         Get a mapping of event key to atom ID for a given vertex.
 
@@ -82,7 +81,7 @@ class DatabaseReader(SQLiteDB):
                 WHERE label = ?
                 """, (label, ))}
 
-    def get_atom_id_to_key_mapping(self, label: str) -> Dict[int, int]:
+    def get_atom_id_to_key_mapping(self, label: str) -> dict[int, int]:
         """
         Get a mapping of atom ID to event key for a given vertex.
 
@@ -98,7 +97,7 @@ class DatabaseReader(SQLiteDB):
                 """, (label, ))}
 
     def get_live_output_details(
-            self, label: str, receiver_label: str) -> Tuple[
+            self, label: str, receiver_label: str) -> tuple[
                 str, int, bool, str, int, int, int]:
         """
         Get the IP address, port and whether the SDP headers are to be
@@ -122,7 +121,7 @@ class DatabaseReader(SQLiteDB):
                 row["chip_y"])
 
     def get_configuration_parameter_value(
-            self, parameter_name: str) -> Optional[float]:
+            self, parameter_name: str) -> float | None:
         """
         Get the value of a configuration parameter.
 
@@ -138,7 +137,7 @@ class DatabaseReader(SQLiteDB):
         row = self.fetchone()
         return None if row is None else float(row["value"])
 
-    def get_placements(self, label: str) -> List[Tuple[int, int, int]]:
+    def get_placements(self, label: str) -> list[tuple[int, int, int]]:
         """
         Get the placements of an application vertex with a given label.
 
@@ -153,7 +152,7 @@ class DatabaseReader(SQLiteDB):
                 WHERE vertex_label = ?
                 """, (label, ))]
 
-    def get_ip_address(self, x: int, y: int) -> Optional[str]:
+    def get_ip_address(self, x: int, y: int) -> str | None:
         """
         Get an IP address to contact a chip.
 

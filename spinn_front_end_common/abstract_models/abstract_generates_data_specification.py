@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.overrides import overrides
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 
 @require_subclass(AbstractHasAssociatedBinary)
-class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
+class AbstractGeneratesDataSpecification(metaclass=AbstractBase):
     """
     A machine vertex that generates a data specification that describes what
     its binary's initialisation data is.
@@ -64,7 +64,7 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
     @property
     @abstractmethod
     @overrides(MachineVertex.label)
-    def label(self) -> Optional[str]:
+    def label(self) -> str | None:
         """
         See MachineVertex.label
 

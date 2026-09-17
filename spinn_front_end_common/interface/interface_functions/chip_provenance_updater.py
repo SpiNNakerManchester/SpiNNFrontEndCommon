@@ -42,7 +42,7 @@ def chip_provenance_updater(all_core_subsets: CoreSubsets) -> None:
     updater.run()
 
 
-class _ChipProvenanceUpdater(object):
+class _ChipProvenanceUpdater:
     """
     Forces all cores to generate provenance data, and then exit.
     """

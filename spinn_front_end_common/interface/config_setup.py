@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-from typing import Set
 
 from spinn_utilities.config_holder import (
     add_default_cfg,
@@ -69,7 +68,7 @@ def add_spinnaker_template() -> None:
     add_template(os.path.join(os.path.dirname(__file__), TEMPLATE_FILE))
 
 
-def fec_cfg_paths_skipped() -> Set[str]:
+def fec_cfg_paths_skipped() -> set[str]:
     """
     Set of cfg path that may not be found based on other cfg settings
 

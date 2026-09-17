@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
 
 from spinn_utilities.overrides import overrides
 
@@ -31,8 +30,8 @@ class DataSpecificationReloader(DataSpecificationBase):
 
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
-            self, region: int, size: int, label: Optional[str] = None,
-            reference: Optional[int] = None) -> None:
+            self, region: int, size: int, label: str | None = None,
+            reference: int | None = None) -> None:
         original_size = self._ds_db.get_region_size(
             self._x, self._y, self._p, region)
         if original_size != size:
@@ -44,7 +43,7 @@ class DataSpecificationReloader(DataSpecificationBase):
 
     @overrides(DataSpecificationBase.reference_memory_region)
     def reference_memory_region(
-            self, region: int, ref: int, label: Optional[str] = None) -> None:
+            self, region: int, ref: int, label: str | None = None) -> None:
         raise NotImplementedError(
             "reference_memory_region unexpected during reload")
 

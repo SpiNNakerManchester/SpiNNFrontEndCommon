@@ -31,13 +31,13 @@ def memory_map_on_host_report() -> None:
         with open(file_name, "w", encoding="utf-8") as f:
             f.write("On host data specification executor\n")
             with DsSqlliteDatabase() as ds_database:
-                for xyp, start_address, memory_used, memory_written in \
-                        ds_database.get_info_for_cores():
-                    f.write(
-                        f"{xyp}: ('start_address': {start_address}, "
-                        f"hex:{hex(start_address)}), "
-                        f"'memory_used': {memory_used}, "
-                        f"'memory_written': {memory_written}\n")
-    except IOError:
+                f.writelines(
+                    f"{xyp}: ('start_address': {start_address}, "
+                    f"hex:{hex(start_address)}), "
+                    f"'memory_used': {memory_used}, "
+                    f"'memory_written': {memory_written}\n"
+                    for xyp, start_address, memory_used, memory_written
+                    in ds_database.get_info_for_cores())
+    except OSError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", file_name)

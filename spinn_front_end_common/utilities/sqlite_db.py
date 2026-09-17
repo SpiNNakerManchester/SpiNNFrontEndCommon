@@ -21,7 +21,7 @@ import pathlib
 import sqlite3
 import struct
 from types import TracebackType
-from typing import Literal, Optional, Type, Union
+from typing import Literal
 
 from typing_extensions import Self
 
@@ -35,7 +35,7 @@ from spinn_front_end_common.utilities.utility_calls import check_file_exists
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class SQLiteDB(object):
+class SQLiteDB:
     """
     General support class for SQLite databases. This handles a lot of the
     low-level detail of setting up a connection.
@@ -71,14 +71,13 @@ class SQLiteDB(object):
         "__db")
 
     def __init__(
-            self, database_file: Optional[str] = None, *,
-            read_only: bool = False, ddl_file: Optional[str] = None,
-            row_factory: Optional[Union[
-                Type[sqlite3.Row], Type[tuple]]] = sqlite3.Row,
+            self, database_file: str | None = None, *,
+            read_only: bool = False, ddl_file: str | None = None,
+            row_factory: type[sqlite3.Row | tuple] | None = sqlite3.Row,
             # TODO: Replace in future once mypy is fixed
             # text_factory: Optional[Union[
             #     Type[memoryview], Type[str]]] = memoryview,
-            text_factory: Optional[type] = memoryview,
+            text_factory: type | None = memoryview,
             case_insensitive_like: bool = True, timeout: float = 5.0):
         """
         :param database_file:
@@ -113,7 +112,7 @@ class SQLiteDB(object):
             until the transaction is committed. Default five seconds.
         """
         self.__db = None
-        self.__cursor: Optional[sqlite3.Cursor] = None
+        self.__cursor: sqlite3.Cursor | None = None
         if database_file is None:
             self.__db = sqlite3.connect(":memory:")  # Magic name!
             # in-memory DB is never read-only
@@ -177,9 +176,9 @@ class SQLiteDB(object):
         self._context_entered()
         return self
 
-    def __exit__(self, exc_type: Optional[Type],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, exc_type: type[BaseException] | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> Literal[False]:
         if self.__db is not None:
             if exc_type is None:
                 self.__db.commit()
@@ -203,7 +202,7 @@ class SQLiteDB(object):
         except AttributeError:
             self.__db = None
 
-    def __pragma(self, pragma_name: str, value: Union[bool, int, str]) -> None:
+    def __pragma(self, pragma_name: str, value: bool | int | str) -> None:
         """
         Set a database ``PRAGMA``. See the `SQLite PRAGMA documentation
         <https://www.sqlite.org/pragma.html>`_ for details.

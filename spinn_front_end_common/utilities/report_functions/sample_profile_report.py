@@ -14,7 +14,7 @@
 
 import json
 from collections import defaultdict
-from typing import Any, Dict, Tuple, cast
+from typing import Any, cast
 
 import numpy
 
@@ -50,7 +50,7 @@ def write_sample_profile_report() -> None:
     simulation_timestep_us = FecDataView.get_simulation_time_step_us()
     hardware_timestep_us = FecDataView.get_hardware_time_step_us()
 
-    json_report_data: Dict[str, Any] = {}
+    json_report_data: dict[str, Any] = {}
     json_report_data["simulation_timestep_us"] = simulation_timestep_us
     json_report_data["hardware_timestep_us"] = hardware_timestep_us
     for (x, y), activity in chip_activity.items():
@@ -67,7 +67,7 @@ def write_sample_profile_report() -> None:
         max_percent = (max_active / n_samples) * 100
         mean_percent = (mean_active / n_samples) * 100
 
-        json_report_chip: Dict[str, Any] = {}
+        json_report_chip: dict[str, Any] = {}
         json_report_data[f"chip_{x}_{y}"] = json_report_chip
         json_report_chip["x"] = x
         json_report_chip["y"] = y
@@ -96,8 +96,8 @@ def write_sample_profile_report() -> None:
         json.dump(json_report_data, report_file, indent=4)
 
 
-def get_power_cores() -> Dict[
-        Tuple[int, int], Tuple[int, list[int]]]:
+def get_power_cores() -> dict[
+        tuple[int, int], tuple[int, list[int]]]:
     """
     Get the power monitor cores, and the list of active cores
 
@@ -106,8 +106,8 @@ def get_power_cores() -> Dict[
           - the list of cores that were active on that chip
            (excluding the power monitor core)
     """
-    power_cores: Dict[Tuple[int, int], int] = {}
-    active_cores: Dict[Tuple[int, int], list[int]] = defaultdict(list)
+    power_cores: dict[tuple[int, int], int] = {}
+    active_cores: dict[tuple[int, int], list[int]] = defaultdict(list)
     for pl in FecDataView.iterate_placemements():
         if not isinstance(pl.vertex, AbstractHasAssociatedBinary):
             continue
@@ -124,8 +124,8 @@ def get_power_cores() -> Dict[
 
 
 def extract_core_activity(
-        power_cores: Dict[Tuple[int, int], Tuple[int, list[int]]],
-        version: AbstractVersion) -> Dict[Tuple[int, int], numpy.ndarray]:
+        power_cores: dict[tuple[int, int], tuple[int, list[int]]],
+        version: AbstractVersion) -> dict[tuple[int, int], numpy.ndarray]:
     """ Extract the core activity data from the buffer database for each chip
         that has a power monitor core.
 
@@ -141,7 +141,7 @@ def extract_core_activity(
                 Each entry in the array is the count of times that core was
                 active when sampled.
     """
-    chip_activity: Dict[Tuple[int, int], numpy.ndarray] = {}
+    chip_activity: dict[tuple[int, int], numpy.ndarray] = {}
     with BufferDatabase() as buff_db:
         for (x, y) in power_cores:
             # Find the core that was used on this chip for power monitoring

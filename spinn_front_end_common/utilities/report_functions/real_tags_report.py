@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from spinn_utilities.config_holder import get_report_path
 
@@ -30,12 +31,11 @@ def tags_from_machine_report() -> None:
     with open(filename, "w", encoding="utf-8") as f:
         f.write("Tags actually read off the machine\n")
         f.write("==================================\n")
-        for tag in tags:
-            f.write(f"{repr(tag)}\n")
+        f.writelines(f"{repr(tag)}\n" for tag in tags)
 
 
 def _get_tags() -> Iterable[Any]:
     try:
         return FecDataView.get_transceiver().get_tags()
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:  # NOQA
         return [e]

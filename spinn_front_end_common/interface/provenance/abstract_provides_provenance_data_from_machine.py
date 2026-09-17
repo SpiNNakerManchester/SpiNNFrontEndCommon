@@ -20,7 +20,7 @@ from pacman.model.placements import Placement
 
 @require_subclass(MachineVertex)
 class AbstractProvidesProvenanceDataFromMachine(
-        object, metaclass=AbstractBase):
+        metaclass=AbstractBase):
     """
     Indicates that an object provides provenance data retrieved from the
     machine.

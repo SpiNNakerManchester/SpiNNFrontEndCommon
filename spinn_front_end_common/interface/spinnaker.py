@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Type
 
 from spinn_utilities.overrides import overrides
 
@@ -48,5 +47,5 @@ class SpiNNaker(AbstractSpinnakerBase):
 
     @property
     @overrides(AbstractSpinnakerBase._data_writer_cls)
-    def _data_writer_cls(self) -> Type[FecDataWriter]:
+    def _data_writer_cls(self) -> type[FecDataWriter]:
         return FecDataWriter

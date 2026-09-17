@@ -14,7 +14,8 @@
 
 import unittest
 from collections import defaultdict
-from typing import BinaryIO, Dict, Iterable, Optional, Tuple, Union
+from collections.abc import Iterable
+from typing import BinaryIO
 
 from spinn_utilities.overrides import overrides
 
@@ -37,15 +38,15 @@ class _MockTransceiver(MockableTransceiver):
 
     def __init__(self, test_case: unittest.TestCase):
         self._test_case = test_case
-        self._n_cores_in_app: Dict[int, int] = defaultdict(lambda: 0)
-        self._executable_on_core: Dict[Tuple[int, int, int],
-                                       Union[BinaryIO, bytes, str]] = dict()
+        self._n_cores_in_app: dict[int, int] = defaultdict(lambda: 0)
+        self._executable_on_core: dict[tuple[int, int, int],
+                                       BinaryIO | bytes | str] = {}
 
     @overrides(MockableTransceiver.execute_flood)
     def execute_flood(
             self, core_subsets: CoreSubsets,
-            executable: Union[BinaryIO, bytes, str], app_id: int, *,
-            n_bytes: Optional[int] = None, wait: bool = False) -> None:
+            executable: BinaryIO | bytes | str, app_id: int, *,
+            n_bytes: int | None = None, wait: bool = False) -> None:
         for core_subset in core_subsets.core_subsets:
             x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
@@ -57,7 +58,7 @@ class _MockTransceiver(MockableTransceiver):
     @overrides(MockableTransceiver.get_core_state_count)
     def get_core_state_count(
             self, app_id: int, state: CPUState,
-            xys: Optional[Iterable[Tuple[int, int]]] = None) -> int:
+            xys: Iterable[tuple[int, int]] | None = None) -> int:
         return self._n_cores_in_app[app_id]
 
 

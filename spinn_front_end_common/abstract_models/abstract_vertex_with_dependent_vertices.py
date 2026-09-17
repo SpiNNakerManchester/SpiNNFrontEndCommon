@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Iterable
+from collections.abc import Iterable
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
@@ -23,7 +23,7 @@ from pacman.model.graphs.application import ApplicationVertex
 
 @require_subclass(ApplicationVertex)
 class AbstractVertexWithEdgeToDependentVertices(
-        object, metaclass=AbstractBase):
+        metaclass=AbstractBase):
     """
     A vertex with a dependent vertices, which should be connected to this
     vertex by an edge directly to each of them.

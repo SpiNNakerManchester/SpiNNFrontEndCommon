@@ -23,7 +23,7 @@ from pacman.model.graphs.machine import MachineVertex
 
 
 @require_subclass(MachineVertex)
-class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
+class AbstractHasAssociatedBinary(metaclass=AbstractBase):
     """
     Marks a machine graph vertex that can be launched on a SpiNNaker core.
     """

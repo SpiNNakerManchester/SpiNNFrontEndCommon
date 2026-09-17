@@ -15,11 +15,11 @@ from __future__ import annotations
 
 import logging
 import struct
+from collections.abc import Iterable
+from contextlib import AbstractContextManager
 from enum import Enum, IntEnum
 from types import TracebackType
-from typing import ContextManager, Dict, Iterable, Optional, Type
-
-from typing_extensions import Literal
+from typing import Literal
 
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
@@ -134,22 +134,23 @@ class ExtraMonitorSupportMachineVertex(
     """
 
     __slots__ = (
-        # if we reinject multicast packets
-        "_reinject_multicast",
-        # if we reinject point to point packets
-        "_reinject_point_to_point",
-        # if we reinject nearest neighbour packets
-        "_reinject_nearest_neighbour",
-        # if we reinject fixed route packets
-        "_reinject_fixed_route",
         # placement holder for ease of access
         "__placement",
+        # provenance region address
+        "__prov_region",
         # app id, used for reporting failures on system core RTE
         "_app_id",
+        # if we reinject fixed route packets
+        "_reinject_fixed_route",
+        # if we reinject multicast packets
+        "_reinject_multicast",
+        # if we reinject nearest neighbour packets
+        "_reinject_nearest_neighbour",
+        # if we reinject point to point packets
+        "_reinject_point_to_point",
         # the local transaction id
         "_transaction_id",
-        # provenance region address
-        "__prov_region")
+    )
 
     def __init__(
             self, reinject_point_to_point: bool = False,
@@ -170,10 +171,10 @@ class ExtraMonitorSupportMachineVertex(
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
         # placement holder for ease of access
-        self.__placement: Optional[Placement] = None
-        self._app_id: Optional[int] = None
+        self.__placement: Placement | None = None
+        self._app_id: int | None = None
         self._transaction_id = 0
-        self.__prov_region: Optional[int] = None
+        self.__prov_region: int | None = None
 
     @property
     def reinject_multicast(self) -> bool:
@@ -398,7 +399,7 @@ class ExtraMonitorSupportMachineVertex(
             db.insert_monitor(x, y, _ProvLabels.N_IN_STREAMS, n_in_streams)
             db.insert_monitor(x, y, _ProvLabels.N_OUT_STREAMS, n_out_streams)
 
-    def __recover(self) -> ContextManager[Placement]:
+    def __recover(self) -> AbstractContextManager[Placement]:
         """
         Set up a context to recover what we can on failure.
         The value of the setup is the placement.
@@ -432,7 +433,7 @@ class ExtraMonitorSupportMachineVertex(
             return process.get_reinjection_status(
                 placement.x, placement.y, placement.p)
 
-    def get_reinjection_status_for_vertices(self) -> Dict[
+    def get_reinjection_status_for_vertices(self) -> dict[
             Chip, ReInjectionStatus]:
         """
         Get the reinjection status from a set of extra monitor cores.
@@ -446,10 +447,10 @@ class ExtraMonitorSupportMachineVertex(
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
-            self, point_to_point: Optional[bool] = None,
-            multicast: Optional[bool] = None,
-            nearest_neighbour: Optional[bool] = None,
-            fixed_route: Optional[bool] = None) -> None:
+            self, point_to_point: bool | None = None,
+            multicast: bool | None = None,
+            nearest_neighbour: bool | None = None,
+            fixed_route: bool | None = None) -> None:
         """
         Sends the reinjection packets for this vertex
 
@@ -537,9 +538,9 @@ class _Recoverer:
     def __enter__(self) -> Placement:
         return self.__placement
 
-    def __exit__(self, exc_type: Optional[Type],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, exc_type: type[BaseException] | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> Literal[False]:
         if exc_val:
             emergency_recover_state_from_failure(self.__vtx, self.__placement)
         return False

@@ -20,8 +20,9 @@ import selectors
 import subprocess
 import sys
 from collections import defaultdict
+from collections.abc import Iterable
 from io import BufferedReader
-from typing import Dict, Iterable, List, Optional, cast
+from typing import cast
 
 from spinn_utilities.config_holder import (
     get_config_str,
@@ -54,7 +55,7 @@ from spinn_front_end_common.utilities.exceptions import (
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class JavaCaller(object):
+class JavaCaller:
     """
     Support class that holds all the stuff for running stuff in Java.
     This includes the work of preparing data for transmitting to Java and
@@ -64,25 +65,26 @@ class JavaCaller(object):
     jar locations, parameters, etc. from the rest of the Python code.
     """
     __slots__ = (
+        # The location where the latest placement json is written
+        "__placement_json",
         "_chip_by_ethernet",
-        # The call to get Java to work. Including the path if required.
-        "_java_call",
+        # Dict of Ethernet (x, y) to the p of the packetGather vertex
+        "_gatherer_cores",
+        # Dict of Ethernet (x, y) and the packetGather IPtags
+        "_gatherer_iptags",
         # The location of the Java jar file
         "_jar_file",
+        # The call to get Java to work. Including the path if required.
+        "_java_call",
+        # Properties flag to be passed to Java
+        "_java_properties",
         # The location where the machine json is written
         "_machine_json_path",
         # Dict of chip (x, y) to the p of the monitor vertex
         "_monitor_cores",
         # Flag to indicate if at least one placement is recording
         "_recording",
-        # Dict of Ethernet (x, y) and the packetGather IPtags
-        "_gatherer_iptags",
-        # Dict of Ethernet (x, y) to the p of the packetGather vertex
-        "_gatherer_cores",
-        # The location where the latest placement json is written
-        "__placement_json",
-        # Properties flag to be passed to Java
-        "_java_properties")
+    )
 
     @classmethod
     def check_java(cls) -> str:
@@ -109,17 +111,17 @@ class JavaCaller(object):
         :raise ConfigurationException: if simple parameter checking fails.
         """
         self._java_call = self.check_java()
-        self._recording: Optional[bool] = None
+        self._recording: bool | None = None
 
         self._find_java_jar()
 
-        self._machine_json_path: Optional[str] = None
-        self.__placement_json: Optional[str] = None
-        self._monitor_cores: Optional[Dict[Chip, int]] = None
-        self._gatherer_iptags: Optional[Dict[Chip, IPTag]] = None
-        self._gatherer_cores: Optional[Dict[Chip, int]] = None
+        self._machine_json_path: str | None = None
+        self.__placement_json: str | None = None
+        self._monitor_cores: dict[Chip, int] | None = None
+        self._gatherer_iptags: dict[Chip, IPTag] | None = None
+        self._gatherer_cores: dict[Chip, int] | None = None
         java_properties = get_config_str_or_none("Java", "java_properties")
-        self._chip_by_ethernet: Optional[Dict[Chip, List[Chip]]] = None
+        self._chip_by_ethernet: dict[Chip, list[Chip]] | None = None
         if java_properties is not None:
             self._java_properties = java_properties.split()
             for _property in self._java_properties:
@@ -178,13 +180,13 @@ class JavaCaller(object):
         Create information describing what's going on with the monitor cores.
         """
         tags = FecDataView.get_tags()
-        self._monitor_cores = dict()
+        self._monitor_cores = {}
         for chip, monitor_core in FecDataView.iterate_monitor_items():
             placement = FecDataView.get_placement_of_vertex(monitor_core)
             self._monitor_cores[chip] = placement.p
 
-        self._gatherer_iptags = dict()
-        self._gatherer_cores = dict()
+        self._gatherer_iptags = {}
+        self._gatherer_cores = {}
         for chip, packet_gather in FecDataView.iterate_gather_items():
             gatherer_tags = tags.get_ip_tags_for_vertex(packet_gather)
             assert gatherer_tags is not None
@@ -285,9 +287,9 @@ class JavaCaller(object):
             "trafficIdentifier": iptag.traffic_identifier}
 
     def _placements_grouped(
-            self, recording_placements: Iterable[Placement]) -> Dict[
-                Chip, Dict[Chip, List[Placement]]]:
-        by_ethernet: Dict[Chip, Dict[Chip, List[Placement]]] = defaultdict(
+            self, recording_placements: Iterable[Placement]) -> dict[
+                Chip, dict[Chip, list[Placement]]]:
+        by_ethernet: dict[Chip, dict[Chip, list[Placement]]] = defaultdict(
             lambda: defaultdict(list))
         machine = FecDataView.get_machine()
         for placement in recording_placements:
@@ -312,7 +314,7 @@ class JavaCaller(object):
         assert self._monitor_cores is not None
 
         placements_by_ethernet = self._placements_grouped(used_placements)
-        json_obj: JsonArray = list()
+        json_obj: JsonArray = []
         for ethernet in self._chip_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
             json_gather: JsonObject = {
@@ -320,7 +322,7 @@ class JavaCaller(object):
                 "y": ethernet.y,
                 "p": self._gatherer_cores[ethernet],
                 "iptag": self._json_iptag(self._gatherer_iptags[ethernet])}
-            json_chips: JsonArray = list()
+            json_chips: JsonArray = []
             for chip in self._chip_by_ethernet[ethernet]:
                 json_chip: JsonObject = {
                     "x": chip.x,
@@ -350,7 +352,7 @@ class JavaCaller(object):
         :param path:
         """
         # Read back the regions
-        json_obj: JsonArray = list()
+        json_obj: JsonArray = []
         for placement in used_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
                 json_p = self._json_placement(placement)

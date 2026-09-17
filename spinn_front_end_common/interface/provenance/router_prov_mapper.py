@@ -15,21 +15,16 @@
 import argparse
 import os
 import sqlite3
+from collections.abc import Iterable
+from contextlib import AbstractContextManager
 from types import ModuleType, TracebackType
 from typing import (
     Any,
-    ContextManager,
-    FrozenSet,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    Type,
+    Literal,
     cast,
 )
 
 import numpy
-from typing_extensions import Literal
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -60,14 +55,14 @@ ROUTER_PLOTTABLES = (
 SINGLE_PLOTNAME = "Plot.png"
 
 
-class Plotter(ContextManager[SQLiteDB]):
+class Plotter(AbstractContextManager[SQLiteDB]):
     """
     Code to plot provenance data from the database
     """
-    __slots__ = ("cmap", "_db", "__have_insertion_order", "__verbose")
+    __slots__ = ("__have_insertion_order", "__verbose", "_db", "cmap")
 
-    __pyplot: Optional[ModuleType] = None
-    __seaborn: Optional[ModuleType] = None
+    __pyplot: ModuleType | None = None
+    __seaborn: ModuleType | None = None
 
     def __init__(self, db_filename: str, verbose: bool = False):
         """
@@ -84,9 +79,9 @@ class Plotter(ContextManager[SQLiteDB]):
     def __enter__(self) -> SQLiteDB:
         return self._db.__enter__()
 
-    def __exit__(self, exc_type: Optional[Type],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, exc_type: type[BaseException] | None,
+                 exc_val: BaseException | None,
+                 exc_tb: TracebackType | None) -> Literal[False]:
         return self._db.__exit__(exc_type, exc_val, exc_tb)
 
     def __do_chip_query(self, description: str) -> Iterable[sqlite3.Row]:
@@ -115,7 +110,7 @@ class Plotter(ContextManager[SQLiteDB]):
             GROUP BY x, y, p
             """, (description, ))
 
-    def get_per_chip_prov_types(self) -> FrozenSet[str]:
+    def get_per_chip_prov_types(self) -> frozenset[str]:
         """
         :returns: A set of the descriptions available at chip level
         """
@@ -127,7 +122,7 @@ class Plotter(ContextManager[SQLiteDB]):
         return frozenset(row["description"]
                          for row in self._db.cursor().execute(query))
 
-    def get_per_chip_prov_details(self, info: str) -> Tuple[
+    def get_per_chip_prov_details(self, info: str) -> tuple[
             str, int, int, numpy.ndarray]:
         """
         Gets the provenance of a per chip basis
@@ -139,8 +134,8 @@ class Plotter(ContextManager[SQLiteDB]):
         data = []
         xs = []
         ys = []
-        src: Optional[str] = None
-        name: Optional[str] = None
+        src: str | None = None
+        name: str | None = None
         for row in self.__do_chip_query("%" + info + "%"):
             if src is None:
                 src = row["source"]
@@ -190,7 +185,7 @@ class Plotter(ContextManager[SQLiteDB]):
             GROUP BY x, y
             """, (description, ))
 
-    def get_per_core_prov_types(self) -> FrozenSet[str]:
+    def get_per_core_prov_types(self) -> frozenset[str]:
         """
         :returns: A set of the descriptions available at core level
         """
@@ -204,7 +199,7 @@ class Plotter(ContextManager[SQLiteDB]):
             cast(str, row["description"])
             for row in self._db.cursor().execute(query))
 
-    def get_sum_chip_prov_details(self, info: str) -> Tuple[
+    def get_sum_chip_prov_details(self, info: str) -> tuple[
             str, int, int, numpy.ndarray]:
         """
         Gets the sum of the provenance
@@ -213,10 +208,10 @@ class Plotter(ContextManager[SQLiteDB]):
             The name of the metadata to sum
         :return: name, max x, max y and data
         """
-        data: List[Tuple[int, int, Any]] = []
-        xs: List[int] = []
-        ys: List[int] = []
-        name: Optional[str] = None
+        data: list[tuple[int, int, Any]] = []
+        xs: list[int] = []
+        ys: list[int] = []
+        name: str | None = None
         for row in self.__do_sum_query("%" + info + "%"):
             if name is None:
                 name = row["description"]
@@ -230,7 +225,7 @@ class Plotter(ContextManager[SQLiteDB]):
         return name.replace("_", " "), max(xs) + 1, max(ys) + 1, ary
 
     @classmethod
-    def __plotter_apis(cls) -> Tuple[ModuleType, ModuleType]:
+    def __plotter_apis(cls) -> tuple[ModuleType, ModuleType]:
         # Import here because otherwise CI fails
         # pylint: disable=import-error,import-outside-toplevel
         if not cls.__pyplot:

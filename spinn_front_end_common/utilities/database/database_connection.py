@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import logging
+from collections.abc import Callable
 from threading import Thread
-from typing import Callable, List, Optional, Tuple
 
 from spinn_utilities.log import FormatAdapter
 
@@ -63,10 +63,10 @@ class DatabaseConnection(UDPConnection):
         "__start_resume_callback")
 
     def __init__(
-            self, start_resume_callback_function: Optional[_CB] = None,
-            stop_pause_callback_function: Optional[_CB] = None,
-            local_host: Optional[str] = None,
-            local_port: Optional[int] = NOTIFY_PORT):
+            self, start_resume_callback_function: _CB | None = None,
+            stop_pause_callback_function: _CB | None = None,
+            local_host: str | None = None,
+            local_port: int | None = NOTIFY_PORT):
         """
         :param start_resume_callback_function:
             A function to be called when the start message has been received.
@@ -85,7 +85,7 @@ class DatabaseConnection(UDPConnection):
         thread = Thread(name=f"SpyNNakerDatabaseConnection:"
                              f"{self.local_ip_address}:{self.local_port}",
                         target=self.__run)
-        self.__database_callbacks: List[_DBCB] = list()
+        self.__database_callbacks: list[_DBCB] = []
         self.__start_resume_callback = start_resume_callback_function
         self.__pause_and_stop_callback = stop_pause_callback_function
         self.__running = False
@@ -142,7 +142,7 @@ class DatabaseConnection(UDPConnection):
             self.__pause_stop()
 
     def __read_db(
-            self, toolchain_address: Tuple[str, int], data: bytes) -> None:
+            self, toolchain_address: tuple[str, int], data: bytes) -> None:
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
@@ -190,7 +190,7 @@ class DatabaseConnection(UDPConnection):
         self.__pause_and_stop_callback()
 
     def __send_command(
-            self, command: CMDS, toolchain_address: Tuple[str, int]) -> None:
+            self, command: CMDS, toolchain_address: tuple[str, int]) -> None:
         self.send_to(EIEIOCommandHeader(command.value).bytestring,
                      toolchain_address)
 

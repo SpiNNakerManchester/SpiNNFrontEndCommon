@@ -14,8 +14,8 @@
 
 import logging
 from collections import deque
+from collections.abc import Iterable
 from threading import Lock
-from typing import Deque, Iterable
 
 from spinn_utilities.log import FormatAdapter
 
@@ -33,32 +33,33 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _N_SEQUENCES = 256
 
 
-class BuffersSentDeque(object):
+class BuffersSentDeque:
     """
     A tracker of buffers sent / to send for a region
     """
 
     __slots__ = (
-        #: The region being managed
-        "_region",
-
         #: A queue of messages sent, ordered by sequence number
         "_buffers_sent",
-
-        #: The current sequence number of the region
-        "_sequence_number",
-
-        #: A lock for the sequence number
-        "_sequence_lock",
 
         #: The last sequence number to be received on the machine
         "_last_received_sequence_number",
 
+        #: The number of sequence numbers allowed in a single transmission
+        "_n_sequences_per_transmission",
+
+        #: The region being managed
+        "_region",
+
         #: True if the stop message has been sent
         "_sent_stop_message",
 
-        #: The number of sequence numbers allowed in a single transmission
-        "_n_sequences_per_transmission")
+        #: A lock for the sequence number
+        "_sequence_lock",
+
+        #: The current sequence number of the region
+        "_sequence_number",
+    )
 
     def __init__(self, region: int, sent_stop_message: bool = False,
                  n_sequences_per_tranmission: int = 64):
@@ -69,7 +70,7 @@ class BuffersSentDeque(object):
             The number of sequences allowed in each transmission set
         """
         self._region = region
-        self._buffers_sent: Deque[HostSendSequencedData] = deque(
+        self._buffers_sent: deque[HostSendSequencedData] = deque(
             maxlen=n_sequences_per_tranmission)
         self._sequence_number = 0
         self._sequence_lock = Lock()

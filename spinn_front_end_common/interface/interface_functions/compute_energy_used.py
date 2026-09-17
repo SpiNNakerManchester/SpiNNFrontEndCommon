@@ -14,7 +14,7 @@
 
 import logging
 from collections import defaultdict
-from typing import Dict, Final, Optional, Tuple, cast
+from typing import Final, cast
 
 import numpy
 
@@ -55,8 +55,8 @@ _US_PER_MS: Final = 1000.0
 _US_PER_SECOND: Final = 1000000.0
 
 
-def compute_energy_used(checkpoint: Optional[int] = None,
-                        n_reset: Optional[int] = None) -> PowerUsed:
+def compute_energy_used(checkpoint: int | None = None,
+                        n_reset: int | None = None) -> PowerUsed:
     """
     This algorithm does the actual work of computing energy used by a
     simulation (or other application) running on SpiNNaker.
@@ -99,8 +99,8 @@ def compute_energy_used(checkpoint: Optional[int] = None,
     machine = FecDataView.get_machine()
     version = FecDataView.get_machine_version()
 
-    active_cores: Dict[Tuple[int, int], int] = defaultdict(int)
-    power_cores: Dict[Tuple[int, int], int] = {}
+    active_cores: dict[tuple[int, int], int] = defaultdict(int)
+    power_cores: dict[tuple[int, int], int] = {}
     n_active_cores = 0
     for pl in FecDataView.iterate_placemements():
         if not isinstance(pl.vertex, AbstractHasAssociatedBinary):
@@ -182,8 +182,8 @@ def _extract_router_packets(
 
 
 def _extract_cores_active_time(
-        checkpoint: Optional[int], active_cores: Dict[Tuple[int, int], int],
-        power_cores: Dict[Tuple[int, int], int],
+        checkpoint: int | None, active_cores: dict[tuple[int, int], int],
+        power_cores: dict[tuple[int, int], int],
         version: AbstractVersion) -> float:
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
 
@@ -217,7 +217,7 @@ def _extract_cores_active_time(
 
 
 def _assume_core_always_active(
-        active_cores: Dict[Tuple[int, int], int],
+        active_cores: dict[tuple[int, int], int],
         execute_on_machine_ms: float) -> float:
     """
     As there are no power monitors assume cores always active

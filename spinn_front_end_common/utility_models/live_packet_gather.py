@@ -13,7 +13,8 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Sequence, Set, Tuple, TypeVar
+from collections.abc import Sequence
+from typing import TypeVar
 
 from spinn_utilities.overrides import overrides
 
@@ -51,9 +52,9 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.__m_vertices_by_ethernet: Dict[
-            Tuple[int, int], LivePacketGatherMachineVertex] = dict()
-        self.__targeted_lpgs: Set[Tuple[
+        self.__m_vertices_by_ethernet: dict[
+            tuple[int, int], LivePacketGatherMachineVertex] = {}
+        self.__targeted_lpgs: set[tuple[
             LivePacketGatherMachineVertex, MachineVertex, str]] = set()
 
     def create_sys_vertices(self, system_placements: Placements) -> None:
@@ -80,12 +81,12 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
         pass
 
     @overrides(AbstractSplitterCommon.get_in_coming_slices)
-    def get_in_coming_slices(self) -> List[Slice]:
+    def get_in_coming_slices(self) -> list[Slice]:
         # There are none!
         return []
 
     @overrides(AbstractSplitterCommon.get_out_going_slices)
-    def get_out_going_slices(self) -> List[Slice]:
+    def get_out_going_slices(self) -> list[Slice]:
         # There are also none (but this should never be a pre-vertex)
         return []
 
@@ -97,7 +98,7 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
     @overrides(AbstractSplitterCommon.get_source_specific_in_coming_vertices)
     def get_source_specific_in_coming_vertices(
             self, source_vertex: ApplicationVertex[MV],
-            partition_id: str) -> Sequence[Tuple[
+            partition_id: str) -> Sequence[tuple[
                 LivePacketGatherMachineVertex,
                 Sequence[ApplicationVertex[MV]]]]:
         # Find the nearest placement for the first machine vertex of the source
@@ -114,7 +115,7 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
         return [(lpg_vertex, [source_vertex])]
 
     @property
-    def targeted_lpgs(self) -> Set[Tuple[
+    def targeted_lpgs(self) -> set[tuple[
             LivePacketGatherMachineVertex, MachineVertex, str]]:
         """
         Which LPG machine vertex is targeted by which machine vertex
@@ -125,19 +126,19 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
         return self.__targeted_lpgs
 
     @overrides(AbstractSplitterCommon.get_out_going_vertices)
-    def get_out_going_vertices(self, partition_id: str) -> List[MachineVertex]:
+    def get_out_going_vertices(self, partition_id: str) -> list[MachineVertex]:
         # There are none!
         return []
 
     @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
     def machine_vertices_for_recording(
-            self, variable_to_record: str) -> List[MachineVertex]:
+            self, variable_to_record: str) -> list[MachineVertex]:
         # Nothing to record here...
         return []
 
     @overrides(AbstractSplitterCommon.reset_called)
     def reset_called(self) -> None:
-        self.__m_vertices_by_ethernet = dict()
+        self.__m_vertices_by_ethernet = {}
         self.__targeted_lpgs = set()
 
 
@@ -148,7 +149,7 @@ class LivePacketGather(ApplicationVertex[LivePacketGatherMachineVertex]):
     __slots__ = ("__params", )
 
     def __init__(self, params: LivePacketGatherParameters,
-                 label: Optional[str] = None):
+                 label: str | None = None):
         """
         :param params: The parameters object
         :param label: An optional label

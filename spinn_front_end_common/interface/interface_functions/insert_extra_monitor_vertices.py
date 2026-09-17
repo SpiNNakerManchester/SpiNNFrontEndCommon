@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, Tuple
 
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -48,9 +47,9 @@ def sample_monitor_vertex() -> ExtraMonitorSupportMachineVertex:
     return ExtraMonitorSupportMachineVertex()
 
 
-def insert_extra_monitor_vertices(placements: Placements) -> Tuple[
-        Dict[Chip, DataSpeedUpPacketGatherMachineVertex],
-        Dict[Chip, ExtraMonitorSupportMachineVertex]]:
+def insert_extra_monitor_vertices(placements: Placements) -> tuple[
+        dict[Chip, DataSpeedUpPacketGatherMachineVertex],
+        dict[Chip, ExtraMonitorSupportMachineVertex]]:
     """
     Inserts the extra monitor vertices into the graph that correspond to
     the extra monitor cores required.
@@ -59,8 +58,8 @@ def insert_extra_monitor_vertices(placements: Placements) -> Tuple[
     :return: mapping from *Ethernet-enabled* chip locations to their gatherer,
         mapping from *all* chip locations to their extra monitor
     """
-    chip_to_gatherer_map = dict()
-    chip_to_monitor_map = dict()
+    chip_to_gatherer_map = {}
+    chip_to_monitor_map = {}
     machine = FecDataView.get_machine()
     ethernet_chips = machine.ethernet_connected_chips
     progress = ProgressBar(

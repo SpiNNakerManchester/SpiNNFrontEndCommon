@@ -15,7 +15,6 @@
 
 import logging
 import os
-from typing import Dict, Optional, Tuple
 
 from spinn_utilities.config_holder import (
     get_config_int,
@@ -106,7 +105,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._buffer_manager = buffer_manager
 
     def increment_current_run_timesteps(
-            self, increment: Optional[int]) -> None:
+            self, increment: int | None) -> None:
         """
         Increment the current_run_timesteps and sets first_machine_time_step.
 
@@ -162,8 +161,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._max_run_time_steps = max_run_time_steps
 
     def set_up_timings(
-            self, simulation_time_step_ms: Optional[float],
-            time_scale_factor: Optional[float]) -> None:
+            self, simulation_time_step_ms: float | None,
+            time_scale_factor: float | None) -> None:
         """
         Set up timings for the simulation.
 
@@ -190,7 +189,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise
 
     def _set_simulation_time_step(
-            self, simulation_time_step_ms: Optional[float]) -> None:
+            self, simulation_time_step_ms: float | None) -> None:
         """
         :param simulation_time_step_ms:
             A specified time step for the simulation in milliseconds.
@@ -201,8 +200,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             simulation_time_step_us = get_config_int(
                 "Machine", "simulation_time_step")
         else:
-            simulation_time_step_us = int(round(
-                simulation_time_step_ms * MICRO_TO_MILLISECOND_CONVERSION))
+            simulation_time_step_us = round(
+                simulation_time_step_ms * MICRO_TO_MILLISECOND_CONVERSION)
 
         if simulation_time_step_us <= 0:
             raise ConfigurationException(
@@ -220,7 +219,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 simulation_time_step_us / MICRO_TO_SECOND_CONVERSION)
 
     def _set_time_scale_factor(
-            self, time_scale_factor: Optional[float]) -> None:
+            self, time_scale_factor: float | None) -> None:
         """
         Set up time_scale_factor.
 
@@ -273,8 +272,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             rounded / MICRO_TO_MILLISECOND_CONVERSION)
 
     def set_system_multicast_routing_data(
-            self, data: Tuple[
-                MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]) -> None:
+            self, data: tuple[
+                MulticastRoutingTables, dict[XY, int], dict[XY, int]]) -> None:
         """
         Sets the system_multicast_routing_data.
 
@@ -296,7 +295,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
 
     def set_fixed_routes(
-            self, fixed_routes: Dict[Tuple[int, int], RoutingEntry]) -> None:
+            self, fixed_routes: dict[tuple[int, int], RoutingEntry]) -> None:
         """
         Sets the routes.
 
@@ -322,7 +321,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         self.__fec_data._next_sync_signal = Signal.SYNC0
 
-    def set_executable_types(self, executable_types: Dict[
+    def set_executable_types(self, executable_types: dict[
             ExecutableType, CoreSubsets]) -> None:
         """
         Sets/ overwrites the executable types
@@ -334,7 +333,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._executable_types = executable_types
 
     def set_database_file_path(
-            self, database_file_path: Optional[str]) -> None:
+            self, database_file_path: str | None) -> None:
         """
         Sets the database_file_path variable. Possibly to `None`.
 
@@ -371,7 +370,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             "gatherer_map must be a dict(Chip, "
             "DataSpeedUpPacketGatherMachineVertex)")
 
-    def set_gatherer_map(self, gatherer_map: Dict[
+    def set_gatherer_map(self, gatherer_map: dict[
             Chip, DataSpeedUpPacketGatherMachineVertex]) -> None:
         """
         Sets the map of Chip to Gatherer Vertices.
@@ -397,7 +396,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             "monitor_map must be a dict(Chip, "
             "ExtraMonitorSupportMachineVertex)")
 
-    def set_monitor_map(self, monitor_map: Dict[
+    def set_monitor_map(self, monitor_map: dict[
             Chip, ExtraMonitorSupportMachineVertex]) -> None:
         """
         Sets the map of Chip to Monitor Vertices.

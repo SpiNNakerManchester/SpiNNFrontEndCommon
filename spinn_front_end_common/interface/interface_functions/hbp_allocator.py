@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from typing import Optional, Tuple, cast
+from typing import cast
 
 import requests
 
@@ -30,14 +30,15 @@ from spinn_front_end_common.data import FecDataView
 
 class _HBPJobController(MachineAllocationController):
     __slots__ = (
+        "_check_lease_url",
         # the URLs to call the HBP system
         "_extend_lease_url",
-        "_check_lease_url",
+        "_machine_name",
+        "_power_on",
         "_release_machine_url",
         "_set_power_url",
         "_where_is_url",
-        "_machine_name",
-        "_power_on")
+    )
 
     _WAIT_TIME_MS = 10000
 
@@ -111,9 +112,9 @@ class _HBPJobController(MachineAllocationController):
         self._power_on = power
 
     @overrides(MachineAllocationController.where_is_machine)
-    def where_is_machine(self, chip_x: int, chip_y: int) -> Tuple[
+    def where_is_machine(self, chip_x: int, chip_y: int) -> tuple[
             int, int, int]:
-        c, f, b = cast(Tuple[int, int, int],
+        c, f, b = cast(tuple[int, int, int],
                        self._where_is(self._machine_name, chip_x, chip_y))
         return (c, f, b)
 
@@ -122,8 +123,8 @@ class _HBPJobController(MachineAllocationController):
         return bool(self._check_lease(self._WAIT_TIME_MS)["allocated"])
 
 
-def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
-        str, Optional[str], MachineAllocationController]:
+def hbp_allocator(total_run_time: float | None) -> tuple[
+        str, str | None, MachineAllocationController]:
     """
     Request a machine from the HBP remote access server that will fit
     a number of chips.
@@ -143,11 +144,11 @@ def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
     hbp_job_controller = _HBPJobController(url, name)
 
     return (
-        name, cast(Optional[str], machine.get("bmpDetails")),
+        name, cast(str | None, machine.get("bmpDetails")),
         hbp_job_controller)
 
 
-def _get_machine(url: str, total_run_time: Optional[float]) -> JsonObject:
+def _get_machine(url: str, total_run_time: float | None) -> JsonObject:
     if FecDataView.has_n_boards_required():
         get_machine_request = requests.get(
             url, params={"nBoards": FecDataView.get_n_boards_required(),

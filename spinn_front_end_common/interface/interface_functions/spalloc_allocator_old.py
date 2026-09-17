@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-from typing import Dict, Optional, Tuple
 
 from spinn_utilities.config_holder import (
     get_config_int,
@@ -83,7 +82,7 @@ class _OldSpallocJobController(MachineAllocationController):
 
     @overrides(MachineAllocationController.where_is_machine)
     def where_is_machine(
-            self, chip_x: int, chip_y: int) -> Tuple[int, int, int]:
+            self, chip_x: int, chip_y: int) -> tuple[int, int, int]:
         return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
 
     @overrides(MachineAllocationController._wait)
@@ -93,9 +92,9 @@ class _OldSpallocJobController(MachineAllocationController):
                 self._state = self._job.wait_for_state_change(self._state)
         except TypeError:
             pass
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             if not self._exited:
-                raise e
+                raise
         return self._state != JobState.destroyed
 
     @overrides(MachineAllocationController._teardown)
@@ -105,8 +104,8 @@ class _OldSpallocJobController(MachineAllocationController):
         super()._teardown()
 
 
-def spalloc_allocate_job_old() -> Tuple[
-        str, Dict[XY, str], MachineAllocationController]:
+def spalloc_allocate_job_old() -> tuple[
+        str, dict[XY, str], MachineAllocationController]:
     """
     Request a machine from an old-style spalloc server that will fit the
     requested number of boards.
@@ -130,7 +129,7 @@ def spalloc_allocate_job_old() -> Tuple[
 
 def _launch_checked_job_old(
         n_boards: int, host: str, port: int, owner: str,
-        machine: Optional[str]) -> Tuple[Job, str, Dict[XY, str]]:
+        machine: str | None) -> tuple[Job, str, dict[XY, str]]:
     logger.info(f"Requesting job with {n_boards} boards")
     avoid_boards = get_config_str_list("Machine", "spalloc_avoid_boards")
     avoid_jobs = []

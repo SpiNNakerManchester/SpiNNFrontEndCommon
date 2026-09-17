@@ -18,21 +18,16 @@ import logging
 import math
 import struct
 import sys
+from collections.abc import Collection, Sequence
 from enum import IntEnum
 from typing import (
     TYPE_CHECKING,
-    Collection,
-    Dict,
     Final,
-    List,
-    Optional,
-    Sequence,
-    Union,
+    TypeGuard,
 )
 
 import numpy
 from numpy.typing import NDArray
-from typing_extensions import TypeGuard
 
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -93,11 +88,11 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from .eieio_parameters import EIEIOParameters
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
-    _SBT: Final['TypeAlias'] = Union[NDArray, List[NDArray]]
-    _SendBufferTimes: TypeAlias = Optional[_SBT]
+    _SBT: Final[TypeAlias] = NDArray | list[NDArray]
+    _SendBufferTimes: TypeAlias = _SBT | None
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -112,7 +107,7 @@ _MAX_OFFSET_DENOMINATOR = 10
 _MAX_OFFSET_MODULO = 1000
 
 
-def is_array_list(value: _SendBufferTimes) -> TypeGuard[List[NDArray]]:
+def is_array_list(value: _SendBufferTimes) -> TypeGuard[list[NDArray]]:
     """
     Whether the send buffer times are a list of arrays (i.e., are 2D).
     Ugly, but we'll have the ugly in one place.
@@ -148,12 +143,23 @@ class ReverseIPTagMulticastSourceMachineVertex(
         array for each key, default disabled)
     """
     __slots__ = (
-        "_reverse_iptags", "_n_keys", "_is_recording",
-        "_first_machine_time_step", "_run_until_timesteps",
-        "_receive_rate", "_receive_sdp_port",
-        "_send_buffer", "_send_buffer_times", "_send_buffers",
-        "_send_buffer_size", "_virtual_key", "_mask", "_prefix",
-        "_prefix_type", "_check_keys")
+        "_check_keys",
+        "_first_machine_time_step",
+        "_is_recording",
+        "_mask",
+        "_n_keys",
+        "_prefix",
+        "_prefix_type",
+        "_receive_rate",
+        "_receive_sdp_port",
+        "_reverse_iptags",
+        "_run_until_timesteps",
+        "_send_buffer",
+        "_send_buffer_size",
+        "_send_buffer_times",
+        "_send_buffers",
+        "_virtual_key",
+    )
 
     class _Regions(IntEnum):
         SYSTEM = 0
@@ -181,12 +187,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _n_data_specs: int = 0
 
     def __init__(
-            self, label: Optional[str],
-            vertex_slice: Optional[Slice] = None,
-            app_vertex: Optional[ReverseIpTagMultiCastSource] = None,
-            n_keys: Optional[int] = None,
+            self, label: str | None,
+            vertex_slice: Slice | None = None,
+            app_vertex: ReverseIpTagMultiCastSource | None = None,
+            n_keys: int | None = None,
             # General fixed parameters from app vertex
-            eieio_params: Optional[EIEIOParameters] = None,
+            eieio_params: EIEIOParameters | None = None,
             # Send buffer parameters
             send_buffer_times: _SendBufferTimes = None):
         """
@@ -213,7 +219,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         super().__init__(label, app_vertex, vertex_slice)
 
-        self._reverse_iptags: List[ReverseIPtagResource] = []
+        self._reverse_iptags: list[ReverseIPtagResource] = []
         self._n_keys = vertex_slice.n_atoms
 
         # Set up for receiving live packets
@@ -227,9 +233,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._receive_sdp_port = eieio_params.receive_sdp_port
 
         # Work out if buffers are being sent
-        self._send_buffer: Optional[BufferedSendingRegion] = None
-        self._first_machine_time_step: Optional[int] = None
-        self._run_until_timesteps: Optional[int] = None
+        self._send_buffer: BufferedSendingRegion | None = None
+        self._first_machine_time_step: int | None = None
+        self._run_until_timesteps: int | None = None
         self._send_buffer_size = 0
         n_buffer_times = 0
         if send_buffer_times is not None:
@@ -246,8 +252,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     " which does not spike", send_buffer_times, vertex_slice)
         if n_buffer_times == 0:
             self._send_buffer_times: _SendBufferTimes = None
-            self._send_buffers: Optional[
-                Dict[int, BufferedSendingRegion]] = None
+            self._send_buffers: dict[int, BufferedSendingRegion] | None = None
         else:
             assert send_buffer_times is not None
             self._install_send_buffer(send_buffer_times)
@@ -257,7 +262,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Sort out the keys to be used
         self._virtual_key = eieio_params.virtual_key
-        self._mask: Optional[int] = None
+        self._mask: int | None = None
         self._prefix = eieio_params.prefix
         self._prefix_type = eieio_params.prefix_type
         self._check_keys = eieio_params.check_keys
@@ -393,7 +398,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @property
     @overrides(MachineVertex.reverse_iptags)
-    def reverse_iptags(self) -> List[ReverseIPtagResource]:
+    def reverse_iptags(self) -> list[ReverseIPtagResource]:
         return self._reverse_iptags
 
     @classmethod
@@ -633,11 +638,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         max_offset = (FecDataView.get_hardware_time_step_us() // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
-            ((int(math.ceil(
+            ((math.ceil(
                 max_offset /
-                ReverseIPTagMulticastSourceMachineVertex._n_vertices)) *
+                ReverseIPTagMulticastSourceMachineVertex._n_vertices) *
               ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
-             int(math.ceil(max_offset))) % _MAX_OFFSET_MODULO)
+             math.ceil(max_offset)) % _MAX_OFFSET_MODULO)
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
@@ -690,7 +695,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return 0
 
     @property
-    def mask(self) -> Optional[int]:
+    def mask(self) -> int | None:
         """
         The mask if calculated
         """
@@ -716,7 +721,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return next(iter(parts))
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
-    def get_recorded_region_ids(self) -> List[int]:
+    def get_recorded_region_ids(self) -> list[int]:
         if not self._is_recording:
             return []
         return [0]
@@ -727,7 +732,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             placement, self._Regions.RECORDING)
 
     @property
-    def send_buffers(self) -> Dict[int, BufferedSendingRegion]:
+    def send_buffers(self) -> dict[int, BufferedSendingRegion]:
         """
         Filled send buffers or an empty dict if there are no send buffers
         """

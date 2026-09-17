@@ -35,7 +35,7 @@ def network_specification() -> None:
             f.write("*** Vertices:\n")
             for vertex in FecDataView.iterate_vertices():
                 _write_report(f, vertex)
-    except IOError:
+    except OSError:
         logger.exception("Generate_placement_reports: Can't open file {}"
                          " for writing.", filename)
 
@@ -57,9 +57,9 @@ def _write_report(f: TextIO, vertex: ApplicationVertex) -> None:
             FecDataView.get_outgoing_edge_partitions_starting_at_vertex(
                 vertex):
         f.write(f"    Partition {partition.identifier}:\n")
-        for edge in partition.edges:
-            f.write(
-                f"        Edge: {edge.label}, "
-                f"From {edge.pre_vertex.label} to {edge.post_vertex.label}, "
-                f"model: {edge.__class__.__name__}\n")
+        f.writelines(
+            f"        Edge: {edge.label}, "
+            f"From {edge.pre_vertex.label} to {edge.post_vertex.label}, "
+            f"model: {edge.__class__.__name__}\n"
+            for edge in partition.edges)
     f.write("\n")

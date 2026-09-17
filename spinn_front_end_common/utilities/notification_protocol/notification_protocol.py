@@ -14,7 +14,6 @@
 
 import logging
 from concurrent.futures import Future, ThreadPoolExecutor, wait
-from typing import List, Optional
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -40,7 +39,7 @@ from spinn_front_end_common.utilities.exceptions import (
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class NotificationProtocol(object):
+class NotificationProtocol:
     """
     The protocol which hand shakes with external devices about the
     database and starting execution.
@@ -64,9 +63,9 @@ class NotificationProtocol(object):
             "Database", "wait_on_confirmation")
         self.__wait_for_read_timeout = get_config_int_or_none(
             "Database", "wait_on_confirmation_timeout")
-        self.__wait_pool: Optional[ThreadPoolExecutor] = \
+        self.__wait_pool: ThreadPoolExecutor | None = \
             ThreadPoolExecutor(max_workers=1)
-        self.__wait_futures: List[Future[None]] = list()
+        self.__wait_futures: list[Future[None]] = []
         self.__sent_visualisation_confirmation = False
         # These connections are not used to talk to SpiNNaker boards
         # but rather to code running on the current host computer
@@ -92,7 +91,7 @@ class NotificationProtocol(object):
                 raise SpinnmanTimeoutException(
                     f"waiting for external sources: {results.not_done}",
                     self.__wait_for_read_timeout)
-        self.__wait_futures = list()
+        self.__wait_futures = []
 
     def send_start_resume_notification(self) -> None:
         """
@@ -161,7 +160,7 @@ class NotificationProtocol(object):
             logger.warning("problem when sending DB notification",
                            exc_info=True)
 
-    def __do_read_notify(self, database_path: Optional[str]) -> None:
+    def __do_read_notify(self, database_path: str | None) -> None:
         # add file path to database into command message.
         message = NotificationProtocolDatabaseLocation(database_path)
 
@@ -208,7 +207,7 @@ class NotificationProtocol(object):
         """
         if self.__wait_pool is not None:
             self.__wait_pool.shutdown()
-            self.__wait_futures = list()
+            self.__wait_futures = []
             self.__wait_pool = None
         for c in self.__database_message_connections:
             c.close()

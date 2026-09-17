@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 @require_subclass(AbstractGeneratesDataSpecification)
-class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
+class AbstractRewritesDataSpecification(metaclass=AbstractBase):
     """
     Indicates an object that allows data to be changed after run,
     and so can rewrite the data specification.

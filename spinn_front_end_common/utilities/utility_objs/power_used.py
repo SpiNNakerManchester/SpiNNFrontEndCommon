@@ -14,19 +14,30 @@
 from typing import Any
 
 
-class PowerUsed(object):
+class PowerUsed:
     """
     Describes the power used by a simulation.
     """
 
     __slots__ = (
-        "__n_chips", "__n_active_chips", "__n_cores", "__n_active_cores",
-        "__n_boards", "__n_frames",
-        "__exec_time_s", "__mapping_time_s", "__ds_time_s",
-        "__saving_time_s", "__other_time_s",
-        "__exec_energy_j", "__exec_energy_cores_j", "__exec_energy_boards_j",
-        "__mapping_energy_j", "__ds_energy_j", "__saving_energy_j",
+        "__ds_energy_j",
+        "__ds_time_s",
+        "__exec_energy_boards_j",
+        "__exec_energy_cores_j",
+        "__exec_energy_j",
+        "__exec_time_s",
+        "__mapping_energy_j",
+        "__mapping_time_s",
+        "__n_active_chips",
+        "__n_active_cores",
+        "__n_boards",
+        "__n_chips",
+        "__n_cores",
+        "__n_frames",
         "__other_energy_j",
+        "__other_time_s",
+        "__saving_energy_j",
+        "__saving_time_s",
         )
 
     def __init__(

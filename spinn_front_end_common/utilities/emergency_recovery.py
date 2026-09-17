@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from typing import List, Optional, Tuple
 
 from spinn_utilities.log import FormatAdapter
 
@@ -45,18 +44,18 @@ def _emergency_state_check() -> None:
                 "unexpected core states (rte={}, wdog={})",
                 rte_count, watchdog_count)
             logger.warning(states.get_status_string())
-    except Exception:
+    except Exception:  # NOQA
         logger.exception(
             "Could not read the status count - going to individual cores")
         machine = FecDataView.get_machine()
         infos = CPUInfos()
-        errors: List[Tuple[int, int, int]] = list()
+        errors: list[tuple[int, int, int]] = []
         for chip in machine.chips:
             for p in chip.all_processor_ids:
                 try:
                     txrx.add_cpu_information_from_core(
                         infos, chip.x, chip.y, p, _bad_states)
-                except Exception:
+                except Exception: # NOQA
                     errors.append((chip.x, chip.y, p))
         if len(infos):
             logger.warning(infos.get_status_string())
@@ -69,7 +68,7 @@ def _emergency_state_check() -> None:
 
 
 def _emergency_iobuf_extract(
-        executable_targets: Optional[ExecutableTargets] = None) -> None:
+        executable_targets: ExecutableTargets | None = None) -> None:
     """
     :param executable_targets:
         The specific targets to extract, or `None` for all

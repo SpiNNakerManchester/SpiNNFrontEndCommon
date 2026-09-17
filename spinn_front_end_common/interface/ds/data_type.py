@@ -13,13 +13,15 @@
 # limitations under the License.
 
 import struct
+from collections.abc import Callable
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, cast
 
 import numpy as np
 from numpy import uint32
 from numpy.typing import NDArray
+from typing_extensions import Self
 
 
 class DataType(Enum):
@@ -49,9 +51,9 @@ class DataType(Enum):
     UINT8 = (
         0,
         1,
-        Decimal("0"),
-        Decimal("255"),
-        Decimal("1"),
+        Decimal(0),
+        Decimal(255),
+        Decimal(1),
         "B",
         False,
         int,
@@ -61,9 +63,9 @@ class DataType(Enum):
     UINT16 = (
         1,
         2,
-        Decimal("0"),
-        Decimal("65535"),
-        Decimal("1"),
+        Decimal(0),
+        Decimal(65535),
+        Decimal(1),
         "H",
         False,
         int,
@@ -73,9 +75,9 @@ class DataType(Enum):
     UINT32 = (
         2,
         4,
-        Decimal("0"),
-        Decimal("4294967295"),
-        Decimal("1"),
+        Decimal(0),
+        Decimal(4294967295),
+        Decimal(1),
         "I",
         False,
         int,
@@ -85,9 +87,9 @@ class DataType(Enum):
     UINT64 = (
         3,
         8,
-        Decimal("0"),
-        Decimal("18446744073709551615"),
-        Decimal("1"),
+        Decimal(0),
+        Decimal(18446744073709551615),
+        Decimal(1),
         "Q",
         False,
         int,
@@ -97,9 +99,9 @@ class DataType(Enum):
     INT8 = (
         4,
         1,
-        Decimal("-128"),
-        Decimal("127"),
-        Decimal("1"),
+        Decimal(-128),
+        Decimal(127),
+        Decimal(1),
         "b",
         False,
         int,
@@ -109,9 +111,9 @@ class DataType(Enum):
     INT16 = (
         5,
         2,
-        Decimal("-32768"),
-        Decimal("32767"),
-        Decimal("1"),
+        Decimal(-32768),
+        Decimal(32767),
+        Decimal(1),
         "h",
         False,
         int,
@@ -121,9 +123,9 @@ class DataType(Enum):
     INT32 = (
         6,
         4,
-        Decimal("-2147483648"),
-        Decimal("2147483647"),
-        Decimal("1"),
+        Decimal(-2147483648),
+        Decimal(2147483647),
+        Decimal(1),
         "i",
         False,
         int,
@@ -133,9 +135,9 @@ class DataType(Enum):
     INT64 = (
         7,
         8,
-        Decimal("-9223372036854775808"),
-        Decimal("9223372036854775807"),
-        Decimal("1"),
+        Decimal(-9223372036854775808),
+        Decimal(9223372036854775807),
+        Decimal(1),
         "q",
         False,
         int,
@@ -145,9 +147,9 @@ class DataType(Enum):
     U88 = (
         8,
         2,
-        Decimal("0"),
+        Decimal(0),
         Decimal("255.99609375"),
-        Decimal("256"),
+        Decimal(256),
         "H",
         True,
         None,
@@ -157,9 +159,9 @@ class DataType(Enum):
     U1616 = (
         9,
         4,
-        Decimal("0"),
+        Decimal(0),
         Decimal("65535.9999847"),
-        Decimal("65536"),
+        Decimal(65536),
         "I",
         True,
         None,
@@ -170,9 +172,9 @@ class DataType(Enum):
     U3232 = (
         10,
         8,
-        Decimal("0"),
+        Decimal(0),
         Decimal("4294967295.99999999976716935634613037109375"),
-        Decimal("4294967296"),
+        Decimal(4294967296),
         "Q",
         True,
         None,
@@ -182,9 +184,9 @@ class DataType(Enum):
     S87 = (
         11,
         2,
-        Decimal("-256"),
+        Decimal(-256),
         Decimal("255.9921875"),
-        Decimal("128"),
+        Decimal(128),
         "h",
         True,
         None,
@@ -194,9 +196,9 @@ class DataType(Enum):
     S1615 = (
         12,
         4,
-        Decimal("-65536"),
+        Decimal(-65536),
         Decimal("65535.999969482421875"),
-        Decimal("32768"),
+        Decimal(32768),
         "i",
         True,
         None,
@@ -207,9 +209,9 @@ class DataType(Enum):
     S3231 = (
         13,
         8,
-        Decimal("-4294967296"),
+        Decimal(-4294967296),
         Decimal("4294967295.9999999995343387126922607421875"),
-        Decimal("2147483648"),
+        Decimal(2147483648),
         "q",
         True,
         None,
@@ -221,7 +223,7 @@ class DataType(Enum):
         4,
         Decimal("-3.4028234e38"),
         Decimal("3.4028234e38"),
-        Decimal("1"),
+        Decimal(1),
         "f",
         False,
         float,
@@ -234,7 +236,7 @@ class DataType(Enum):
         8,
         Decimal("-1.7976931348623157e+308"),
         Decimal("1.7976931348623157e+308"),
-        Decimal("1"),
+        Decimal(1),
         "d",
         False,
         float,
@@ -244,9 +246,9 @@ class DataType(Enum):
     U08 = (
         16,
         1,
-        Decimal("0"),
+        Decimal(0),
         Decimal("0.99609375"),
-        Decimal("256"),
+        Decimal(256),
         "B",
         True,
         None,
@@ -256,9 +258,9 @@ class DataType(Enum):
     U016 = (
         17,
         2,
-        Decimal("0"),
+        Decimal(0),
         Decimal("0.999984741211"),
-        Decimal("65536"),
+        Decimal(65536),
         "H",
         True,
         None,
@@ -268,9 +270,9 @@ class DataType(Enum):
     U032 = (
         18,
         4,
-        Decimal("0"),
+        Decimal(0),
         Decimal("0.99999999976716935634613037109375"),
-        Decimal("4294967296"),
+        Decimal(4294967296),
         "I",
         True,
         None,
@@ -281,9 +283,9 @@ class DataType(Enum):
     U064 = (
         19,
         8,
-        Decimal("0"),
+        Decimal(0),
         Decimal("0.9999999999999999999457898913757247782996273599565029"),
-        Decimal("18446744073709551616"),
+        Decimal(18446744073709551616),
         "Q",
         True,
         None,
@@ -293,9 +295,9 @@ class DataType(Enum):
     S07 = (
         20,
         1,
-        Decimal("-1"),
+        Decimal(-1),
         Decimal("0.9921875"),
-        Decimal("128"),
+        Decimal(128),
         "b",
         True,
         None,
@@ -305,9 +307,9 @@ class DataType(Enum):
     S015 = (
         21,
         2,
-        Decimal("-1"),
+        Decimal(-1),
         Decimal("0.999969482421875"),
-        Decimal("32768"),
+        Decimal(32768),
         "h",
         True,
         None,
@@ -317,9 +319,9 @@ class DataType(Enum):
     S031 = (
         22,
         4,
-        Decimal("-1"),
+        Decimal(-1),
         Decimal("0.99999999976716935634613037109375"),
-        Decimal("2147483648"),
+        Decimal(2147483648),
         "i",
         True,
         None,
@@ -330,9 +332,9 @@ class DataType(Enum):
     S063 = (
         23,
         8,
-        Decimal("-1"),
+        Decimal(-1),
         Decimal("0.9999999999999999998915797827514495565992547199130058"),
-        Decimal("9223372036854775808"),
+        Decimal(9223372036854775808),
         "q",
         True,
         None,
@@ -341,8 +343,8 @@ class DataType(Enum):
 
     def __new__(cls, value: int, size: int, min_val: Decimal, max_val: Decimal,
                 scale: Decimal, struct_encoding: str, apply_scale: bool,
-                force_cast: Optional[Callable[[Any], int]],
-                numpy_typename: type, _doc: str) -> 'DataType':
+                force_cast: Callable[[Any], int] | None,
+                numpy_typename: type, _doc: str) -> Self:
         obj = object.__new__(cls)
         obj._value_ = value
         obj.__doc__ = _doc
@@ -351,7 +353,7 @@ class DataType(Enum):
     def __init__(
             self, value: int, size: int, min_val: Decimal, max_val: Decimal,
             scale: Decimal, struct_encoding: str, apply_scale: bool,
-            force_cast: Optional[Callable[[Any], int]],
+            force_cast: Callable[[Any], int] | None,
             numpy_typename: type, _doc: str) -> None:
         """
         :param value: ID for the enum
@@ -403,7 +405,7 @@ class DataType(Enum):
         """
         return self._max
 
-    def check_value(self, value: Union[int, float]) -> None:
+    def check_value(self, value: float) -> None:
         """
         Check the value against the allowed min and max
 
@@ -439,7 +441,7 @@ class DataType(Enum):
         """
         return self._numpy_typename
 
-    def encode_as_int(self, value: Union[int, float]) -> int:
+    def encode_as_int(self, value: float) -> int:
         """
         Returns the value as an integer, according to this type.
 
@@ -456,12 +458,12 @@ class DataType(Enum):
                 raise ValueError(
                     f"value {value:f} cannot be converted to {self.__doc__}"
                     ": out of range")
-            return int(round(Decimal(str(value)) * self._scale))
+            return round(Decimal(str(value)) * self._scale)
         if self._force_cast is not None:
             return self._force_cast(value)
         return cast(int, value)
 
-    def encode_as_numpy_int(self, value: Union[int, float]) -> uint32:
+    def encode_as_numpy_int(self, value: float) -> uint32:
         """
         Returns the value as a numpy integer, according to this type.
 
@@ -492,7 +494,7 @@ class DataType(Enum):
                 uint32)
         return np.array(array)
 
-    def as_bytes(self, value: Union[int, float]) -> bytes:
+    def as_bytes(self, value: float) -> bytes:
         """
         Encode the Python value as bytes with NO padding.
 
@@ -508,7 +510,7 @@ class DataType(Enum):
         """
         return array / float(self._scale)
 
-    def decode_array(self, values: Union[NDArray, bytes]) -> NDArray:
+    def decode_array(self, values: NDArray | bytes) -> NDArray:
         """
         Decodes a byte array into numpy array of this type.
 
