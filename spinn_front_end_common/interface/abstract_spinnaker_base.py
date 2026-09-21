@@ -978,9 +978,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Do the various functions to write metadata to the SQLite files.
         """
-        with FecTimer("Record vertex labels to database", TimerWork.REPORT):
-            with BufferDatabase() as db:
-                db.store_vertex_labels()
+        with FecTimer("Record vertex labels to database",
+                      TimerWork.REPORT), BufferDatabase() as db:
+            db.store_vertex_labels()
 
     @final
     def _execute_system_multicast_routing_generator(self) -> None:

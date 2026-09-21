@@ -95,10 +95,10 @@ class TestDataSpecification(unittest.TestCase):
     def test_none_ds_vertex(self, _: str, ver_num: str) -> None:
         set_config("Machine", "version", ver_num)
         vertex = SimpleMachineVertex(None)
-        with DsSqlliteDatabase() as db:
-            with self.assertRaises(AttributeError):
-                DataSpecificationGenerator(
-                    0, 1, 2, vertex, db)  # type: ignore[arg-type]
+        with (DsSqlliteDatabase() as db,
+              self.assertRaises(AttributeError)):
+            DataSpecificationGenerator(
+                0, 1, 2, vertex, db)  # type: ignore[arg-type]
 
     @parameterized.expand(FOUR_PLUS_BOARD_TYPES)
     def test_bad_x_y_ds_vertex(self, _: str, ver_num: str) -> None:
@@ -106,10 +106,9 @@ class TestDataSpecification(unittest.TestCase):
         vertex = _TestVertexWithBinary(
             "off_board__system", ExecutableType.SYSTEM)
         width, height = FecDataView.get_machine_version().board_shape
-        with DsSqlliteDatabase() as db:
-            with self.assertRaises(KeyError):
-                # x, y to high
-                DataSpecificationGenerator(width, height, 2, vertex, db)
+        with DsSqlliteDatabase() as db, self.assertRaises(KeyError):
+            # x, y to high
+            DataSpecificationGenerator(width, height, 2, vertex, db)
 
     @parameterized.expand(FOUR_PLUS_BOARD_TYPES)
     def test_repeat_x_y_ds_vertex(self, _: str, ver_num: str) -> None:
@@ -157,9 +156,9 @@ class TestDataSpecification(unittest.TestCase):
         FecDataView.get_machine().add_chip(bad)
         vertex = _TestVertexWithBinary(
             "bad", ExecutableType.SYSTEM)
-        with DsSqlliteDatabase() as db:
-            with self.assertRaises(IntegrityError):
-                DataSpecificationGenerator(width, height, 2, vertex, db)
+        with (DsSqlliteDatabase() as db,
+              self.assertRaises(IntegrityError)):
+            DataSpecificationGenerator(width, height, 2, vertex, db)
 
     @parameterized.expand(FOUR_PLUS_BOARD_TYPES)
     def test_reserve_memory_region(self, _: str, ver_num: str) -> None:
