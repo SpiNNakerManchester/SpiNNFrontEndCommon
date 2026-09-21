@@ -96,7 +96,7 @@ class TestWriteJson(unittest.TestCase):
             return
         if json1.keys() != json2.keys():
             raise AssertionError(f"Keys differ {json1.keys()} {json2.keys()}")
-        for key in json1.keys():
+        for key in json1:
             if key == "chips":
                 chips1 = json1[key]
                 chips2 = json2[key]
