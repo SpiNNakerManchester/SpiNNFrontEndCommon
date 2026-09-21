@@ -221,13 +221,12 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_double_with(self) -> None:
         # Confirm that using the database twice goes boom
-        with GlobalProvenance() as db1:
-            with GlobalProvenance() as db2:
-                # A read does not lock the database
-                db1.get_timer_provenance("test")
-                db2.get_timer_provenance("test")
-                # A write does
-                db1.insert_version("a", "foo")
-                with self.assertRaises(OperationalError):
-                    # So a write from a different transaction goes boom
-                    db2.insert_version("b", "bar")
+        with GlobalProvenance() as db1, GlobalProvenance() as db2:
+            # A read does not lock the database
+            db1.get_timer_provenance("test")
+            db2.get_timer_provenance("test")
+            # A write does
+            db1.insert_version("a", "foo")
+            with self.assertRaises(OperationalError):
+                # So a write from a different transaction goes boom
+                db2.insert_version("b", "bar")

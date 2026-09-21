@@ -336,10 +336,10 @@ class TestLoadDataSpecification(unittest.TestCase):
             # x, y, p, region, ref, ref_label
             self.assertEqual([(1, 1, 0, 0, 1, "")], bad)
 
-        with DsSqlliteDatabase() as db:
-            # DataSpecException because the reference is on a different chip
-            with self.assertRaises(DataSpecException):
-                load_application_data_specs()
+        # DataSpecException because the reference is on a different chip
+        with (DsSqlliteDatabase() as db,
+              self.assertRaises(DataSpecException)):
+            load_application_data_specs()
 
 
 if __name__ == "__main__":
