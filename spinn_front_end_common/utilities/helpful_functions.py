@@ -197,7 +197,7 @@ def determine_flow_states(
     """
     expected_start_states: dict[ExecutableType, Collection[CPUState]] = {}
     expected_end_states: dict[ExecutableType, Collection[CPUState]] = {}
-    for start_type in executable_types.keys():
+    for start_type in executable_types:
         # cores that ignore all control and are just running
         if start_type == ExecutableType.RUNNING:
             expected_start_states[ExecutableType.RUNNING] = (
