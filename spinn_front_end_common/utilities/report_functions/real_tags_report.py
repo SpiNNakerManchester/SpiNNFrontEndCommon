@@ -31,7 +31,7 @@ def tags_from_machine_report() -> None:
     with open(filename, "w", encoding="utf-8") as f:
         f.write("Tags actually read off the machine\n")
         f.write("==================================\n")
-        f.writelines(f"{repr(tag)}\n" for tag in tags)
+        f.writelines(f"{tag!r}\n" for tag in tags)
 
 
 def _get_tags() -> Iterable[Any]:

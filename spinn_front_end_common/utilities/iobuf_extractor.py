@@ -269,7 +269,7 @@ class IOBufExtractor:
                         core_subset.x, core_subset.y, p,
                         "failed to retrieve iobufs from "
                         f"{core_subset.x},{core_subset.y},{p}; "
-                        f"{str(e)}"))
+                        f"{e}"))
         return io_buffers
 
     @staticmethod
