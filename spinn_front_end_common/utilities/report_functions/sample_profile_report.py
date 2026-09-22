@@ -143,9 +143,8 @@ def extract_core_activity(
     """
     chip_activity: dict[tuple[int, int], numpy.ndarray] = {}
     with BufferDatabase() as buff_db:
-        for (x, y) in power_cores:
-            # Find the core that was used on this chip for power monitoring
-            p, _active_cores = power_cores[(x, y)]
+        # Find the core that was used on this chip for power monitoring
+        for (x, y), (p, _active_cores) in power_cores.items():
             # Get data from the power monitor core on this chip
             data, _missing = buff_db.get_recording(x, y, p, RECORDING_CHANNEL)
             results = numpy.frombuffer(data, dtype=numpy.uint32).reshape(
