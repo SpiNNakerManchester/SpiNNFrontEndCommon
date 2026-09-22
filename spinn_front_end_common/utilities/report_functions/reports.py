@@ -787,7 +787,7 @@ def generate_binaries_report() -> None:
 
             except Exception as ex:  # pylint: disable=broad-except
                 f.write(str(ex))
-                logger.exception(f"generate_binaries_report error: {ex}")
+                logger.exception("generate_binaries_report error")
     except OSError:
         logger.exception("generate_binaries_report: Can't open file"
                          " {} for writing.", file_name)

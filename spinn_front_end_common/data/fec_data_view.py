@@ -184,10 +184,9 @@ class _FecDataModel:
         if self._notification_protocol:
             try:
                 self._notification_protocol.close()
-            except Exception as ex:  # pylint: disable=broad-except
+            except Exception:  # pylint: disable=broad-except
                 logger.exception(
-                    f"Error {ex} when closing the notification_protocol "
-                    f"ignored")
+                    "Error when closing the notification_protocol ignored")
         self._notification_protocol = None
 
 
