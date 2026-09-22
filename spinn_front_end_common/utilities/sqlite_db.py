@@ -227,7 +227,7 @@ class SQLiteDB:
             if "'" in value:  # Safety check!
                 raise PacmanValueError(
                     "DB pragma values must not contain single quotes")
-            self.__db.executescript(f"PRAGMA {pragma_name}='{str(value)}';")
+            self.__db.executescript(f"PRAGMA {pragma_name}='{value}';")
         else:
             raise TypeError("can only set pragmas to bool, int or str")
 
