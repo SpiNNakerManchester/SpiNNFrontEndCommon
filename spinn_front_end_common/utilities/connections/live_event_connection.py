@@ -587,8 +587,8 @@ class LiveEventConnection(DatabaseConnection):
             else:
                 self.__handle_unknown_key(key)
 
-        for time in key_times_labels:
-            for label_id in key_times_labels[time]:
+        for time, key_times_label in key_times_labels.items():
+            for label_id in key_times_label:
                 label = self.__rcv_label(label_id)
                 callbacks = self.__time_event_callbacks[label_id]
                 if len(callbacks) == 0:
@@ -600,7 +600,7 @@ class LiveEventConnection(DatabaseConnection):
                     if use_atom:
                         c_back(label, time, atoms_times_labels[time][label_id])
                     else:
-                        c_back(label, time, key_times_labels[time][label_id])
+                        c_back(label, time, key_times_label[label_id])
 
     def __handle_no_time_packet(self, packet: EIEIODataMessage) -> None:
         while packet.is_next_element:

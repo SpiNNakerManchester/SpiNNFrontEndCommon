@@ -222,8 +222,7 @@ class _SystemMulticastRoutingGenerator:
 
         # accumulate links to make a broadcast
         links_per_chip = defaultdict(list)
-        for chip_key in tree:
-            chip, link = tree[chip_key]
+        for chip, link in tree.values():
             links_per_chip[chip].append(link)
 
         # add broadcast router timeout keys
