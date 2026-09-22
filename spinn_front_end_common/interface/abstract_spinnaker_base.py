@@ -509,8 +509,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if get_config_str("Mode", "mode") != "Debug":
                 try:
                     self.stop()
-                except Exception as stop_e:
-                    logger.exception(f"Error {stop_e} when attempting to stop")
+                except Exception:
+                    logger.exception("Error when attempting to stop")
             self._data_writer.shut_down()
             raise
 
@@ -2124,9 +2124,9 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _recover_from_error(self, exception: Exception) -> None:
         try:
             self.__recover_from_error(exception)
-        except Exception as rec_e:
+        except Exception:
             logger.exception(
-                f"Error {rec_e} when attempting to recover from error")
+                "Error when attempting to recover from error")
 
     def __recover_from_error(self, exception: Exception) -> None:
         # if exception has an exception, print to system
@@ -2193,8 +2193,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 placements_provenance_gatherer(
                     finished_placements.n_placements,
                     finished_placements.placements)
-            except Exception as pro_e:
-                logger.exception(f"Could not read provenance due to {pro_e}")
+            except Exception:
+                logger.exception("Could not read provenance")
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor()
