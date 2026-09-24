@@ -539,7 +539,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             else:
                 n_bytes = min(n_bytes, len(data))
         elif not isinstance(data, (bytes, bytearray)):
-            raise ValueError("that type of data not supported")
+            raise TypeError("that type of data not supported")
         if n_bytes is None:
             n_bytes = len(data)
         if n_bytes < 0:
