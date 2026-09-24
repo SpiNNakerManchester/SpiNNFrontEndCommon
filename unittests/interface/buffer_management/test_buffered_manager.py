@@ -246,7 +246,7 @@ class TestBufferedDatabase(unittest.TestCase):
         bm = BufferManager()
         try:
             bm.get_recording(p, 0)
-            raise Exception("Exception should have been raised")
+            raise AssertionError("Exception should have been raised")
         except BufferedRegionNotPresent as ex:
             self.assertIn("should have record region", str(ex))
 
@@ -259,6 +259,6 @@ class TestBufferedDatabase(unittest.TestCase):
         bm = BufferManager()
         try:
             bm.get_recording(p, 1)
-            raise Exception("Exception should have been raised")
+            raise AssertionError("Exception should have been raised")
         except BufferedRegionNotPresent as ex:
             self.assertIn("not set to record or download region 1", str(ex))
