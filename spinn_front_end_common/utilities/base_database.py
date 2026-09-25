@@ -15,7 +15,6 @@
 import os
 import sqlite3
 import time
-from typing import TypeAlias
 
 from spinn_utilities.config_holder import get_report_path
 
