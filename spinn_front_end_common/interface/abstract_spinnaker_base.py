@@ -28,7 +28,6 @@ from collections.abc import Iterable, Sequence
 from threading import Condition
 from types import FrameType
 from typing import (
-    TypeVar,
     cast,
     final,
 )
