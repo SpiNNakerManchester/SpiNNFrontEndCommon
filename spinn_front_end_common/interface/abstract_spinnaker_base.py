@@ -28,7 +28,6 @@ from collections.abc import Iterable, Sequence
 from threading import Condition
 from types import FrameType
 from typing import (
-    TypeVar,
     cast,
     final,
 )
@@ -204,7 +203,6 @@ except ImportError:
     scipy_version = "scipy not installed"
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_T = TypeVar("_T")
 
 SHARED_PATH = re.compile(r".*\/shared\/([^\/]+)")
 SHARED_GROUP = 1

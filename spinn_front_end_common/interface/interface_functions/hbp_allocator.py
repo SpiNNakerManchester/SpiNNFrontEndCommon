@@ -136,8 +136,7 @@ def hbp_allocator(total_run_time: float | None) -> tuple[
     """
 
     url = get_config_str("Machine", "remote_spinnaker_url")
-    if url.endswith("/"):
-        url = url[:-1]
+    url = url.removesuffix("/")
 
     machine = _get_machine(url, total_run_time)
     name = cast(str, machine["machineName"])

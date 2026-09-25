@@ -15,7 +15,6 @@
 import os
 import sqlite3
 import time
-from typing import TypeAlias
 
 from spinn_utilities.config_holder import get_report_path
 
@@ -24,7 +23,6 @@ from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 _DDL_FILE = os.path.join(os.path.dirname(__file__),
                          "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
-_SqliteTypes: TypeAlias = str | int | float | bytes | None
 
 
 def _timestamp() -> int:
