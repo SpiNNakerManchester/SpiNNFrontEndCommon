@@ -204,7 +204,6 @@ except ImportError:
     scipy_version = "scipy not installed"
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_T = TypeVar("_T")
 
 SHARED_PATH = re.compile(r".*\/shared\/([^\/]+)")
 SHARED_GROUP = 1
