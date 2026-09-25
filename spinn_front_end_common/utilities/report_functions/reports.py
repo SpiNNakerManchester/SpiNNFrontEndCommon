@@ -584,12 +584,11 @@ def generate_routing_table(routing_table: AbstractMulticastRoutingTable,
                 f'{"":-<10s} {"":-<7s} {"":-<14s}\n')
             line_format = "{: >5d} {}\n"
 
-            entry_count = 0
             n_defaultable = 0
-            for entry in routing_table.multicast_routing_entries:
+            for entry_count, entry in enumerate(
+                    routing_table.multicast_routing_entries):
                 index = entry_count & _LOWER_16_BITS
                 entry_str = line_format.format(index, format_route(entry))
-                entry_count += 1
                 if entry.defaultable:
                     n_defaultable += 1
                 f.write(entry_str)
