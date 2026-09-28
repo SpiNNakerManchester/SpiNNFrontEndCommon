@@ -116,8 +116,7 @@ class DatabaseConnection(UDPConnection):
             while self.__running:
                 self.__process_run_cycle(timeout=3)
         except Exception as e:
-            logger.error("Failure processing database callback",
-                         exc_info=True)
+            logger.exception("Failure processing database callback")
             raise SpinnmanIOException(str(e)) from e
         finally:
             self.__running = False
