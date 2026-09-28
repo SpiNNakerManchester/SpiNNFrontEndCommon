@@ -20,9 +20,9 @@ from spinn_utilities.typing.coords import XYP
 
 from spinn_front_end_common.utilities.base_database import (
     BaseDatabase,
-    _SqliteTypes,
 )
 
+_SqliteTypes: TypeAlias = str | float | bytes | None
 #: Basic types supported natively by SQLite
 _MonitorItem: TypeAlias = tuple[int, int, _SqliteTypes]
 _RouterItem: TypeAlias = tuple[int, int, int]
