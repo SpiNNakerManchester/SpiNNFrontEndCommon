@@ -224,7 +224,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO remove this when the data change only algorithms are done
         "_multicast_routes_loaded",
 
-        #
         "_raise_keyboard_interrupt",
 
         # Set when run_until_complete is specified by the user
