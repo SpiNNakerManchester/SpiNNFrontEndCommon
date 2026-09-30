@@ -29,6 +29,7 @@ from spinn_utilities.config_holder import (
     get_config_str_or_none,
     get_report_path,
 )
+from spinn_utilities.local_time_zone import LOCAL
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.typing.json import JsonArray, JsonObject
 
@@ -399,7 +400,7 @@ class JavaCaller:
             if process.returncode != 0:
                 logger.error("Java Call resulted in an error")
                 updated = datetime.datetime.fromtimestamp(
-                    os.path.getmtime(self._jar_file))
+                    os.path.getmtime(self._jar_file), tz=LOCAL)
                 updated_str = (
                     f"{updated.year:04}-{updated.month:02}-{updated.day:02}"
                     f"-{updated.hour:02}-{updated.minute:02}")
