@@ -27,6 +27,7 @@ from typing import (
 )
 
 from spinn_utilities.config_holder import get_config_bool, get_report_path
+from spinn_utilities.local_time_zone import LOCAL
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.typing.coords import XY
@@ -547,12 +548,12 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         destination = FecDataView.get_chip_at(x, y)
         # start time recording
-        start = datetime.datetime.now()
+        start = datetime.datetime.now(tz=LOCAL)
         # send data
         self._send_data_via_extra_monitors(
             destination, base_address, data[offset:n_bytes + offset])
         # end time recording
-        end = datetime.datetime.now()
+        end = datetime.datetime.now(tz=LOCAL)
 
         if VERIFY_SENT_DATA:
             original_data = bytes(data[offset:n_bytes + offset])

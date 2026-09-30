@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from sqlite3 import Row
 
 from spinn_utilities.config_holder import get_timestamp_path
+from spinn_utilities.local_time_zone import LOCAL
 from spinn_utilities.log import FormatAdapter
 
 from spinn_front_end_common.data import FecDataView
@@ -175,7 +176,7 @@ class GlobalProvenance(SQLiteDB):
         Stores log messages into the database
         """
         if timestamp is None:
-            timestamp = datetime.now()
+            timestamp = datetime.now(tz=LOCAL)
         self.cursor().execute(
             """
             INSERT INTO p_log_provenance(
