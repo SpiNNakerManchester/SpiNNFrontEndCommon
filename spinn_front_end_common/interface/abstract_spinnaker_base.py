@@ -28,7 +28,6 @@ from collections.abc import Iterable, Sequence
 from threading import Condition
 from types import FrameType
 from typing import (
-    TypeVar,
     cast,
     final,
 )
@@ -204,7 +203,6 @@ except ImportError:
     scipy_version = "scipy not installed"
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_T = TypeVar("_T")
 
 SHARED_PATH = re.compile(r".*\/shared\/([^\/]+)")
 SHARED_GROUP = 1
@@ -226,7 +224,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO remove this when the data change only algorithms are done
         "_multicast_routes_loaded",
 
-        #
         "_raise_keyboard_interrupt",
 
         # Set when run_until_complete is specified by the user

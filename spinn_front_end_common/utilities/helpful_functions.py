@@ -279,7 +279,7 @@ def get_defaultable_source_id(entry: MulticastRoutingEntry) -> int:
     :return: return the source value
     """
     if entry.defaultable:
-        return (list(entry.link_ids)[0] + 3) % 6
+        return (next(iter(entry.link_ids)) + 3) % 6
     elif entry.link_ids:
-        return list(entry.link_ids)[0]
+        return next(iter(entry.link_ids))
     return 0

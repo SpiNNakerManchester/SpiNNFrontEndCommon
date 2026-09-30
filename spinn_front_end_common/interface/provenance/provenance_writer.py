@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+from typing import TypeAlias
 
 from spinn_utilities.config_holder import (
     get_config_bool,
@@ -23,9 +24,9 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import (
     BaseDatabase,
-    _SqliteTypes,
 )
 
+_SqliteTypes: TypeAlias = str | int | float | bytes | None
 logger = FormatAdapter(logging.getLogger(__name__))
 
 

@@ -20,11 +20,11 @@ from spinn_utilities.typing.coords import XYP
 
 from spinn_front_end_common.utilities.base_database import (
     BaseDatabase,
-    _SqliteTypes,
+    SqliteTypes,
 )
 
 #: Basic types supported natively by SQLite
-_MonitorItem: TypeAlias = tuple[int, int, _SqliteTypes]
+_MonitorItem: TypeAlias = tuple[int, int, SqliteTypes]
 _RouterItem: TypeAlias = tuple[int, int, int]
 
 
@@ -61,8 +61,8 @@ class ProvenanceReader(BaseDatabase):
         super().__init__(provenance_data_path, read_only=True,
                          row_factory=None, text_factory=None)
 
-    def run_query(self, query: str, params: Iterable[_SqliteTypes] = ()
-                  ) -> list[Sequence[_SqliteTypes]]:
+    def run_query(self, query: str, params: Iterable[SqliteTypes] = ()
+                  ) -> list[Sequence[SqliteTypes]]:
         """
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection.
