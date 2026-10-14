@@ -30,18 +30,21 @@ from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
 from pacman.model.resources import AbstractSDRAM, VariableSDRAM
 
-from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification,
-    AbstractHasAssociatedBinary,
-)
+from spinn_front_end_common.abstract_models. \
+    abstract_generates_data_specification import (
+        AbstractGeneratesDataSpecification,
+    )
+from spinn_front_end_common.abstract_models. \
+    abstract_has_associated_binary import AbstractHasAssociatedBinary
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import (
     recording_utilities,
 )
-from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost,
+from spinn_front_end_common.interface.buffer_management.buffer_models. \
+    abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
+from spinn_front_end_common.interface.ds.data_specification_generator import (
+    DataSpecificationGenerator,
 )
-from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array,
 )

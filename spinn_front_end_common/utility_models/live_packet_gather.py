@@ -32,9 +32,8 @@ from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement,
 )
-from spinn_front_end_common.utilities.utility_objs import (
-    LivePacketGatherParameters,
-)
+from spinn_front_end_common.utilities.utility_objs. \
+    live_packet_gather_parameters import LivePacketGatherParameters
 
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 
