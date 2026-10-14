@@ -29,16 +29,21 @@ from spinn_machine.version.abstract_version import (
 
 from spinnman.model.enums.executable_type import ExecutableType
 
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface. \
-    buffer_management.storage_objects import BufferDatabase
-from spinn_front_end_common.interface.provenance import (
+from spinn_front_end_common.abstract_models. \
+    abstract_has_associated_binary import AbstractHasAssociatedBinary
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.interface.buffer_management.storage_objects. \
+    buffer_database import BufferDatabase
+from spinn_front_end_common.interface.provenance.global_provenance import (
     GlobalProvenance,
+)
+from spinn_front_end_common.interface.provenance.provenance_reader import (
     ProvenanceReader,
+)
+from spinn_front_end_common.interface.provenance.timer_category import (
     TimerCategory,
 )
-from spinn_front_end_common.utilities.utility_objs import PowerUsed
+from spinn_front_end_common.utilities.utility_objs.power_used import PowerUsed
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
         RECORDING_CHANNEL,

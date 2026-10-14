@@ -18,7 +18,7 @@ from spinnman.model.enums import SDP_PORTS
 
 from pacman.utilities.utility_calls import md5
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 
 def get_simulation_header_array(binary_file_name: str) -> list[int]:

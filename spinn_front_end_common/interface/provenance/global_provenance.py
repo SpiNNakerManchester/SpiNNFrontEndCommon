@@ -23,7 +23,7 @@ from spinn_utilities.config_holder import get_timestamp_path
 from spinn_utilities.local_time_zone import LOCAL
 from spinn_utilities.log import FormatAdapter
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.provenance.timer_work import TimerWork
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION,

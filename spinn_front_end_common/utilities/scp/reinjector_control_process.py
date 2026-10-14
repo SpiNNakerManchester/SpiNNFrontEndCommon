@@ -21,17 +21,31 @@ from spinn_machine import Chip, CoreSubset, CoreSubsets
 
 from spinnman.processes import AbstractMultiConnectionProcess
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.utility_objs. \
-    extra_monitor_scp_messages import (
+    extra_monitor_scp_messages.clear_reinjection_queue_message import (
         ClearReinjectionQueueMessage,
+    )
+from spinn_front_end_common.utilities.utility_objs. \
+    extra_monitor_scp_messages.get_reinjection_status_message import (
         GetReinjectionStatusMessage,
         GetReinjectionStatusMessageResponse,
+    )
+from spinn_front_end_common.utilities.utility_objs. \
+    extra_monitor_scp_messages.reset_counters_message import (
         ResetCountersMessage,
+    )
+from spinn_front_end_common.utilities.utility_objs. \
+    extra_monitor_scp_messages.set_reinjection_packet_types_message import (
         SetReinjectionPacketTypesMessage,
+    )
+from spinn_front_end_common.utilities.utility_objs. \
+    extra_monitor_scp_messages.set_router_timeout_message import (
         SetRouterTimeoutMessage,
     )
+from spinn_front_end_common.utilities.utility_objs.reinjection_status import (
+    ReInjectionStatus,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

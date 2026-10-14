@@ -27,7 +27,7 @@ from spinnman.model.enums import CPUState, ExecutableType, UserRegister
 
 from pacman.model.routing_tables import AbstractMulticastRoutingTable
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.constants import COMPRESSOR_SDRAM_TAG
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.helpful_functions import (
