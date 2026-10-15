@@ -199,29 +199,45 @@ from spinn_front_end_common.interface.provenance.timer_category import (
     TimerCategory,
 )
 from spinn_front_end_common.interface.provenance.timer_work import TimerWork
-from spinn_front_end_common.interface.splitter_selectors import (
-    splitter_selector,
-)
+from spinn_front_end_common.interface.splitter_selectors. \
+    splitter_selector import splitter_selector
 from spinn_front_end_common.utilities.database.database_updater import (
     DatabaseUpdater,
 )
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
-from spinn_front_end_common.utilities.report_functions import (
-    EnergyReport,
-    board_chip_report,
-    drift_report,
-    fixed_route_from_machine_report,
-    generate_routing_compression_checker_report,
-    memory_map_on_host_chip_report,
-    memory_map_on_host_report,
-    network_specification,
-    tags_from_machine_report,
-    write_json_machine,
-    write_json_placements,
-    write_json_routing_tables,
-    write_sample_profile_report,
-)
+from spinn_front_end_common.utilities.report_functions. \
+    board_chip_report import board_chip_report
+from spinn_front_end_common.utilities.report_functions. \
+    drift_report import drift_report
+from spinn_front_end_common.utilities.report_functions. \
+    energy_report import EnergyReport
+from spinn_front_end_common.utilities.report_functions. \
+    fixed_route_from_machine_report import fixed_route_from_machine_report
+from spinn_front_end_common.utilities.report_functions. \
+    memory_map_on_host_chip_report import (
+        memory_map_on_host_chip_report,
+    )
+from spinn_front_end_common.utilities.report_functions. \
+    memory_map_on_host_report import (
+        memory_map_on_host_report,
+    )
+from spinn_front_end_common.utilities.report_functions. \
+    network_specification import network_specification
+from spinn_front_end_common.utilities.report_functions. \
+    real_tags_report import tags_from_machine_report
+from spinn_front_end_common.utilities.report_functions. \
+    routing_compression_report import (
+        generate_routing_compression_checker_report,
+    )
+from spinn_front_end_common.utilities.report_functions. \
+    sample_profile_report import write_sample_profile_report
+from spinn_front_end_common.utilities.report_functions. \
+    write_json_machine import write_json_machine
+from spinn_front_end_common.utilities.report_functions. \
+    write_json_placements import write_json_placements
+from spinn_front_end_common.utilities.report_functions. \
+    write_json_routing_tables import write_json_routing_tables
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_binaries_report,
     generate_comparison_router_report,
