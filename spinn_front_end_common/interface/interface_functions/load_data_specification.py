@@ -24,8 +24,10 @@ from spinn_utilities.progress_bar import ProgressBar
 
 from spinnman.model.enums import UserRegister
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.interface.ds.ds_sqllite_database import (
+    DsSqlliteDatabase,
+)
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_BYTE_SIZE,
     APPDATA_MAGIC_NUM,

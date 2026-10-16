@@ -18,11 +18,11 @@ from spinn_utilities.progress_bar import ProgressBar
 
 from pacman.model.placements import Placement
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.profiling import (
-    AbstractHasProfileData,
-    ProfileData,
-)
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.interface.profiling. \
+    abstract_has_profile_data import AbstractHasProfileData
+from spinn_front_end_common.interface.profiling. \
+    profile_data import ProfileData
 
 _FMT_A = "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
 _FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"

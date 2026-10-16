@@ -23,11 +23,14 @@ from spinn_utilities.progress_bar import ProgressBar
 
 from pacman.model.graphs.machine import MachineVertex
 
-from spinn_front_end_common.abstract_models import (
-    AbstractSupportsDatabaseInjection,
+from spinn_front_end_common.abstract_models. \
+    abstract_supports_database_injection import (
+        AbstractSupportsDatabaseInjection,
+    )
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.utilities.database.database_writer import (
+    DatabaseWriter,
 )
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.database import DatabaseWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

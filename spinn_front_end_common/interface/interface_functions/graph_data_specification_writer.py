@@ -22,13 +22,19 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.placements import Placement
 from pacman.model.resources import ConstantSDRAM, MultiRegionSDRAM
 
-from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification,
-    AbstractRewritesDataSpecification,
-)
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.ds import (
+from spinn_front_end_common.abstract_models. \
+    abstract_generates_data_specification import (
+        AbstractGeneratesDataSpecification,
+    )
+from spinn_front_end_common.abstract_models. \
+    abstract_rewrites_data_specification import (
+        AbstractRewritesDataSpecification,
+    )
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.interface.ds.data_specification_generator import (
     DataSpecificationGenerator,
+)
+from spinn_front_end_common.interface.ds.ds_sqllite_database import (
     DsSqlliteDatabase,
 )
 from spinn_front_end_common.utilities.exceptions import (

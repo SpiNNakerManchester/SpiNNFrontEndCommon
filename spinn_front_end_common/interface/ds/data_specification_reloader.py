@@ -15,7 +15,7 @@
 
 from spinn_utilities.overrides import overrides
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 from .data_specification_generator import DataSpecificationBase

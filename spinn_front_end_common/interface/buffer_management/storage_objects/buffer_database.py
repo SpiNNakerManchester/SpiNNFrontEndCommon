@@ -17,7 +17,7 @@ from sqlite3 import Binary, IntegrityError
 
 from spinn_utilities.config_holder import get_config_bool
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000

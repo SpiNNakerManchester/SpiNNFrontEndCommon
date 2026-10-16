@@ -22,7 +22,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState, ExecutableType
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableFailedToStopException,
 )

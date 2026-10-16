@@ -42,7 +42,7 @@ from spinn_front_end_common.interface.interface_functions.\
         sample_monitor_vertex,
         sample_speedup_vertex,
     )
-from spinn_front_end_common.interface.provenance import LogStoreDB
+from spinn_front_end_common.interface.provenance.log_store_db import LogStoreDB
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))

@@ -46,32 +46,44 @@ from pacman.model.resources import (
 )
 from pacman.utilities.utility_calls import get_keys
 
-from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification,
-    AbstractHasAssociatedBinary,
-    AbstractSupportsDatabaseInjection,
-)
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface. \
-    buffer_management.buffer_models import (
-        AbstractReceiveBuffersToHost,
-        AbstractSendsBuffersFromHost,
+from spinn_front_end_common.abstract_models. \
+    abstract_generates_data_specification import (
+        AbstractGeneratesDataSpecification,
     )
-from spinn_front_end_common.interface. \
-    buffer_management.storage_objects import BufferedSendingRegion
+from spinn_front_end_common.abstract_models. \
+    abstract_has_associated_binary import AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models. \
+    abstract_supports_database_injection import (
+        AbstractSupportsDatabaseInjection,
+    )
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management. \
     recording_utilities import (
         get_recording_data_constant_size,
         get_recording_header_array,
         get_recording_header_size,
     )
+from spinn_front_end_common.interface.buffer_management.buffer_models. \
+    abstract_receive_buffers_to_host import (
+        AbstractReceiveBuffersToHost,
+    )
+from spinn_front_end_common.interface.buffer_management.buffer_models. \
+    abstract_sends_buffers_from_host import (
+        AbstractSendsBuffersFromHost,
+    )
+from spinn_front_end_common.interface.buffer_management.storage_objects. \
+    buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import get_n_bytes
-from spinn_front_end_common.interface.ds import DataSpecificationGenerator
-from spinn_front_end_common.interface.provenance import (
-    ProvenanceWriter,
-    ProvidesProvenanceDataFromMachineImpl,
+from spinn_front_end_common.interface.ds.data_specification_generator import (
+    DataSpecificationGenerator,
 )
+from spinn_front_end_common.interface.provenance. \
+    provenance_writer import ProvenanceWriter
+from spinn_front_end_common.interface.provenance. \
+    provides_provenance_data_from_machine_impl import (
+        ProvidesProvenanceDataFromMachineImpl,
+    )
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array,
 )
