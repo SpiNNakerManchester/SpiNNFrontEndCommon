@@ -32,6 +32,6 @@ class TestImportChecker(unittest.TestCase):
         unittest_dir = os.path.dirname(abs_class_file)
         repo_dir = os.path.dirname(unittest_dir)
         code_dir = os.path.join(repo_dir, "spinn_front_end_common")
-        checker = ImportChecker(code_dir, ["common_model_binaries"])
+        checker = ImportChecker(code_dir)
         self.assertEqual(checker.check_dir(), 0,
                          "Checking for imports from init files")
