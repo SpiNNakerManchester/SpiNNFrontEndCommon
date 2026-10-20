@@ -24,10 +24,11 @@ from spinn_machine.version.abstract_version import AbstractVersion
 
 from spinnman.model.enums.executable_type import ExecutableType
 
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models. \
+    abstract_has_associated_binary import AbstractHasAssociatedBinary
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management\
-    .storage_objects import BufferDatabase
+    .storage_objects.buffer_database import BufferDatabase
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
         RECORDING_CHANNEL,

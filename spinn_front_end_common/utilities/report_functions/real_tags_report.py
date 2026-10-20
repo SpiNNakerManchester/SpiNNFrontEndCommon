@@ -16,7 +16,7 @@ from collections.abc import Iterable
 
 from spinn_utilities.config_holder import get_report_path
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 _REPORT_FILENAME = "tags_on_machine.txt"
 

@@ -39,17 +39,25 @@ from spinnman.messages.eieio.data_messages import EIEIODataMessage
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface. \
-    buffer_management.storage_objects import (
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.interface.buffer_management. \
+    buffer_models.abstract_receive_buffers_to_host import (
+        AbstractReceiveBuffersToHost,
+    )
+from spinn_front_end_common.interface.buffer_management. \
+    buffer_models.abstract_sends_buffers_from_host import (
+        AbstractSendsBuffersFromHost,
+    )
+from spinn_front_end_common.interface.buffer_management. \
+    storage_objects.buffer_database import (
         BufferDatabase,
+    )
+from spinn_front_end_common.interface.buffer_management. \
+    storage_objects.buffers_sent_deque import (
         BuffersSentDeque,
     )
-from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost,
-    AbstractReceiveRegionsToHost,
-    AbstractSendsBuffersFromHost,
-)
+from spinn_front_end_common.interface.buffer_management.buffer_models. \
+    abstract_receive_regions_to_host import AbstractReceiveRegionsToHost
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import (
     BufferedRegionNotPresent,

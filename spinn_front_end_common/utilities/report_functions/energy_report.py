@@ -18,7 +18,7 @@ from typing import TextIO
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 
-from spinn_front_end_common.utilities.utility_objs import PowerUsed
+from spinn_front_end_common.utilities.utility_objs.power_used import PowerUsed
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

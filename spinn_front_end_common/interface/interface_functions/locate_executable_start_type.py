@@ -20,8 +20,9 @@ from spinnman.model.enums import ExecutableType
 
 from pacman.model.placements import Placement
 
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.abstract_models. \
+    abstract_has_associated_binary import AbstractHasAssociatedBinary
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 
 def locate_executable_start_type() -> dict[ExecutableType, CoreSubsets]:

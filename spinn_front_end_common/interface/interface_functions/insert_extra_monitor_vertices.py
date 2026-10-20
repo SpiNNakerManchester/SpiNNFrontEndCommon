@@ -18,14 +18,18 @@ from spinn_machine import Chip
 
 from pacman.model.placements import Placement, Placements
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement,
 )
-from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex,
-    ExtraMonitorSupportMachineVertex,
-)
+from spinn_front_end_common.utility_models. \
+    data_speed_up_packet_gatherer_machine_vertex import (
+        DataSpeedUpPacketGatherMachineVertex,
+    )
+from spinn_front_end_common.utility_models. \
+    extra_monitor_support_machine_vertex import (
+        ExtraMonitorSupportMachineVertex,
+    )
 
 
 def sample_speedup_vertex() -> DataSpeedUpPacketGatherMachineVertex:

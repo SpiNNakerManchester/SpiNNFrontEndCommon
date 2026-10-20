@@ -28,7 +28,7 @@ from pacman.model.routing_tables import (
     UnCompressedMulticastRoutingTable,
 )
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 # ADDRESS_KEY, DATA_KEY, BOUNDARY_KEY
 N_KEYS_PER_PARTITION_ID = 8

@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocol,
-)
+from spinn_front_end_common.utilities.notification_protocol. \
+    notification_protocol import NotificationProtocol
 
 
 def create_notification_protocol() -> NotificationProtocol:

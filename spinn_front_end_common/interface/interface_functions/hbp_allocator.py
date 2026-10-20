@@ -25,7 +25,7 @@ from spinnman.spalloc import MachineAllocationController
 
 from pacman.exceptions import PacmanConfigurationException
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 
 class _HBPJobController(MachineAllocationController):

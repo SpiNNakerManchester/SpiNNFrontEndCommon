@@ -14,8 +14,10 @@
 
 import re
 
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.utility_objs import PowerUsed
+from spinn_front_end_common.interface.provenance.provenance_writer import (
+    ProvenanceWriter,
+)
+from spinn_front_end_common.utilities.utility_objs.power_used import PowerUsed
 
 #: The simple properties of PowerUsed object to be reported
 _BASIC_PROPERTIES = (

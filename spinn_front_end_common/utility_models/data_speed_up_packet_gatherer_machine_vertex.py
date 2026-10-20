@@ -48,16 +48,22 @@ from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
 from pacman.model.resources import ConstantSDRAM, IPtagResource
 
-from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification,
-    AbstractHasAssociatedBinary,
+from spinn_front_end_common.abstract_models. \
+    abstract_generates_data_specification import (
+        AbstractGeneratesDataSpecification,
+    )
+from spinn_front_end_common.abstract_models. \
+    abstract_has_associated_binary import AbstractHasAssociatedBinary
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.interface.ds.data_specification_generator import (
+    DataSpecificationGenerator,
 )
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.ds import DataSpecificationGenerator
-from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine,
-    ProvenanceWriter,
-)
+from spinn_front_end_common.interface.provenance. \
+    abstract_provides_provenance_data_from_machine import (
+        AbstractProvidesProvenanceDataFromMachine,
+    )
+from spinn_front_end_common.interface.provenance. \
+    provenance_writer import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_KB,
     BYTES_PER_WORD,
@@ -70,12 +76,16 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset,
     n_word_struct,
 )
-from spinn_front_end_common.utilities.scp import ReinjectorControlProcess
+from spinn_front_end_common.utilities.scp.reinjector_control_process import (
+    ReinjectorControlProcess,
+)
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset,
     retarget_tag,
 )
-from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
+from spinn_front_end_common.utilities.utility_objs.reinjection_status import (
+    ReInjectionStatus,
+)
 
 if TYPE_CHECKING:
     from .extra_monitor_support_machine_vertex import (
