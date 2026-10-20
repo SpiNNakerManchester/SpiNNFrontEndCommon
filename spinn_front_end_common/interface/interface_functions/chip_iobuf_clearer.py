@@ -14,8 +14,10 @@
 
 from spinnman.model.enums import ExecutableType
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.utilities.scp.clear_iobuf_process import (
+    ClearIOBUFProcess,
+)
 
 
 def chip_io_buf_clearer() -> None:

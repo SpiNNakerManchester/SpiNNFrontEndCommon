@@ -44,7 +44,7 @@ from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     get_app_partitions,
 )
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 from .router_summary import RouterSummary
 

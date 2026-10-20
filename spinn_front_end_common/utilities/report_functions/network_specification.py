@@ -20,7 +20,7 @@ from spinn_utilities.log import FormatAdapter
 
 from pacman.model.graphs.application import ApplicationVertex
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

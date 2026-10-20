@@ -21,9 +21,10 @@ from spinn_utilities.progress_bar import ProgressBar
 
 from pacman.model.placements import Placement
 
-from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine,
-)
+from spinn_front_end_common.interface.provenance. \
+    abstract_provides_provenance_data_from_machine import (
+        AbstractProvidesProvenanceDataFromMachine,
+    )
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
