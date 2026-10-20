@@ -22,7 +22,6 @@ from collections.abc import Iterable
 from enum import Enum, IntEnum
 from typing import (
     TYPE_CHECKING,
-    Any,
     BinaryIO,
 )
 
@@ -500,7 +499,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                              time_diff.total_seconds() * 1000000)
         megabits = (data_size * 8.0) / (1024 * BYTES_PER_KB)
         if time_took_ms == 0:
-            mbs: Any = "unknown, below threshold"
+            mbs: object = "unknown, below threshold"
         else:
             mbs = megabits / (float(time_took_ms) / 100000.0)
 
