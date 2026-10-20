@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from collections.abc import Iterable
-from typing import Any
 
 from spinn_utilities.config_holder import get_report_path
 
@@ -34,7 +33,7 @@ def tags_from_machine_report() -> None:
         f.writelines(f"{tag!r}\n" for tag in tags)
 
 
-def _get_tags() -> Iterable[Any]:
+def _get_tags() -> Iterable[object]:
     try:
         return FecDataView.get_transceiver().get_tags()
     except Exception as e:  # NOQA
