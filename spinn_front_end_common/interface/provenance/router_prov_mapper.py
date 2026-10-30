@@ -19,7 +19,6 @@ from collections.abc import Iterable
 from contextlib import AbstractContextManager
 from types import ModuleType, TracebackType
 from typing import (
-    Any,
     Literal,
     cast,
 )
@@ -208,7 +207,7 @@ class Plotter(AbstractContextManager[SQLiteDB]):
             The name of the metadata to sum
         :return: name, max x, max y and data
         """
-        data: list[tuple[int, int, Any]] = []
+        data: list[tuple[int, int, object]] = []
         xs: list[int] = []
         ys: list[int] = []
         name: str | None = None

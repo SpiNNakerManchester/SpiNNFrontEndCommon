@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections.abc import Sequence
-from typing import Any, TextIO
+from typing import TextIO
 
 import numpy
 
@@ -61,7 +61,7 @@ class DataSpecificationBase(metaclass=AbstractBase):
         self._region_num: int | None = None
         self._size: int | None = None
 
-    def _report(self, *args: Any) -> None:
+    def _report(self, *args: object) -> None:
         if self._report_writer is not None:
             text = "".join(
                 (repr(arg) if isinstance(arg, bytes) else str(arg))

@@ -19,7 +19,6 @@ import struct
 from collections.abc import Collection, Iterable
 from typing import (
     TYPE_CHECKING,
-    Any,
 )
 
 from spinn_utilities.log import FormatAdapter
@@ -183,7 +182,7 @@ def get_ethernet_chip(machine: Machine, board_address: str) -> Chip:
 
 
 def determine_flow_states(
-        executable_types: dict[ExecutableType, Any],
+        executable_types: dict[ExecutableType, object],
         no_sync_changes: int) -> tuple[
             dict[ExecutableType, Collection[CPUState]],
             dict[ExecutableType, Collection[CPUState]]]:

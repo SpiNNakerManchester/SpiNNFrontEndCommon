@@ -14,7 +14,7 @@
 
 import logging
 from collections.abc import Callable
-from typing import Any, TypeAlias
+from typing import TypeAlias
 
 import numpy
 
@@ -43,7 +43,7 @@ from spinn_front_end_common.utilities.emergency_recovery import (
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_Writer: TypeAlias = Callable[[int, int, int, bytearray | bytes], Any]
+_Writer: TypeAlias = Callable[[int, int, int, bytearray | bytes], object]
 
 MONITOR_CUTOFF = 12800  # 50 packets of 256 bytes
 
