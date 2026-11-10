@@ -14,7 +14,7 @@
 
 import logging
 from collections.abc import Callable
-from typing import Any, TypeAlias
+from typing import TypeAlias
 
 import numpy
 
@@ -24,8 +24,10 @@ from spinn_utilities.progress_bar import ProgressBar
 
 from spinnman.model.enums import UserRegister
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.interface.ds.ds_sqllite_database import (
+    DsSqlliteDatabase,
+)
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_BYTE_SIZE,
     APPDATA_MAGIC_NUM,
@@ -41,7 +43,7 @@ from spinn_front_end_common.utilities.emergency_recovery import (
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_Writer: TypeAlias = Callable[[int, int, int, bytearray | bytes], Any]
+_Writer: TypeAlias = Callable[[int, int, int, bytearray | bytes], object]
 
 MONITOR_CUTOFF = 12800  # 50 packets of 256 bytes
 

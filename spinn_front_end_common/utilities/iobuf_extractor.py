@@ -32,7 +32,7 @@ from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.model.io_buffer import IOBuffer
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset,
 )

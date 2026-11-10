@@ -39,7 +39,7 @@ from spinnman.utilities.utility_functions import (
 
 from pacman.model.placements import Placements
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE,
     APP_PTR_TABLE_REGION_BYTE_SIZE,

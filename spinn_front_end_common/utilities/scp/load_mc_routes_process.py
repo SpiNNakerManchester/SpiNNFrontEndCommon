@@ -18,8 +18,11 @@ from spinnman.messages.scp.impl import CheckOKResponse
 from spinnman.processes import AbstractMultiConnectionProcess
 
 from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_messages import (
+    extra_monitor_scp_messages.load_application_mc_routes_message import (
         LoadApplicationMCRoutesMessage,
+    )
+from spinn_front_end_common.utilities.utility_objs.\
+    extra_monitor_scp_messages.load_system_mc_routes_message import (
         LoadSystemMCRoutesMessage,
     )
 

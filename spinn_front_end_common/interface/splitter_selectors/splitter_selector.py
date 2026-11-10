@@ -25,7 +25,8 @@ from pacman.model.partitioner_splitters import (
     SplitterOneAppOneMachine,
 )
 
-from spinn_front_end_common.utility_models import ReverseIpTagMultiCastSource
+from spinn_front_end_common.utility_models. \
+    reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

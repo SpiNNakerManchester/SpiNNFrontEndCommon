@@ -19,7 +19,7 @@ from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_machine import Machine, Router
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 
 def board_chip_report() -> None:

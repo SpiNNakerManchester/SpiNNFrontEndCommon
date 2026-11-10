@@ -35,16 +35,22 @@ from pacman.model.graphs.application.abstract import (
 from pacman.model.graphs.machine import MachineVertex
 from pacman.utilities.utility_calls import get_keys
 
-from spinn_front_end_common.abstract_models import (
-    AbstractSupportsDatabaseInjection,
+from spinn_front_end_common.abstract_models. \
+    abstract_supports_database_injection import (
+        AbstractSupportsDatabaseInjection,
+    )
+from spinn_front_end_common.abstract_models.has_custom_atom_key_map import (
     HasCustomAtomKeyMap,
+)
+from spinn_front_end_common.abstract_models.live_output_device import (
     LiveOutputDevice,
 )
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from spinn_front_end_common.utility_models import (
+from spinn_front_end_common.utility_models. \
+    live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
+from spinn_front_end_common.utility_models.live_packet_gather import (
     LivePacketGather,
-    LivePacketGatherMachineVertex,
 )
 
 if TYPE_CHECKING:

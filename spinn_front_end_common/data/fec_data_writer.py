@@ -35,20 +35,24 @@ from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.routing_tables import MulticastRoutingTables
 
-from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.buffer_management. \
+    buffer_manager import BufferManager
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION,
     MICRO_TO_SECOND_CONVERSION,
 )
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocol,
-)
-from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex,
-    ExtraMonitorSupportMachineVertex,
-)
+from spinn_front_end_common.utilities.notification_protocol. \
+    notification_protocol import NotificationProtocol
+from spinn_front_end_common.utility_models. \
+    data_speed_up_packet_gatherer_machine_vertex import (
+        DataSpeedUpPacketGatherMachineVertex,
+    )
+from spinn_front_end_common.utility_models. \
+    extra_monitor_support_machine_vertex import (
+        ExtraMonitorSupportMachineVertex,
+    )
 
 from .fec_data_view import FecDataView, _FecDataModel
 

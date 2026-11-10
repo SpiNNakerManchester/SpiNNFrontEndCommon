@@ -719,9 +719,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if lpg_vertex is None:
             # pylint: disable=import-outside-toplevel
             # UGLY import due to circular reference
-            from spinn_front_end_common.utility_models import (
-                LivePacketGather as LPG,
-            )
+            from spinn_front_end_common.utility_models. \
+                live_packet_gather import LivePacketGather as LPG
             lpg_vertex = LPG(
                 live_packet_gatherer_params, live_packet_gatherer_params.label)
             cls.__fec_data._live_packet_recorder_params[

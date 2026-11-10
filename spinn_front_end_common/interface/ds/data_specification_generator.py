@@ -16,11 +16,16 @@ from typing import TextIO, cast
 
 from spinn_utilities.overrides import overrides
 
-from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification,
-    AbstractHasAssociatedBinary,
-    AbstractRewritesDataSpecification,
-)
+from spinn_front_end_common.abstract_models. \
+    abstract_generates_data_specification import (
+        AbstractGeneratesDataSpecification,
+    )
+from spinn_front_end_common.abstract_models. \
+    abstract_has_associated_binary import AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models. \
+    abstract_rewrites_data_specification import (
+        AbstractRewritesDataSpecification,
+    )
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 

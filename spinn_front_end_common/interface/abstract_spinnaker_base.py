@@ -100,85 +100,144 @@ from spalloc_client import (  # type: ignore[import]
     __version__ as spalloc_version,
 )
 
-from spinn_front_end_common import __version__ as fec_version
 from spinn_front_end_common import common_model_binaries
-from spinn_front_end_common.abstract_models import (
-    AbstractVertexWithEdgeToDependentVertices,
-)
+from spinn_front_end_common._version import __version__ as fec_version
+from spinn_front_end_common.abstract_models. \
+    abstract_vertex_with_dependent_vertices import (
+        AbstractVertexWithEdgeToDependentVertices,
+    )
 from spinn_front_end_common.data.fec_data_view import FecDataView
-from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.interface.config_handler import ConfigHandler
-from spinn_front_end_common.interface.interface_functions import (
-    add_command_senders,
-    application_finisher,
-    application_runner,
-    chip_io_buf_clearer,
-    chip_io_buf_extractor,
-    chip_provenance_updater,
-    chip_runtime_updater,
-    compute_energy_used,
-    create_notification_protocol,
-    database_interface,
-    energy_provenance_reporter,
-    graph_binary_gatherer,
-    graph_data_specification_writer,
-    hbp_allocator,
-    insert_chip_power_monitors,
-    insert_extra_monitor_vertices,
-    load_app_images,
-    load_application_data_specs,
-    load_fixed_routes,
-    load_sys_images,
-    load_system_data_specs,
-    locate_executable_start_type,
-    placements_provenance_gatherer,
-    profile_data_gatherer,
-    read_routing_tables_from_machine,
-    reload_dsg_regions,
-    router_provenance_gatherer,
-    routing_table_loader,
-    sdram_outgoing_partition_allocator,
-    spalloc_allocate_job_old,
-    split_lpg_vertices,
-    system_multicast_routing_generator,
-    tags_loader,
+from spinn_front_end_common.interface.buffer_management.buffer_manager import (
+    BufferManager,
 )
+from spinn_front_end_common.interface.buffer_management.storage_objects. \
+    buffer_database import BufferDatabase
+from spinn_front_end_common.interface.config_handler import ConfigHandler
+from spinn_front_end_common.interface.interface_functions. \
+    application_finisher import application_finisher
+from spinn_front_end_common.interface.interface_functions. \
+    application_runner import application_runner
+from spinn_front_end_common.interface.interface_functions. \
+    chip_iobuf_clearer import chip_io_buf_clearer
+from spinn_front_end_common.interface.interface_functions. \
+    chip_iobuf_extractor import chip_io_buf_extractor
+from spinn_front_end_common.interface.interface_functions. \
+    chip_provenance_updater import chip_provenance_updater
+from spinn_front_end_common.interface.interface_functions. \
+    chip_runtime_updater import chip_runtime_updater
+from spinn_front_end_common.interface.interface_functions. \
+    command_sender_adder import add_command_senders
+from spinn_front_end_common.interface.interface_functions. \
+    compute_energy_used import compute_energy_used
+from spinn_front_end_common.interface.interface_functions. \
+    create_notification_protocol import create_notification_protocol
+from spinn_front_end_common.interface.interface_functions. \
+    database_interface import database_interface
+from spinn_front_end_common.interface.interface_functions. \
+    dsg_region_reloader import reload_dsg_regions
+from spinn_front_end_common.interface.interface_functions. \
+    energy_provenance_reporter import energy_provenance_reporter
+from spinn_front_end_common.interface.interface_functions. \
+    graph_binary_gatherer import graph_binary_gatherer
+from spinn_front_end_common.interface.interface_functions. \
+    graph_data_specification_writer import graph_data_specification_writer
+from spinn_front_end_common.interface.interface_functions. \
+    hbp_allocator import hbp_allocator
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression,
         pair_compression,
     )
+from spinn_front_end_common.interface.interface_functions. \
+    insert_chip_power_monitors import insert_chip_power_monitors
+from spinn_front_end_common.interface.interface_functions. \
+    insert_extra_monitor_vertices import insert_extra_monitor_vertices
+from spinn_front_end_common.interface.interface_functions. \
+    load_data_specification import (
+        load_application_data_specs,
+        load_system_data_specs,
+    )
+from spinn_front_end_common.interface.interface_functions. \
+    load_executable_images import load_app_images, load_sys_images
+from spinn_front_end_common.interface.interface_functions. \
+    load_fixed_routes import load_fixed_routes
+from spinn_front_end_common.interface.interface_functions. \
+    locate_executable_start_type import locate_executable_start_type
+from spinn_front_end_common.interface.interface_functions. \
+    placements_provenance_gatherer import placements_provenance_gatherer
+from spinn_front_end_common.interface.interface_functions. \
+    profile_data_gatherer import profile_data_gatherer
+from spinn_front_end_common.interface.interface_functions. \
+    read_routing_tables_from_machine import read_routing_tables_from_machine
+from spinn_front_end_common.interface.interface_functions. \
+    router_provenance_gatherer import router_provenance_gatherer
+from spinn_front_end_common.interface.interface_functions. \
+    routing_table_loader import routing_table_loader
+from spinn_front_end_common.interface.interface_functions. \
+    sdram_outgoing_partition_allocator import (
+        sdram_outgoing_partition_allocator,
+    )
+from spinn_front_end_common.interface.interface_functions. \
+    spalloc_allocator_old import spalloc_allocate_job_old
+from spinn_front_end_common.interface.interface_functions. \
+    split_lpg_vertices import split_lpg_vertices
+from spinn_front_end_common.interface.interface_functions. \
+    system_multicast_routing_generator import (
+        system_multicast_routing_generator,
+    )
+from spinn_front_end_common.interface.interface_functions. \
+    tags_loader import tags_loader
 from spinn_front_end_common.interface.java_caller import JavaCaller
-from spinn_front_end_common.interface.provenance import (
-    FecTimer,
+from spinn_front_end_common.interface.provenance.fec_timer import FecTimer
+from spinn_front_end_common.interface.provenance.global_provenance import (
     GlobalProvenance,
+)
+from spinn_front_end_common.interface.provenance.provenance_writer import (
     ProvenanceWriter,
+)
+from spinn_front_end_common.interface.provenance.timer_category import (
     TimerCategory,
-    TimerWork,
 )
-from spinn_front_end_common.interface.splitter_selectors import (
-    splitter_selector,
+from spinn_front_end_common.interface.provenance.timer_work import TimerWork
+from spinn_front_end_common.interface.splitter_selectors. \
+    splitter_selector import splitter_selector
+from spinn_front_end_common.utilities.database.database_updater import (
+    DatabaseUpdater,
 )
-from spinn_front_end_common.interface \
-    .buffer_management.storage_objects import BufferDatabase
-from spinn_front_end_common.utilities.database import DatabaseUpdater
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
-from spinn_front_end_common.utilities.report_functions import (
-    EnergyReport,
-    board_chip_report,
-    drift_report,
-    fixed_route_from_machine_report,
-    generate_routing_compression_checker_report,
-    memory_map_on_host_chip_report,
-    memory_map_on_host_report,
-    network_specification,
-    tags_from_machine_report,
-    write_json_machine,
-    write_json_placements,
-    write_json_routing_tables,
-    write_sample_profile_report,
-)
+from spinn_front_end_common.utilities.report_functions. \
+    board_chip_report import board_chip_report
+from spinn_front_end_common.utilities.report_functions. \
+    drift_report import drift_report
+from spinn_front_end_common.utilities.report_functions. \
+    energy_report import EnergyReport
+from spinn_front_end_common.utilities.report_functions. \
+    fixed_route_from_machine_report import fixed_route_from_machine_report
+from spinn_front_end_common.utilities.report_functions. \
+    memory_map_on_host_chip_report import (
+        memory_map_on_host_chip_report,
+    )
+from spinn_front_end_common.utilities.report_functions. \
+    memory_map_on_host_report import (
+        memory_map_on_host_report,
+    )
+from spinn_front_end_common.utilities.report_functions. \
+    network_specification import network_specification
+from spinn_front_end_common.utilities.report_functions. \
+    real_tags_report import tags_from_machine_report
+from spinn_front_end_common.utilities.report_functions. \
+    routing_compression_report import (
+        generate_routing_compression_checker_report,
+    )
+from spinn_front_end_common.utilities.report_functions. \
+    sample_profile_report import write_sample_profile_report
+from spinn_front_end_common.utilities.report_functions. \
+    write_json_machine import write_json_machine
+from spinn_front_end_common.utilities.report_functions. \
+    write_json_placements import write_json_placements
+from spinn_front_end_common.utilities.report_functions. \
+    write_json_routing_tables import write_json_routing_tables
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_binaries_report,
     generate_comparison_router_report,
@@ -193,9 +252,10 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     sdram_usage_report_per_chip,
     tag_allocator_report,
 )
-from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex,
-)
+from spinn_front_end_common.utility_models. \
+    data_speed_up_packet_gatherer_machine_vertex import (
+        DataSpeedUpPacketGatherMachineVertex,
+    )
 
 try:
     from scipy import __version__ as scipy_version

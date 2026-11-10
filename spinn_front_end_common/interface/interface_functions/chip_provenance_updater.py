@@ -23,7 +23,7 @@ from spinn_machine import CoreSubsets
 
 from spinnman.model.enums import CPUState
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))

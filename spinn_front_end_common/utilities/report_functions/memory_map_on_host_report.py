@@ -17,7 +17,9 @@ import logging
 from spinn_utilities.config_holder import get_report_path
 from spinn_utilities.log import FormatAdapter
 
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.interface.ds.ds_sqllite_database import (
+    DsSqlliteDatabase,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

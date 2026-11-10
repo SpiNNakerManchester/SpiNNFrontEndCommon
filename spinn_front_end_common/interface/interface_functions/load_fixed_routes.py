@@ -14,7 +14,7 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 
 def load_fixed_routes() -> None:

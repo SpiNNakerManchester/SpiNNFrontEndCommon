@@ -26,7 +26,7 @@ from pacman.model.graphs.machine import (
     SourceSegmentedSDRAMMachinePartition,
 )
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 

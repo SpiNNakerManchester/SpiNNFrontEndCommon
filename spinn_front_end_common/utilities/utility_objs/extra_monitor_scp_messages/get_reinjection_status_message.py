@@ -25,7 +25,9 @@ from spinnman.messages.scp.enums import SCPResult
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.model.enums import SDP_PORTS
 
-from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
+from spinn_front_end_common.utilities.utility_objs.reinjection_status import (
+    ReInjectionStatus,
+)
 
 from .reinjector_scp_commands import ReinjectorSCPCommands
 

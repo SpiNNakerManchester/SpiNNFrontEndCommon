@@ -21,8 +21,10 @@ from spinnman.transceiver import Transceiver
 
 from pacman.model.placements import Placement
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.interface.ds.data_specification_generator import (
+    DataSpecificationGenerator,
+)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset,

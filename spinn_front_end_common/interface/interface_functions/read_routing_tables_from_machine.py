@@ -15,13 +15,17 @@ from spinn_utilities.progress_bar import ProgressBar
 
 from spinnman.transceiver import Transceiver
 
-from pacman.model.routing_tables import (
+from pacman.model.routing_tables.abstract_multicast_routing_table import (
     AbstractMulticastRoutingTable,
+)
+from pacman.model.routing_tables.compressed_multicast_routing_table import (
     CompressedMulticastRoutingTable,
+)
+from pacman.model.routing_tables.multicast_routing_tables import (
     MulticastRoutingTables,
 )
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 
 
 def read_routing_tables_from_machine() -> MulticastRoutingTables:

@@ -16,7 +16,7 @@ import struct
 from collections.abc import Callable
 from decimal import Decimal
 from enum import Enum
-from typing import Any, cast
+from typing import cast
 
 import numpy as np
 from numpy import uint32
@@ -343,7 +343,7 @@ class DataType(Enum):
 
     def __new__(cls, value: int, size: int, min_val: Decimal, max_val: Decimal,
                 scale: Decimal, struct_encoding: str, apply_scale: bool,
-                force_cast: Callable[[Any], int] | None,
+                force_cast: Callable[[object], int] | None,
                 numpy_typename: type, _doc: str) -> Self:
         obj = object.__new__(cls)
         obj._value_ = value
@@ -353,7 +353,7 @@ class DataType(Enum):
     def __init__(
             self, value: int, size: int, min_val: Decimal, max_val: Decimal,
             scale: Decimal, struct_encoding: str, apply_scale: bool,
-            force_cast: Callable[[Any], int] | None,
+            force_cast: Callable[[object], int] | None,
             numpy_typename: type, _doc: str) -> None:
         """
         :param value: ID for the enum

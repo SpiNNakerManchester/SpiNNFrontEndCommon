@@ -19,7 +19,6 @@ import struct
 from collections.abc import Collection, Iterable
 from typing import (
     TYPE_CHECKING,
-    Any,
 )
 
 from spinn_utilities.log import FormatAdapter
@@ -28,7 +27,7 @@ from spinn_machine import Chip, CoreSubsets, Machine, MulticastRoutingEntry
 
 from spinnman.model.enums import CPUState, ExecutableType
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE,
     APP_PTR_TABLE_REGION_BYTE_SIZE,
@@ -183,7 +182,7 @@ def get_ethernet_chip(machine: Machine, board_address: str) -> Chip:
 
 
 def determine_flow_states(
-        executable_types: dict[ExecutableType, Any],
+        executable_types: dict[ExecutableType, object],
         no_sync_changes: int) -> tuple[
             dict[ExecutableType, Collection[CPUState]],
             dict[ExecutableType, Collection[CPUState]]]:

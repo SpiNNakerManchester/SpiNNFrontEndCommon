@@ -14,7 +14,7 @@
 
 import json
 from collections import defaultdict
-from typing import Any, cast
+from typing import cast
 
 import numpy
 
@@ -24,10 +24,11 @@ from spinn_machine.version.abstract_version import AbstractVersion
 
 from spinnman.model.enums.executable_type import ExecutableType
 
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models. \
+    abstract_has_associated_binary import AbstractHasAssociatedBinary
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management\
-    .storage_objects import BufferDatabase
+    .storage_objects.buffer_database import BufferDatabase
 from spinn_front_end_common.utility_models\
     .chip_power_monitor_machine_vertex import (
         RECORDING_CHANNEL,
@@ -50,7 +51,7 @@ def write_sample_profile_report() -> None:
     simulation_timestep_us = FecDataView.get_simulation_time_step_us()
     hardware_timestep_us = FecDataView.get_hardware_time_step_us()
 
-    json_report_data: dict[str, Any] = {}
+    json_report_data: dict[str, object] = {}
     json_report_data["simulation_timestep_us"] = simulation_timestep_us
     json_report_data["hardware_timestep_us"] = hardware_timestep_us
     for (x, y), activity in chip_activity.items():
@@ -67,7 +68,7 @@ def write_sample_profile_report() -> None:
         max_percent = (max_active / n_samples) * 100
         mean_percent = (mean_active / n_samples) * 100
 
-        json_report_chip: dict[str, Any] = {}
+        json_report_chip: dict[str, object] = {}
         json_report_data[f"chip_{x}_{y}"] = json_report_chip
         json_report_chip["x"] = x
         json_report_chip["y"] = y

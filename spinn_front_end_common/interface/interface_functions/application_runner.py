@@ -23,13 +23,15 @@ from spinnman.exceptions import SpinnmanException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState, ExecutableType
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION,
 )
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.scp import (
+from spinn_front_end_common.utilities.scp.get_current_time_process import (
     GetCurrentTimeProcess,
+)
+from spinn_front_end_common.utilities.scp.send_pause_process import (
     SendPauseProcess,
 )
 

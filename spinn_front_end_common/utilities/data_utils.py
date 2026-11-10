@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinn_front_end_common.interface.ds import DataSpecificationGenerator
+from spinn_front_end_common.abstract_models. \
+    abstract_has_associated_binary import AbstractHasAssociatedBinary
+from spinn_front_end_common.interface.ds.data_specification_generator import (
+    DataSpecificationGenerator,
+)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array,
     get_simulation_header_array_no_timestep,

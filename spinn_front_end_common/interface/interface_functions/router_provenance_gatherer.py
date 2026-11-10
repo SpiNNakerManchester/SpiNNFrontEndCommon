@@ -25,9 +25,13 @@ from spinnman.model import RouterDiagnostics
 
 from pacman.model.routing_tables import AbstractMulticastRoutingTable
 
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
+from spinn_front_end_common.data.fec_data_view import FecDataView
+from spinn_front_end_common.interface.provenance.provenance_writer import (
+    ProvenanceWriter,
+)
+from spinn_front_end_common.utilities.utility_objs.reinjection_status import (
+    ReInjectionStatus,
+)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

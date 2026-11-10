@@ -15,11 +15,12 @@ from spinn_utilities.progress_bar import ProgressBar
 
 from pacman.model.placements import Placement, Placements
 
-from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement,
 )
-from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
+from spinn_front_end_common.utility_models. \
+    chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
 
 def sample_chip_power_monitor() -> ChipPowerMonitorMachineVertex:

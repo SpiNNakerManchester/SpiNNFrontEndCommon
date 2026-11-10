@@ -47,8 +47,10 @@ from spinnman.spalloc import SpallocEIEIOListener
 from spinnman.utilities.utility_functions import reprogram_tag_to_listener
 
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
-from spinn_front_end_common.utilities.database import (
+from spinn_front_end_common.utilities.database.database_connection import (
     DatabaseConnection,
+)
+from spinn_front_end_common.utilities.database.database_reader import (
     DatabaseReader,
 )
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
